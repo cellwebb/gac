@@ -209,8 +209,12 @@ def generate_commit_message(
 
         except Exception as e:
             last_error = e
-
             retry_count += 1
+
+            if retry_count == max_retries:
+                logger.warning(f"Error generating commit message: {e}. Giving up.")
+                break
+
             wait_time = 2**retry_count
             logger.warning(f"Error generating commit message: {e}. Retrying in {wait_time}s...")
             if spinner:
@@ -219,9 +223,6 @@ def generate_commit_message(
                     time.sleep(1)
             else:
                 time.sleep(wait_time)
-
-    # If we got here, all retries failed
     if spinner:
         spinner.fail("Failed to generate commit message")
-
     raise AIError(f"Failed to generate commit message after {max_retries} attempts: {last_error}")
