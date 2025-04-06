@@ -51,9 +51,7 @@ def test_format_files_success(mock_exists, mock_check_formatter, mock_run_format
 @patch("gac.format.run_formatter")
 @patch("gac.format.check_formatter_available", return_value=False)
 @patch("os.path.isfile", return_value=True)
-def test_format_files_formatter_not_available(
-    mock_exists, mock_check_formatter, mock_run_formatter
-):
+def test_format_files_formatter_not_available(mock_exists, mock_check_formatter, mock_run_formatter):
     """Test format_files handles unavailable formatters gracefully."""
     # Test with files that would normally be formatted (update to dictionary)
     files = {"file1.py": "M", "file2.py": "M"}

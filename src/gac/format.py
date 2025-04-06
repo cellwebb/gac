@@ -56,9 +56,7 @@ def run_formatter(command: List[str], files: List[str], formatter_name: str) -> 
         logger.debug(f"Running {formatter_name} on {len(files)} files")
 
         # Some formatters like gofmt need to process files one at a time
-        formatter_config = next(
-            (f for lang in FORMATTERS.values() for f in lang if f["name"] == formatter_name), None
-        )
+        formatter_config = next((f for lang in FORMATTERS.values() for f in lang if f["name"] == formatter_name), None)
         if formatter_config and formatter_config.get("single_file", False):
             for file in files:
                 result = subprocess.run(
@@ -91,9 +89,7 @@ def run_formatter(command: List[str], files: List[str], formatter_name: str) -> 
 
 def check_formatter_available(formatter_config: Dict) -> bool:
     """Check if a formatter is available on the system."""
-    check_command = formatter_config.get(
-        "check_command", formatter_config["command"][:1] + ["--version"]
-    )
+    check_command = formatter_config.get("check_command", formatter_config["command"][:1] + ["--version"])
 
     try:
         result = subprocess.run(

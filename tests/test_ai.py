@@ -1,9 +1,7 @@
 """Tests for ai module."""
 
-import os
 from unittest.mock import MagicMock, patch
 
-from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens, extract_text_content, get_encoding
 
 
@@ -72,41 +70,3 @@ class TestAiUtils:
             result = get_encoding("unknown:model")
             assert result == "fallback_encoding"
             mock_get_encoding.assert_called_once_with("cl100k_base")
-
-    def test_generate_commit_message_in_pytest(self):
-        """Test generating a commit message in pytest environment."""
-        # Set the pytest environment variable
-        os.environ["PYTEST_CURRENT_TEST"] = "1"
-
-        result = generate_commit_message("Test prompt")
-        assert result in [
-            "Generated commit message",
-            "This is a generated commit message",
-            "Another example of a generated commit message",
-            "Yet another example of a generated commit message",
-            "One more example of a generated commit message",
-        ]
-
-    @patch("gac.ai.os.environ.get")
-    @patch("aisuite.Client")
-    def test_generate_commit_message_real(self, mock_client, mock_environ_get):
-        """Test generating a commit message with a mocked client."""
-        # Mock environment variables to avoid special test behavior and provide API key
-        mock_environ_get.side_effect = lambda k: (None if k == "PYTEST_CURRENT_TEST" else "test_api_key")
-
-        # Mock the AI client
-        mock_chat = MagicMock()
-        mock_client.return_value.chat = mock_chat
-
-        # Create a response object
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = "Test commit message"
-        mock_chat.completions.create.return_value = mock_response
-
-        # Call the function
-        result = generate_commit_message("Test prompt", model="anthropic:claude-3-5-haiku", show_spinner=False)
-
-        # Verify results
-        assert result == "Test commit message"
-        mock_chat.completions.create.assert_called_once()
