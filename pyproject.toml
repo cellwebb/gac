@@ -29,6 +29,7 @@ dependencies = [
     "anthropic",
     "groq",
     "mistralai",
+    "ollama",
     "openai",
     "tiktoken",
     
@@ -52,20 +53,13 @@ dependencies = [
     
     # Utilities
     "docstring_parser>=0.16",
+    "python-dotenv>=1.1.0",
 ]
 
 [project.scripts]
 gac = "gac.main:cli"
 
 [project.optional-dependencies]
-ollama = [
-    # Ollama provider
-    "ollama>=0.4.0",
-]
-all = [
-    # Complete provider support including Ollama
-    "ollama>=0.4.0",
-]
 dev = [
     # Version management
     "bump-my-version>=0.31.1",

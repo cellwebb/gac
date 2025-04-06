@@ -7,6 +7,7 @@ import sys
 from typing import Optional
 
 import click
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 
@@ -20,6 +21,8 @@ from gac.prompt import build_prompt
 from gac.utils import print_message, setup_logging
 
 logger = logging.getLogger(__name__)
+
+load_dotenv(".gac.env")
 
 
 @click.command()
@@ -40,7 +43,7 @@ logger = logging.getLogger(__name__)
 @click.option("--model", "-m", help="Override the default model (format: 'provider:model_name')")
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
 @click.option("--config", is_flag=True, help="Run the interactive configuration wizard and save settings to ~/.gac.env")
-@click.option("--dry-run", "-d", is_flag=True, help="Dry run the commit workflow")
+@click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
 def cli(
     add_all: bool = False,
     config: bool = False,
@@ -164,20 +167,42 @@ def main(
             print_message("No backup model specified in environment variables. Exiting...", level="error")
             sys.exit(1)
 
-    print_message("Trying backup model...", level="info")
+        print_message("Trying backup model...", level="info")
+        try:
+            commit_message = generate_commit_message(
+                backup_model,
+                prompt,
+                temperature=TEMPERATURE,
+                max_tokens=MAX_OUTPUT_TOKENS,
+                max_retries=MAX_RETRIES,
+                quiet=quiet,
+            )
+        except AIError as e:
+            print_message(str(e), level="error")
+            print_message("Backup model unsuccessful. Exiting...", level="error")
+            sys.exit(1)
+
+    if dry_run:
+        print_message("Dry run: would commit with message:", "notification")
+        print(commit_message)
+        sys.exit(0)
+
     try:
-        commit_message = generate_commit_message(
-            backup_model,
-            prompt,
-            temperature=TEMPERATURE,
-            max_tokens=MAX_OUTPUT_TOKENS,
-            max_retries=MAX_RETRIES,
-            quiet=quiet,
-        )
-    except AIError as e:
-        print_message(str(e), level="error")
-        print_message("Backup model unsuccessful. Exiting...", level="error")
+        run_git_command(["commit", "-m", commit_message])
+    except Exception as e:
+        print_message(f"Error committing changes: {e}", "error")
         sys.exit(1)
+
+    if push:
+        try:
+            from gac.git import push_changes
+
+            if not push_changes():
+                print_message("Failed to push changes.", "error")
+                sys.exit(1)
+        except Exception as e:
+            print_message(f"Error pushing changes: {e}", "error")
+            sys.exit(1)
 
     if not quiet:
         print_message("Successfully committed changes with message:", "notification")
