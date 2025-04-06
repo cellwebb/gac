@@ -6,13 +6,13 @@ import subprocess
 from typing import List, Union
 
 from rich.console import Console
-from rich.panel import Panel
 from rich.theme import Theme
 
+from gac.constants import DEFAULT_LOG_LEVEL
 from gac.errors import GACError
 
 
-def setup_logging(log_level: Union[int, str] = logging.WARNING, quiet: bool = False, force: bool = False) -> None:
+def setup_logging(log_level: Union[int, str] = DEFAULT_LOG_LEVEL, quiet: bool = False, force: bool = False) -> None:
     """Configure logging for the application."""
     if isinstance(log_level, str):
         log_level = getattr(logging, log_level.upper(), logging.WARNING)
@@ -65,11 +65,6 @@ logger = logging.getLogger(__name__)
 def print_message(message: str, level: str = "info") -> None:
     """Print a styled message with the specified level."""
     console.print(message, style=level)
-
-
-def print_header(message: str) -> None:
-    """Print a header message with color."""
-    console.print(Panel(message, style="header"))
 
 
 def run_subprocess(
@@ -137,18 +132,6 @@ def run_subprocess(
         if raise_on_error:
             raise
         return ""
-
-
-def is_ollama_available() -> bool:
-    """Check if Ollama is available."""
-    try:
-        import ollama
-
-        _ = ollama.list()
-        return True
-    except (ImportError, Exception) as e:
-        logger.debug(f"Ollama is not available: {str(e)}")
-        return False
 
 
 def file_matches_pattern(file_path: str, pattern: str) -> bool:

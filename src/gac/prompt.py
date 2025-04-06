@@ -32,7 +32,7 @@ def find_template_file():
     if default_template.exists():
         return str(default_template)
 
-    return None
+    raise ConfigError("No template file found and no default template defined.")
 
 
 def load_prompt_template(template_path=None):

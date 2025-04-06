@@ -1,20 +1,12 @@
 import logging
-import os
-import random
-import time
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
-import aisuite
 import tiktoken
-from halo import Halo
 
-from gac.config import API_KEY_ENV_VARS
-from gac.errors import AIError
+from gac.constants import DEFAULT_ENCODING
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_ENCODING = "cl100k_base"
 
 
 def count_tokens(content: Union[str, List[Dict[str, str]], Dict[str, Any]], model: str) -> int:
@@ -36,9 +28,7 @@ def extract_text_content(content: Union[str, List[Dict[str, str]], Dict[str, Any
     if isinstance(content, str):
         return content
     elif isinstance(content, list):
-        return "\n".join(
-            msg["content"] for msg in content if isinstance(msg, dict) and "content" in msg
-        )
+        return "\n".join(msg["content"] for msg in content if isinstance(msg, dict) and "content" in msg)
     elif isinstance(content, dict) and "content" in content:
         return content["content"]
     return ""
