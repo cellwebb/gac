@@ -3,6 +3,7 @@
 
 import logging
 import sys
+from typing import Optional
 
 import click
 
@@ -50,9 +51,6 @@ def cli(
     version: bool = False,
 ):
     """Git Auto Commit - Generate commit messages with AI."""
-    global _CALLED_FROM_CLI
-    _CALLED_FROM_CLI = True
-
     if version:
         print(f"Git Auto Commit (GAC) version: {__about__.__version__}")
         sys.exit(0)
@@ -73,22 +71,8 @@ def cli(
     numeric_log_level = getattr(logging, log_level.upper(), logging.WARNING)
     setup_logging(numeric_log_level, quiet=quiet, force=True)
 
-    # Check if we're in a git repository
-    git_status = get_git_status_summary()
-    if not git_status.get("valid"):
-        print_message("Error: Not in a git repository", "error")
-        sys.exit(1)
-
-    if not add_all and not git_status.get("has_staged"):
-        print_message(
-            "Error: No staged changes found. Stage your changes with git add first or use --add-all",
-            "error",
-        )
-        sys.exit(1)
-
-    # Call commit workflow with the parameters from Click
-    result = commit_workflow(
-        message=None,
+    # Call main with the Click parameters
+    main(
         stage_all=add_all,
         format_files=format or not no_format,
         model=model,
@@ -96,6 +80,48 @@ def cli(
         one_liner=one_liner,
         show_prompt=show_prompt,
         require_confirmation=not yes,
+        push=push,
+        quiet=quiet,
+        template=template,
+    )
+
+
+def main(
+    stage_all: bool = False,
+    format_files: bool = True,
+    model: Optional[str] = None,
+    hint: str = "",
+    one_liner: bool = False,
+    show_prompt: bool = False,
+    require_confirmation: bool = True,
+    push: bool = False,
+    quiet: bool = False,
+    template: Optional[str] = None,
+) -> None:
+    """Main application logic for GAC."""
+    # Check if we're in a git repository
+    git_status = get_git_status_summary()
+    if not git_status.get("valid"):
+        print_message("Error: Not in a git repository", "error")
+        sys.exit(1)
+
+    if not stage_all and not git_status.get("has_staged"):
+        print_message(
+            "Error: No staged changes found. Stage your changes with git add first or use --add-all",
+            "error",
+        )
+        sys.exit(1)
+
+    # Call commit workflow
+    result = commit_workflow(
+        message=None,
+        stage_all=stage_all,
+        format_files=format_files,
+        model=model,
+        hint=hint,
+        one_liner=one_liner,
+        show_prompt=show_prompt,
+        require_confirmation=require_confirmation,
         push=push,
         quiet=quiet,
         template=template,
