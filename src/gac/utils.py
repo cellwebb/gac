@@ -186,3 +186,14 @@ def is_ollama_available() -> bool:
     except (ImportError, Exception) as e:
         logger.debug(f"Ollama is not available: {str(e)}")
         return False
+
+
+def file_matches_pattern(file_path: str, pattern: str) -> bool:
+    """Check if a file matches a pattern."""
+    if pattern.endswith("/*"):
+        dir_pattern = pattern[:-2]
+        return file_path.startswith(dir_pattern)
+    elif pattern.startswith("*"):
+        return file_path.endswith(pattern[1:])
+    else:
+        return file_path == pattern

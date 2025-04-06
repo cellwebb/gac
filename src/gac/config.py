@@ -4,7 +4,7 @@ import logging
 import os
 import pathlib
 import sys
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import questionary
 from dotenv import load_dotenv
@@ -404,12 +404,10 @@ def run_config_wizard() -> Optional[Config]:
                 print("Cancelled.")
                 return None
 
-    # Choose model for the selected provider
-    models = get_models_for_provider(provider)
-    model_name = questionary.select(
-        "Select your primary model:",
-        choices=models,
-        default=models[0] if models else None,
+    # Enter model name for the selected provider
+    model_name = questionary.text(
+        f"Enter the {provider} model name:",
+        validate=lambda text: len(text) > 0 or "Model name cannot be empty",
     ).ask()
 
     if not model_name:
@@ -457,13 +455,11 @@ def run_config_wizard() -> Optional[Config]:
                         print("No backup API key provided. Continuing without backup model.")
                         backup_provider = None
 
-            # Choose backup model if provider was selected
+            # Enter backup model name if provider was selected
             if backup_provider:
-                backup_models = get_models_for_provider(backup_provider)
-                backup_model_name = questionary.select(
-                    "Select your backup model:",
-                    choices=backup_models,
-                    default=backup_models[0] if backup_models else None,
+                backup_model_name = questionary.text(
+                    f"Enter the {backup_provider} model name:",
+                    validate=lambda text: len(text) > 0 or "Model name cannot be empty",
                 ).ask()
 
                 if not backup_model_name:
@@ -511,59 +507,6 @@ def run_config_wizard() -> Optional[Config]:
     except Exception as e:
         print(f"Error saving configuration: {e}")
         return None
-
-
-def get_models_for_provider(provider: str) -> List[str]:
-    """Get a list of models available for a given provider.
-
-    Args:
-        provider: The AI provider name
-
-    Returns:
-        List of model names supported by the provider
-    """
-    if provider == "anthropic":
-        return [
-            "claude-3-5-sonnet-20240620",
-            "claude-3-5-haiku-20240307",
-            "claude-3-opus-20240229",
-            "claude-3-sonnet-20240229",
-            "claude-3-haiku-20240307",
-            "claude-2.1",
-            "claude-2.0",
-        ]
-    elif provider == "openai":
-        return [
-            "gpt-4o",
-            "gpt-4-turbo",
-            "gpt-4-0613",
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0613",
-        ]
-    elif provider == "groq":
-        return [
-            "meta-llama/llama-4-scout-17b-16e-instruct",
-            "meta-llama/llama-3-70b-instruct",
-            "meta-llama/llama-3-8b-instruct",
-            "gemma-7b-it",
-            "mistral-7b-instruct",
-        ]
-    elif provider == "mistral":
-        return [
-            "mistral-large-latest",
-            "mistral-medium-latest",
-            "mistral-small-latest",
-        ]
-    elif provider == "ollama":
-        try:
-            import ollama
-
-            models = ollama.list()
-            return [model["name"] for model in models.get("models", [])]
-        except (ImportError, Exception):
-            return ["llama2", "mistral", "gemma"]
-
-    return ["model-name"]  # Generic fallback
 
 
 def is_var_in_file(file_path: pathlib.Path, var_name: str) -> bool:

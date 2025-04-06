@@ -282,3 +282,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .gac.env
+
+.cursor/

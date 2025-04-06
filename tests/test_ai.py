@@ -4,15 +4,12 @@ import os
 from unittest.mock import MagicMock, patch
 
 from gac.ai import (
-    count_tokens,
-    extract_text_content,
     generate_commit_message,
-    get_encoding,
-    smart_truncate_text,
     truncate_git_diff,
     truncate_single_file_diff,
     truncate_with_beginning_and_end,
 )
+from gac.ai_utils import count_tokens, extract_text_content, get_encoding
 
 
 class TestAiUtils:
@@ -21,7 +18,7 @@ class TestAiUtils:
     def test_count_tokens_string(self):
         """Test counting tokens with string input."""
         # Mock the tokenizer to return consistent results
-        with patch("gac.ai.get_encoding") as mock_get_encoding:
+        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
             mock_encoding = MagicMock()
             mock_encoding.encode.return_value = [1, 2, 3, 4, 5]
             mock_get_encoding.return_value = mock_encoding
@@ -37,7 +34,7 @@ class TestAiUtils:
             {"role": "assistant", "content": "Hi there"},
         ]
 
-        with patch("gac.ai.get_encoding") as mock_get_encoding:
+        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
             mock_encoding = MagicMock()
             mock_encoding.encode.return_value = [1, 2, 3, 4, 5, 6, 7]
             mock_get_encoding.return_value = mock_encoding
@@ -49,7 +46,7 @@ class TestAiUtils:
     def test_count_tokens_test_mode(self):
         """Test counting tokens in test mode."""
         # In test mode, the test should still work with the updated function signature
-        with patch("gac.ai.get_encoding") as mock_get_encoding:
+        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
             mock_encoding = MagicMock()
             mock_encoding.encode.return_value = [1, 2, 3, 4, 5]
             mock_get_encoding.return_value = mock_encoding
@@ -91,16 +88,6 @@ class TestAiUtils:
             result = get_encoding("unknown:model")
             assert result == "fallback_encoding"
             mock_get_encoding.assert_called_once_with("cl100k_base")
-
-    def test_smart_truncate_text_simple(self):
-        """Test truncating text without line breaks."""
-        with patch("gac.ai.count_tokens") as mock_count:
-            # First call checks if already under limit (it's not)
-            # Second call calculates the ratio for truncation
-            # Third call might check the truncated result
-            mock_count.side_effect = [10, 10, 5]
-            result = smart_truncate_text("This is a test text", "test:model", 5)
-            assert result == "This is a"  # Truncated result (based on actual implementation)
 
     def test_truncate_with_beginning_and_end(self):
         """Test truncating multi-line text preserving beginning and end."""

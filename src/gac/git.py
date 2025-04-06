@@ -8,10 +8,9 @@ from typing import Any, Dict, List, Optional
 from rich.panel import Panel
 
 from gac.ai import count_tokens, generate_commit_message
-from gac.errors import GACError, GitError, handle_error, with_error_handling
-from gac.files import file_matches_pattern
+from gac.errors import AIError, GACError, GitError, handle_error, with_error_handling
 from gac.prompt import build_prompt, clean_commit_message, create_abbreviated_prompt
-from gac.utils import console, run_subprocess
+from gac.utils import console, file_matches_pattern, run_subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -535,8 +534,18 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
     else:
         model_to_use = config.get("model", "anthropic:claude-3-5-haiku-latest")
 
+    # Ensure model has provider prefix
+    if ":" not in model_to_use:
+        model_to_use = f"anthropic:{model_to_use}"
+        logger.debug(f"Added provider prefix to model: {model_to_use}")
+
     # Get backup model from config if available
     backup_model = config.get("backup_model")
+
+    # Ensure backup model has provider prefix if it exists
+    if backup_model and ":" not in backup_model:
+        backup_model = f"anthropic:{backup_model}"
+        logger.debug(f"Added provider prefix to backup model: {backup_model}")
 
     # Only show model info when not in quiet mode
     if not options.get("quiet"):
@@ -559,17 +568,27 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
 
     # Call the AI to generate the commit message
     temperature = float(config.get("temperature", 0.7))
-    message = generate_commit_message(
-        prompt=prompt,
-        model=model_to_use,
-        backup_model=backup_model,
-        temperature=temperature,
-        show_spinner=not options.get("no_spinner", False) and not options.get("quiet", False),
-    )
+    try:
+        message = generate_commit_message(
+            prompt=prompt,
+            model=model_to_use,
+            backup_model=backup_model,
+            temperature=temperature,
+            show_spinner=not options.get("no_spinner", False) and not options.get("quiet", False),
+        )
 
-    if message:
-        return clean_commit_message(message)
-    return None
+        if message:
+            return clean_commit_message(message)
+        return None
+    except AIError as e:
+        if "Invalid model format" in str(e):
+            logger.error(
+                f"Invalid model format. Check your model configuration. "
+                f"Model should be in format 'provider:model_name'. Got: '{model_to_use}'"
+            )
+        else:
+            logger.error(f"AI error: {e}")
+        return None
 
 
 def get_git_status_summary() -> Dict[str, Any]:
