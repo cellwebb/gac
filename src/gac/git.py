@@ -572,7 +572,6 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
         message = generate_commit_message(
             prompt=prompt,
             model=model_to_use,
-            backup_model=backup_model,
             temperature=temperature,
             show_spinner=not options.get("no_spinner", False) and not options.get("quiet", False),
         )
@@ -586,9 +585,38 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
                 f"Invalid model format. Check your model configuration. "
                 f"Model should be in format 'provider:model_name'. Got: '{model_to_use}'"
             )
+            return None
+        elif backup_model:
+            # Primary model failed, try with backup model
+            logger.info(
+                f"Primary model failed with error: {e}. Trying backup model: {backup_model}"
+            )
+            if not options.get("quiet"):
+                print(f"Primary model failed. Trying backup model: {backup_model}")
+
+            try:
+                # Reset and create new spinner for backup attempt
+                show_spinner = not options.get("no_spinner", False) and not options.get(
+                    "quiet", False
+                )
+                backup_message = generate_commit_message(
+                    prompt=prompt,
+                    model=backup_model,
+                    temperature=temperature,
+                    show_spinner=show_spinner,
+                )
+
+                if backup_message:
+                    return clean_commit_message(backup_message)
+                return None
+            except AIError as backup_error:
+                logger.error(f"Backup model also failed: {backup_error}")
+                if not options.get("quiet"):
+                    print("Backup model also failed.")
+                return None
         else:
             logger.error(f"AI error: {e}")
-        return None
+            return None
 
 
 def get_git_status_summary() -> Dict[str, Any]:

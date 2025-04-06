@@ -4,15 +4,13 @@ This module provides core functionality for AI provider interaction.
 """
 
 import logging
-import os
 import time
-from typing import List, Optional
+from typing import List
 
 import aisuite as ai
 from halo import Halo
 
 from gac.ai_utils import count_tokens
-from gac.config import API_KEY_ENV_VARS
 from gac.errors import AIError
 
 logger = logging.getLogger(__name__)
@@ -151,7 +149,6 @@ def truncate_single_file_diff(file_diff: str, model: str, max_tokens: int) -> st
 def generate_commit_message(
     prompt: str,
     model: str,
-    backup_model: Optional[str] = None,
     temperature: float = 0.7,
     max_tokens: int = 1024,
     show_spinner: bool = True,
@@ -163,7 +160,6 @@ def generate_commit_message(
     Args:
         prompt: The prompt to send to the AI
         model: The model to use (format: provider:model_name)
-        backup_model: Backup model to use if primary model fails (format: provider:model_name)
         temperature: Temperature parameter (0.0 to 1.0) for randomness
         max_tokens: Maximum tokens in the generated response
         show_spinner: Whether to show a spinner during API calls
@@ -187,7 +183,6 @@ def generate_commit_message(
         spinner = Halo(text=f"Generating commit message with {provider}...", spinner="dots")
         spinner.start()
 
-    primary_error = None
     last_error = None
 
     retry_count = 0
@@ -213,10 +208,7 @@ def generate_commit_message(
             return message
 
         except Exception as e:
-            error_message = str(e)
             last_error = e
-            if retry_count == 0:
-                primary_error = e
 
             retry_count += 1
             wait_time = 2**retry_count
@@ -228,171 +220,7 @@ def generate_commit_message(
             else:
                 time.sleep(wait_time)
 
-    if backup_model and primary_error:
-        # Reset spinner for backup attempt
-        if spinner:
-            spinner.stop()
-
-        # Ensure backup model has provider prefix
-        if ":" not in backup_model:
-            backup_model = f"anthropic:{backup_model}"
-            logger.debug(f"Added default provider prefix to backup model: {backup_model}")
-
-        backup_provider, backup_model_name = backup_model.split(":", 1)
-
-        # Handle Groq backup model with path
-        if backup_provider == "groq" and "/" in backup_model_name:
-            # For Groq, we need to handle models with paths differently
-            logger.debug(f"Original Groq backup model: {backup_model_name}")
-            try:
-                # Try to use the Groq API directly instead of through aisuite
-                import groq
-
-                groq_client = groq.Client(api_key=os.environ.get(API_KEY_ENV_VARS.get("groq")))
-
-                if spinner:
-                    spinner = Halo(
-                        text="Generating commit message with Groq backup...", spinner="dots"
-                    )
-                    spinner.start()
-
-                groq_response = groq_client.chat.completions.create(
-                    model=backup_model_name,  # Use the full model name with Groq's direct API
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-
-                message = groq_response.choices[0].message.content
-
-                if spinner:
-                    spinner.succeed("Generated commit message with Groq backup")
-
-                return message
-            except ImportError:
-                logger.warning(
-                    "Groq SDK not installed. Trying to use simplified model name with aisuite."
-                )
-                # Fall back to aisuite with simplified name
-                simple_backup_model = backup_model_name.split("/")[-1]
-                logger.debug(f"Using simplified Groq backup model: {simple_backup_model}")
-            except Exception as e:
-                logger.error(f"Error using Groq backup directly: {e}")
-                # Fall back to aisuite with simplified name
-                simple_backup_model = backup_model_name.split("/")[-1]
-                logger.debug(f"Using simplified Groq backup model: {simple_backup_model}")
-        else:
-            simple_backup_model = backup_model_name
-
-        if spinner:
-            spinner = Halo(
-                text=f"Primary model failed, trying backup {backup_provider}...", spinner="dots"
-            )
-            spinner.start()
-
-        logger.info(
-            "Primary model failed with error: {}. Trying backup: {}:{}".format(
-                primary_error, backup_provider, simple_backup_model
-            )
-        )
-
-        try:
-            # Try Ollama first for backup model
-            if backup_provider == "ollama" or (ollama and backup_provider == "local"):
-                try:
-                    logger.debug(f"Using Ollama backup model: {backup_model_name}")
-                    response = ollama.chat(
-                        model=backup_model_name,
-                        messages=[{"role": "user", "content": prompt}],
-                        stream=False,
-                    )
-                    return response["message"]["content"]
-                except Exception as e:
-                    logger.error(f"Error using Ollama backup directly: {e}")
-                    # Continue to try aisuite
-
-            # Create backup client
-            api_key = os.environ.get(API_KEY_ENV_VARS.get(backup_provider))
-            if backup_provider == "ollama":
-                client = aisuite.Client(provider_configs={backup_provider: {}})
-            else:
-                client = aisuite.Client(provider_configs={backup_provider: {"api_key": api_key}})
-
-            # Common call for all providers
-            try:
-                response = client.chat.completions.create(
-                    model=simple_backup_model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-
-                message = (
-                    response.choices[0].message.content
-                    if hasattr(response, "choices")
-                    else response.content
-                )
-
-                # Stop the spinner (if any)
-                if spinner:
-                    spinner.succeed(f"Generated commit message with backup model {backup_provider}")
-
-                return message
-            except Exception as e:
-                error_message = str(e)
-
-                # Special handling for "Invalid model format" errors
-                if "Invalid model format" in error_message and "/" in simple_backup_model:
-                    logger.warning(
-                        "Backup model format error detected. Trying with further simplified name."
-                    )
-                    # Try simplifying the model name further
-                    simple_backup_model = simple_backup_model.split("/")[-1]
-                    if "-" in simple_backup_model:
-                        # Some APIs want just the base model, without specific version identifiers
-                        base_model = simple_backup_model.split("-")[0]
-                        logger.debug(f"Retrying with base backup model: {base_model}")
-                        simple_backup_model = base_model
-
-                    # Try again with the simplified name
-                    try:
-                        response = client.chat.completions.create(
-                            model=simple_backup_model,
-                            messages=[{"role": "user", "content": prompt}],
-                            temperature=temperature,
-                            max_tokens=max_tokens,
-                        )
-
-                        message = (
-                            response.choices[0].message.content
-                            if hasattr(response, "choices")
-                            else response.content
-                        )
-
-                        if spinner:
-                            spinner.succeed("Generated message with simplified backup model")
-
-                        return message
-                    except Exception as simplified_error:
-                        # If simplified model also fails, continue with original error
-                        logger.error(f"Simplified backup model also failed: {simplified_error}")
-
-                logger.error(f"Backup model also failed: {e}")
-                if spinner:
-                    spinner.fail("Both primary and backup models failed")
-
-                # If both primary and backup failed, raise the primary error for consistency
-                raise AIError(f"Failed to generate commit message: {primary_error}")
-        except Exception as e:
-            # This is now for any other general errors that might occur before we get to the API call
-            logger.error(f"Error setting up backup model: {e}")
-            if spinner:
-                spinner.fail("Error with backup model setup")
-
-            # If both primary and backup failed, raise the primary error for consistency
-            raise AIError(f"Failed to generate commit message: {primary_error}")
-
-    # If we got here, the primary model failed and there was no backup
+    # If we got here, all retries failed
     if spinner:
         spinner.fail("Failed to generate commit message")
 
