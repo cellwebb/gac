@@ -67,11 +67,9 @@ def cli(
         print_message("Error: --format and --no-format cannot be used together", "error")
         sys.exit(1)
 
-    # Set log level
     numeric_log_level = getattr(logging, log_level.upper(), logging.WARNING)
     setup_logging(numeric_log_level, quiet=quiet, force=True)
 
-    # Call main with the Click parameters
     main(
         stage_all=add_all,
         format_files=format or not no_format,

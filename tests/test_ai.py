@@ -43,17 +43,6 @@ class TestAiUtils:
             assert result == 7
             mock_encoding.encode.assert_called_once_with("Hello\nHi there")
 
-    def test_count_tokens_test_mode(self):
-        """Test counting tokens in test mode."""
-        # In test mode, the test should still work with the updated function signature
-        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
-            mock_encoding = MagicMock()
-            mock_encoding.encode.return_value = [1, 2, 3, 4, 5]
-            mock_get_encoding.return_value = mock_encoding
-
-            result = count_tokens("test text", "test:model")
-            assert result == 5
-
     def test_extract_text_content(self):
         """Test extracting text content from various input formats."""
         # Test string input
@@ -215,9 +204,7 @@ index abc123..def456 100644
     def test_generate_commit_message_real(self, mock_client, mock_environ_get):
         """Test generating a commit message with a mocked client."""
         # Mock environment variables to avoid special test behavior and provide API key
-        mock_environ_get.side_effect = lambda k: (
-            None if k == "PYTEST_CURRENT_TEST" else "test_api_key"
-        )
+        mock_environ_get.side_effect = lambda k: (None if k == "PYTEST_CURRENT_TEST" else "test_api_key")
 
         # Mock the AI client
         mock_chat = MagicMock()
@@ -230,9 +217,7 @@ index abc123..def456 100644
         mock_chat.completions.create.return_value = mock_response
 
         # Call the function
-        result = generate_commit_message(
-            "Test prompt", model="anthropic:claude-3-5-haiku", show_spinner=False
-        )
+        result = generate_commit_message("Test prompt", model="anthropic:claude-3-5-haiku", show_spinner=False)
 
         # Verify results
         assert result == "Test commit message"

@@ -12,9 +12,7 @@ from rich.theme import Theme
 from gac.errors import GACError
 
 
-def setup_logging(
-    log_level: Union[int, str] = logging.WARNING, quiet: bool = False, force: bool = False
-) -> None:
+def setup_logging(log_level: Union[int, str] = logging.WARNING, quiet: bool = False, force: bool = False) -> None:
     """Configure logging for the application."""
     if isinstance(log_level, str):
         log_level = getattr(logging, log_level.upper(), logging.WARNING)
@@ -74,36 +72,10 @@ def print_header(message: str) -> None:
     console.print(Panel(message, style="header"))
 
 
-def _simulate_git_command(command: List[str]) -> str:
-    """Simulate git command execution for test mode."""
-    logger.debug(f"TEST MODE: Simulating git command: {' '.join(command)}")
-
-    if not command or command[0] != "git":
-        return f"Simulated command: {' '.join(command)}"
-
-    if command[1:2] == ["status"]:
-        return "M src/gac/utils.py\nM tests/test_core.py\nM ROADMAP.md"
-    elif command[1:2] == ["add"]:
-        return f"Simulated adding files: {' '.join(command[2:])}"
-    elif command[1:2] == ["commit"]:
-        if "--allow-empty" in command:
-            return "Simulated empty commit"
-        return "Simulated commit"
-    elif command[1:2] == ["push"]:
-        return "Simulated push"
-    elif command[1:2] == ["diff"]:
-        return "Simulated diff content"
-    elif command[:3] == ["git", "rev-parse", "--show-toplevel"]:
-        return os.getcwd()
-    else:
-        return f"Simulated git command: {' '.join(command[1:])}"
-
-
 def run_subprocess(
     command: List[str],
     silent: bool = False,
     timeout: int = 60,
-    test_mode: bool = None,
     check: bool = True,
     strip_output: bool = True,
     raise_on_error: bool = True,
@@ -114,7 +86,6 @@ def run_subprocess(
         command: List of command arguments
         silent: If True, suppress debug logging
         timeout: Command timeout in seconds
-        test_mode: If True, simulate command execution (for testing)
         check: Whether to check return code (for compatibility)
         strip_output: Whether to strip whitespace from output
         raise_on_error: Whether to raise an exception on error
@@ -126,12 +97,6 @@ def run_subprocess(
         GACError: If the command times out
         subprocess.CalledProcessError: If the command fails and raise_on_error is True
     """
-    if test_mode is None:
-        test_mode = os.environ.get("GAC_TEST_MODE") == "1"
-
-    if test_mode:
-        return _simulate_git_command(command)
-
     if not silent:
         logger.debug(f"Running command: {' '.join(command)}")
 
@@ -149,9 +114,7 @@ def run_subprocess(
             if not silent:
                 logger.debug(f"Command stderr: {result.stderr}")
 
-            error = subprocess.CalledProcessError(
-                result.returncode, command, result.stdout, result.stderr
-            )
+            error = subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
             raise error
 
         output = result.stdout
