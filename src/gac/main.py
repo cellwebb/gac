@@ -8,7 +8,7 @@ from typing import Optional
 import click
 
 from gac import __about__
-from gac.git import commit_workflow
+from gac.git import commit_workflow, get_git_status_summary
 from gac.utils import print_message, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -56,29 +56,16 @@ logger = logging.getLogger(__name__)
     is_flag=True,
     help="Show the version of the Git Auto Commit (GAC) tool",
 )
-def main(
-    log_level: str,
-    quiet: bool,
-    yes: bool = False,
-    add_all: bool = False,
-    format: bool = False,
-    no_format: bool = False,
-    model: Optional[str] = None,
-    one_liner: bool = False,
-    show_prompt: bool = False,
-    show_prompt_full: bool = False,
-    hint: str = "",
-    push: bool = False,
-    template: Optional[str] = None,
-    config: bool = False,
-    version: bool = False,
-) -> None:
+def cli():
     """Git Auto Commit - Generate commit messages with AI."""
-    if version:
+    ctx = click.get_current_context()
+    params = ctx.params
+
+    if params.get("version"):
         print(f"Git Auto Commit (GAC) version: {__about__.__version__}")
         sys.exit(0)
 
-    if config:
+    if params.get("config"):
         from gac.config import run_config_wizard
 
         result = run_config_wizard()
@@ -86,11 +73,11 @@ def main(
             print_message("Configuration saved successfully!", "notification")
         return
 
-    if format and no_format:
+    if params.get("format") and params.get("no_format"):
         print_message("Error: --format and --no-format cannot be used together", "error")
         sys.exit(1)
 
-    log_level = log_level.upper()
+    log_level = params.get("log_level", "WARNING").upper()
     numeric_log_level = logging.WARNING
     if log_level == "DEBUG":
         numeric_log_level = logging.DEBUG
@@ -101,17 +88,62 @@ def main(
     elif log_level == "ERROR":
         numeric_log_level = logging.ERROR
 
+    quiet = params.get("quiet", False)
     setup_logging(numeric_log_level, quiet=quiet, force=True)
 
+    # Call main with processed parameters
+    main(
+        stage_all=params.get("add_all", False),
+        format_files=params.get("format", False) or not params.get("no_format", False),
+        model=params.get("model"),
+        hint=params.get("hint", ""),
+        one_liner=params.get("one_liner", False),
+        show_prompt=params.get("show_prompt", False) or params.get("show_prompt_full", False),
+        require_confirmation=not params.get("yes", False),
+        push=params.get("push", False),
+        quiet=quiet,
+        template=params.get("template"),
+    )
+
+
+def main(
+    stage_all: bool = False,
+    format_files: bool = True,
+    model: Optional[str] = None,
+    hint: str = "",
+    one_liner: bool = False,
+    show_prompt: bool = False,
+    require_confirmation: bool = True,
+    push: bool = False,
+    quiet: bool = False,
+    template: Optional[str] = None,
+) -> None:
+    """Main application logic for GAC."""
+    # Check if we're in a git repository
+    git_status = get_git_status_summary()
+    if not git_status.get("valid"):
+        print_message("Error: Not in a git repository", "error")
+        sys.exit(1)
+
+    # Verify that there are staged changes if not staging all
+    if not stage_all and not git_status.get("has_staged"):
+        print_message(
+            "Error: No staged changes found. "
+            "Stage your changes with git add first or use --add-all",
+            "error",
+        )
+        sys.exit(1)
+
+    # Run the commit workflow
     result = commit_workflow(
         message=None,
-        stage_all=add_all,
-        format_files=format or not no_format,
+        stage_all=stage_all,
+        format_files=format_files,
         model=model,
         hint=hint,
         one_liner=one_liner,
-        show_prompt=show_prompt or show_prompt_full,
-        require_confirmation=not yes,
+        show_prompt=show_prompt,
+        require_confirmation=require_confirmation,
         push=push,
         quiet=quiet,
         template=template,
@@ -131,4 +163,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    cli()

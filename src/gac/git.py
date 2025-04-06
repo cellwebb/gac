@@ -731,10 +731,10 @@ def commit_workflow(
     template: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Run the complete commit workflow in a functional way.
+    Run the git commit workflow operations.
 
-    This function composes the entire commit workflow using a pure functional approach,
-    returning a dictionary with the result instead of using side effects.
+    This function handles the core git operations for the commit process.
+    Application-level concerns should be handled in main.py.
 
     Args:
         message: Optional pre-generated commit message
@@ -752,7 +752,7 @@ def commit_workflow(
     Returns:
         Dictionary with the commit result
     """
-    # Get repository status first
+    # Check if in a git repository
     status = get_git_status_summary()
     if not status.get("valid"):
         return {"success": False, "error": "Not in a git repository"}
