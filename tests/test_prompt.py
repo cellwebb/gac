@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 
-from gac.prompt import build_prompt, clean_commit_message, create_abbreviated_prompt
+from gac.prompt import build_prompt, clean_commit_message
 
 # fmt: off
 # flake8: noqa: E501
@@ -88,31 +88,6 @@ class TestPrompts:
         message = "fix: Bug fix"
         result = clean_commit_message(message)
         assert result == "fix: Bug fix"
-
-    def test_create_abbreviated_prompt(self):
-        """Test creating an abbreviated version of a prompt."""
-        # Create a test prompt with a large diff
-        lines = ["Line " + str(i) for i in range(100)]
-        diff_lines = "\n".join(lines)
-        prompt = f"Before diff\n<git-diff>\n{diff_lines}\n</git-diff>\nAfter diff"
-
-        # Test with default max_diff_lines=50
-        result = create_abbreviated_prompt(prompt)
-        assert "Before diff" in result
-        assert "After diff" in result
-        assert "Line 0" in result
-        assert "Line 49" in result
-        assert "Line 50" not in result
-        assert "more lines truncated" in result
-
-        # Test with custom max_diff_lines=10
-        result = create_abbreviated_prompt(prompt, max_diff_lines=10)
-        assert "Before diff" in result
-        assert "After diff" in result
-        assert "Line 0" in result
-        assert "Line 9" in result
-        assert "Line 10" not in result
-        assert "more lines truncated" in result
 
 
 if __name__ == "__main__":

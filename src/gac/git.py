@@ -7,9 +7,10 @@ from typing import Any, Dict, List, Optional
 
 from rich.panel import Panel
 
-from gac.ai import count_tokens, generate_commit_message
-from gac.errors import AIError, GACError, GitError, handle_error, with_error_handling
-from gac.prompt import build_prompt, clean_commit_message, create_abbreviated_prompt
+from gac.ai import AIError, count_tokens, generate_commit_message
+from gac.errors import GACError, GitError, handle_error, with_error_handling
+from gac.format import format_files
+from gac.prompt import build_prompt, clean_commit_message
 from gac.utils import console, file_matches_pattern, run_subprocess
 
 logger = logging.getLogger(__name__)
@@ -53,9 +54,7 @@ def run_git_command(args: List[str], silent: bool = False, timeout: int = 30) ->
         Command output as string, or empty string on error
     """
     command = ["git"] + args
-    return run_subprocess(
-        command, silent=silent, timeout=timeout, raise_on_error=False, strip_output=True
-    )
+    return run_subprocess(command, silent=silent, timeout=timeout, raise_on_error=False, strip_output=True)
 
 
 @with_error_handling(GitError, "Failed to determine git directory")
@@ -229,7 +228,6 @@ def create_commit_options(
     hint: str = "",
     one_liner: bool = False,
     show_prompt: bool = False,
-    show_prompt_full: bool = False,
     quiet: bool = False,
     no_spinner: bool = False,
     push: bool = False,
@@ -239,19 +237,18 @@ def create_commit_options(
     Create a dictionary with commit options.
 
     Args:
-        message: Optional pre-generated commit message
+        message: Optional commit message (will skip generation if provided)
         staged_files: Optional list of staged files
-        force: Skip all confirmation prompts
-        add_all: Stage all changes before committing
+        force: Whether to force commit even with no staged changes
+        add_all: Whether to stage all changed files
         formatting: Whether to format code
         model: Override model to use
         hint: Additional context for the prompt
         one_liner: Generate a single-line commit message
-        show_prompt: Show an abbreviated version of the prompt
-        show_prompt_full: Show the complete prompt
+        show_prompt: Show the complete prompt
         quiet: Suppress non-error output
         no_spinner: Disable progress spinner during API calls
-        push: Push changes to remote after committing
+        push: Push changes after committing
         template: Path to a custom prompt template file
 
     Returns:
@@ -267,7 +264,6 @@ def create_commit_options(
         "hint": hint,
         "one_liner": one_liner,
         "show_prompt": show_prompt,
-        "show_prompt_full": show_prompt_full,
         "quiet": quiet,
         "no_spinner": no_spinner,
         "push": push,
@@ -308,7 +304,6 @@ def commit_changes_with_options(options: Dict[str, Any]) -> Optional[Dict[str, A
             "hint": options.get("hint", ""),
             "one_liner": options.get("one_liner", False),
             "show_prompt": options.get("show_prompt", False),
-            "show_prompt_full": options.get("show_prompt_full", False),
             "quiet": options.get("quiet", False),
             "no_spinner": options.get("no_spinner", False),
         }
@@ -342,9 +337,7 @@ def commit_changes_with_options(options: Dict[str, Any]) -> Optional[Dict[str, A
     if options.get("push") and success:
         pushed = push_changes()
         if not pushed:
-            handle_error(
-                GACError("Failed to push changes"), quiet=options.get("quiet"), exit_program=False
-            )
+            handle_error(GACError("Failed to push changes"), quiet=options.get("quiet"), exit_program=False)
 
     return {"message": message, "pushed": pushed}
 
@@ -413,7 +406,6 @@ def create_generate_options(
     hint: str = "",
     one_liner: bool = False,
     show_prompt: bool = False,
-    show_prompt_full: bool = False,
     quiet: bool = False,
     no_spinner: bool = False,
     template: Optional[str] = None,
@@ -427,8 +419,7 @@ def create_generate_options(
         model: Override model to use
         hint: Additional context for the prompt
         one_liner: Generate a single-line commit message
-        show_prompt: Show an abbreviated version of the prompt
-        show_prompt_full: Show the complete prompt
+        show_prompt: Show the complete prompt
         quiet: Suppress non-error output
         no_spinner: Disable progress spinner during API calls
         template: Path to a custom prompt template file
@@ -443,7 +434,6 @@ def create_generate_options(
         "hint": hint,
         "one_liner": one_liner,
         "show_prompt": show_prompt,
-        "show_prompt_full": show_prompt_full,
         "quiet": quiet,
         "no_spinner": no_spinner,
         "template": template,
@@ -502,17 +492,11 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
     )
 
     # Show prompt if requested
-    if options.get("show_prompt") or options.get("show_prompt_full"):
+    if options.get("show_prompt"):
         if not options.get("quiet"):
-            # Create abbreviated prompt if not showing full prompt
-            if options.get("show_prompt") and not options.get("show_prompt_full"):
-                display_prompt = create_abbreviated_prompt(prompt)
-            else:
-                display_prompt = prompt
-
             console.print(
                 Panel(
-                    display_prompt,
+                    prompt,
                     title="Prompt for LLM",
                     border_style="bright_blue",
                 )
@@ -552,9 +536,7 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
         if backup_model:
             if ":" in backup_model:
                 backup_provider, backup_model_name = backup_model.split(":", 1)
-                print(
-                    f"Backup model configured: {backup_model_name} with provider: {backup_provider}"
-                )
+                print(f"Backup model configured: {backup_model_name} with provider: {backup_provider}")
             else:
                 print(f"Backup model configured: {backup_model}")
 
@@ -580,17 +562,13 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
             return None
         elif backup_model:
             # Primary model failed, try with backup model
-            logger.info(
-                f"Primary model failed with error: {e}. Trying backup model: {backup_model}"
-            )
+            logger.info(f"Primary model failed with error: {e}. Trying backup model: {backup_model}")
             if not options.get("quiet"):
                 print(f"Primary model failed. Trying backup model: {backup_model}")
 
             try:
                 # Reset and create new spinner for backup attempt
-                show_spinner = not options.get("no_spinner", False) and not options.get(
-                    "quiet", False
-                )
+                show_spinner = not options.get("no_spinner", False) and not options.get("quiet", False)
                 backup_message = generate_commit_message(
                     prompt=prompt,
                     model=backup_model,
@@ -648,9 +626,6 @@ def apply_formatting_to_files(files: Dict[str, str]) -> List[str]:
     Returns:
         List of formatted and staged files
     """
-    # Import here to avoid circular imports
-    from gac.format import format_files
-
     # Format files
     formatted_files = format_files(files)
     if not formatted_files:
@@ -688,9 +663,7 @@ def prepare_commit(options: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"After staging all, found {len(staged_files)} staged files")
     else:
         staged_files = options.get("staged_files") or get_staged_files()
-        logger.debug(
-            f"Not staging all, found {len(staged_files) if staged_files else 0} staged files"
-        )
+        logger.debug(f"Not staging all, found {len(staged_files) if staged_files else 0} staged files")
 
     # Check if we have any staged files at this point
     if not staged_files:
@@ -743,7 +716,7 @@ def commit_workflow(
         model: Override model to use
         hint: Additional context for the prompt
         one_liner: Generate a single-line commit message
-        show_prompt: Show the prompt sent to the LLM
+        show_prompt: Show the complete prompt sent to the LLM
         require_confirmation: Require user confirmation before committing
         push: Push changes to remote after committing
         quiet: Suppress non-error output

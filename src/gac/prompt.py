@@ -117,34 +117,3 @@ def clean_commit_message(message: str) -> str:
         message = f"chore: {message}"
 
     return message
-
-
-def create_abbreviated_prompt(prompt: str, max_diff_lines: int = 50) -> str:
-    """Create an abbreviated version of the prompt by limiting the diff lines."""
-    lines = prompt.split("\n")
-    result = []
-
-    in_diff_section = False
-    diff_line_count = 0
-    diff_lines_included = 0
-
-    for line in lines:
-        if "<git-diff>" in line:
-            in_diff_section = True
-            result.append(line)
-        elif "</git-diff>" in line:
-            in_diff_section = False
-            if diff_line_count > max_diff_lines:
-                result.append(
-                    f"... [{diff_line_count - diff_lines_included} more lines truncated] ..."
-                )
-            result.append(line)
-        elif in_diff_section:
-            diff_line_count += 1
-            if diff_line_count <= max_diff_lines:
-                result.append(line)
-                diff_lines_included += 1
-        else:
-            result.append(line)
-
-    return "\n".join(result)

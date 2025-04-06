@@ -55,7 +55,7 @@ dependencies = [
 ]
 
 [project.scripts]
-gac = "gac.main:main"
+gac = "gac.main:cli"
 
 [project.optional-dependencies]
 ollama = [
