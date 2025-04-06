@@ -535,6 +535,9 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
     else:
         model_to_use = config.get("model", "anthropic:claude-3-5-haiku-latest")
 
+    # Get backup model from config if available
+    backup_model = config.get("backup_model")
+
     # Only show model info when not in quiet mode
     if not options.get("quiet"):
         # Split provider:model if applicable
@@ -544,11 +547,22 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
         else:
             print(f"Using model: {model_to_use}")
 
+        # Show backup model info if configured
+        if backup_model:
+            if ":" in backup_model:
+                backup_provider, backup_model_name = backup_model.split(":", 1)
+                print(
+                    f"Backup model configured: {backup_model_name} with provider: {backup_provider}"
+                )
+            else:
+                print(f"Backup model configured: {backup_model}")
+
     # Call the AI to generate the commit message
     temperature = float(config.get("temperature", 0.7))
     message = generate_commit_message(
         prompt=prompt,
         model=model_to_use,
+        backup_model=backup_model,
         temperature=temperature,
         show_spinner=not options.get("no_spinner", False) and not options.get("quiet", False),
     )

@@ -8,7 +8,7 @@ import os
 import random
 import time
 from functools import lru_cache
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import aisuite
 import tiktoken
@@ -16,7 +16,6 @@ from halo import Halo
 
 from gac.config import API_KEY_ENV_VARS
 from gac.errors import AIError
-from gac.utils import print_message
 
 logger = logging.getLogger(__name__)
 
@@ -30,18 +29,6 @@ EXAMPLES = [
     "Yet another example of a generated commit message",
     "One more example of a generated commit message",
 ]
-
-
-def is_ollama_available() -> bool:
-    """Check if Ollama is available."""
-    try:
-        import ollama
-
-        _ = ollama.list()
-        return True
-    except (ImportError, Exception) as e:
-        logger.debug(f"Ollama is not available: {str(e)}")
-        return False
 
 
 @lru_cache()
@@ -220,6 +207,7 @@ def truncate_single_file_diff(file_diff: str, model: str, max_tokens: int) -> st
 def generate_commit_message(
     prompt: str,
     model: str = "anthropic:claude-3-5-haiku-20240307",
+    backup_model: Optional[str] = None,
     temperature: float = 0.7,
     max_tokens: int = 1024,
     show_spinner: bool = True,
@@ -231,6 +219,7 @@ def generate_commit_message(
     Args:
         prompt: The prompt to send to the AI
         model: The model to use (format: provider:model_name)
+        backup_model: Backup model to use if primary model fails (format: provider:model_name)
         temperature: Temperature parameter (0.0 to 1.0) for randomness
         max_tokens: Maximum tokens in the generated response
         show_spinner: Whether to show a spinner during API calls
@@ -240,7 +229,7 @@ def generate_commit_message(
         Generated commit message
 
     Raises:
-        AIError: If there's an issue with the AI provider
+        AIError: If there's an issue with all AI providers
     """
     if os.environ.get("PYTEST_CURRENT_TEST"):
         return random.choice(EXAMPLES)
@@ -248,83 +237,196 @@ def generate_commit_message(
     if not aisuite:
         raise AIError("aisuite is not installed. Try: pip install aisuite")
 
-    provider_name, model_name = model.split(":", 1)
+    provider, model_name = model.split(":", 1) if ":" in model else ("anthropic", model)
 
-    api_key = None
-    if provider_name.lower() != "ollama":
-        api_key_env_var = API_KEY_ENV_VARS.get(provider_name.lower())
-        if not api_key_env_var:
-            raise AIError(f"API key environment variable not defined for provider: {provider_name}")
-
-        api_key = os.environ.get(api_key_env_var)
-        if not api_key:
-            raise AIError(f"API key not set: {api_key_env_var}")
-
-    if provider_name.lower() == "ollama" and not is_ollama_available():
-        raise AIError("Ollama is not available. Make sure it's installed and running.")
-
-    messages = [{"role": "user", "content": prompt}]
-
-    if provider_name.lower() == "ollama":
-        client = aisuite.Client(provider_configs={"ollama": {}})
-    else:
-        client = aisuite.Client(provider_configs={provider_name.lower(): {"api_key": api_key}})
-
-    logger.debug(
-        f"Starting generation with {provider_name}:{model_name}, temperature {temperature}"
-    )
-    start_time = time.time()
-
-    retries = 0
-    while retries <= max_retries:
+    # If it's Ollama, try direct integration first
+    if provider == "ollama":
         try:
-            if show_spinner:
-                with Halo(text=f"Generating with model {model_name}", spinner="dots"):
-                    response = client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=temperature,
-                        max_tokens=max_tokens,
-                    )
-            else:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
+            import ollama
+
+            logger.debug(f"Using Ollama model: {model_name}")
+            response = ollama.chat(
+                model=model_name,
+                messages=[{"role": "user", "content": prompt}],
+                stream=False,
+            )
+            return response["message"]["content"]
+        except (ImportError, Exception) as e:
+            logger.error(f"Error using Ollama directly: {e}")
+            # Continue to try aisuite
+
+    # Use spinner if show_spinner is True
+    spinner = None
+    if show_spinner:
+        spinner = Halo(text=f"Generating commit message with {provider}...", spinner="dots")
+        spinner.start()
+
+    retry_count = 0
+    primary_error = None
+    last_error = None
+
+    # First try with the primary model
+    while retry_count < max_retries:
+        try:
+            logger.debug(f"Trying with model {model} (attempt {retry_count + 1}/{max_retries})")
+            # Set up arguments for the aisuite call
+            api_key = os.environ.get(API_KEY_ENV_VARS.get(provider))
+            client_args = {"api_key": api_key}
+
+            message_args = {
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+
+            # Configure provider-specific arguments
+            if provider == "anthropic":
+                response = aisuite.claude_chat(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
                 )
+                message = response.content
+            elif provider == "openai":
+                response = aisuite.openai_chat(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            elif provider == "groq":
+                response = aisuite.groq_chat(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            elif provider == "mistral":
+                response = aisuite.mistral_chat(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            else:
+                raise AIError(f"Unsupported provider: {provider}")
 
-            response_text = response.choices[0].message.content
+            # Stop the spinner (if any)
+            if spinner:
+                spinner.succeed(f"Generated commit message with {provider}")
 
-            if not response_text:
-                raise AIError("Empty response from AI provider")
-
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            logger.debug(f"Received response in {elapsed_time:.2f} seconds")
-
-            if show_spinner:
-                print_message(f"Response generated in {elapsed_time:.2f} seconds", "notification")
-
-            return response_text
+            return message
 
         except Exception as e:
-            if show_spinner:
-                print_message(f"Error with {provider_name} API: {type(e).__name__}", level="error")
+            last_error = e
+            if retry_count == 0:
+                primary_error = e  # Save the primary model error
+            retry_count += 1
+            wait_time = 2**retry_count  # Exponential backoff
+            logger.warning(f"Error generating commit message: {e}. Retrying in {wait_time}s...")
 
-            if retries < max_retries:
-                wait_time = 1.0 * (2**retries)
-                logger.info(f"Retrying in {wait_time:.1f} seconds...")
-                time.sleep(wait_time)
-                retries += 1
+            if spinner:
+                spinner.text = f"Retry {retry_count}/{max_retries} in {wait_time}s..."
+
+            time.sleep(wait_time)
+
+    # If primary model failed and we have a backup model, try the backup
+    if backup_model and primary_error:
+        # Reset spinner for backup attempt
+        if spinner:
+            spinner.stop()
+            backup_provider = backup_model.split(":", 1)[0] if ":" in backup_model else "anthropic"
+            spinner = Halo(
+                text=f"Primary model failed, trying backup {backup_provider}...", spinner="dots"
+            )
+            spinner.start()
+
+        logger.info(
+            f"Primary model failed with error: {primary_error}. Trying backup model: {backup_model}"
+        )
+
+        try:
+            # Extract provider and model name from backup model string
+            backup_provider, backup_model_name = (
+                backup_model.split(":", 1) if ":" in backup_model else ("anthropic", backup_model)
+            )
+
+            # Set up arguments for the backup model
+            api_key = os.environ.get(API_KEY_ENV_VARS.get(backup_provider))
+            client_args = {"api_key": api_key}
+
+            message_args = {
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+
+            # Configure provider-specific arguments for backup
+            if backup_provider == "anthropic":
+                response = aisuite.claude_chat(
+                    model=backup_model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.content
+            elif backup_provider == "openai":
+                response = aisuite.openai_chat(
+                    model=backup_model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            elif backup_provider == "groq":
+                response = aisuite.groq_chat(
+                    model=backup_model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            elif backup_provider == "mistral":
+                response = aisuite.mistral_chat(
+                    model=backup_model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    **client_args,
+                    **message_args,
+                )
+                message = response.choices[0].message.content
+            elif backup_provider == "ollama":
+                try:
+                    import ollama
+
+                    response = ollama.chat(
+                        model=backup_model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        stream=False,
+                    )
+                    message = response["message"]["content"]
+                except (ImportError, Exception) as e:
+                    raise AIError(f"Error using Ollama backup model: {e}")
             else:
-                # Map common errors to AIError with descriptive message
-                err_str = str(e).lower()
-                if "rate limit" in err_str or "too many requests" in err_str:
-                    raise AIError(f"Rate limit exceeded for {provider_name} API: {e}")
-                elif "timeout" in err_str:
-                    raise AIError(f"Timeout from {provider_name} API: {e}")
-                elif "auth" in err_str or "key" in err_str or "credentials" in err_str:
-                    raise AIError(f"Authentication error with {provider_name} API: {e}")
-                else:
-                    raise AIError(f"Error with {provider_name} API: {e}")
+                raise AIError(f"Unsupported backup provider: {backup_provider}")
+
+            # Stop the spinner (if any)
+            if spinner:
+                spinner.succeed(f"Generated commit message with backup model {backup_provider}")
+
+            return message
+
+        except Exception as backup_error:
+            logger.error(f"Backup model also failed: {backup_error}")
+            if spinner:
+                spinner.fail("Both primary and backup models failed")
+
+            # If both primary and backup failed, raise the primary error for consistency
+            raise AIError(f"Failed to generate commit message: {primary_error}")
+
+    # If we got here, the primary model failed and there was no backup
+    if spinner:
+        spinner.fail("Failed to generate commit message")
+
+    raise AIError(f"Failed to generate commit message after {max_retries} attempts: {last_error}")

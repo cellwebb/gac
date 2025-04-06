@@ -174,3 +174,15 @@ def run_subprocess(
         if raise_on_error:
             raise
         return ""
+
+
+def is_ollama_available() -> bool:
+    """Check if Ollama is available."""
+    try:
+        import ollama
+
+        _ = ollama.list()
+        return True
+    except (ImportError, Exception) as e:
+        logger.debug(f"Ollama is not available: {str(e)}")
+        return False
