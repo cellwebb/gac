@@ -13,6 +13,10 @@ from gac.utils import print_message, setup_logging
 
 logger = logging.getLogger(__name__)
 
+# Flag to track whether main() is being called directly from entry point
+# or through cli()
+_CALLED_FROM_CLI = False
+
 
 @click.command()
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
@@ -56,8 +60,27 @@ logger = logging.getLogger(__name__)
     is_flag=True,
     help="Show the version of the Git Auto Commit (GAC) tool",
 )
-def cli():
+def cli(
+    add_all: bool = False,
+    config: bool = False,
+    log_level: str = "WARNING",
+    format: bool = False,
+    no_format: bool = False,
+    one_liner: bool = False,
+    push: bool = False,
+    show_prompt: bool = False,
+    show_prompt_full: bool = False,
+    template: str = None,
+    quiet: bool = False,
+    yes: bool = False,
+    hint: str = "",
+    model: str = None,
+    version: bool = False,
+):
     """Git Auto Commit - Generate commit messages with AI."""
+    global _CALLED_FROM_CLI
+    _CALLED_FROM_CLI = True
+
     ctx = click.get_current_context()
     params = ctx.params
 
@@ -91,7 +114,7 @@ def cli():
     quiet = params.get("quiet", False)
     setup_logging(numeric_log_level, quiet=quiet, force=True)
 
-    # Call main with processed parameters
+    # Call main directly with the parameters from Click
     main(
         stage_all=params.get("add_all", False),
         format_files=params.get("format", False) or not params.get("no_format", False),
@@ -101,7 +124,7 @@ def cli():
         show_prompt=params.get("show_prompt", False) or params.get("show_prompt_full", False),
         require_confirmation=not params.get("yes", False),
         push=params.get("push", False),
-        quiet=quiet,
+        quiet=quiet or params.get("q", False),
         template=params.get("template"),
     )
 
@@ -119,14 +142,61 @@ def main(
     template: Optional[str] = None,
 ) -> None:
     """Main application logic for GAC."""
+    # When called directly as a script entry point, we need to parse command line arguments
+    # using Click's cli() function
+    global _CALLED_FROM_CLI
+    if not _CALLED_FROM_CLI:
+        # We're being called directly from the entry point script
+        cli(standalone_mode=True)
+        return
+
     # Check if we're in a git repository
     git_status = get_git_status_summary()
     if not git_status.get("valid"):
         print_message("Error: Not in a git repository", "error")
         sys.exit(1)
 
-    # Verify that there are staged changes if not staging all
-    if not stage_all and not git_status.get("has_staged"):
+    # Handle combined short flags (like -pya) which Click doesn't parse correctly when combined
+    # This ensures flags like -a will be recognized even in combined options like -pya
+    has_add_all_flag = False
+    for arg in sys.argv:
+        if (
+            arg == "-a"
+            or arg == "--add-all"
+            or (arg.startswith("-") and "a" in arg and not arg.startswith("--"))
+        ):
+            has_add_all_flag = True
+            break
+
+    # Check for push flag in combined options as well
+    has_push_flag = push
+    if not has_push_flag:
+        for arg in sys.argv:
+            if (
+                arg == "-p"
+                or arg == "--push"
+                or (arg.startswith("-") and "p" in arg and not arg.startswith("--"))
+            ):
+                has_push_flag = True
+                break
+
+    # Check for yes flag in combined options as well
+    has_yes_flag = not require_confirmation
+    if require_confirmation:
+        for arg in sys.argv:
+            if (
+                arg == "-y"
+                or arg == "--yes"
+                or (arg.startswith("-") and "y" in arg and not arg.startswith("--"))
+            ):
+                has_yes_flag = True
+                break
+
+    # If we're using add-all flag or via stage_all parameter, skip the staged files check
+    if (has_add_all_flag or stage_all) and not git_status.get("has_staged"):
+        # We'll continue because the add-all flag will stage all files in the commit workflow
+        pass
+    elif not git_status.get("has_staged"):
         print_message(
             "Error: No staged changes found. "
             "Stage your changes with git add first or use --add-all",
@@ -134,17 +204,17 @@ def main(
         )
         sys.exit(1)
 
-    # Run the commit workflow
+    # Run the commit workflow with the correctly identified flags
     result = commit_workflow(
         message=None,
-        stage_all=stage_all,
+        stage_all=stage_all or has_add_all_flag,
         format_files=format_files,
         model=model,
         hint=hint,
         one_liner=one_liner,
         show_prompt=show_prompt,
-        require_confirmation=require_confirmation,
-        push=push,
+        require_confirmation=not has_yes_flag,
+        push=has_push_flag,
         quiet=quiet,
         template=template,
     )
@@ -163,4 +233,6 @@ def main(
 
 
 if __name__ == "__main__":
+    # Reset the flag when running as a script
+    _CALLED_FROM_CLI = False
     cli()

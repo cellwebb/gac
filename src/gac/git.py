@@ -148,16 +148,6 @@ def get_staged_files_with_status() -> Dict[str, str]:
     return staged_files
 
 
-def get_staged_diff() -> str:
-    """
-    Get the diff of staged changes.
-
-    Returns:
-        Git diff output as string
-    """
-    return run_git_command(["diff", "--staged"])
-
-
 @with_error_handling(GitError, "Failed to stage files")
 def stage_files(files: List[str]) -> bool:
     """
@@ -333,11 +323,13 @@ def commit_changes_with_options(options: Dict[str, Any]) -> Optional[Dict[str, A
     console.print(Panel(message, title="Suggested Commit Message", border_style="bright_blue"))
 
     # If force mode is not enabled, prompt for confirmation
-    if not options.get("force") and not options.get("quiet"):
-        confirm = input("\nProceed with this commit message? (y/n): ").strip().lower()
-        if confirm == "n":
-            print("Commit cancelled.")
-            return None
+    if not options.get("force"):
+        if not options.get("quiet"):
+            confirm = input("\nProceed with this commit message? (y/n): ").strip().lower()
+            if confirm == "n":
+                print("Commit cancelled.")
+                return None
+        # In quiet mode with no force flag, we'll proceed automatically
 
     # Execute the commit
     success = perform_commit(message)
@@ -493,7 +485,7 @@ def generate_commit_with_options(options: Dict[str, Any]) -> Optional[str]:
                 logger.error("No staged changes found. Stage your changes with git add first.")
                 return None
 
-        diff = get_staged_diff()
+        diff = run_git_command(["diff", "--staged"])
         if not diff:
             logger.error("No diff found for staged changes.")
             return None
@@ -686,12 +678,21 @@ def prepare_commit(options: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary with prepared commit information
     """
-    # Stage all files if requested
-    if options.get("add_all"):
-        stage_all_files()
+    # Debug: Log add_all value
+    logger.debug(f"prepare_commit add_all value: {options.get('add_all', False)}")
 
-    # Get staged files
-    staged_files = options.get("staged_files") or get_staged_files()
+    if options.get("add_all"):
+        logger.debug("Staging all files...")
+        stage_all_files()
+        staged_files = get_staged_files()
+        logger.debug(f"After staging all, found {len(staged_files)} staged files")
+    else:
+        staged_files = options.get("staged_files") or get_staged_files()
+        logger.debug(
+            f"Not staging all, found {len(staged_files) if staged_files else 0} staged files"
+        )
+
+    # Check if we have any staged files at this point
     if not staged_files:
         return {"success": False, "error": "No staged changes found"}
 
@@ -704,8 +705,7 @@ def prepare_commit(options: Dict[str, Any]) -> Dict[str, Any]:
                 # Update staged files list if any files were formatted
                 staged_files = get_staged_files()
 
-    # Get diff for staged files
-    diff = get_staged_diff()
+    diff = run_git_command(["diff", "--staged"])
     if not diff:
         return {"success": False, "error": "No diff found for staged changes"}
 
@@ -752,6 +752,9 @@ def commit_workflow(
     Returns:
         Dictionary with the commit result
     """
+    # Debug: Log stage_all value
+    logger.debug(f"commit_workflow stage_all value: {stage_all}")
+
     # Check if in a git repository
     status = get_git_status_summary()
     if not status.get("valid"):

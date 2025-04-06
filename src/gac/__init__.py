@@ -6,7 +6,6 @@ from gac.format import format_files
 from gac.git import (
     commit_changes_with_options,
     create_commit_options,
-    get_staged_diff,
     get_staged_files,
     get_status,
     perform_commit,
@@ -24,7 +23,6 @@ __all__ = [
     "format_files",
     "build_prompt",
     "clean_commit_message",
-    "get_staged_diff",
     "get_staged_files",
     "get_status",
     "stage_all_files",
