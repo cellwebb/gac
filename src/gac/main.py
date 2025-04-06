@@ -74,7 +74,6 @@ def main(
     version: bool = False,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
-    # Version flag takes precedence over other operations
     if version:
         print(f"Git Auto Commit (GAC) version: {__about__.__version__}")
         sys.exit(0)
