@@ -3,14 +3,11 @@
 
 import logging
 import re
-from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Patterns to identify binary files in git diff output
 BINARY_FILE_PATTERNS = [r"Binary files .* differ", r"GIT binary patch"]
 
-# File extensions and patterns that likely indicate minified files
 MINIFIED_FILE_EXTENSIONS = [
     ".min.js",
     ".min.css",
@@ -22,7 +19,6 @@ MINIFIED_FILE_EXTENSIONS = [
     ".opt.css",
 ]
 
-# Directories that typically contain build artifacts or minified files
 BUILD_DIRECTORIES = [
     "/dist/",
     "/build/",
@@ -34,20 +30,23 @@ BUILD_DIRECTORIES = [
 ]
 
 
+def preprocess_diff(diff: str) -> str:
+    """Preprocess a git diff to make it more suitable for AI analysis."""
+    filtered_diff = filter_binary_and_minified(diff)
+
+    # TODO: Add more preprocessing steps as needed
+    # - Truncate very large diffs
+    # - Summarize large file changes
+    # - Focus on important structural changes
+
+    return filtered_diff
+
+
 def is_minified_content(content: str) -> bool:
-    """
-    Check if a file's content appears to be minified based on heuristics.
-
-    Args:
-        content: The file content to check
-
-    Returns:
-        True if the content appears to be minified, False otherwise
-    """
+    """Check if a file's content appears to be minified based on heuristics."""
     if not content:
         return False
 
-    # Split by newlines and check if there are very long lines
     lines = content.split("\n")
     if not lines:
         return False
@@ -67,15 +66,7 @@ def is_minified_content(content: str) -> bool:
 
 
 def filter_binary_and_minified(diff: str) -> str:
-    """
-    Filter out binary and minified files from a git diff.
-
-    Args:
-        diff: The git diff output to process
-
-    Returns:
-        The filtered git diff with binary and minified files removed
-    """
+    """Filter out binary and minified files from a git diff."""
     if not diff:
         return diff
 
@@ -133,24 +124,3 @@ def filter_binary_and_minified(diff: str) -> str:
         filtered_sections.append(section)
 
     return "".join(filtered_sections)
-
-
-def preprocess_diff(diff: str) -> str:
-    """
-    Preprocess a git diff to make it more suitable for AI analysis.
-
-    Args:
-        diff: The git diff output to process
-
-    Returns:
-        The processed git diff
-    """
-    # Filter out binary and minified files
-    filtered_diff = filter_binary_and_minified(diff)
-
-    # TODO: Add more preprocessing steps as needed
-    # - Truncate very large diffs
-    # - Summarize large file changes
-    # - Focus on important structural changes
-
-    return filtered_diff
