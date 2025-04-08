@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from gac.errors import ConfigError
+from gac.preprocess import preprocess_diff
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,11 @@ def build_prompt(status, diff, one_liner=False, hint="", template_path=None):
     """Build a prompt using a template file with XML-style tags."""
     template = load_prompt_template(template_path)
 
+    # Preprocess the diff to filter out binary and minified files
+    processed_diff = preprocess_diff(diff)
+
     template = template.replace("<status></status>", status)
-    template = template.replace("<diff></diff>", diff)
+    template = template.replace("<diff></diff>", processed_diff)
     template = template.replace("<hint></hint>", hint)
 
     if one_liner:
