@@ -24,7 +24,7 @@ from gac.constants import (
 from gac.errors import AIError, GitError, handle_error
 from gac.format import format_files
 from gac.git import get_staged_files, run_git_command
-from gac.prompt import build_prompt
+from gac.prompt import build_prompt, clean_commit_message
 from gac.utils import print_message, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -236,6 +236,9 @@ def main(
             print_message("Backup model unsuccessful. Exiting...", level="error")
             sys.exit(1)
 
+    # Clean the commit message by removing backticks and other formatting
+    commit_message = clean_commit_message(commit_message)
+
     if dry_run:
         print_message("Dry run: would commit with message:", "notification")
         print(commit_message)
@@ -245,19 +248,6 @@ def main(
 
     try:
         run_git_command(["commit", "-m", commit_message])
-
-        # Display success message with properly formatted commit message
-        # Remove any backticks from the displayed message
-        display_message = commit_message
-        if display_message.startswith("```") and display_message.endswith("```"):
-            display_message = display_message[3:-3].strip()
-        elif display_message.startswith("```"):
-            display_message = display_message[3:].strip()
-        elif display_message.endswith("```"):
-            display_message = display_message[:-3].strip()
-
-        print_message("Successfully committed changes with message:", "notification")
-        print(display_message)
     except Exception as e:
         handle_error(
             GitError(f"Error committing changes: {e}"),
@@ -292,7 +282,10 @@ def main(
             return  # This line won't be reached due to exit_program=True
 
     if not quiet:
-        print_message("Changes pushed to remote.", "notification")
+        print_message("Successfully committed changes with message:", "notification")
+        print(commit_message)
+        if push:
+            print_message("Changes pushed to remote.", "notification")
     sys.exit(0)
 
 
