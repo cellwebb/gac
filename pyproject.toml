@@ -33,6 +33,7 @@ dependencies = [
     # Core functionality
     "pydantic",
     "python-dotenv",
+    "docstring_parser",  # needed by aisuite but not in their deps
     
     # CLI and formatting
     "click",
@@ -43,10 +44,6 @@ dependencies = [
     # Code formatting
     "black",
     "isort",
-    
-    # Utilities
-    "docstring_parser",
-    "python-dotenv",
 ]
 
 [project.scripts]
