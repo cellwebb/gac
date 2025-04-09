@@ -6,8 +6,8 @@ on:
     - cron: "0 */6 * * *"
 
 permissions:
-  contents: write
-  packages: write
+  contents: write # Required for creating GitHub releases
+  packages: write # Required for publishing packages
 
 jobs:
   check-for-changes:
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Need full history for checking commits
 
       - name: Check for changes since last nightly release
         id: check_changes
