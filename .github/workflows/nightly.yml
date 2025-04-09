@@ -65,8 +65,8 @@ jobs:
           TODAY=$(date +"%Y%m%d")
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git tag "nightly-$TODAY"
-          git push origin "nightly-$TODAY"
+          git tag "nightly-${GITHUB_REF_NAME}-${TODAY}"
+          git push origin "nightly-${GITHUB_REF_NAME}-${TODAY}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
