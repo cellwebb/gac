@@ -245,6 +245,19 @@ def main(
 
     try:
         run_git_command(["commit", "-m", commit_message])
+
+        # Display success message with properly formatted commit message
+        # Remove any backticks from the displayed message
+        display_message = commit_message
+        if display_message.startswith("```") and display_message.endswith("```"):
+            display_message = display_message[3:-3].strip()
+        elif display_message.startswith("```"):
+            display_message = display_message[3:].strip()
+        elif display_message.endswith("```"):
+            display_message = display_message[:-3].strip()
+
+        print_message("Successfully committed changes with message:", "notification")
+        print(display_message)
     except Exception as e:
         handle_error(
             GitError(f"Error committing changes: {e}"),
@@ -279,10 +292,7 @@ def main(
             return  # This line won't be reached due to exit_program=True
 
     if not quiet:
-        print_message("Successfully committed changes with message:", "notification")
-        print(commit_message)
-        if push:
-            print_message("Changes pushed to remote.", "notification")
+        print_message("Changes pushed to remote.", "notification")
     sys.exit(0)
 
 

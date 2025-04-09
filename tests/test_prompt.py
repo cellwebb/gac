@@ -91,15 +91,15 @@ class TestPrompts:
 
     def test_clean_commit_message_advanced(self):
         """Test cleaning up complex commit messages."""
-        # Test with additional markdown formatting - current implementation treats the language specifier as content
+        # Test with markdown code block - should remove language specifier
         message = "```markdown\nfeat: Add new API endpoint\n```"
         result = clean_commit_message(message)
-        assert result == "chore: markdown\nfeat: Add new API endpoint"
+        assert result == "feat: Add new API endpoint"
 
-        # Test with multiple backtick blocks - current implementation only removes first and last backticks
+        # Test with multiple backtick blocks
         message = "```\nrefactor: Clean up code\n```\n\n```\nMore details\n```"
         result = clean_commit_message(message)
-        assert result == "refactor: Clean up code\n```\n\n```\nMore details"
+        assert result == "refactor: Clean up code\n\nMore details"
 
         # Test with XML tags in content
         message = "<git-diff>feat: Update authentication flow</git-diff>"
