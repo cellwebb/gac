@@ -3,12 +3,11 @@ name: Nightly Release
 on:
   workflow_dispatch: # Allow manual triggering
   schedule:
-    - cron: "0 */6 * * *" # Run every 6 hours to check for idle time
+    - cron: "0 */6 * * *"
 
-# Add permissions at workflow level
 permissions:
-  contents: write # Required for creating GitHub releases
-  packages: write # Required for publishing packages
+  contents: write
+  packages: write
 
 jobs:
   check-for-changes:
@@ -19,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need full history for checking commits
+          fetch-depth: 0
 
       - name: Check for changes since last nightly release
         id: check_changes
@@ -58,7 +57,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Create nightly release tag
         run: |
