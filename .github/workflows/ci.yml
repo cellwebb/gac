@@ -2,9 +2,21 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "Makefile"
+      - ".prettierrc"
   pull_request:
-    branches: [main]
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "Makefile"
+      - ".prettierrc"
 
 jobs:
   test:

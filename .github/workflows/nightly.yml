@@ -3,7 +3,7 @@ name: Nightly Release
 on:
   workflow_dispatch: # Allow manual triggering
   schedule:
-    - cron: "0 */2 * * *" # Run every two hours to check for idle time
+    - cron: "0 */6 * * *" # Run every 6 hours to check for idle time
 
 # Add permissions at workflow level
 permissions:
@@ -25,7 +25,7 @@ jobs:
         id: check_changes
         run: |
           # Get the timestamp of the most recent nightly release tag
-          LAST_NIGHTLY_TAG=$(git tag -l 'nightly-*' | sort -V | tail -n 1)
+          LAST_NIGHTLY_TAG=$(git tag -l "nightly-${GITHUB_REF_NAME}-*" | sort -V | tail -n 1)
 
           if [ -z "$LAST_NIGHTLY_TAG" ]; then
             # No previous nightly release, so release
@@ -35,14 +35,14 @@ jobs:
             # Get the commit timestamp of the last nightly release
             LAST_NIGHTLY_COMMIT=$(git log -1 --format=%ct "$LAST_NIGHTLY_TAG")
             
-            # Get the timestamp of the most recent commit after the last nightly release
-            LATEST_COMMIT_TIMESTAMP=$(git log -1 --after="$LAST_NIGHTLY_COMMIT" --format=%ct)
+            # Check for non-documentation changes
+            NON_DOC_CHANGES=$(git log --after="@$LAST_NIGHTLY_COMMIT" --format="%H" -- . ':(exclude)*.md' ':(exclude)docs/*' ':(exclude)*.rst')
             
-            if [ -n "$LATEST_COMMIT_TIMESTAMP" ]; then
-              echo "Changes detected since last nightly release"
+            if [ -n "$NON_DOC_CHANGES" ]; then
+              echo "Non-documentation changes detected since last nightly release"
               echo "should_release=true" >> $GITHUB_OUTPUT
             else
-              echo "No changes since last nightly release"
+              echo "No non-documentation changes since last nightly release"
               echo "should_release=false" >> $GITHUB_OUTPUT
             fi
           fi
