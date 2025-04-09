@@ -236,7 +236,6 @@ def main(
             print_message("Backup model unsuccessful. Exiting...", level="error")
             sys.exit(1)
 
-    # Clean the commit message by removing backticks and other formatting
     commit_message = clean_commit_message(commit_message)
 
     if dry_run:
