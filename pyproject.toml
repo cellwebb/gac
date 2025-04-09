@@ -45,6 +45,7 @@ dependencies = [
     "isort",
     
     # Utilities
+    "docstring_parser",
     "python-dotenv",
 ]
 
