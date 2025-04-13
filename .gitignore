@@ -204,3 +204,5 @@ out
 scripts/auto_changelog.py
 scripts/auto_release.py
 scripts/prep_changelog_for_release.py
+scripts/changelog_prompt.md
+scripts/changelog_config.yaml
