@@ -48,7 +48,16 @@ FORMATTERS = {
 
 
 def run_formatter(command: List[str], files: List[str], formatter_name: str) -> bool:
-    """Run a formatter on the specified files."""
+    """Run a formatter on the specified files.
+
+    Args:
+        command: Command to run the formatter
+        files: List of file paths to format
+        formatter_name: Name of the formatter
+
+    Returns:
+        bool: True if formatting was successful, False otherwise
+    """
     if not files:
         return False
 
@@ -134,19 +143,15 @@ def format_files(files: List[str], dry_run: bool = False) -> List[str]:
 
     formatted_files = []
     for ext, ext_files in grouped_by_ext.items():
-        # Find formatters that support this extension
-        for language, formatters in FORMATTERS.items():
+        for _, formatters in FORMATTERS.items():
             for formatter in formatters:
                 if ext in formatter["extensions"]:
-                    # Check if formatter is available
                     if check_formatter_available(formatter):
                         if dry_run:
-                            # In dry run mode, just record what would be formatted
                             for file in ext_files:
                                 if file not in formatted_files:
                                     formatted_files.append(file)
                         else:
-                            # Format the files
                             success = run_formatter(formatter["command"], ext_files, formatter["name"])
                             if success:
                                 for file in ext_files:
