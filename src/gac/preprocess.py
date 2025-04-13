@@ -9,7 +9,7 @@ import concurrent.futures
 import logging
 import os
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Tuple
 
 from gac.ai import count_tokens
 
