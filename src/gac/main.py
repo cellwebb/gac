@@ -191,9 +191,11 @@ def main(
         if formatted_files and not dry_run:
             run_git_command(["add"] + formatted_files)
 
-    prompt = build_prompt(
-        status=run_git_command(["status"]), diff=run_git_command(["diff", "--staged"]), one_liner=one_liner, hint=hint
-    )
+    status = run_git_command(["status"])
+    diff = run_git_command(["diff", "--staged"])
+
+    # Build prompt with smart preprocessing
+    prompt = build_prompt(status=status, diff=diff, one_liner=one_liner, hint=hint, model=model or config["model"])
 
     if show_prompt:
         console = Console()
