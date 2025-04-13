@@ -104,7 +104,17 @@ def check_formatter_available(formatter_config: Dict) -> bool:
 
 
 def format_files(files: List[str], dry_run: bool = False) -> List[str]:
-    """Format the given files."""
+    """Format the given files using available formatters.
+
+    Detects appropriate formatters based on file extensions and runs them.
+
+    Args:
+        files: List of file paths to format
+        dry_run: If True, returns what would be formatted without making changes
+
+    Returns:
+        List of successfully formatted file paths
+    """
     if not files:
         return []
 
