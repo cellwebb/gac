@@ -36,7 +36,6 @@
     "--tb=short" // Short traceback format
   ],
   "black-formatter.args": ["--line-length", "120"],
-  "python.formatting.blackArgs": ["--line-length", "120"],
 
   // flake8 settings
   "flake8.args": ["--exclude=.git,__pycache__,.venv,venv,build,dist", "--ignore=W503,E203", "--max-line-length=120"],
@@ -51,7 +50,7 @@
     ".pytest_cache": true,
     "dist/": true,
     "LICENSE.txt": true,
-    "src/gac/__pycache__": true
+    "**/__pycache__": true
   },
   "search.exclude": {
     "**/node_modules": true,
