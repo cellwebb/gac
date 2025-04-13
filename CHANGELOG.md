@@ -26,7 +26,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added 🚀
 
 - **Repository Context Enrichment**:
-
   - Added intelligent repository context extraction to improve AI commit messages
   - Implemented extraction of file purposes from docstrings
   - Added recent commit history for modified files
@@ -34,191 +33,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Created example script in `examples/repo_context_example.py`
   - Added comprehensive unit tests for context extraction
 
-- **Configuration Management**:
-
-  - Added package-level configuration file `config.env` in `src/gac` directory with default model
-    `anthropic:claude-3-5-haiku-latest`
-  - Implemented multi-level configuration loading with precedence:
-    1. Project-level `.gac.env`
-    2. User-level `~/.gac.env`
-    3. Package-level `config.env`
-  - Added new test files to improve test coverage:
-    - `test_constants.py` with comprehensive tests for project constants
-    - `test_utils.py` to validate utility functions
-
-- **Testing Improvements**:
-  - Enhanced test suite with more comprehensive test cases
-  - Added tests for:
-    - File status enums
-    - Logging constants
-    - Encoding constants
-    - Error handling scenarios
-    - Prompt message cleaning
-
 ### Changed 🔧
 
-- **Release Workflow**:
+- **Error Handling**:
 
-  - Updated GitHub Actions release workflow to use semantic versioning
-  - Modified version bumping to use `minor` instead of `patch`
-  - Dynamically extract version and release notes from repository state
-  - Use `github.ref_name` for tag and release body generation
+  - Improved error handling in main workflow
+  - Simplified error paths and recovery mechanisms
+  - Enhanced error message display and logging
 
-- **Configuration and CLI**:
+- **AI Model Integration**:
 
-  - Removed non-essential configuration wizard
-  - Simplified `main.py` configuration handling
-  - Removed `--config` flag from CLI options
-  - Streamlined configuration loading process
+  - Added robust fallback mechanism for AI model generation
+  - Implemented multi-model support with intelligent model selection
+  - Improved token counting and diff preprocessing for AI prompts
 
-- **Markdown Linting**:
-
-  - Migrated from `.markdownlint.yaml` to `.markdownlint-cli2.yaml`
-  - Updated Makefile to use `markdownlint-cli2` for Markdown linting
-  - Added configuration for more consistent markdown formatting
-
-- **Project Structure**:
-  - Reorganized `.gitignore` for improved clarity and organization
-  - Removed deprecated and unused test files
-  - Simplified project configuration files
+- **Configuration**:
+  - Updated default AI model to `groq:meta-llama/llama-4-scout-17b-16e-instruct`
+  - Added backup model configuration
+  - Loosened dependency version constraints
 
 ### Removed 🗑️
 
-- **Deprecated Components**:
-  - Removed `SIMPLIFICATION.md` documentation file
-  - Deleted unused test files: `test.txt` and `testfile.txt`
-  - Removed legacy `.markdownlint.yaml` configuration
-  - Eliminated references to non-existent configuration wizard
-
-### Refactored 🛠️
-
-- **Test Suite**:
-
-  - Simplified test cases for better maintainability
-  - Streamlined test functions to focus on essential scenarios
-  - Improved test coverage for core modules
-  - Updated existing test files with more comprehensive test cases
-
-- **Configuration Handling**:
-  - Refactored configuration loading to use a more functional approach
-  - Improved error handling and configuration validation
-  - Removed complex configuration management logic
-
-## [v0.7.0] - 2025-04-06
-
-### Changed 🔧
-
-- Updated default AI model to `groq:meta-llama/llama-4-scout-17b-16e-instruct`
-- Added `anthropic:claude-3-5-haiku-latest` as the backup model
-- Increased line length limit to 120 characters in markdown linting configurations
-- Updated `.gitignore` file to include `.gac.env`
-- Refactored `.env.example` to `.gac.env.example` for clarity
-- Enhanced configuration management with support for multiple config locations
-
-### Removed 🗑️
-
-- Removed obsolete documentation files (CHANGES.md, DEVELOPMENT.md, REFACTORING.md)
-- Removed unused demo script and test-specific functionality
-- Removed deprecated model update script and example file
-- Removed unused prompt template file
+- Removed unnecessary type annotations and complex error handling patterns
+- Simplified import statements and module interactions
 
 ### Fixed 🐛
 
-- Fixed condition to prevent staging when in dry run mode
-- Improved remote push validation and error handling
-- Improved commit message generation retry logic and error handling
-- Updated test.txt to reflect new test case
-
-### Refactored 🛠️
-
-- Improved error handling in `main.py` for git repository checks
-- Updated `errors.py` for consistent error messages
-- Refactored `format_files` function to return a list instead of dictionary
-- Consolidated AI-related functionality into a single cohesive module
-- Standardized error handling throughout the application
-- Simplified Git module with improved documentation
-- Improved CLI option descriptions
-- Simplified codebase through consolidation
-- Separated CLI logic from main application workflow
-- Improved formatter configuration lookup
-- Enhanced AI model configuration and error handling
+- Corrected commit message cleaning logic
+- Improved handling of code block markers in generated commit messages
+- Enhanced diff preprocessing to handle large repositories
 
 ### CI/Build 🏗️
 
-- Updated GitHub Actions workflow and Makefile
-- Added Prettier formatting to lint target in Makefile
-- Improved nightly release workflow logic
-
-## [v0.6.1] - 2025-04-04
-
-### Added 🚀
-
-- Advanced semantic diff analysis for more contextual commit messages
-- Improved git diff parsing for complex repository structures
-- Enhanced AI model compatibility layer
-- Detailed token usage reporting and optimization
-- Added `--version` flag to display the current version of the tool
-
-### Changed 🔧
-
-- Refined functional programming patterns in core modules
-- Improved error resilience in AI provider integrations
-- Streamlined configuration validation mechanisms
-
-### Fixed 🐛
-
-- Resolved edge cases in multi-file staging scenarios
-- Improved handling of large monorepo git diffs
-- Enhanced security checks in configuration loading
+- Updated nightly workflow to run at 5am Los Angeles time
+- Refined workflow triggers and conditions
+- Updated Python version support to 3.13
+- Improved release and tagging mechanisms
 
 ### Performance ⚡
 
-- Optimized token counting for large diffs
-- Reduced memory footprint in AI processing pipeline
+- Optimized preprocessing logic for git diffs
+- Enhanced token counting and model interaction efficiency
+
+### Documentation 📝
+
+- Added comprehensive docstrings to core modules
+- Created repository context enrichment example script
+- Updated project roadmap and todo items in changelog
 
 ### Security 🛡️
 
-- Added additional input sanitization for AI prompts
-- Improved environment variable handling for sensitive configurations
-
-## [v0.6.0] - 2025-04-03
-
-### Added 🌟
-
-- Comprehensive markdownlint and Prettier configuration for improved code style consistency
-- Node.js project configuration for frontend tooling support
-- Enhanced CI/CD workflows with scheduled nightly builds and dependency management
-
-### Changed 🔄
-
-- Simplified print utility functions with direct Rich console usage
-- Refactored AI generation and configuration handling for improved modularity
-- Updated project architecture to emphasize functional programming principles
-- Optimized token counting and diff truncation logic
-- Replaced custom spinner implementation with direct Halo usage
-- Enhanced error handling and logging mechanisms
-
-### Deprecated 🗑️
-
-- Removed legacy OOP abstractions and wrapper classes
-- Discontinued support for multiple CLI subcommands
-
-### Removed 🚫
-
-- Deprecated and unused functions across multiple modules
-- Redundant run_subprocess wrapper in git module
-- Custom spinner implementation
-
-### Fixed 🐞
-
-- Resolved configuration wizard TypeError in main script
-- Improved config module with simplified configuration management
-- Enhanced error handling in AI and configuration modules
-
-### Security 🔒
-
-- Updated dependency management to use uv for more secure and reproducible builds
-- Improved CI workflow security with virtual environment activation and dependency isolation
+- Improved error handling to prevent potential code execution paths
+- Enhanced input validation in preprocessing modules
 
 ## [0.5.0] - 2025-04-01
 
