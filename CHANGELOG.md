@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [TODO]
+
+- A cleaner approach would be to reorganize the modules by extracting a core domain layer separate from utility
+  functions, reducing cross-module dependencies.
+- Enhance Test Coverage for Complex Functionality: The project needs more comprehensive tests for core features like
+  error handling in generate_commit_message(), edge cases in error classification logic, and complete verification of
+  the multi-level configuration system to ensure robustness in real-world scenarios.
+- Key redaction: Add key redaction to sensitive data in logs and error messages.
+- Large repo optimization: Optimize handling of large repositories with many files and directories.
+- Error handling enhancement: Improve error messages and classification logic.
+- Quick start guide: Add a quick start guide for new users.
+- Document configuration precedence and best practices.
+- Document real-world usage patterns and best practices.
+
 ## [Unreleased]
 
 ### Added 🚀
