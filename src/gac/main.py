@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from gac import __version__
-from gac.ai import generate_commit_message, generate_with_fallback
+from gac.ai import generate_with_fallback
 from gac.constants import (
     DEFAULT_LOG_LEVEL,
     DEFAULT_MAX_OUTPUT_TOKENS,
