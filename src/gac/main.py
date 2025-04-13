@@ -265,19 +265,18 @@ def main(
 
     if push:
         try:
-
             if not push_changes():
                 handle_error(
                     GitError("Failed to push changes. Check your remote configuration."),
                     exit_program=True,
                 )
-                return  # This line won't be reached due to exit_program=True
+                raise Exception("Failed to exit program after push failure")
         except Exception as e:
             handle_error(
                 GitError(f"Error pushing changes: {e}"),
                 exit_program=True,
             )
-            return  # This line won't be reached due to exit_program=True
+            raise Exception("Failed to exit program after push failure")
 
     if not quiet:
         print_message("Successfully committed changes with message:", "notification")
