@@ -10,14 +10,12 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from gac.constants import DEFAULT_DIFF_TOKEN_LIMIT
 from gac.errors import ConfigError
 from gac.git import run_git_command
 from gac.preprocess import preprocess_diff
 
 logger = logging.getLogger(__name__)
-
-# Maximum number of tokens to allocate for the diff in the prompt
-DEFAULT_DIFF_TOKEN_LIMIT = 6000
 
 
 def find_template_file() -> Optional[str]:
@@ -89,11 +87,6 @@ def load_prompt_template(template_path: Optional[str] = None) -> str:
 def add_repository_context(diff: str) -> str:
     """Extract and format repository context from the git diff.
 
-    This function enhances the prompt by providing valuable repository context information:
-    1. File purposes extracted from docstrings
-    2. Recent commit history for the modified files
-    3. Project structure information
-
     Args:
         diff: The git diff to analyze
 
@@ -103,87 +96,74 @@ def add_repository_context(diff: str) -> str:
     if not diff:
         return ""
 
-    # Extract affected file paths
     file_paths = re.findall(r"diff --git a/(.*) b/", diff)
     if not file_paths:
         return ""
 
-    context_sections = []
+    context_sections = ["Repository Context:", "File purposes:"]
 
-    # 1. Extract file purpose from docstrings
-    file_purposes = []
-    for path in file_paths[:5]:  # Limit to 5 files to avoid token bloat
-        if path.endswith(".py"):
-            try:
-                # Get the file content from HEAD
-                file_content = run_git_command(["show", f"HEAD:{path}"], silent=True)
-                if file_content:
-                    # Extract file docstring (first triple-quoted string)
-                    docstring_match = re.search(r'"""(.*?)"""', file_content, re.DOTALL)
-                    if docstring_match:
-                        # Extract the first line as a summary
-                        docstring = docstring_match.group(1).strip()
-                        first_line = docstring.split("\n")[0].strip()
-                        if first_line:
-                            file_purposes.append(f"• {path}: {first_line}")
-            except Exception as e:
-                logger.debug(f"Error extracting docstring from {path}: {e}")
-
-    if file_purposes:
-        context_sections.append("File purposes:\n" + "\n".join(file_purposes))
-
-    # 2. Add recent related commits
+    # Get repository information
     try:
-        # Get recent commits for the modified files
-        recent_commits = run_git_command(
-            ["log", "--pretty=format:%h %s", "-n", "3", "--", *file_paths[:5]], silent=True
-        )
-        if recent_commits:
-            commit_lines = recent_commits.split("\n")[:3]  # Limit to 3 commits
-            context_sections.append("Recent related commits:\n" + "\n".join([f"• {c}" for c in commit_lines]))
-    except Exception as e:
-        logger.debug(f"Error getting recent commits: {e}")
-
-    # 3. Add repository structure information
-    try:
-        # Get the repo name
-        remote_url = run_git_command(["config", "--get", "remote.origin.url"], silent=True)
-        if remote_url:
-            # Extract repo name from URL
-            repo_name = re.search(r"/([^/]+?)(\.git)?$", remote_url)
+        repo_url = run_git_command(["config", "--get", "remote.origin.url"], silent=True)
+        if repo_url:
+            repo_name = re.search(r"[:/]([^/]+?)(?:\.git)?$", repo_url)
             if repo_name:
                 context_sections.append(f"Repository: {repo_name.group(1)}")
+    except Exception as e:
+        logger.debug(f"Error getting repository information: {e}")
 
-        # Get the branch name
+    # Get branch information
+    try:
         branch = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"], silent=True)
         if branch:
             context_sections.append(f"Branch: {branch}")
     except Exception as e:
-        logger.debug(f"Error getting repository info: {e}")
+        logger.debug(f"Error getting branch information: {e}")
 
-    # 4. Get directory structure for context
-    if len(file_paths) > 0:
-        # Determine common parent directory
-        parent_dirs = [os.path.dirname(p) for p in file_paths]
-        if parent_dirs and any(parent_dirs):
-            common_dir = os.path.commonpath(parent_dirs) if len(parent_dirs) > 1 else parent_dirs[0]
-            if common_dir:
-                try:
-                    # List files in this directory to provide context
-                    dir_content = run_git_command(["ls-tree", "--name-only", "HEAD", common_dir], silent=True)
-                    if dir_content:
-                        dir_files = dir_content.split("\n")[:5]  # Limit to 5 entries
-                        context_sections.append(
-                            f"Directory context ({common_dir}):\n" + "\n".join([f"• {f}" for f in dir_files])
-                        )
-                except Exception as e:
-                    logger.debug(f"Error getting directory context: {e}")
+    # Get directory context
+    for path in file_paths:
+        dir_name = os.path.dirname(path).split("/")[0]
+        if dir_name:
+            try:
+                dir_content = run_git_command(["ls-tree", "--name-only", "HEAD", dir_name], silent=True)
+                if dir_content:
+                    context_sections.append(f"Directory context ({dir_name}):")
+                    # Add directory contents as bullet points
+                    for file in dir_content.strip().split("\n"):
+                        context_sections.append(f"• {file}")
+                    break
+            except Exception as e:
+                logger.debug(f"Error getting directory context: {e}")
 
-    # Combine all sections with headers
-    if context_sections:
-        return "Repository Context:\n" + "\n\n".join(context_sections)
+    purposes = []
+    for path in file_paths[:5]:
+        if path.endswith(".py"):
+            try:
+                file_content = run_git_command(["show", f"HEAD:{path}"], silent=True)
+                if file_content:
+                    docstring_match = re.search(r'"""(.*?)"""', file_content, re.DOTALL)
+                    if docstring_match:
+                        docstring = docstring_match.group(1).strip()
+                        if docstring:
+                            purposes.append(f"• {path}: {docstring}")
+            except Exception as e:
+                logger.debug(f"Error extracting docstring from {path}: {e}")
 
-    return ""
+    if purposes:
+        context_sections.extend(purposes)
+
+    if file_paths:
+        try:
+            # Get the commit history for the modified files
+            history = run_git_command(["log", "--pretty=format:%h %s", "-n", "3", "--", *file_paths], silent=True)
+            if history:
+                # Format the history with bullet points
+                formatted_history = "\n".join(f"• {line}" for line in history.split("\n") if line)
+                context_sections.append(f"\nRecent related commits:\n{formatted_history}")
+        except Exception as e:
+            logger.debug(f"Error getting commit history: {e}")
+
+    return "\n".join(context_sections)
 
 
 def build_prompt(
@@ -209,25 +189,20 @@ def build_prompt(
     """
     template = load_prompt_template(template_path)
 
-    # Preprocess the diff with smart filtering and truncation
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
     processed_diff = preprocess_diff(diff, token_limit=DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
-    # Generate repository context
     repo_context = add_repository_context(diff)
     logger.debug(f"Added repository context ({len(repo_context)} characters)")
 
-    # Replace placeholders with actual content
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
     template = template.replace("<hint></hint>", hint)
 
-    # Add repository context before the diff section
     if repo_context:
         template = template.replace("<git-diff>", f"\n{repo_context}\n\n<git-diff>")
 
-    # Process format options (one-liner vs multi-line)
     if one_liner:
         template = re.sub(r"<multi_line>.*?</multi_line>", "", template, flags=re.DOTALL)
         template = re.sub(r"<one_liner>(.*?)</one_liner>", r"\1", template, flags=re.DOTALL)
@@ -235,13 +210,11 @@ def build_prompt(
         template = re.sub(r"<one_liner>.*?</one_liner>", "", template, flags=re.DOTALL)
         template = re.sub(r"<multi_line>(.*?)</multi_line>", r"\1", template, flags=re.DOTALL)
 
-    # Process hint section
     if not hint:
         template = re.sub(r"<hint_section>.*?</hint_section>", "", template, flags=re.DOTALL)
     else:
         template = re.sub(r"<hint_section>(.*?)</hint_section>", r"\1", template, flags=re.DOTALL)
 
-    # Remove any remaining XML tags and clean up whitespace
     template = re.sub(r"<[^>]*>", "", template)
     template = re.sub(r"\n{3,}", "\n\n", template)
 
@@ -251,11 +224,6 @@ def build_prompt(
 def clean_commit_message(message: str) -> str:
     """Clean up a commit message generated by an AI model.
 
-    This function:
-    1. Removes code block markers (```backticks```)
-    2. Removes XML tags that might have leaked into the response
-    3. Ensures the message starts with a conventional commit prefix
-
     Args:
         message: Raw commit message from AI
 
@@ -264,28 +232,31 @@ def clean_commit_message(message: str) -> str:
     """
     message = message.strip()
 
-    # Remove code block markers (backticks)
-    if message.startswith("```"):
-        # Check if the first line contains a language identifier (e.g., ```python)
-        if "\n" in message:
-            first_line_end = message.find("\n")
-            first_line = message[:first_line_end]
-            if first_line.count("```") == 1:
-                message = message[first_line_end + 1 :]
-        else:
-            message = message[3:].lstrip()
+    # Handle code blocks with language specifier
+    if "```" in message:
+        # Extract content from code blocks
+        lines = message.split("\n")
+        content_lines = []
+        inside_block = False
 
-    if message.endswith("```"):
-        message = message[:-3].rstrip()
+        for line in lines:
+            if line.startswith("```"):
+                # Toggle inside_block state, but skip the marker line
+                inside_block = not inside_block
+                continue
 
-    # Handle cases where message still has backticks
-    message = message.replace("```\n", "").replace("\n```", "")
+            if inside_block:
+                content_lines.append(line)
 
-    # Remove any XML tags that might have leaked into the response
-    for tag in ["<git-status>", "</git-status>", "<git-diff>", "</git-diff>"]:
+        if content_lines:
+            message = "\n".join(content_lines).strip()
+
+    # Remove XML tags
+    xml_tags = ["<git-status>", "</git-status>", "<git-diff>", "</git-diff>"]
+    for tag in xml_tags:
         message = message.replace(tag, "")
 
-    # Ensure message starts with a conventional commit prefix
+    # Define conventional commit prefixes
     conventional_prefixes = [
         "feat:",
         "fix:",
@@ -299,6 +270,7 @@ def clean_commit_message(message: str) -> str:
         "chore:",
     ]
 
+    # If the message doesn't start with a conventional prefix, add one
     if not any(message.startswith(prefix) for prefix in conventional_prefixes):
         message = f"chore: {message}"
 

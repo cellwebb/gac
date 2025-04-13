@@ -60,7 +60,6 @@ def load_config() -> Dict[str, Union[str, int, float, bool]]:
     if project_config.exists():
         load_dotenv(project_config)
 
-    # Return config with defaults from constants
     return {
         "model": os.getenv("GAC_MODEL"),
         "backup_model": os.getenv("GAC_BACKUP_MODEL"),
@@ -72,7 +71,6 @@ def load_config() -> Dict[str, Union[str, int, float, bool]]:
     }
 
 
-# Load configuration
 config = load_config()
 
 
@@ -113,21 +111,25 @@ def cli(
         print(f"Git Auto Commit (GAC) version: {__version__}")
         sys.exit(0)
 
-    numeric_log_level = getattr(logging, log_level.upper(), logging.WARNING)
-    setup_logging(numeric_log_level, quiet=quiet, force=True)
+    setup_logging(log_level)
+    logger.info("Starting GAC")
 
-    main(
-        stage_all=add_all,
-        should_format_files=not no_format,
-        model=model,
-        hint=hint,
-        one_liner=one_liner,
-        show_prompt=show_prompt,
-        require_confirmation=not yes,
-        push=push,
-        quiet=quiet,
-        dry_run=dry_run,
-    )
+    try:
+        main(
+            stage_all=add_all,
+            should_format_files=not no_format,
+            model=model,
+            hint=hint,
+            one_liner=one_liner,
+            show_prompt=show_prompt,
+            require_confirmation=not yes,
+            push=push,
+            quiet=quiet,
+            dry_run=dry_run,
+        )
+    except Exception as e:
+        handle_error(e, exit_program=True)
+        raise Exception("Failed to exit program after error")
 
 
 def main(
@@ -143,8 +145,6 @@ def main(
     dry_run: bool = False,
 ) -> None:
     """Main application logic for GAC."""
-    # Check if in a git repository
-
     try:
         git_dir = run_git_command(["rev-parse", "--show-toplevel"])
         if not git_dir:
@@ -194,7 +194,6 @@ def main(
     status = run_git_command(["status"])
     diff = run_git_command(["diff", "--staged"])
 
-    # Build prompt with smart preprocessing
     prompt = build_prompt(status=status, diff=diff, one_liner=one_liner, hint=hint, model=model or config["model"])
 
     if show_prompt:
@@ -208,7 +207,6 @@ def main(
         )
 
     try:
-        # Use the new generate_with_fallback function from the ai module
         commit_message = generate_with_fallback(
             primary_model=model,
             prompt=prompt,
@@ -241,7 +239,6 @@ def main(
         )
         raise Exception("Failed to exit program after commit failure")
 
-    # Verify that all changes were committed by checking for staged files
     staged_files = get_staged_files()
     if staged_files:
         handle_error(

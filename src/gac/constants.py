@@ -33,9 +33,10 @@ class Logging:
 class Utility:
     """General utility constants."""
 
-    DEFAULT_ENCODING: str = "cl100k_base"
-    DEFAULT_TOKEN_LIMIT: int = 6000
-    MAX_WORKERS: int = 4
+    DEFAULT_ENCODING: str = "cl100k_base"  # llm encoding
+    DEFAULT_TOKEN_LIMIT: int = 8000  # Maximum tokens for processing
+    DEFAULT_DIFF_TOKEN_LIMIT: int = 6000  # Maximum tokens for diff processing
+    MAX_WORKERS: int = 4  # Maximum number of parallel workers
 
 
 class FilePatterns:
@@ -146,7 +147,7 @@ class CodePatternImportance:
 DEFAULT_ENCODING = Utility.DEFAULT_ENCODING
 DEFAULT_LOG_LEVEL = Logging.DEFAULT_LEVEL
 LOGGING_LEVELS = Logging.LEVELS
-DEFAULT_TOKEN_LIMIT = Utility.DEFAULT_TOKEN_LIMIT
+DEFAULT_DIFF_TOKEN_LIMIT = Utility.DEFAULT_DIFF_TOKEN_LIMIT
 MAX_WORKERS = Utility.MAX_WORKERS
 DEFAULT_MAX_RETRIES = EnvDefaults.MAX_RETRIES
 DEFAULT_TEMPERATURE = EnvDefaults.TEMPERATURE
