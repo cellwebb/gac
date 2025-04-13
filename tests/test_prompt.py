@@ -99,7 +99,7 @@ class TestPrompts:
         # Test with multiple backtick blocks
         message = "```\nrefactor: Clean up code\n```\n\n```\nMore details\n```"
         result = clean_commit_message(message)
-        assert result == "refactor: Clean up code\nMore details"
+        assert result == "refactor: Clean up code\n\nMore details"
 
         # Test with XML tags in content
         message = "<git-diff>feat: Update authentication flow</git-diff>"
