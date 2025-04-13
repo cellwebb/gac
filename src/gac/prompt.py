@@ -19,90 +19,86 @@ logger = logging.getLogger(__name__)
 # Maximum number of tokens to allocate for the diff in the prompt
 DEFAULT_DIFF_TOKEN_LIMIT = 6000
 
-# Default template to use when no template file is found
+# Default template to use when the file is not found
 DEFAULT_TEMPLATE = """Write a concise and meaningful git commit message based on the staged changes shown below.
 
-<one_liner>
-Format it as a single line.
-</one_liner>
+<format_section>
+  <one_liner>
+  Format it as a single line (50-72 characters if possible). 
+  If applicable, still use conventional commit prefixes like feat/fix/docs/etc., 
+  but keep everything to a single line with no bullet points.
+  </one_liner>
+  
+  <multi_line>
+  Format it with a concise summary line (50-72 characters) followed by a 
+  more detailed explanation with multiple bullet points highlighting the 
+  specific changes made. Order the bullet points from most important to least important.
+  </multi_line>
+</format_section>
 
-<multi_line>
-Format it with a concise summary line followed by details using bullet points.
-</multi_line>
+<conventional_section>
+IMPORTANT: EVERY commit message MUST start with a conventional commit prefix. 
+This is a HARD REQUIREMENT. Choose from:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation changes
+- style: Changes that don't affect code meaning (formatting, whitespace)
+- refactor: Code changes that neither fix a bug nor add a feature
+- perf: Performance improvements
+- test: Adding or correcting tests
+- build: Changes to build system or dependencies
+- ci: Changes to CI configuration
+- chore: Other changes that don't modify src or test files
+
+YOU MUST choose the most appropriate type based on the changes. 
+If you CANNOT determine a type, use 'chore'. 
+THE PREFIX IS MANDATORY - NO EXCEPTIONS.
+</conventional_section>
 
 <hint_section>
-Please consider this context from the user: {hint}
+Please consider this context from the user: <hint></hint>
 </hint_section>
 
+Do not include any explanation or preamble like 'Here's a commit message', etc.
+Just output the commit message directly.
+
 Git status:
-{status}
+<git-status>
+<status></status>
+</git-status>
 
 Changes to be committed:
-{diff}
+<git-diff>
+<diff></diff>
+</git-diff>
 """
 
 
-def find_template_file():
-    """Searches for template files in the following order:
-    1. Environment variable GAC_TEMPLATE_PATH
-    2. Current directory: ./prompt.template
-    3. User config directory: ~/.config/gac/prompt.template
-    4. Package directory: gac/templates/default.prompt
-    5. Project directory: prompts/default.prompt
+def get_default_template_path():
+    """Returns the path to the default template file packaged with GAC.
 
     Returns:
-        Path to the template file or None if not found
+        Path to the default template file
     """
-    env_path = os.environ.get("GAC_TEMPLATE_PATH")
-    if env_path and os.path.exists(env_path):
-        return env_path
-
-    current_dir_path = Path("./prompt.template")
-    if current_dir_path.exists():
-        return str(current_dir_path)
-
-    config_dir_path = Path.home() / ".config" / "gac" / "prompt.template"
-    if config_dir_path.exists():
-        return str(config_dir_path)
-
-    package_template = Path(__file__).parent / "templates" / "default.prompt"
-    if package_template.exists():
-        return str(package_template)
-
-    default_template = Path(__file__).parent.parent.parent / "prompts" / "default.prompt"
-    if default_template.exists():
-        return str(default_template)
-
-    return None
+    return Path(__file__).parent / "templates" / "default.prompt"
 
 
 def load_prompt_template(template_path: Optional[str] = None) -> str:
     """Load the prompt template from a file or use the default embedded template.
 
     Args:
-        template_path: Optional path to a template file
+        template_path: Optional path to a template file (not used, kept for API compatibility)
 
     Returns:
         Template content as string
-
-    Raises:
-        ConfigError: If no template file is found
     """
-    if template_path:
-        if os.path.exists(template_path):
-            logger.debug(f"Loading prompt template from {template_path}")
-            with open(template_path, "r") as f:
-                return f.read()
-        else:
-            raise ConfigError(f"Prompt template file not found at {template_path}")
-
-    template_file = find_template_file()
-    if template_file:
-        logger.debug(f"Loading prompt template from {template_file}")
-        with open(template_file, "r") as f:
+    default_template_path = get_default_template_path()
+    if default_template_path.exists():
+        logger.debug(f"Loading default template from {default_template_path}")
+        with open(default_template_path, "r") as f:
             return f.read()
 
-    logger.debug("No template file found, using default template")
+    logger.debug("Default template file not found, using embedded template")
     return DEFAULT_TEMPLATE
 
 
@@ -211,7 +207,7 @@ def build_prompt(
     diff: str,
     one_liner: bool = False,
     hint: str = "",
-    template_path: Optional[str] = None,
+    template_path: Optional[str] = None,  # Kept for backwards compatibility but not used
     model: str = "anthropic:claude-3-haiku-latest",
 ) -> str:
     """Build a prompt for the AI model using the provided template and git information.
