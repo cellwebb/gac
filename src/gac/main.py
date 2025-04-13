@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from gac import __version__
-from gac.ai import generate_commit_message
+from gac.ai import generate_commit_message, generate_with_fallback
 from gac.constants import (
     DEFAULT_LOG_LEVEL,
     DEFAULT_MAX_OUTPUT_TOKENS,
@@ -208,9 +208,11 @@ def main(
         )
 
     try:
-        commit_message = generate_commit_message(
-            model,
-            prompt,
+        # Use the new generate_with_fallback function from the ai module
+        commit_message = generate_with_fallback(
+            primary_model=model,
+            prompt=prompt,
+            backup_model=backup_model,
             temperature=temperature,
             max_tokens=max_output_tokens,
             max_retries=max_retries,
@@ -218,24 +220,8 @@ def main(
         )
     except AIError as e:
         print_message(str(e), level="error")
-        if not backup_model:
-            print_message("No backup model specified in environment variables. Exiting...", level="error")
-            sys.exit(1)
-
-        print_message("Trying backup model...", level="info")
-        try:
-            commit_message = generate_commit_message(
-                backup_model,
-                prompt,
-                temperature=temperature,
-                max_tokens=max_output_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
-            )
-        except AIError as e:
-            print_message(str(e), level="error")
-            print_message("Backup model unsuccessful. Exiting...", level="error")
-            sys.exit(1)
+        print_message("All available models failed. Exiting...", level="error")
+        sys.exit(1)
 
     commit_message = clean_commit_message(commit_message)
 
