@@ -169,7 +169,6 @@ def main(
 
     backup_model = config["backup_model"]
 
-    # Get environment variables from loaded config
     temperature = config["temperature"]
     max_output_tokens = config["max_output_tokens"]
     max_retries = config["max_retries"]
@@ -252,7 +251,7 @@ def main(
             GitError(f"Error committing changes: {e}"),
             exit_program=True,
         )
-        return  # This line won't be reached due to exit_program=True
+        raise Exception("Failed to exit program after commit failure")
 
     # Verify that all changes were committed by checking for staged files
     staged_files = get_staged_files()
@@ -261,7 +260,7 @@ def main(
             GitError("Commit failed: There are still staged changes after commit attempt"),
             exit_program=True,
         )
-        return  # This line won't be reached due to exit_program=True
+        raise Exception("Failed to exit program after commit failure")
 
     if push:
         try:
