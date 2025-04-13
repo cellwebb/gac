@@ -73,7 +73,39 @@ This project uses `markdownlint-cli2` for Markdown linting. The configuration is
 
 ## Usage
 
-More details coming soon.
+### Repository Context Enrichment
+
+GAC now includes Repository Context Enrichment, a powerful feature that improves AI-generated commit messages by
+providing deeper context about your repository and changes:
+
+- **File Purposes**: Extracts docstrings from Python files to understand their intended functionality
+- **Commit History**: Includes recent commits related to the changed files
+- **Repository Structure**: Adds information about the repository structure and branch
+
+This context helps the AI understand your codebase better, resulting in more accurate and meaningful commit messages.
+The feature works automatically whenever you run `gac` with no additional configuration required.
+
+To see this feature in action, run the example script:
+
+```bash
+python examples/repo_context_example.py
+```
+
+### Basic Usage
+
+```bash
+# Stage your changes
+git add .
+
+# Generate and commit with AI
+gac
+
+# Generate a one-line commit message
+gac -o
+
+# Add a hint for the AI
+gac -h "Fix the authentication bug"
+```
 
 ## Best Practices
 

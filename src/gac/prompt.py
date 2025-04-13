@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional
 
 from gac.errors import ConfigError
+from gac.git import run_git_command
 from gac.preprocess import preprocess_diff
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,106 @@ def load_prompt_template(template_path: Optional[str] = None) -> str:
     raise ConfigError("No template file found and no default template defined.")
 
 
+def add_repository_context(diff: str) -> str:
+    """Extract and format repository context from the git diff.
+
+    This function enhances the prompt by providing valuable repository context information:
+    1. File purposes extracted from docstrings
+    2. Recent commit history for the modified files
+    3. Project structure information
+
+    Args:
+        diff: The git diff to analyze
+
+    Returns:
+        Formatted repository context as a string
+    """
+    if not diff:
+        return ""
+
+    # Extract affected file paths
+    file_paths = re.findall(r"diff --git a/(.*) b/", diff)
+    if not file_paths:
+        return ""
+
+    context_sections = []
+
+    # 1. Extract file purpose from docstrings
+    file_purposes = []
+    for path in file_paths[:5]:  # Limit to 5 files to avoid token bloat
+        if path.endswith(".py"):
+            try:
+                # Get the file content from HEAD
+                file_content = run_git_command(["show", f"HEAD:{path}"], silent=True)
+                if file_content:
+                    # Extract file docstring (first triple-quoted string)
+                    docstring_match = re.search(r'"""(.*?)"""', file_content, re.DOTALL)
+                    if docstring_match:
+                        # Extract the first line as a summary
+                        docstring = docstring_match.group(1).strip()
+                        first_line = docstring.split("\n")[0].strip()
+                        if first_line:
+                            file_purposes.append(f"• {path}: {first_line}")
+            except Exception as e:
+                logger.debug(f"Error extracting docstring from {path}: {e}")
+
+    if file_purposes:
+        context_sections.append("File purposes:\n" + "\n".join(file_purposes))
+
+    # 2. Add recent related commits
+    try:
+        # Get recent commits for the modified files
+        recent_commits = run_git_command(
+            ["log", "--pretty=format:%h %s", "-n", "3", "--", *file_paths[:5]], silent=True
+        )
+        if recent_commits:
+            commit_lines = recent_commits.split("\n")[:3]  # Limit to 3 commits
+            context_sections.append("Recent related commits:\n" + "\n".join([f"• {c}" for c in commit_lines]))
+    except Exception as e:
+        logger.debug(f"Error getting recent commits: {e}")
+
+    # 3. Add repository structure information
+    try:
+        # Get the repo name
+        remote_url = run_git_command(["config", "--get", "remote.origin.url"], silent=True)
+        if remote_url:
+            # Extract repo name from URL
+            repo_name = re.search(r"/([^/]+?)(\.git)?$", remote_url)
+            if repo_name:
+                context_sections.append(f"Repository: {repo_name.group(1)}")
+
+        # Get the branch name
+        branch = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"], silent=True)
+        if branch:
+            context_sections.append(f"Branch: {branch}")
+    except Exception as e:
+        logger.debug(f"Error getting repository info: {e}")
+
+    # 4. Get directory structure for context
+    if len(file_paths) > 0:
+        # Determine common parent directory
+        parent_dirs = [os.path.dirname(p) for p in file_paths]
+        if parent_dirs and any(parent_dirs):
+            common_dir = os.path.commonpath(parent_dirs) if len(parent_dirs) > 1 else parent_dirs[0]
+            if common_dir:
+                try:
+                    # List files in this directory to provide context
+                    dir_content = run_git_command(["ls-tree", "--name-only", "HEAD", common_dir], silent=True)
+                    if dir_content:
+                        dir_files = dir_content.split("\n")[:5]  # Limit to 5 entries
+                        context_sections.append(
+                            f"Directory context ({common_dir}):\n" + "\n".join([f"• {f}" for f in dir_files])
+                        )
+                except Exception as e:
+                    logger.debug(f"Error getting directory context: {e}")
+
+    # Combine all sections with headers
+    if context_sections:
+        return "Repository Context:\n" + "\n\n".join(context_sections)
+
+    return ""
+
+
 def build_prompt(
     status: str,
     diff: str,
@@ -113,10 +214,18 @@ def build_prompt(
     processed_diff = preprocess_diff(diff, token_limit=DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
+    # Generate repository context
+    repo_context = add_repository_context(diff)
+    logger.debug(f"Added repository context ({len(repo_context)} characters)")
+
     # Replace placeholders with actual content
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
     template = template.replace("<hint></hint>", hint)
+
+    # Add repository context before the diff section
+    if repo_context:
+        template = template.replace("<git-diff>", f"\n{repo_context}\n\n<git-diff>")
 
     # Process format options (one-liner vs multi-line)
     if one_liner:
