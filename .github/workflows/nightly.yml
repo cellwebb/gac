@@ -3,7 +3,7 @@ name: Nightly Release
 on:
   workflow_dispatch: # Allow manual triggering
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 12 * * *" # 5am Los Angeles time (UTC-7/8)
 
 permissions:
   contents: write # Required for creating GitHub releases
