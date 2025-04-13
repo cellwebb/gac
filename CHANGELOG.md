@@ -35,6 +35,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Created example script in `examples/repo_context_example.py`
   - Added comprehensive unit tests for context extraction
 
+- **Configuration Management**:
+
+  - Added package-level configuration file `config.env` in `src/gac` directory with default model
+    `anthropic:claude-3-5-haiku-latest`
+  - Implemented multi-level configuration loading with precedence:
+    1. Project-level `.gac.env`
+    2. User-level `~/.gac.env`
+    3. Package-level `config.env`
+  - Added new test files to improve test coverage:
+    - `test_constants.py` with comprehensive tests for project constants
+    - `test_utils.py` to validate utility functions
+
+- **Testing Improvements**:
+  - Enhanced test suite with more comprehensive test cases
+  - Added tests for:
+    - File status enums
+    - Logging constants
+    - Encoding constants
+    - Error handling scenarios
+    - Prompt message cleaning
+
 ### Changed 🔧
 
 - **Error Handling**:
