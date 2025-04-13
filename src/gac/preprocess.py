@@ -281,7 +281,7 @@ def calculate_section_importance(section: str) -> float:
         importance *= 1.2
     elif re.search(r"deleted file mode", section):
         importance *= 1.1
-        
+
     additions = len(re.findall(r"^\+[^+]", section, re.MULTILINE))
     deletions = len(re.findall(r"^-[^-]", section, re.MULTILINE))
     total_changes = additions + deletions
@@ -388,7 +388,7 @@ def smart_truncate_diff(scored_sections: List[Tuple[str, float]], token_limit: i
     total_count = len(scored_sections)
     skipped_sections = []
     processed_files = set()
-    
+
     # First pass: Include high-priority sections
     for section, score in scored_sections:
         file_match = re.search(r"diff --git a/(.*) b/", section)
@@ -396,7 +396,7 @@ def smart_truncate_diff(scored_sections: List[Tuple[str, float]], token_limit: i
             continue
 
         filename = file_match.group(1)
-        
+
         if filename in processed_files:
             continue
 
@@ -418,7 +418,7 @@ def smart_truncate_diff(scored_sections: List[Tuple[str, float]], token_limit: i
         skipped_summary = "\n\n[Skipped files due to token limits:"
 
         for _, _, filename in skipped_sections[:5]:
-          
+
             file_entry = f" {filename},"
             if current_tokens + len(skipped_summary) + len(file_entry) < token_limit:
                 skipped_summary += file_entry
