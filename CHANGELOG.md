@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added 🚀
 
 - **Repository Context Enrichment**:
+
   - Added intelligent repository context extraction to improve AI commit messages
   - Implemented extraction of file purposes from docstrings
   - Added recent commit history for modified files
