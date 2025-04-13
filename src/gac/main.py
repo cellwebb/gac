@@ -152,7 +152,7 @@ def main(
     except Exception as e:
         logger.error(f"Error checking git repository: {e}")
         handle_error(GitError("Not in a git repository"), exit_program=True)
-        return  # This line won't be reached due to exit_program=True, but it's good practice
+        raise Exception("Failed to exit program after git repository check failure")
 
     if model is None:
         model = config["model"]
@@ -163,7 +163,7 @@ def main(
                 ),
                 exit_program=True,
             )
-            return  # This line won't be reached due to exit_program=True
+            raise Exception("Failed to exit program after model error")
     if should_format_files is None:
         should_format_files = config["format_files"]
 
@@ -183,7 +183,7 @@ def main(
             GitError("No staged changes found. Stage your changes with git add first or use --add-all"),
             exit_program=True,
         )
-        return  # This line won't be reached due to exit_program=True
+        raise Exception("Failed to exit program after no staged changes found")
 
     if should_format_files:
         # TODO: Add logic for files that have both staged and unstaged changes
