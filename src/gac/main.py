@@ -23,7 +23,7 @@ from gac.constants import (
 )
 from gac.errors import AIError, GitError, handle_error
 from gac.format import format_files
-from gac.git import get_staged_files, run_git_command
+from gac.git import get_staged_files, push_changes, run_git_command
 from gac.prompt import build_prompt, clean_commit_message
 from gac.utils import print_message, setup_logging
 
@@ -265,7 +265,6 @@ def main(
 
     if push:
         try:
-            from gac.git import push_changes
 
             if not push_changes():
                 handle_error(
