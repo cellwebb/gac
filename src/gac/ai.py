@@ -7,7 +7,7 @@ It consolidates all AI-related functionality including token counting and commit
 import logging
 import time
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import aisuite as ai
 import tiktoken
@@ -15,7 +15,6 @@ from halo import Halo
 
 from gac.constants import DEFAULT_ENCODING, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MAX_RETRIES, DEFAULT_TEMPERATURE
 from gac.errors import AIError
-from gac.utils import print_message
 
 logger = logging.getLogger(__name__)
 
@@ -63,28 +62,7 @@ def generate_commit_message(
     max_retries: int = DEFAULT_MAX_RETRIES,
     quiet: bool = False,
 ) -> str:
-    """Generate a commit message using aisuite.
-
-    Args:
-        model: The model to use in provider:model_name format (e.g., 'anthropic:claude-3-5-haiku-latest')
-        prompt: The formatted prompt containing diff and context
-        temperature: Controls randomness (0.0-1.0), lower values are more deterministic
-        max_tokens: Maximum tokens in the response
-        max_retries: Number of retry attempts if generation fails
-        quiet: If True, suppress progress indicators
-
-    Returns:
-        A formatted commit message string
-
-    Raises:
-        AIError: If generation fails after max_retries attempts
-
-    Example:
-        >>> model = "anthropic:claude-3-5-haiku-latest"
-        >>> prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
-        >>> generate_commit_message(model, prompt)
-        'docs: Update README with installation instructions'
-    """
+    """Generate a commit message using aisuite."""
     try:
         provider, model_name = model.split(":", 1)
     except ValueError:
@@ -155,78 +133,3 @@ def generate_commit_message(
     raise AIError(
         f"Failed to generate commit message after {max_retries} attempts: {last_error}", error_type=error_type
     )
-
-
-def generate_with_fallback(
-    primary_model: str,
-    prompt: str,
-    backup_model: Optional[str] = None,
-    temperature: float = DEFAULT_TEMPERATURE,
-    max_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
-    max_retries: int = DEFAULT_MAX_RETRIES,
-    quiet: bool = False,
-) -> str:
-    """Generate a commit message with primary model, falling back to backup model if available.
-
-    This function centralizes the fallback logic for model failures, providing a more robust
-    way to handle AI provider outages or model-specific issues.
-
-    Args:
-        primary_model: The primary model to use (e.g., 'anthropic:claude-3-5-haiku-latest')
-        prompt: The formatted prompt containing diff and context
-        backup_model: Optional backup model to try if primary model fails
-        temperature: Controls randomness (0.0-1.0)
-        max_tokens: Maximum tokens in the response
-        max_retries: Number of retry attempts per model
-        quiet: If True, suppress progress indicators
-
-    Returns:
-        A formatted commit message string
-
-    Raises:
-        AIError: If both primary and backup models fail
-
-    Example:
-        >>> primary = "anthropic:claude-3-5-haiku-latest"
-        >>> backup = "openai:gpt-4o-mini"
-        >>> prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
-        >>> generate_with_fallback(primary, prompt, backup)
-        'docs: Update README with installation instructions'
-    """
-    try:
-        return generate_commit_message(
-            primary_model,
-            prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            max_retries=max_retries,
-            quiet=quiet,
-        )
-    except AIError as e:
-        if not backup_model:
-            # Re-raise the original error if no backup model is available
-            raise
-
-        logger.warning(f"Primary model {primary_model} failed: {e}. Trying backup model {backup_model}...")
-        if not quiet:
-            print_message(f"Primary model failed: {e}", level="warning")
-            print_message(f"Trying backup model {backup_model}...", level="info")
-
-        # Try the backup model
-        try:
-            return generate_commit_message(
-                backup_model,
-                prompt,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
-            )
-        except AIError as backup_error:
-            # Both models failed - provide a detailed error message
-            error_msg = (
-                f"Both primary and backup models failed.\n"
-                f"Primary model error: {e}\n"
-                f"Backup model error: {backup_error}"
-            )
-            raise AIError(error_msg, error_type="multiple_failures")

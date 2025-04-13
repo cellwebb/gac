@@ -1,76 +1,45 @@
-name: Nightly Release
+name: Bump Version and Create Release
 
 on:
-  workflow_dispatch: # Allow manual triggering
-  schedule:
-    - cron: "0 */4 * * *" # Run every 4 hours to check for idle time
-
-# Add permissions at workflow level
-permissions:
-  contents: write # Required for creating GitHub releases
-  packages: write # Required for publishing packages
+  push:
+    tags:
+      - "v*" # This triggers the action only when a tag starting with 'v' is pushed
 
 jobs:
-  check-for-changes:
+  release:
     runs-on: ubuntu-latest
-    outputs:
-      should_release: ${{ steps.check_changes.outputs.should_release }}
+
     steps:
+      # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Need full history for checking commits
+        uses: actions/checkout@v2
 
-      - name: Check for changes since last nightly release
-        id: check_changes
-        run: |
-          # Get the timestamp of the most recent nightly release tag
-          LAST_NIGHTLY_TAG=$(git tag -l 'nightly-*' | sort -V | tail -n 1)
-
-          if [ -z "$LAST_NIGHTLY_TAG" ]; then
-            # No previous nightly release, so release
-            echo "No previous nightly release found"
-            echo "should_release=true" >> $GITHUB_OUTPUT
-          else
-            # Get the commit timestamp of the last nightly release
-            LAST_NIGHTLY_COMMIT=$(git log -1 --format=%ct "$LAST_NIGHTLY_TAG")
-            
-            # Get the timestamp of the most recent commit after the last nightly release
-            LATEST_COMMIT_TIMESTAMP=$(git log -1 --after="$LAST_NIGHTLY_COMMIT" --format=%ct)
-            
-            if [ -n "$LATEST_COMMIT_TIMESTAMP" ]; then
-              echo "Changes detected since last nightly release"
-              echo "should_release=true" >> $GITHUB_OUTPUT
-            else
-              echo "No changes since last nightly release"
-              echo "should_release=false" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-  nightly-release:
-    needs: check-for-changes
-    if: needs.check-for-changes.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      # Set up Python (since this is a Python project)
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
-      - name: Create nightly release tag
+      # Install dependencies
+      - name: Install dependencies
         run: |
-          TODAY=$(date +"%Y%m%d-%H%M%S")
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git tag "nightly-$TODAY"
-          git push origin "nightly-$TODAY"
+          pip install -e ".[dev]"
+          pip install bump-my-version
 
-      - name: Create GitHub Release
+      # Bump version and create tag
+      - name: Bump version and create tag
+        run: |
+          bump-my-version bump minor
+          git push --follow-tags
+
+      # Create a release
+      - name: Create Release
         uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly-${{ github.ref_name }}-${{ github.sha }}
-          name: Nightly Release ${{ github.ref_name }} (${{ github.sha }})
-          prerelease: true
+          tag_name: ${{ github.ref_name }}
+          body: |
+            Automated release of version ${{ github.ref_name }}
+
+            ${{ github.event.head_commit.message }}
