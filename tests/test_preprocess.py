@@ -1,19 +1,14 @@
 """Tests for the diff preprocessing functionality."""
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from gac.preprocess import (
     analyze_code_patterns,
-    calculate_section_importance,
-    filter_binary_and_minified,
     get_extension_score,
     is_lockfile_or_generated,
     is_minified_content,
     preprocess_diff,
-    process_section,
-    score_sections,
-    should_filter_section,
     smart_truncate_diff,
     split_diff_into_sections,
 )

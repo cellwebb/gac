@@ -8,7 +8,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from gac.constants import DEFAULT_DIFF_TOKEN_LIMIT
 from gac.errors import ConfigError
@@ -17,10 +17,6 @@ from gac.preprocess import preprocess_diff
 
 logger = logging.getLogger(__name__)
 
-# Maximum number of tokens to allocate for the diff in the prompt
-DEFAULT_DIFF_TOKEN_LIMIT = 6000
-
-# Default template to use when no template file is found
 DEFAULT_TEMPLATE = """Write a concise and meaningful git commit message based on the staged changes shown below.
 
 <one_liner>
