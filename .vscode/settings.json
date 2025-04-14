@@ -46,10 +46,14 @@
 
   "files.exclude": {
     ".git/": true,
+    ".coverage": true,
     ".ruff_cache": true,
     ".pytest_cache": true,
     "dist/": true,
     "LICENSE.txt": true,
+    "package.json": true,
+    "package-lock.json": true,
+    "uv.lock": true,
     "**/__pycache__": true
   },
   "search.exclude": {

@@ -95,150 +95,36 @@ export ANTHROPIC_API_KEY=your_key_here
 - OpenAI: Set `OPENAI_API_KEY`
 - Mistral: Set `MISTRAL_API_KEY`
 
-### Manual Configuration
+### Basic Configuration Example
 
-You can configure GAC by setting environment variables or by creating a config file in your home or project directory.
+The minimum required configuration is to specify a model and provide an API key for your chosen provider. This can be
+done in a config file or as environment variables.
 
-### Option 1: Config File (Recommended)
-
-Create a `.gac.env` or `.env` file in your project directory, or a `.gac.env` file in your home directory:
-
-```sh
-# Project-specific config (highest priority after env vars)
-echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > .gac.env
-
-# Or for all projects (user-wide)
-echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > ~/.gac.env
-
-# Add your API key
-echo 'ANTHROPIC_API_KEY=your_key_here' >> ~/.gac.env
-```
-
-### Option 2: Environment Variables
-
-Set variables directly in your shell (overrides config files):
+**Example: `.gac.env` (recommended)**
 
 ```sh
-export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct  # Required
-export GAC_BACKUP_MODEL=anthropic:claude-3-5-haiku-latest        # Optional
-export ANTHROPIC_API_KEY=your_key_here               # API key
-export GROQ_API_KEY=your_key_here               # API key
-export GAC_USE_FORMATTING=true                       # Optional
-export GAC_MAX_OUTPUT_TOKENS=512                     # Optional
-export GAC_TEMPERATURE=0.7                           # Optional
-```
-
-### Configuration Locations
-
-GAC loads configuration from multiple locations with the following precedence (highest to lowest):
-
-1. **Environment variables** (set in your terminal session)
-2. **Project config files** (`.env` then `.gac.env` in your current directory)
-3. **User config file** (`~/.gac.env` in your home directory)
-4. **Package config** (`_config.env` installed with the module)
-5. **Built-in defaults**
-
-This lets you:
-
-- Set project-specific overrides (in your repo)
-- Use personal defaults (in your home directory)
-- Share team-wide settings (via package config)
-
-### Configuration Resolution Example
-
-```bash
-# Command-line argument takes highest priority
-gac -m anthropic:claude-3-5-haiku-latest
-
-# Project .gac.env (highest priority after CLI)
-# /path/to/project/.gac.env
-GAC_MODEL=anthropic:claude-3-5-haiku-latest
-ANTHROPIC_API_KEY=your_key_here
-GAC_TEMPERATURE=0.7
-
-# User-level ~/.gac.env
 GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
-GROQ_API_KEY=user_api_key
-
-# Package-level config.env
-GAC_MODEL=anthropic:claude-3-5-haiku-latest
+GROQ_API_KEY=your_key_here
 ```
 
-In this example:
+**Or as environment variables:**
 
-- The CLI argument `anthropic:claude-3-5-haiku-latest` would be used
-- If no CLI model is specified, the project's `openai:gpt-4` would be used
-- Without a project config, the user-level `groq:llama-3` would be used
-- If no other configuration is found, the package-level default is used
+```sh
+export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
+export GROQ_API_KEY=your_key_here
+```
+
+That's it! For most users, this is all you need to get started.
 
 ### Best Practices
 
-- Use project-level `.gac.env` for project-specific configurations
-- Use user-level `~/.gac.env` for personal default settings
+- Use a project-level `.gac.env` for project-specific configuration
+- Use a user-level `~/.gac.env` for your personal default settings
 - Keep sensitive information like API keys out of version control
-- Use environment variables for dynamic or sensitive configurations
+- Use environment variables for sensitive or temporary overrides
 
 ### Troubleshooting
 
 - Use `gac --verbose` to see detailed configuration loading information
 - Check that configuration files have correct permissions
 - Ensure configuration files are valid and follow the correct format
-
-## Advanced Usage
-
-### Local Model Support (Ollama)
-
-1. Install [Ollama](https://ollama.com/)
-2. Pull a model:
-
-```bash
-ollama pull llama3
-```
-
-3. Use with GAC:
-
-```bash
-gac -m ollama:llama3
-```
-
-### Command-Line Options
-
-```bash
-# Stage all changes and commit
-gac -a
-
-# Use a specific model
-gac -m openai:gpt-4o-mini
-
-# Generate one-line commit message
-gac -o
-
-# Provide context hint
-gac -h "Fix authentication bug"
-```
-
-## Troubleshooting
-
-### Common Issues
-
-- **API Key Problems**: Verify your API key and provider configuration
-- **Model Unavailability**: Check model support and accessibility
-- **Formatting Errors**: Ensure required formatters are installed
-
-### Debugging
-
-```bash
-# Enable debug logging
-gac --log-level=DEBUG
-
-# Show prompt sent to AI
-gac --show-prompt
-```
-
-## Contributing
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for information on contributing to GAC.
-
-## License
-
-GAC is released under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
