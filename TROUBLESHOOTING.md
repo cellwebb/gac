@@ -47,6 +47,7 @@ This guide covers common issues and solutions for installing, configuring, and r
 - Check logs for error messages and stack traces
 - Review the [INSTALLATION.md](INSTALLATION.md) for setup steps
 - Check the [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
+- See [USAGE.md](USAGE.md) for help with command-line flags and advanced usage
 
 ## Still Stuck?
 

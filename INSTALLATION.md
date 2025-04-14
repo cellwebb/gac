@@ -63,6 +63,8 @@ git add .
 gac
 ```
 
+For a full list of CLI flags and advanced usage, see [USAGE.md](USAGE.md).
+
 ## Configuration
 
 ### AI Provider Setup

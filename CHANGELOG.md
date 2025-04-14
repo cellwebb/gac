@@ -25,63 +25,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- **Repository Context Enrichment**:
-
-  - Intelligent repository context extraction
-  - File purpose extraction from docstrings
-  - Recent commit history for modified files
-  - Repository structure and branch info
-  - Example script in `examples/repo_context_example.py`
-  - Comprehensive unit tests
-
-- **Configuration Management**:
-  - Package-level `config.env` with default model
-  - Multi-level config loading:
-    1. Project-level `.gac.env`
-    2. User-level `~/.gac.env`
-    3. Package-level `config.env`
-  - New test files for constants and utils
+- TROUBLESHOOTING.md with comprehensive guide for resolving common installation and configuration issues
 
 ### Changed
 
-- **AI Model Integration**:
-
-  - Robust fallback mechanism for AI model generation
-  - Multi-model support with intelligent selection
-  - Improved token counting and diff preprocessing
-
-- **Error Handling**:
-
-  - Simplified error paths and recovery mechanisms
-  - Enhanced error message display
-
-- **CI/Build**:
-
-  - Updated nightly workflow to 5am Los Angeles
-  - Refined workflow triggers
-  - Python 3.13 support
-  - Improved release and tagging
-
-- **Performance**:
-  - Optimized git diff preprocessing
-  - Enhanced token counting efficiency
-
-### Removed
-
-- Unnecessary type annotations
-- Complex error handling patterns
-- Simplified imports
+- Improved push change handling with enhanced logging and user feedback
+- Updated installation documentation for clearer configuration instructions
+- Refined linting commands to use check mode for black, isort, and prettier
+- Updated VSCode settings to exclude more files from file explorer
 
 ### Documentation
 
-- Comprehensive docstrings
-- Repository context enrichment example
-- Updated project roadmap
+- Enhanced dry run logging for push changes
+- Improved installation and configuration guide clarity
+- Updated project documentation with more precise instructions
 
-### Security
+### CI/Build
 
-- Enhanced error handling
-- Improved input validation
+- Improved lint and format commands with silent logging and check modes
 
 ## [0.7.2] - 2025-04-13
 

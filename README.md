@@ -2,120 +2,56 @@
 
 AI-assisted git commit message generator.
 
-## Installation
+## Features
 
-See [INSTALLATION.md](INSTALLATION.md) for detailed installation instructions.
+- Generates clear, context-aware commit messages using AI
+- Enriches commit messages with repository structure and recent history
+- Simple CLI workflow, drop-in replacement for `git commit`
 
-## Configuration
+## Quick Start
 
-### Configuration File Precedence
+1. **Install**
 
-GAC uses a sophisticated, multi-level configuration system to provide flexible and intuitive configuration management.
-The configuration is loaded in the following order of precedence (from highest to lowest):
+   See [INSTALLATION.md](INSTALLATION.md) for up-to-date installation instructions.
 
-1. **Command-line Arguments** (Highest Priority)
+2. **Configure**
 
-   - Directly passed arguments override all other configuration sources
-   - Example: `gac -m anthropic:claude-3-5-haiku-latest`
+   Create a `.gac.env` file in your project or home directory:
 
-2. **Project-level Configuration** (`.gac.env`)
+   ```sh
+   GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
+   GROQ_API_KEY=your_key_here
+   ```
 
-   - Located in the current project's root directory
-   - Applies only to the specific project
-   - Overrides user-level and package-level configurations
+   Or set as environment variables:
 
-3. **User-level Configuration** (`~/.gac.env`)
+   ```sh
+   export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
+   export GROQ_API_KEY=your_key_here
+   ```
 
-   - Located in the user's home directory
-   - Applies to all projects for the current user
-   - Overrides package-level configurations
+   For more configuration options, see [INSTALLATION.md](INSTALLATION.md).
 
-4. **Package-level Configuration** (`config.env`)
+3. **Use**
 
-   - Included with the GAC package installation
-   - Provides default fallback configurations
-   - Lowest priority configuration source
+   ```sh
+   git add .
+   gac
+   ```
 
-5. **Built-in Default Values** (Lowest Priority)
-   - Hardcoded default settings within the application
-   - Used only if no other configuration is specified
+   - Generate a one-line commit message: `gac -o`
+   - Add a hint for the AI: `gac -h "Fix the authentication bug"`
 
-#### Configuration Resolution Example
+   See [USAGE.md](USAGE.md) for a full list of CLI flags and advanced usage.
 
-```bash
-# Command-line argument (highest priority)
-gac -m anthropic:claude-3-5-haiku-latest
+## How It Works
 
-# Project .gac.env
-GAC_MODEL=openai:gpt-4
-GAC_TEMPERATURE=0.7
-
-# User-level ~/.gac.env
-GAC_MODEL=groq:llama-3
-GAC_API_KEY=user_api_key
-
-# Package-level config.env
-GAC_MODEL=anthropic:claude-3-5-haiku-latest
-```
-
-In this example:
-
-- The CLI argument `anthropic:claude-3-5-haiku-latest` would be used
-- If no CLI model is specified, the project's `openai:gpt-4` would be used
-- Without a project config, the user-level `groq:llama-3` would be used
-- If no other configuration is found, the package-level default is used
-
-### Markdown Linting
-
-This project uses `markdownlint-cli2` for Markdown linting. The configuration is in `.markdownlint-cli2.yaml`.
-
-> **Note**: The `.markdownlint.yaml` file is now deprecated and can be removed.
-
-## Usage
-
-### Repository Context Enrichment
-
-GAC now includes Repository Context Enrichment, a powerful feature that improves AI-generated commit messages by
-providing deeper context about your repository and changes:
-
-- **File Purposes**: Extracts docstrings from Python files to understand their intended functionality
-- **Commit History**: Includes recent commits related to the changed files
-- **Repository Structure**: Adds information about the repository structure and branch
-
-This context helps the AI understand your codebase better, resulting in more accurate and meaningful commit messages.
-The feature works automatically whenever you run `gac` with no additional configuration required.
-
-To see this feature in action, run the example script:
-
-```bash
-python examples/repo_context_example.py
-```
-
-### Basic Usage
-
-```bash
-# Stage your changes
-git add .
-
-# Generate and commit with AI
-gac
-
-# Generate a one-line commit message
-gac -o
-
-# Add a hint for the AI
-gac -h "Fix the authentication bug"
-```
+GAC analyzes your staged changes, repository structure, and recent commit history to generate high-quality commit
+messages with the help of leading AI models.
 
 ## Best Practices
 
-- Use project-level `.gac.env` for project-specific configurations
-- Use user-level `~/.gac.env` for personal default settings
-- Keep sensitive information like API keys out of version control
-- Use environment variables for dynamic or sensitive configurations
-
-## Troubleshooting
-
-- Use `gac --verbose` to see detailed configuration loading information
-- Check that configuration files have correct permissions
-- Ensure configuration files are valid and follow the correct format
+- Use project-level `.gac.env` for project-specific configuration
+- Use user-level `~/.gac.env` for personal defaults
+- Keep API keys out of version control
+- For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
