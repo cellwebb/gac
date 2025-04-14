@@ -121,6 +121,7 @@ config = load_config()
 @click.option("--model", "-m", help="Override the default model (format: 'provider:model_name')")
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
+@click.option("--verbose", "-v", is_flag=True, help="Increase output verbosity to INFO")
 def cli(
     add_all: bool = False,
     log_level: str = config["log_level"],
@@ -134,13 +135,23 @@ def cli(
     model: str = None,
     version: bool = False,
     dry_run: bool = False,
+    verbose: bool = False,
 ):
     """Git Auto Commit - Generate commit messages with AI."""
     if version:
         logger.info(f"Git Auto Commit (GAC) version: {__version__}")
         sys.exit(0)
 
-    setup_logging(log_level)
+    # Determine effective log level
+    effective_log_level = log_level
+    if verbose and not quiet:
+        # Only raise to INFO if not already more verbose
+        if log_level.upper() not in ("DEBUG", "INFO"):
+            effective_log_level = "INFO"
+    if quiet:
+        effective_log_level = "ERROR"
+
+    setup_logging(effective_log_level)
     logger.info("Starting GAC")
 
     try:

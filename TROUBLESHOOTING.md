@@ -43,7 +43,7 @@ This guide covers common issues and solutions for installing, configuring, and r
 
 ## 4. General Debugging
 
-- Use `gac --verbose` or `gac --log-level=DEBUG` for more details
+- Use `gac --verbose` (increases output verbosity) or `gac --log-level=DEBUG` for more details
 - Check logs for error messages and stack traces
 - Review the [INSTALLATION.md](INSTALLATION.md) for setup steps
 - Check the [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues

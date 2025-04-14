@@ -20,6 +20,7 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 | `--push`      | `-p`  | Push changes to remote after committing           |
 | `--yes`       | `-y`  | Automatically confirm commit without prompting    |
 | `--dry-run`   |       | Show what would happen without making any changes |
+| `--no-format` | `-nf` | Skip formatting of staged files before commit     |
 
 ## Message Customization
 
@@ -36,6 +37,7 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 | `--quiet`             | `-q`  | Suppress all output except errors                      |
 | `--log-level <level>` |       | Set log level (DEBUG, INFO, WARNING, ERROR)            |
 | `--show-prompt`       |       | Print the AI prompt used for commit message generation |
+| `--verbose`           | `-v`  | Increase output verbosity to INFO                      |
 
 ## Help and Version
 
