@@ -291,11 +291,17 @@ def main(
     if push:
         try:
             if dry_run:
+                staged_files = get_staged_files(existing_only=False)
+
                 logger.info("Dry run: Would push changes")
                 logger.info("Would push with message:")
                 logger.info(commit_message)
-                staged_files = get_staged_files(existing_only=False)
                 logger.info(f"Would push {len(staged_files)} files")
+
+                console.print("[yellow]Dry run: Would push changes[/yellow]")
+                console.print("Would push with message:")
+                console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+                console.print(f"Would push {len(staged_files)} files")
                 sys.exit(0)
 
             if not push_changes():
