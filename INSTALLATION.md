@@ -14,49 +14,53 @@ changes. This guide will walk you through installation, configuration, and getti
 
 ## Installation Methods
 
-### 1. Recommended: Install with pipx
+### For Users
 
-```bash
-# Install pipx if not already installed
+Install the latest release system-wide using pipx from the GitHub repository:
+
+```sh
+pipx install git+https://github.com/cellwebb/gac.git
+```
+
+To install a specific version (tag, branch, or commit), use:
+
+```sh
+pipx install \
+  git+https://github.com/cellwebb/gac.git@<TAG_OR_COMMIT>
+```
+
+Replace `<TAG_OR_COMMIT>` with your desired release tag (e.g. `v1.2.3`) or commit hash.
+
+If you don't have pipx, install it with:
+
+```sh
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
-
-# Install GAC
-pipx install gac
 ```
 
-### 2. Install with pip
+### For Developers
 
-```bash
-# Standard installation
-pip install gac
+Clone the repository and install in editable mode with development dependencies:
 
-# User installation (recommended if not using virtual environments)
-pip install --user gac
-```
-
-### 3. Install from Source
-
-```bash
-# Clone the repository
+```sh
 git clone https://github.com/cellwebb/gac.git
 cd gac
-
-# Install in development mode
-pip install -e .
+uv pip install -e ".[dev]"
 ```
+
+This setup is recommended if you want to contribute or run tests locally.
 
 ## Quick Start
 
 1. Stage your changes:
 
-```bash
+```sh
 git add .
 ```
 
 2. Generate a commit message:
 
-```bash
+```sh
 gac
 ```
 
@@ -66,7 +70,17 @@ gac
 
 GAC supports multiple AI providers:
 
-#### Anthropic Claude (Recommended)
+#### Groq (Recommended)
+
+1. Register at [console.groq.com](https://console.groq.com/)
+2. Create an API key
+3. Set the environment variable:
+
+```bash
+export GROQ_API_KEY=your_key_here
+```
+
+#### Anthropic Claude (Recommended alternative)
 
 1. Register at [console.anthropic.com](https://console.anthropic.com/)
 2. Create an API key
@@ -79,90 +93,56 @@ export ANTHROPIC_API_KEY=your_key_here
 #### Other Providers
 
 - OpenAI: Set `OPENAI_API_KEY`
-- Groq: Set `GROQ_API_KEY`
 - Mistral: Set `MISTRAL_API_KEY`
+
+### Manual Configuration
+
+You can configure GAC by setting environment variables or by creating a config file in your home or project directory.
+
+### Option 1: Config File (Recommended)
+
+Create a `.gac.env` or `.env` file in your project directory, or a `.gac.env` file in your home directory:
+
+```sh
+# Project-specific config (highest priority after env vars)
+echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > .gac.env
+
+# Or for all projects (user-wide)
+echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > ~/.gac.env
+
+# Add your API key
+echo 'ANTHROPIC_API_KEY=your_key_here' >> ~/.gac.env
+```
+
+### Option 2: Environment Variables
+
+Set variables directly in your shell (overrides config files):
+
+```sh
+export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct  # Required
+export GAC_BACKUP_MODEL=anthropic:claude-3-5-haiku-latest        # Optional
+export ANTHROPIC_API_KEY=your_key_here               # API key
+export GROQ_API_KEY=your_key_here               # API key
+export GAC_USE_FORMATTING=true                       # Optional
+export GAC_MAX_OUTPUT_TOKENS=512                     # Optional
+export GAC_TEMPERATURE=0.7                           # Optional
+```
 
 ### Configuration Locations
 
 GAC loads configuration from multiple locations with the following precedence (highest to lowest):
 
-1. Environment variables (set in your terminal session)
-2. Project configuration (`.gac.env` in your current directory)
-3. User configuration (`.gac.env` in your home directory)
-4. Package configuration (installed with the module)
-5. Default built-in values
+1. **Environment variables** (set in your terminal session)
+2. **Project config files** (`.env` then `.gac.env` in your current directory)
+3. **User config file** (`~/.gac.env` in your home directory)
+4. **Package config** (`_config.env` installed with the module)
+5. **Built-in defaults**
 
-This multi-level approach allows:
+This lets you:
 
-- Shared team settings in the package configuration
-- Personal preferences in your home directory
-- Project-specific overrides in each repository
-
-### Manual Configuration
-
-To configure GAC, create a `.gac.env` file in one of these locations:
-
-```bash
-# Create in your home directory (recommended)
-echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > ~/.gac.env
-
-# Or in your project directory
-echo 'GAC_MODEL=anthropic:claude-3-5-haiku-latest' > .gac.env
-```
-
-You can also add your API key and other settings:
-
-```bash
-# Add to your existing .gac.env file
-echo 'ANTHROPIC_API_KEY=your_key_here' >> ~/.gac.env
-```
-
-### Environment Variables
-
-You can also configure GAC directly using environment variables:
-
-```bash
-# Model selection (required)
-export GAC_MODEL=anthropic:claude-3-5-haiku-latest
-
-# Optional settings
-export GAC_USE_FORMATTING=true
-export GAC_MAX_OUTPUT_TOKENS=512
-export GAC_WARNING_LIMIT_INPUT_TOKENS=16000
-export GAC_TEMPERATURE=0.7
-```
-
-## Configuration File Precedence
-
-GAC uses a multi-level configuration system with a clear hierarchy of configuration sources. The configuration is loaded
-in the following order of precedence (from highest to lowest):
-
-1. **Command-line Arguments** (Highest Priority)
-
-   - Directly passed arguments override all other configuration sources
-   - Example: `gac -m anthropic:claude-3-5-haiku-latest`
-
-2. **Project-level Configuration** (`.gac.env`)
-
-   - Located in the current project's root directory
-   - Applies only to the specific project
-   - Overrides user-level and package-level configurations
-
-3. **User-level Configuration** (`~/.gac.env`)
-
-   - Located in the user's home directory
-   - Applies to all projects for the current user
-   - Overrides package-level configurations
-
-4. **Package-level Configuration** (`config.env`)
-
-   - Included with the GAC package installation
-   - Provides default fallback configurations
-   - Lowest priority configuration source
-
-5. **Built-in Default Values** (Lowest Priority)
-   - Hardcoded default settings within the application
-   - Used only if no other configuration is specified
+- Set project-specific overrides (in your repo)
+- Use personal defaults (in your home directory)
+- Share team-wide settings (via package config)
 
 ### Configuration Resolution Example
 
@@ -172,12 +152,13 @@ gac -m anthropic:claude-3-5-haiku-latest
 
 # Project .gac.env (highest priority after CLI)
 # /path/to/project/.gac.env
-GAC_MODEL=openai:gpt-4
+GAC_MODEL=anthropic:claude-3-5-haiku-latest
+ANTHROPIC_API_KEY=your_key_here
 GAC_TEMPERATURE=0.7
 
 # User-level ~/.gac.env
-GAC_MODEL=groq:llama-3
-GAC_API_KEY=user_api_key
+GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
+GROQ_API_KEY=user_api_key
 
 # Package-level config.env
 GAC_MODEL=anthropic:claude-3-5-haiku-latest
