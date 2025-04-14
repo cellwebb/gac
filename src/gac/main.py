@@ -304,7 +304,10 @@ def main(
                 console.print(f"Would push {len(staged_files)} files")
                 sys.exit(0)
 
-            if not push_changes():
+            if push_changes():
+                logger.info("Changes pushed successfully")
+                console.print("[green]Changes pushed successfully[/green]")
+            else:
                 handle_error(
                     GitError("Failed to push changes. Check your remote configuration."),
                     exit_program=True,
