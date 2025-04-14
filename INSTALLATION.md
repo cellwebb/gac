@@ -25,8 +25,7 @@ pipx install git+https://github.com/cellwebb/gac.git
 To install a specific version (tag, branch, or commit), use:
 
 ```sh
-pipx install \
-  git+https://github.com/cellwebb/gac.git@<TAG_OR_COMMIT>
+pipx install git+https://github.com/cellwebb/gac.git@<TAG_OR_COMMIT>
 ```
 
 Replace `<TAG_OR_COMMIT>` with your desired release tag (e.g. `v1.2.3`) or commit hash.

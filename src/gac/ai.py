@@ -86,7 +86,7 @@ def generate_commit_message(
         'docs: Update README with installation instructions'
     """
     try:
-        provider, model_name = model.split(":", 1)
+        _, _ = model.split(":", 1)
     except ValueError:
         raise AIError.model_error(f"Invalid model format: {model}. Please use the format 'provider:model_name'.")
 

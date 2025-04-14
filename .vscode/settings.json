@@ -45,6 +45,9 @@
   },
 
   "files.exclude": {
+    ".prettierignore": true,
+    ".prettierrc": true,
+    ".markdownlint-cli2.yaml": true,
     ".git/": true,
     ".coverage": true,
     ".ruff_cache": true,
