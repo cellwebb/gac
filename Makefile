@@ -24,9 +24,9 @@ test-cov:
 	uv run -- python -m pytest --cov=src --cov-report=term --cov-report=html
 
 lint:
-	uv run -- black src/ tests/
-	uv run -- isort src/ tests/
-	npx prettier --write "**/*.{md,yaml,yml,json}" --log-level silent
+	uv run -- black --check src/ tests/
+	uv run -- isort --check src/ tests/
+	npx prettier --check "**/*.{md,yaml,yml,json}" --log-level silent
 	npx markdownlint-cli2 --config .markdownlint-cli2.yaml "**/*.md"
 	uv run -- flake8 --max-line-length=120 --ignore=E203,W503 src/ tests/
 
