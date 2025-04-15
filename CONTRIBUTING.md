@@ -3,6 +3,14 @@
 Thank you for your interest in contributing to this project! Your help is appreciated. Please follow these guidelines to
 make the process smooth for everyone.
 
+## Table of Contents
+
+- [How to Contribute](#how-to-contribute)
+- [Coding Standards](#coding-standards)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
+- [Where to Get Help](#where-to-get-help)
+
 ## How to Contribute
 
 - **Report Bugs**: Use GitHub Issues to report bugs. Please provide clear steps to reproduce and relevant logs or
@@ -14,6 +22,9 @@ make the process smooth for everyone.
   3. Add or update tests as needed.
   4. Ensure all tests pass (`pytest`).
   5. Submit a pull request with a clear description of your changes.
+
+If you have questions or want to discuss ideas before contributing, please open an issue or start a discussion on
+GitHub.
 
 ## Coding Standards
 
@@ -34,5 +45,12 @@ Be respectful and constructive. Harassment or abusive behavior will not be toler
 By contributing, you agree that your contributions will be licensed under the same license as the project.
 
 ---
+
+## Where to Get Help
+
+- For troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- For usage and CLI options, see [USAGE.md](USAGE.md)
+- For installation, see [INSTALLATION.md](INSTALLATION.md)
+- For license details, see [LICENSE](LICENSE)
 
 Thank you for helping improve gac!
