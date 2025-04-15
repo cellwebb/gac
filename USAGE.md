@@ -2,6 +2,18 @@
 
 This document describes all available flags and options for the `gac` CLI tool.
 
+## Table of Contents
+
+- [Basic Usage](#basic-usage)
+- [Core Workflow Flags](#core-workflow-flags)
+- [Message Customization](#message-customization)
+- [Output and Verbosity](#output-and-verbosity)
+- [Help and Version](#help-and-version)
+- [Example Workflows](#example-workflows)
+- [Advanced](#advanced)
+- [Configuration Notes](#configuration-notes)
+- [Getting Help](#getting-help)
+
 ## Basic Usage
 
 ```sh
@@ -81,5 +93,18 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 - Use `--show-prompt` to debug or review the prompt sent to the AI
 - Adjust verbosity with `--log-level` or `--quiet`
 
-See [INSTALLATION.md](INSTALLATION.md) for setup, and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for help. Return to
-[README.md](README.md) for a project overview.
+## Configuration Notes
+
+- GAC loads configuration in the following order of precedence:
+  1. CLI flags
+  2. Environment variables
+  3. Project-level `.gac.env`
+  4. User-level `~/.gac.env`
+- For more details, see [INSTALLATION.md](INSTALLATION.md).
+
+## Getting Help
+
+- For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- For installation and configuration, see [INSTALLATION.md](INSTALLATION.md)
+- To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md)
+- License information: [LICENSE](LICENSE)
