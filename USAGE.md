@@ -63,26 +63,37 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 ## Example Workflows
 
 - **Stage all changes and commit:**
+
   ```sh
   gac -a
   ```
+
 - **Commit and push in one step:**
+
   ```sh
   gac -ap
   ```
+
 - **Generate a one-line commit message:**
+
   ```sh
   gac -o
   ```
+
 - **Add a hint for the AI:**
+
   ```sh
   gac -h "Refactor authentication logic"
   ```
+
 - **Use a specific model just for this commit:**
+
   ```sh
   gac -m anthropic:claude-3-5-haiku-latest
   ```
+
 - **Dry run (see what would happen):**
+
   ```sh
   gac --dry-run
   ```
