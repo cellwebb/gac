@@ -1,5 +1,6 @@
 """Constants for the Git Auto Commit (GAC) project."""
 
+import os
 from enum import Enum
 from typing import Dict, List, Pattern
 
@@ -36,7 +37,7 @@ class Utility:
     DEFAULT_ENCODING: str = "cl100k_base"  # llm encoding
     DEFAULT_TOKEN_LIMIT: int = 8000  # Maximum tokens for processing
     DEFAULT_DIFF_TOKEN_LIMIT: int = 6000  # Maximum tokens for diff processing
-    MAX_WORKERS: int = 4  # Maximum number of parallel workers
+    MAX_WORKERS: int = os.cpu_count() or 4  # Maximum number of parallel workers
 
 
 class FilePatterns:

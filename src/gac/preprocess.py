@@ -12,12 +12,7 @@ import re
 from typing import List, Optional, Tuple
 
 from gac.ai import count_tokens
-from gac.constants import (
-    CodePatternImportance,
-    FilePatterns,
-    FileTypeImportance,
-    Utility,
-)
+from gac.constants import CodePatternImportance, FilePatterns, FileTypeImportance, Utility
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +97,7 @@ def process_sections_parallel(sections: List[str]) -> List[str]:
         return [s for s in sections if not should_filter_section(s)]
 
     filtered_sections = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=Utility.MAX_WORKERS) as executor:
         future_to_section = {executor.submit(process_section, section): section for section in sections}
         for future in concurrent.futures.as_completed(future_to_section):
             result = future.result()
