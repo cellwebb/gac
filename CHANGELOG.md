@@ -20,17 +20,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Quick start guide: Add a quick start guide for new users.
 - Document configuration precedence and best practices.
 - Document real-world usage patterns and best practices.
+- Choose a commit to git diff against
+- Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
+  include
 
 ## [Unreleased]
 
 ### Added
 
-- TROUBLESHOOTING.md with comprehensive guide for resolving common installation and configuration issues
+- CONTRIBUTING.md with guidelines for project contributions
+- LICENSE file with MIT license
+- Verbose logging option to CLI
 
 ### Changed
 
 - Improved push change handling with enhanced logging and user feedback
 - Updated installation documentation for clearer configuration instructions
+- Updated README with project badges and contributing information
 - Refined linting commands to use check mode for black, isort, and prettier
 - Updated VSCode settings to exclude more files from file explorer
 
@@ -39,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Enhanced dry run logging for push changes
 - Improved installation and configuration guide clarity
 - Updated project documentation with more precise instructions
+- Added comprehensive troubleshooting guide
 
 ### CI/Build
 
