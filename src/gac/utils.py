@@ -34,9 +34,9 @@ def setup_logging(log_level: Union[int, str] = Logging.DEFAULT_LEVEL, quiet: boo
         **kwargs,
     )
 
-    # Suppress noisy third-party libraries
-    for noisy_logger in ["requests", "urllib3"]:
-        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+    # # Suppress noisy third-party libraries
+    # for noisy_logger in ["requests", "urllib3"]:
+    #     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
 
     logger.info(f"Logging initialized with level: {logging.getLevelName(log_level)}")
 

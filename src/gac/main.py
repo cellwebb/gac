@@ -2,97 +2,24 @@
 """Main entry point for GAC."""
 
 import logging
-import os
 import sys
-from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional
 
 import click
-from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 
 from gac import __version__
 from gac.ai import generate_with_fallback
-from gac.constants import EnvDefaults, Logging
+from gac.config import load_config
+from gac.constants import Logging
 from gac.errors import AIError, GitError, handle_error
 from gac.format import format_files
-from gac.git import get_staged_files, push_changes, run_git_command
+from gac.git import get_commit_message_from_hash, get_staged_files, push_changes, run_git_command
 from gac.prompt import build_prompt, clean_commit_message
 from gac.utils import setup_logging
 
 logger = logging.getLogger(__name__)
-
-
-def load_config() -> Dict[str, Union[str, int, float, bool]]:
-    """Load configuration from environment files with precedence.
-
-    Order of precedence (lowest to highest):
-    1. Package-level _config.env
-    2. User-specific ~/.gac.env
-    3. Project-level ./.env
-    4. Project-level ./.gac.env
-    5. Environment variables (highest priority)
-
-    Returns:
-        Dict with configuration values.
-    """
-    # (lowest priority) Package-level _config.env
-    package_config = Path(__file__).parent / "_config.env"
-    if package_config.exists():
-        load_dotenv(package_config)
-    # User-specific configuration
-    user_config = Path.home() / ".gac.env"
-    if user_config.exists():
-        load_dotenv(user_config)
-    # Project-level ./.env
-    env_config = Path(".env")
-    if env_config.exists():
-        load_dotenv(env_config)
-    # (highest priority) Project-level .gac.env
-    project_config = Path(".gac.env")
-    if project_config.exists():
-        load_dotenv(project_config)
-
-    # Define configuration with defaults
-    config = {
-        "model": os.getenv("GAC_MODEL"),
-        "backup_model": os.getenv("GAC_BACKUP_MODEL"),
-        "format_files": True,
-        "temperature": EnvDefaults.TEMPERATURE,
-        "max_output_tokens": EnvDefaults.MAX_OUTPUT_TOKENS,
-        "max_retries": EnvDefaults.MAX_RETRIES,
-        "log_level": Logging.DEFAULT_LEVEL,
-    }
-
-    # Parse boolean values
-    if format_files := os.getenv("GAC_FORMAT_FILES"):
-        config["format_files"] = format_files.lower() == "true"
-
-    # Parse numeric values
-    if temperature := os.getenv("GAC_TEMPERATURE"):
-        try:
-            config["temperature"] = float(temperature)
-        except ValueError:
-            pass
-
-    if max_tokens := os.getenv("GAC_MAX_OUTPUT_TOKENS"):
-        try:
-            config["max_output_tokens"] = int(max_tokens)
-        except ValueError:
-            pass
-
-    if retries := os.getenv("GAC_RETRIES"):
-        try:
-            config["max_retries"] = int(retries)
-        except ValueError:
-            pass
-
-    if log_level := os.getenv("GAC_LOG_LEVEL"):
-        config["log_level"] = log_level
-
-    return config
-
 
 config = load_config()
 
@@ -116,6 +43,12 @@ config = load_config()
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
 @click.option("--verbose", "-v", is_flag=True, help="Increase output verbosity to INFO")
+@click.option(
+    "--since",
+    metavar="<commit-hash>",
+    default=None,
+    help="Generate commit message based on diff from given commit hash to current state.",
+)
 def cli(
     add_all: bool = False,
     log_level: str = config["log_level"],
@@ -130,23 +63,28 @@ def cli(
     version: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
+    since: str = None,
 ):
     """Git Auto Commit - Generate commit messages with AI."""
     if version:
         logger.info(f"Git Auto Commit (GAC) version: {__version__}")
         sys.exit(0)
 
-    # Determine effective log level
     effective_log_level = log_level
-    if verbose and not quiet:
-        # Only raise to INFO if not already more verbose
-        if log_level.upper() not in ("DEBUG", "INFO"):
-            effective_log_level = "INFO"
+    if verbose and log_level not in ("DEBUG", "INFO"):
+        effective_log_level = "INFO"
     if quiet:
         effective_log_level = "ERROR"
 
     setup_logging(effective_log_level)
     logger.info("Starting GAC")
+
+    if since:
+        commit_message = get_commit_message_from_hash(since, model or config["model"], one_liner=one_liner, hint=hint)
+        console = Console()
+        console.print("[bold green]Generated commit message:[/bold green]")
+        console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+        sys.exit(0)
 
     try:
         main(
