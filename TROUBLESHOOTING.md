@@ -2,6 +2,15 @@
 
 This guide covers common issues and solutions for installing, configuring, and running GAC.
 
+## Table of Contents
+
+- [Installation Problems](#1-installation-problems)
+- [Configuration Issues](#2-configuration-issues)
+- [Provider/API Errors](#3-providerapi-errors)
+- [General Debugging](#4-general-debugging)
+- [Still Stuck?](#still-stuck)
+- [Where to Get Further Help](#where-to-get-further-help)
+
 ## 1. Installation Problems
 
 **Problem:** `gac` command not found after install
@@ -52,4 +61,11 @@ This guide covers common issues and solutions for installing, configuring, and r
 ## Still Stuck?
 
 - Search existing issues or open a new one on the [GitHub repository](https://github.com/cellwebb/gac)
-- Include details about your OS, Python version, and error output
+- Include details about your OS, Python version, GAC version, provider, and error output
+- The more detail you provide, the faster your issue can be resolved
+
+## Where to Get Further Help
+
+- For contributing guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md)
+- For license information, see [LICENSE](LICENSE)
+- For installation and usage, see [INSTALLATION.md](INSTALLATION.md) and [USAGE.md](USAGE.md)
