@@ -42,11 +42,13 @@ class Utility:
 class FilePatterns:
     """Patterns for identifying special file types."""
 
+    # Regex patterns to detect binary file changes in git diffs (e.g., images or other non-text files)
     BINARY: List[Pattern[str]] = [
         r"Binary files .* differ",
         r"GIT binary patch",
     ]
 
+    # Regex patterns to detect minified files in git diffs (e.g., JavaScript or CSS files)
     MINIFIED_EXTENSIONS: List[str] = [
         ".min.js",
         ".min.css",
@@ -58,6 +60,7 @@ class FilePatterns:
         ".opt.css",
     ]
 
+    # Regex patterns to detect build directories in git diffs (e.g., dist, build, vendor, etc.)
     BUILD_DIRECTORIES: List[str] = [
         "/dist/",
         "/build/",
@@ -119,6 +122,8 @@ class FileTypeImportance:
 class CodePatternImportance:
     """Importance multipliers for different code patterns."""
 
+    # Regex patterns to detect code structure changes in git diffs (e.g., class, function, import)
+    # Note: The patterns are prefixed with "+" to match only added and modified lines
     PATTERNS: Dict[Pattern[str], float] = {
         # Structure changes
         r"\+\s*(class|interface|enum)\s+\w+": 1.8,  # Class/interface/enum definitions
