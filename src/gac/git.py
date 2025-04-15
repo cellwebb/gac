@@ -69,6 +69,29 @@ def get_commit_hash() -> str:
     return result.decode().strip()
 
 
+def get_commit_message_from_hash(commit_hash: str, model: str, one_liner: bool = False, hint: str = "") -> str:
+    """Generate a commit message based on the diff from the given commit hash to the current state.
+
+    Args:
+        commit_hash: The commit hash to compare against
+        model: The AI model identifier
+        one_liner: Whether to generate a one-line message
+        hint: Optional hint for the AI
+    Returns:
+        Suggested commit message
+    """
+    from gac.ai import generate_commit_message
+    from gac.prompt import build_prompt, clean_commit_message
+
+    diff = run_git_command(["diff", f"{commit_hash}"])
+    status = run_git_command(["status", "--short"])
+    hint_prefix = f"Generate a commit message for all changes since commit {commit_hash}. "
+    full_hint = hint_prefix + hint if hint else hint_prefix.rstrip()
+    prompt = build_prompt(status, diff, one_liner=one_liner, hint=full_hint, model=model)
+    message = generate_commit_message(model, prompt)
+    return clean_commit_message(message)
+
+
 def push_changes() -> bool:
     """Push committed changes to the remote repository."""
     remote_exists = run_git_command(["remote"])
