@@ -24,16 +24,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
   include
 
-## [Unreleased]
+## [v0.8.0] - 2025-04-14
 
 ### Added
 
+- Git utility functions for repository root, current branch, and commit hash
+- Code formatting functions with Black integration
+- New test cases for git utilities and code formatting
+- Coverage configuration to exclude main.py
 - CONTRIBUTING.md with guidelines for project contributions
 - LICENSE file with MIT license
 - Verbose logging option to CLI
 
 ### Changed
 
+- Improved test parameterization in test_format.py
+- Updated import statements for better organization
+- Enhanced code formatting validation logic
 - Improved push change handling with enhanced logging and user feedback
 - Updated installation documentation for clearer configuration instructions
 - Updated README with project badges and contributing information
