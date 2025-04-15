@@ -14,13 +14,7 @@ from rich.panel import Panel
 
 from gac import __version__
 from gac.ai import generate_with_fallback
-from gac.constants import (
-    DEFAULT_LOG_LEVEL,
-    DEFAULT_MAX_OUTPUT_TOKENS,
-    DEFAULT_MAX_RETRIES,
-    DEFAULT_TEMPERATURE,
-    LOGGING_LEVELS,
-)
+from gac.constants import EnvDefaults, Logging
 from gac.errors import AIError, GitError, handle_error
 from gac.format import format_files
 from gac.git import get_staged_files, push_changes, run_git_command
@@ -65,10 +59,10 @@ def load_config() -> Dict[str, Union[str, int, float, bool]]:
         "model": os.getenv("GAC_MODEL"),
         "backup_model": os.getenv("GAC_BACKUP_MODEL"),
         "format_files": True,
-        "temperature": DEFAULT_TEMPERATURE,
-        "max_output_tokens": DEFAULT_MAX_OUTPUT_TOKENS,
-        "max_retries": DEFAULT_MAX_RETRIES,
-        "log_level": DEFAULT_LOG_LEVEL,
+        "temperature": EnvDefaults.TEMPERATURE,
+        "max_output_tokens": EnvDefaults.MAX_OUTPUT_TOKENS,
+        "max_retries": EnvDefaults.MAX_RETRIES,
+        "log_level": Logging.DEFAULT_LEVEL,
     }
 
     # Parse boolean values
@@ -108,7 +102,7 @@ config = load_config()
 @click.option(
     "--log-level",
     default=config["log_level"],
-    type=click.Choice(LOGGING_LEVELS, case_sensitive=False),
+    type=click.Choice(Logging.LEVELS, case_sensitive=False),
     help=f"Set log level (default: {config['log_level']})",
 )
 @click.option("--no-format", "-nf", is_flag=True, help="Skip formatting of staged files")

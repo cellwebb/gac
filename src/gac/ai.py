@@ -13,7 +13,7 @@ import aisuite as ai
 import tiktoken
 from halo import Halo
 
-from gac.constants import DEFAULT_ENCODING, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MAX_RETRIES, DEFAULT_TEMPERATURE
+from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
 from gac.utils import print_message
 
@@ -52,15 +52,15 @@ def get_encoding(model: str) -> tiktoken.Encoding:
     try:
         return tiktoken.encoding_for_model(model_name)
     except KeyError:
-        return tiktoken.get_encoding(DEFAULT_ENCODING)
+        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
 
 def generate_commit_message(
     model: str,
     prompt: str,
-    temperature: float = DEFAULT_TEMPERATURE,
-    max_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
-    max_retries: int = DEFAULT_MAX_RETRIES,
+    temperature: float = EnvDefaults.TEMPERATURE,
+    max_tokens: int = EnvDefaults.MAX_OUTPUT_TOKENS,
+    max_retries: int = EnvDefaults.MAX_RETRIES,
     quiet: bool = False,
 ) -> str:
     """Generate a commit message using aisuite.
@@ -161,9 +161,9 @@ def generate_with_fallback(
     primary_model: str,
     prompt: str,
     backup_model: Optional[str] = None,
-    temperature: float = DEFAULT_TEMPERATURE,
-    max_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
-    max_retries: int = DEFAULT_MAX_RETRIES,
+    temperature: float = EnvDefaults.TEMPERATURE,
+    max_tokens: int = EnvDefaults.MAX_OUTPUT_TOKENS,
+    max_retries: int = EnvDefaults.MAX_RETRIES,
     quiet: bool = False,
 ) -> str:
     """Generate a commit message with primary model, falling back to backup model if available.

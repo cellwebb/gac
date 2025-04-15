@@ -10,7 +10,7 @@ import os
 import re
 from typing import Optional
 
-from gac.constants import DEFAULT_DIFF_TOKEN_LIMIT
+from gac.constants import Utility
 from gac.git import run_git_command
 from gac.preprocess import preprocess_diff
 
@@ -214,7 +214,7 @@ def build_prompt(
 
     # Preprocess the diff with smart filtering and truncation
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
-    processed_diff = preprocess_diff(diff, token_limit=DEFAULT_DIFF_TOKEN_LIMIT, model=model)
+    processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
     # Generate repository context

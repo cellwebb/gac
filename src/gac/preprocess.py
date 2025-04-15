@@ -13,20 +13,17 @@ from typing import List, Optional, Tuple
 
 from gac.ai import count_tokens
 from gac.constants import (
-    BINARY_FILE_PATTERNS,
-    BUILD_DIRECTORIES,
-    CODE_PATTERNS,
-    DEFAULT_DIFF_TOKEN_LIMIT,
-    MAX_WORKERS,
-    MINIFIED_FILE_EXTENSIONS,
-    SOURCE_CODE_EXTENSIONS,
+    CodePatternImportance,
+    FilePatterns,
+    FileTypeImportance,
+    Utility,
 )
 
 logger = logging.getLogger(__name__)
 
 
 def preprocess_diff(
-    diff: str, token_limit: int = DEFAULT_DIFF_TOKEN_LIMIT, model: str = "anthropic:claude-3-haiku-latest"
+    diff: str, token_limit: int = Utility.DEFAULT_DIFF_TOKEN_LIMIT, model: str = "anthropic:claude-3-haiku-latest"
 ) -> str:
     """Preprocess a git diff to make it more suitable for AI analysis.
 
@@ -138,7 +135,7 @@ def should_filter_section(section: str) -> bool:
     Returns:
         True if the section should be filtered out, False otherwise
     """
-    if any(re.search(pattern, section) for pattern in BINARY_FILE_PATTERNS):
+    if any(re.search(pattern, section) for pattern in FilePatterns.BINARY):
         file_match = re.search(r"diff --git a/(.*) b/", section)
         if file_match:
             filename = file_match.group(1)
@@ -148,11 +145,11 @@ def should_filter_section(section: str) -> bool:
     if file_match:
         filename = file_match.group(1)
 
-        if any(filename.endswith(ext) for ext in MINIFIED_FILE_EXTENSIONS):
+        if any(filename.endswith(ext) for ext in FilePatterns.MINIFIED_EXTENSIONS):
             logger.info(f"Filtered out minified file by extension: {filename}")
             return True
 
-        if any(directory in filename for directory in BUILD_DIRECTORIES):
+        if any(directory in filename for directory in FilePatterns.BUILD_DIRECTORIES):
             logger.info(f"Filtered out file in build directory: {filename}")
             return True
 
@@ -306,13 +303,13 @@ def get_extension_score(filename: str) -> float:
         Importance multiplier based on file extension
     """
     default_score = 1.0
-    for pattern, score in SOURCE_CODE_EXTENSIONS.items():
+    for pattern, score in FileTypeImportance.EXTENSIONS.items():
         if not pattern.startswith(".") and pattern in filename:
             return score
 
     _, ext = os.path.splitext(filename)
     if ext:
-        return SOURCE_CODE_EXTENSIONS.get(ext, default_score)
+        return FileTypeImportance.EXTENSIONS.get(ext, default_score)
 
     return default_score
 
@@ -329,7 +326,7 @@ def analyze_code_patterns(section: str) -> float:
     pattern_score = 1.0
     pattern_found = False
 
-    for pattern, multiplier in CODE_PATTERNS.items():
+    for pattern, multiplier in CodePatternImportance.PATTERNS.items():
         if re.search(pattern, section, re.MULTILINE):
             pattern_score *= multiplier
             pattern_found = True

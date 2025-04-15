@@ -141,21 +141,3 @@ class CodePatternImportance:
         r"\+\s*(test|describe|it|should)\s*\(": 1.1,  # Test definitions
         r"\+\s*(assert|expect)": 1.0,  # Assertions
     }
-
-
-# Add aliases for top-level constants to maintain compatibility
-DEFAULT_ENCODING = Utility.DEFAULT_ENCODING
-DEFAULT_LOG_LEVEL = Logging.DEFAULT_LEVEL
-LOGGING_LEVELS = Logging.LEVELS
-DEFAULT_DIFF_TOKEN_LIMIT = Utility.DEFAULT_DIFF_TOKEN_LIMIT
-MAX_WORKERS = Utility.MAX_WORKERS
-DEFAULT_MAX_RETRIES = EnvDefaults.MAX_RETRIES
-DEFAULT_TEMPERATURE = EnvDefaults.TEMPERATURE
-DEFAULT_MAX_OUTPUT_TOKENS = EnvDefaults.MAX_OUTPUT_TOKENS
-
-# Add aliases for file pattern constants
-BINARY_FILE_PATTERNS = FilePatterns.BINARY
-MINIFIED_FILE_EXTENSIONS = FilePatterns.MINIFIED_EXTENSIONS
-BUILD_DIRECTORIES = FilePatterns.BUILD_DIRECTORIES
-SOURCE_CODE_EXTENSIONS = FileTypeImportance.EXTENSIONS
-CODE_PATTERNS = CodePatternImportance.PATTERNS

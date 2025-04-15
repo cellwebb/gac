@@ -7,11 +7,11 @@ from typing import List, Union
 from rich.console import Console
 from rich.theme import Theme
 
-from gac.constants import DEFAULT_LOG_LEVEL
+from gac.constants import Logging
 from gac.errors import GACError
 
 
-def setup_logging(log_level: Union[int, str] = DEFAULT_LOG_LEVEL, quiet: bool = False, force: bool = False) -> None:
+def setup_logging(log_level: Union[int, str] = Logging.DEFAULT_LEVEL, quiet: bool = False, force: bool = False) -> None:
     """Configure logging for the application.
 
     Args:

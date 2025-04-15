@@ -1,6 +1,6 @@
 """Tests for gac.constants module."""
 
-from gac.constants import DEFAULT_ENCODING, DEFAULT_LOG_LEVEL, LOGGING_LEVELS, FileStatus
+from gac.constants import FileStatus, Logging, Utility
 
 
 class TestConstants:
@@ -27,13 +27,13 @@ class TestConstants:
 
     def test_logging_constants(self):
         """Test logging related constants."""
-        assert DEFAULT_LOG_LEVEL == "WARNING"
-        assert "DEBUG" in LOGGING_LEVELS
-        assert "INFO" in LOGGING_LEVELS
-        assert "WARNING" in LOGGING_LEVELS
-        assert "ERROR" in LOGGING_LEVELS
-        assert len(LOGGING_LEVELS) == 4  # Ensure no unexpected levels
+        assert Logging.DEFAULT_LEVEL == "WARNING"
+        assert "DEBUG" in Logging.LEVELS
+        assert "INFO" in Logging.LEVELS
+        assert "WARNING" in Logging.LEVELS
+        assert "ERROR" in Logging.LEVELS
+        assert len(Logging.LEVELS) == 4  # Ensure no unexpected levels
 
     def test_encoding_constants(self):
         """Test encoding constants."""
-        assert DEFAULT_ENCODING == "cl100k_base"  # Verify base encoding for tokenization
+        assert Utility.DEFAULT_ENCODING == "cl100k_base"  # Verify base encoding for tokenization
