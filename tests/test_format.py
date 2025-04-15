@@ -2,7 +2,9 @@
 
 from unittest.mock import patch
 
-from gac.format import run_formatter
+import pytest
+
+from gac.format import format_code, run_formatter, validate_format
 
 
 @patch("gac.format.subprocess.run")
@@ -43,3 +45,19 @@ def test_run_formatter_exception(mock_subprocess_run):
 
     # Verify the behavior: function returns False on exception
     assert result is False
+
+
+@pytest.mark.parametrize(
+    "input_code,expected",
+    [
+        ("print('hello')", 'print("hello")\n'),
+        ("x=1", "x = 1\n"),
+    ],
+)
+def test_format_code_valid(input_code, expected):
+    assert format_code(input_code) == expected
+
+
+def test_validate_format_invalid_code():
+    with pytest.raises(ValueError):
+        validate_format("x =")

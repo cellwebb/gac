@@ -162,6 +162,27 @@ def format_files(files: List[str], dry_run: bool = False) -> List[str]:
     return formatted_files
 
 
+def format_code(code: str) -> str:
+    """Format code string using black."""
+    result = subprocess.run(
+        ["black", "-", "-q"],
+        input=code.encode(),
+        capture_output=True,
+    )
+    return result.stdout.decode()
+
+
+def validate_format(code: str) -> None:
+    """Validate code formatting using black."""
+    result = subprocess.run(
+        ["black", "-", "-q", "--check"],
+        input=code.encode(),
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        raise ValueError("Invalid formatting")
+
+
 def main():
     """Main entry point for the formatter."""
     if len(sys.argv) < 2:

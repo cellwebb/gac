@@ -79,6 +79,7 @@ branch = true
 parallel = true
 omit = [
   "src/gac/__version__.py",
+  "src/gac/main.py",
 ]
 
 [tool.coverage.paths]

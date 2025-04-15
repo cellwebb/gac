@@ -6,6 +6,7 @@ It focuses on the core operations needed for commit generation.
 
 import logging
 import os
+import subprocess
 from typing import List, Optional
 
 from gac.errors import GitError
@@ -48,6 +49,24 @@ def get_staged_files(file_type: Optional[str] = None, existing_only: bool = Fals
     except GitError:
         # If git command fails, return empty list as a fallback
         return []
+
+
+def get_repo_root() -> str:
+    """Get absolute path of repository root."""
+    result = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
+    return result.decode().strip()
+
+
+def get_current_branch() -> str:
+    """Get name of current git branch."""
+    result = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    return result.decode().strip()
+
+
+def get_commit_hash() -> str:
+    """Get SHA-1 hash of current commit."""
+    result = subprocess.check_output(["git", "rev-parse", "HEAD"])
+    return result.decode().strip()
 
 
 def push_changes() -> bool:
