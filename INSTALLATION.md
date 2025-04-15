@@ -5,6 +5,10 @@
 Git Auto Commit (GAC) is a powerful CLI tool that uses AI to generate meaningful commit messages based on your staged
 changes. This guide will walk you through installation, configuration, and getting started.
 
+## Supported Platforms
+
+- macOS, Linux, and Windows (WSL recommended for Windows)
+
 ## Prerequisites
 
 - Python 3.10+
@@ -48,6 +52,16 @@ uv pip install -e ".[dev]"
 ```
 
 This setup is recommended if you want to contribute or run tests locally.
+
+## Verifying Installation
+
+After installation, verify that GAC is available:
+
+```sh
+gac --version
+```
+
+You should see the installed version printed.
 
 ## Quick Start
 
@@ -129,3 +143,10 @@ That's it! For most users, this is all you need to get started.
 - Use `gac --verbose` to see detailed configuration loading information
 - Check that configuration files have correct permissions
 - Ensure configuration files are valid and follow the correct format
+
+## Where to Get Help
+
+- For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- For usage and CLI options, see [USAGE.md](USAGE.md)
+- To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md)
+- License information: [LICENSE](LICENSE)
