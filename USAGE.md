@@ -36,6 +36,12 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 
 ## Message Customization
 
+> **Note:** Preview an AI-generated commit message from a specific commit without committing:
+>
+> ```sh
+> gac --since <commit-hash>
+> ```
+
 | Flag / Option     | Short | Description                              |
 | ----------------- | ----- | ---------------------------------------- |
 | `--one-liner`     | `-o`  | Generate a single-line commit message    |

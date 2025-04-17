@@ -46,6 +46,7 @@
 
    - Generate a one-line commit message: `gac -o`
    - Add a hint for the AI: `gac -h "Fix the authentication bug"`
+   - Generate a commit message from a specific SHA without committing: `gac --since <commit-hash>`
 
    See [USAGE.md](USAGE.md) for a full list of CLI flags and advanced usage.
 
@@ -72,3 +73,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ## Community & Support
 
 For questions, suggestions, or support, please open an issue or discussion on GitHub.
+
+## Getting Help
+
+- For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- Use `--since <commit-hash>` to preview an AI-generated commit message without making changes.
