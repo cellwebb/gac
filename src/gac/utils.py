@@ -11,13 +11,19 @@ from gac.constants import Logging
 from gac.errors import GACError
 
 
-def setup_logging(log_level: Union[int, str] = Logging.DEFAULT_LEVEL, quiet: bool = False, force: bool = False) -> None:
+def setup_logging(
+    log_level: Union[int, str] = Logging.DEFAULT_LEVEL,
+    quiet: bool = False,
+    force: bool = False,
+    suppress_noisy: bool = False,
+) -> None:
     """Configure logging for the application.
 
     Args:
         log_level: Log level to use (DEBUG, INFO, WARNING, ERROR)
         quiet: If True, suppress all output except errors
         force: If True, force reconfiguration of logging
+        suppress_noisy: If True, suppress noisy third-party loggers
     """
     if isinstance(log_level, str):
         log_level = getattr(logging, log_level.upper(), logging.WARNING)
@@ -34,9 +40,9 @@ def setup_logging(log_level: Union[int, str] = Logging.DEFAULT_LEVEL, quiet: boo
         **kwargs,
     )
 
-    # Suppress noisy third-party libraries
-    for noisy_logger in ["requests", "urllib3"]:
-        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+    if suppress_noisy:
+        for noisy_logger in ["requests", "urllib3"]:
+            logging.getLogger(noisy_logger).setLevel(logging.WARNING)
 
     logger.info(f"Logging initialized with level: {logging.getLevelName(log_level)}")
 
