@@ -1,7 +1,5 @@
 import subprocess
 
-import pytest
-
 from gac.git import get_commit_hash, get_current_branch, get_repo_root
 
 
