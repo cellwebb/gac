@@ -24,6 +24,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
   include
 
+## [v0.9.3] - 2025-04-17
+
+### Changed
+
+- Refined CI workflow to ignore additional files and directories, reducing unnecessary runs and noise
+- Improved consistency in documentation and configuration management
+
+### Documentation
+
+- Updated roadmap to reflect completed and in-progress tasks
+- Preparation for advanced configuration system implementation
+
 ## [v0.9.2] - 2025-04-17
 
 ### Added
