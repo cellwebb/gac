@@ -76,7 +76,7 @@ index 2345678..bcdef01 234567
         minified4 = "\n".join(["e" * 600 for _ in range(3)] + ["short" for _ in range(7)])
         assert is_minified_content(minified4)
         # Test with normal content
-        normal = """function formatText() {\n    // Normal function\n    const text = \"Hello world\";\n    return text.trim();\n}"""
+        normal = """function formatText() {\n    // Normal function\n    const text = \"Hello world\";\n    return text.trim();\n}"""  # noqa: E501
         assert not is_minified_content(normal)
 
     def test_is_lockfile_or_generated(self):

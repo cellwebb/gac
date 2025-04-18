@@ -13,34 +13,13 @@ from gac.constants import EnvDefaults, Logging
 
 
 def load_config() -> Dict[str, Union[str, int, float, bool]]:
-    """Load configuration from environment files with precedence.
-
-    Order of precedence (lowest to highest):
-    1. Package-level _config.env
-    2. User-specific ~/.gac.env
-    3. Project-level ./.env
-    4. Project-level ./.gac.env
-    5. Environment variables (highest priority)
-
-    Returns:
-        Dict with configuration values.
-    """
-    # (lowest priority) Package-level _config.env
-    package_config = Path(__file__).parent / "_config.env"
-    if package_config.exists():
-        load_dotenv(package_config)
-    # User-specific configuration
+    """Load configuration from $HOME/.gac.env, then ./.env, then environment variables."""
     user_config = Path.home() / ".gac.env"
     if user_config.exists():
         load_dotenv(user_config)
-    # Project-level ./.env
-    env_config = Path(".env")
-    if env_config.exists():
-        load_dotenv(env_config)
-    # (highest priority) Project-level .gac.env
-    project_config = Path(".gac.env")
-    if project_config.exists():
-        load_dotenv(project_config)
+    project_env = Path(".env")
+    if project_env.exists():
+        load_dotenv(project_env, override=True)
 
     config = {
         "model": os.getenv("GAC_MODEL"),

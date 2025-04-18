@@ -12,6 +12,7 @@
 - Generates clear, context-aware commit messages using AI
 - Enriches commit messages with repository structure and recent history
 - Simple CLI workflow, drop-in replacement for `git commit`
+- Easily manage configuration with `gac config` subcommands
 
 ## Quick Start
 
@@ -22,7 +23,7 @@
 
 2. **Configure**
 
-   Create a `.gac.env` file in your project or $HOME directory (~ on Mac/Linux):
+   Create a `$HOME/.gac.env` file (user-level config):
 
    ```sh
    GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
@@ -49,6 +50,12 @@
    - Add a hint for the AI: `gac -h "Fix the authentication bug"`
    - Advanced Usage: Add all, auto-confirm commit and push a one-liner with a hint: `gac -aypo -h "update for release"`
 
+   - **Manage configuration**: Use `gac config` commands to view, set, or unset config values in `$HOME/.gac.env`:
+     - Show config: `gac config show`
+     - Set a value: `gac config set GAC_MODEL groq:meta-llama/llama-4-scout-17b-16e-instruct`
+     - Get a value: `gac config get GAC_MODEL`
+     - Unset a value: `gac config unset GAC_MODEL`
+
    See [USAGE.md](USAGE.md) for a full list of CLI flags and advanced usage.
 
 ## How It Works
@@ -58,8 +65,10 @@ messages with the help of leading AI models.
 
 ## Best Practices
 
-- Use project-level `.gac.env` for project-specific configuration
-- Use user-level `~/.gac.env` for personal defaults
+- GAC loads configuration from two locations (in order of precedence):
+  1. User-level `$HOME/.gac.env` (applies to all projects for the user)
+  2. Project-level `.env` (in the project root, overrides user config if present) Environment variables always take
+     final precedence over both files.
 - Keep API keys out of version control
 - For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)

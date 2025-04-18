@@ -10,6 +10,7 @@ import click
 
 from gac import __version__
 from gac.config import load_config
+from gac.config_cli import config as config_cli
 from gac.constants import Logging
 from gac.errors import handle_error
 from gac.main import main
@@ -19,7 +20,7 @@ config = load_config()
 logger = logging.getLogger(__name__)
 
 
-@click.command()
+@click.group(invoke_without_command=True, context_settings=dict(ignore_unknown_options=True))
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
 @click.option(
     "--log-level",
@@ -38,7 +39,9 @@ logger = logging.getLogger(__name__)
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
 @click.option("--verbose", "-v", is_flag=True, help="Increase output verbosity to INFO")
+@click.pass_context
 def cli(
+    ctx: click.Context,
     add_all: bool = False,
     log_level: str = config["log_level"],
     no_format: bool = False,
@@ -52,37 +55,53 @@ def cli(
     version: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
-):
+) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
-    if version:
-        print(f"Git Auto Commit (GAC) version: {__version__}")
-        sys.exit(0)
+    if ctx.invoked_subcommand is None:
+        if version:
+            print(f"Git Auto Commit (GAC) version: {__version__}")
+            sys.exit(0)
+        effective_log_level = log_level
+        if verbose and log_level not in ("DEBUG", "INFO"):
+            effective_log_level = "INFO"
+        if quiet:
+            effective_log_level = "ERROR"
+        setup_logging(effective_log_level)
+        logger.info("Starting GAC")
+        try:
+            main(
+                stage_all=add_all,
+                should_format_files=not no_format,
+                model=model,
+                hint=hint,
+                one_liner=one_liner,
+                show_prompt=show_prompt,
+                require_confirmation=not yes,
+                push=push,
+                quiet=quiet,
+                dry_run=dry_run,
+            )
+        except Exception as e:
+            handle_error(e, exit_program=True)
+    else:
+        ctx.obj = {
+            "add_all": add_all,
+            "log_level": log_level,
+            "no_format": no_format,
+            "one_liner": one_liner,
+            "push": push,
+            "show_prompt": show_prompt,
+            "quiet": quiet,
+            "yes": yes,
+            "hint": hint,
+            "model": model,
+            "version": version,
+            "dry_run": dry_run,
+            "verbose": verbose,
+        }
 
-    effective_log_level = log_level
-    if verbose and log_level not in ("DEBUG", "INFO"):
-        effective_log_level = "INFO"
-    if quiet:
-        effective_log_level = "ERROR"
 
-    setup_logging(effective_log_level)
-    logger.info("Starting GAC")
-
-    try:
-        main(
-            stage_all=add_all,
-            should_format_files=not no_format,
-            model=model,
-            hint=hint,
-            one_liner=one_liner,
-            show_prompt=show_prompt,
-            require_confirmation=not yes,
-            push=push,
-            quiet=quiet,
-            dry_run=dry_run,
-        )
-    except Exception as e:
-        handle_error(e, exit_program=True)
-
+cli.add_command(config_cli)
 
 if __name__ == "__main__":
     cli()

@@ -7,22 +7,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [TODO]
+## [v0.10.0] - 2025-04-18
 
-- A cleaner approach would be to reorganize the modules by extracting a core domain layer separate from utility
-  functions, reducing cross-module dependencies.
-- Enhance Test Coverage for Complex Functionality: The project needs more comprehensive tests for core features like
-  error handling in generate_commit_message(), edge cases in error classification logic, and complete verification of
-  the multi-level configuration system to ensure robustness in real-world scenarios.
-- Key redaction: Add key redaction to sensitive data in logs and error messages.
-- Large repo optimization: Optimize handling of large repositories with many files and directories.
-- Error handling enhancement: Improve error messages and classification logic.
-- Quick start guide: Add a quick start guide for new users.
-- Document configuration precedence and best practices.
-- Document real-world usage patterns and best practices.
-- Choose a commit to git diff against
-- Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
-  include
+### Added
+
+- Dedicated `config_cli.py` for managing user-level configuration via CLI subcommands
+- `gac config` subcommands: `show`, `set`, `get`, `unset` for easy config management in `$HOME/.gac.env`
+- Unified CLI: now supports both top-level flags and subcommands (no more `gac run` wrapper)
+
+### Changed
+
+- Refactored CLI entry point and wiring for greater extensibility
+- Simplified configuration precedence: user-level `$HOME/.gac.env` and project-level `.env` (with env vars always taking
+  precedence)
+- Updated documentation to reflect new configuration workflow and CLI usage (README.md, USAGE.md, ROADMAP.md)
+
+### Removed
+
+- Old project-level `.gac.env` and package-level `_config.env` from config precedence
+- Obsolete test code for CLI (see `tests/test_cli.py`)
+- Outdated or redundant configuration documentation in roadmap and docs
+
+### Fixed
+
+- Minor formatting and lint issues in test and preprocess modules
 
 ## [v0.9.3] - 2025-04-17
 
@@ -322,3 +330,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Enhanced README
 
 ## [0.1.0] - Initial Release
+
+## [TODO]
+
+- Key redaction: Add key redaction to sensitive data in logs and error messages.
+- Large repo optimization: Optimize handling of large repositories with many files and directories.
+- Error handling enhancement: Improve error messages and classification logic.
+- Choose a commit to git diff against
+- Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
+  include

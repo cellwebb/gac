@@ -4,15 +4,18 @@ This document describes all available flags and options for the `gac` CLI tool.
 
 ## Table of Contents
 
-- [Basic Usage](#basic-usage)
-- [Core Workflow Flags](#core-workflow-flags)
-- [Message Customization](#message-customization)
-- [Output and Verbosity](#output-and-verbosity)
-- [Help and Version](#help-and-version)
-- [Example Workflows](#example-workflows)
-- [Advanced](#advanced)
-- [Configuration Notes](#configuration-notes)
-- [Getting Help](#getting-help)
+- [GAC Command-Line Usage](#gac-command-line-usage)
+  - [Table of Contents](#table-of-contents)
+  - [Basic Usage](#basic-usage)
+  - [Core Workflow Flags](#core-workflow-flags)
+  - [Message Customization](#message-customization)
+  - [Output and Verbosity](#output-and-verbosity)
+  - [Help and Version](#help-and-version)
+  - [Example Workflows](#example-workflows)
+  - [Advanced](#advanced)
+  - [Configuration Notes](#configuration-notes)
+    - [Configuration Subcommands](#configuration-subcommands)
+  - [Getting Help](#getting-help)
 
 ## Basic Usage
 
@@ -111,8 +114,15 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
   2. Environment variables
   3. Project-level `.gac.env`
   4. User-level `~/.gac.env`
-- For more details, see [INSTALLATION.md](INSTALLATION.md).
-- For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)
+
+### Configuration Subcommands
+
+The following subcommands manage configuration of your `$HOME/.gac.env` file:
+
+- `gac config show` — Show current configuration
+- `gac config set KEY VALUE` — Set a config key (value is always stored as a string)
+- `gac config get KEY` — Get a config value
+- `gac config unset KEY` — Remove a config key
 
 ## Getting Help
 

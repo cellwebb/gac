@@ -70,38 +70,6 @@ by removing deprecated functions and unnecessary parameters.
 
 ## Next Sprint
 
-- [ ] **Advanced Configuration System** 🔧:
-
-  - [ ] Design a robust, flexible configuration management system
-    - Implement a clear hierarchy of configuration sources
-    - Create a unified configuration loading mechanism
-    - Support for multiple configuration file formats (env, toml, yaml)
-  - [ ] Develop comprehensive configuration validation
-    - Add schema validation for configuration files
-    - Implement detailed error reporting for configuration issues
-    - Create meaningful validation messages for users
-  - [ ] Improve configuration discovery and loading
-    - Clearly define and document configuration file precedence
-    - Add logging for configuration file detection and loading
-    - Support for environment-specific configurations
-  - [ ] Create detailed documentation for configuration system
-    - Document exact order of configuration file lookup
-    - Provide clear examples of configuration file usage
-    - Explain how to override configurations at different levels
-
-- [ ] **Configuration Documentation**:
-
-  - [ ] Create comprehensive documentation for configuration file precedence
-    - Explicitly document the exact order GAC looks for configuration:
-      1. Command-line arguments (highest priority)
-      2. Project-level `.gac.env`
-      3. User-level `~/.gac.env`
-      4. Package-level `config.env`
-      5. Default built-in values (lowest priority)
-    - Provide clear examples of how configuration is resolved
-    - Explain how to customize and override configurations
-    - Add troubleshooting guide for configuration issues
-
 - [ ] **Performance Optimization**:
 
   - [ ] Further optimize token usage for large repositories
@@ -166,6 +134,8 @@ We've decided against these items to maintain focus:
 - [x] Added comprehensive test cases for constants and utilities
 - [x] Implemented multi-level configuration loading
 - [x] Simplified main.py configuration handling
+- [x] **CLI Refactor**: Unified CLI with support for both top-level flags and subcommands (no more `gac run` wrapper) 🚀
+- [x] **Config Subcommands**: Added `gac config` subcommands for configuration management (set, get, show, unset) 🛠️
 
 ## Token Optimization Strategy
 
