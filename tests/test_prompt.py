@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 
-from gac.prompt import add_repository_context, build_prompt, clean_commit_message
+from gac.prompt import build_prompt, clean_commit_message, extract_repository_context
 
 # fmt: off
 # flake8: noqa: E501
@@ -47,7 +47,7 @@ If you cannot confidently determine a type, use 'chore'.
 </conventions>
 
 <hint>
-Additional context provided by the user: <context></context>
+Additional context provided by the user: <hint_text></hint_text>
 </hint>
 
 <git_status>
@@ -175,7 +175,7 @@ class TestPrompts:
         assert result == "refactor: Simplify authentication logic"
 
     @patch("gac.prompt.run_git_command")
-    def test_add_repository_context(self, mock_run_git_command):
+    def test_extract_repository_context(self, mock_run_git_command):
         """Test repository context extraction and formatting."""
         # Configure the mock to return test data
         mock_responses = {
@@ -213,7 +213,7 @@ class TestPrompts:
         # Test diff containing one Python file
         diff = "diff --git a/src/example.py b/src/example.py\n@@ -1,5 +1,7 @@\n+def new_function():\n+    return True\n def example_function():\n     pass"
 
-        result = add_repository_context(diff)
+        result = extract_repository_context(diff)
 
         # Verify the repository context contains all expected sections
         assert "Repository Context:" in result
@@ -226,7 +226,7 @@ class TestPrompts:
         assert "Directory context (src):" in result
         assert "• example.py" in result
 
-    @patch("gac.prompt.add_repository_context")
+    @patch("gac.prompt.extract_repository_context")
     @patch("gac.prompt.load_prompt_template")
     @patch("gac.prompt.preprocess_diff")
     def test_build_prompt_with_repo_context(self, mock_preprocess, mock_load_template, mock_add_context):

@@ -56,7 +56,7 @@ If you cannot confidently determine a type, use 'chore'.
 </conventions>
 
 <hint>
-Additional context provided by the user: <context></context>
+Additional context provided by the user: <hint_text></hint_text>
 </hint>
 
 <git_status>
@@ -89,7 +89,7 @@ def load_prompt_template() -> str:
     return DEFAULT_TEMPLATE
 
 
-def add_repository_context(diff: str) -> str:
+def extract_repository_context(diff: str) -> str:
     """Extract and format repository context from the git diff.
 
     This function enhances the prompt by providing valuable repository context information:
@@ -217,31 +217,33 @@ def build_prompt(
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
-    # Generate repository context
-    repo_context = add_repository_context(diff)
-    logger.debug(f"Added repository context ({len(repo_context)} characters)")
-
-    # Replace placeholders with actual content
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
 
     # Add repository context if present
+    repo_context = extract_repository_context(diff)
     if repo_context:
         template = template.replace(
             "<repository_context></repository_context>", f"<repository_context>\n{repo_context}\n</repository_context>"
         )
+        logger.debug(f"Added repository context ({len(repo_context)} characters)")
+    else:
+        template = template.replace("<repository_context></repository_context>", "")
+        logger.debug("No repository context could be extracted")
 
-    template = template.replace("<context></context>", hint)
+    # Add hint if present
+    if hint:
+        template = template.replace("<hint_text></hint_text>", hint)
+        logger.debug(f"Added hint ({len(hint)} characters)")
+    else:
+        template = re.sub(r"<hint>.*?</hint>", "", template, flags=re.DOTALL)
+        logger.debug("No hint provided")
 
     # Process format options (one-liner vs multi-line)
     if one_liner:
         template = re.sub(r"<multi_line>.*?</multi_line>", "", template, flags=re.DOTALL)
     else:
         template = re.sub(r"<one_liner>.*?</one_liner>", "", template, flags=re.DOTALL)
-
-    # Process hint section - remove it entirely if no hint is provided
-    if not hint:
-        template = re.sub(r"<hint>.*?</hint>", "", template, flags=re.DOTALL)
 
     # Clean up extra whitespace
     template = re.sub(r"\n{3,}", "\n\n", template)

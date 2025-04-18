@@ -5,8 +5,8 @@ from unittest.mock import patch
 from gac.prompt import build_prompt
 
 
-@patch("gac.prompt.add_repository_context", return_value="")
-def test_build_prompt(mock_add_repo_context):
+@patch("gac.prompt.extract_repository_context", return_value="")
+def test_build_prompt(mock_extract_repo_context):
     """Test build_prompt function produces expected output format."""
     # Set up test inputs
     status = "On branch main"
@@ -18,7 +18,7 @@ def test_build_prompt(mock_add_repo_context):
     result = build_prompt(status, diff, one_liner=one_liner, hint=hint)
 
     # Verify the mock was called with the diff
-    mock_add_repo_context.assert_called_once_with(diff)
+    mock_extract_repo_context.assert_called_once_with(diff)
 
     # Check expected behavior: prompt contains necessary information for the LLM
     assert isinstance(result, str)
@@ -39,8 +39,8 @@ def test_build_prompt(mock_add_repo_context):
         assert "<multi_line>" in result
 
 
-@patch("gac.prompt.add_repository_context", return_value="")
-def test_build_prompt_without_hint(mock_add_repo_context):
+@patch("gac.prompt.extract_repository_context", return_value="")
+def test_build_prompt_without_hint(mock_extract_repo_context):
     """Test build_prompt works without hint."""
     # Set up test inputs
     status = "On branch main"
@@ -50,7 +50,7 @@ def test_build_prompt_without_hint(mock_add_repo_context):
     result = build_prompt(status, diff, one_liner=False)
 
     # Verify the mock was called with the diff
-    mock_add_repo_context.assert_called_once_with(diff)
+    mock_extract_repo_context.assert_called_once_with(diff)
 
     # Check expected behavior
     assert isinstance(result, str)
