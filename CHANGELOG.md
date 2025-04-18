@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Dedicated `config_cli.py` for managing user-level configuration via CLI subcommands
 - `gac config` subcommands: `show`, `set`, `get`, `unset` for easy config management in `$HOME/.gac.env`
 - Unified CLI: now supports both top-level flags and subcommands (no more `gac run` wrapper)
+- `scripts/test_gac_sandbox.sh` to test the GAC CLI in a sandboxed environment
+- `tests/test_config_cli.py` to test the config CLI using Click's testing utilities
 
 ### Changed
 
