@@ -20,6 +20,8 @@ This document describes all available flags and options for the `gac` CLI tool.
 ## Basic Usage
 
 ```sh
+gac init
+# Then follow the prompts to configure your provider, model, and API keys interactively
 gac
 ```
 
@@ -109,6 +111,7 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 
 ## Configuration Notes
 
+- The recommended way to set up GAC is to run `gac init` and follow the interactive prompts.
 - GAC loads configuration in the following order of precedence:
   1. CLI flags
   2. Environment variables

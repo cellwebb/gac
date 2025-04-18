@@ -13,6 +13,7 @@ from gac.config import load_config
 from gac.config_cli import config as config_cli
 from gac.constants import Logging
 from gac.errors import handle_error
+from gac.init_cli import init as init_cli
 from gac.main import main
 from gac.utils import setup_logging
 
@@ -102,6 +103,7 @@ def cli(
 
 
 cli.add_command(config_cli)
+cli.add_command(init_cli)
 
 if __name__ == "__main__":
     cli()

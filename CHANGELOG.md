@@ -7,6 +7,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.11.0] - 2025-04-18
+
+### Added
+
+- Interactive `gac init` command for guided provider/model/API key configuration, including backup model support
+- Improved documentation for installation, configuration, and troubleshooting (`INSTALLATION.md`, `TROUBLESHOOTING.md`,
+  `README.md`)
+- Registration links for Groq, Anthropic, OpenAI, and Mistral in docs
+- Clearer explanation of environment variable usage and config file precedence
+
+### Changed
+
+- Provider API key environment variables now use standard names (`GROQ_API_KEY`, `ANTHROPIC_API_KEY`, etc.)
+- `gac init` and documentation updated to reserve `GAC_` prefix for internal config (e.g., `GAC_MODEL`)
+- Roadmap simplified to focus on next updates and historical milestones
+- Troubleshooting guide now distinguishes project-level and user-level `.gac.env` issues, with OS-specific guidance
+
+### Fixed
+
+- Test for `gac init` updated to expect new environment variable naming
+- Minor formatting and consistency improvements in documentation and CLI output
+
 ## [v0.10.0] - 2025-04-18
 
 ### Added

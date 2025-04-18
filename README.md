@@ -23,18 +23,31 @@
 
 2. **Configure**
 
-   Create a `$HOME/.gac.env` file (user-level config):
+   Create a `$HOME/.gac.env` file (user-level config) with the interactive setup command:
 
    ```sh
-   GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
-   GROQ_API_KEY=your_key_here
+   gac init
+   ```
+
+   This will guide you to select a provider, model, and securely enter API keys for both main and backup models if
+   desired.
+
+   Example `.gac.env` output:
+
+   ```env
+   GAC_MODEL='groq:meta-llama/llama-4-scout-17b-16e-instruct'
+   GROQ_API_KEY='your_groq_key_here'
+   GAC_BACKUP_MODEL='anthropic:claude-3-5-haiku-latest'
+   ANTHROPIC_API_KEY='your_anthropic_key_here'
    ```
 
    Or set as environment variables:
 
    ```sh
    export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
-   export GROQ_API_KEY=your_key_here
+   export GROQ_API_KEY=your_groq_key_here
+   export GAC_BACKUP_MODEL=anthropic:claude-3-5-haiku-latest
+   export ANTHROPIC_API_KEY=your_anthropic_key_here
    ```
 
    For more configuration options, see [INSTALLATION.md](INSTALLATION.md).
@@ -50,6 +63,7 @@
    - Add a hint for the AI: `gac -h "Fix the authentication bug"`
    - Advanced Usage: Add all, auto-confirm commit and push a one-liner with a hint: `gac -aypo -h "update for release"`
 
+   - **Initialize interactively**: `gac init` (recommended for new users)
    - **Manage configuration**: Use `gac config` commands to view, set, or unset config values in `$HOME/.gac.env`:
      - Show config: `gac config show`
      - Set a value: `gac config set GAC_MODEL groq:meta-llama/llama-4-scout-17b-16e-instruct`
