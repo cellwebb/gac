@@ -47,7 +47,7 @@ dependencies = [
 ]
 
 [project.scripts]
-gac = "gac.main:cli"
+gac = "gac.cli:cli"
 
 [project.optional-dependencies]
 dev = [

@@ -1,3 +1,8 @@
+"""Configuration loading for GAC.
+
+Handles environment variable and .env file precedence for application settings.
+"""
+
 import os
 from pathlib import Path
 from typing import Dict, Union
