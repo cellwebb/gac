@@ -5,10 +5,16 @@ from unittest.mock import patch
 
 from gac.preprocess import (
     analyze_code_patterns,
+    calculate_section_importance,
+    filter_binary_and_minified,
     get_extension_score,
     is_lockfile_or_generated,
     is_minified_content,
     preprocess_diff,
+    process_section,
+    process_sections_parallel,
+    score_sections,
+    should_filter_section,
     smart_truncate_diff,
     split_diff_into_sections,
 )
@@ -56,16 +62,21 @@ index 2345678..bcdef01 234567
 
     def test_is_minified_content(self):
         """Test detection of minified content."""
-        # Test with minified content
-        minified = "function f(){return a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z}"  # noqa: E501
-        assert is_minified_content(minified)
-
+        # Test with minified content: single long line (>200 chars)
+        minified1 = "a" * 250
+        assert is_minified_content(minified1)
+        # Test with <10 lines and total length >1000
+        minified2 = "\n".join(["b" * 120 for _ in range(8)])
+        minified2 = minified2 + ("c" * (1001 - len(minified2)))
+        assert is_minified_content(minified2)
+        # Test with a line >300 chars and very few spaces
+        minified3 = "d" * 350
+        assert is_minified_content(minified3)
+        # Test with >20% of lines >500 chars
+        minified4 = "\n".join(["e" * 600 for _ in range(3)] + ["short" for _ in range(7)])
+        assert is_minified_content(minified4)
         # Test with normal content
-        normal = """function formatText() {
-    // Normal function with reasonable line length
-    const text = "Hello world";
-    return text.trim();
-}"""
+        normal = """function formatText() {\n    // Normal function\n    const text = \"Hello world\";\n    return text.trim();\n}"""
         assert not is_minified_content(normal)
 
     def test_is_lockfile_or_generated(self):
@@ -240,6 +251,80 @@ diff --git a/README.md b/README.md
                     assert "main.py" in result
                     assert "utils.py" in result
                     assert "README.md" in result
+
+    def test_should_filter_section_binary_and_lockfile(self):
+        # Simulate binary file section (matches FilePatterns.BINARY)
+        section = "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n"
+        assert should_filter_section(section)
+        # Simulate lockfile
+        section = "diff --git a/package-lock.json b/package-lock.json\n+{}\n".format("a" * 10)
+        assert should_filter_section(section)
+
+    def test_should_filter_section_minified(self):
+        # Simulate minified content in a diff section (long line > 350 chars)
+        long_line = "+" + ("a" * 350)
+        section = f"diff --git a/min.js b/min.js\n{long_line}"
+        assert should_filter_section(section)
+
+    def test_should_filter_section_normal(self):
+        # Normal code section should not be filtered
+        section = "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n"
+        assert not should_filter_section(section)
+
+    def test_process_section(self):
+        # Should return None for filtered, section for normal
+        binary = "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n"
+        normal = "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n"
+        assert process_section(binary) is None
+        assert process_section(normal) == normal
+
+    def test_process_sections_parallel_small(self):
+        # Sequential path
+        sections = [
+            "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n",
+            "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n",
+        ]
+        result = process_sections_parallel(sections)
+        assert len(result) == 1
+        assert "main.py" in result[0]
+
+    def test_process_sections_parallel_large(self):
+        # Parallel path, 4+ sections
+        sections = [f"diff --git a/file{i}.py b/file{i}.py\n+def foo():\n+    return {i}\n" for i in range(5)]
+        result = process_sections_parallel(sections)
+        assert len(result) == 5
+
+    def test_score_sections(self):
+        sections = [
+            "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n",
+            "diff --git a/README.md b/README.md\n+# doc\n",
+        ]
+        scored = score_sections(sections)
+        assert isinstance(scored, list)
+        assert all(isinstance(t, tuple) and len(t) == 2 for t in scored)
+        # Should be sorted by importance
+        assert scored[0][1] >= scored[1][1]
+
+    def test_calculate_section_importance(self):
+        sec1 = "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n"
+        sec2 = "diff --git a/README.md b/README.md\n+# doc\n"
+        s1 = calculate_section_importance(sec1)
+        s2 = calculate_section_importance(sec2)
+        assert s1 > s2
+
+    def test_filter_binary_and_minified(self):
+        # Make minified content long enough to trigger is_minified_content
+        minified_content = "+" + ("a" * 1200)
+        diff = (
+            "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n"
+            "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n"
+            f"diff --git a/min.js b/min.js\n{minified_content}"
+        )
+        filtered = filter_binary_and_minified(diff)
+        assert "main.py" in filtered
+        assert "file.bin" not in filtered
+        assert "a" * 100 in filtered or "def foo" in filtered  # main.py content present
+        assert "a" * 1000 not in filtered  # minified content removed
 
 
 if __name__ == "__main__":

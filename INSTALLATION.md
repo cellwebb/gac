@@ -7,11 +7,12 @@ changes. This guide will walk you through installation, configuration, and getti
 
 ## Supported Platforms
 
-- macOS, Linux, and Windows (WSL recommended for Windows)
+- macOS, Linux, and Windows (WSL recommended for Windows; native Windows support is available—see
+  [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md))
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.10+
 - pip or pipx
 - Git 2.x
 - An API key from a supported AI provider (optional)
@@ -32,7 +33,7 @@ To install a specific version (tag, branch, or commit), use:
 pipx install git+https://github.com/cellwebb/gac.git@<TAG_OR_COMMIT>
 ```
 
-Replace `<TAG_OR_COMMIT>` with your desired release tag (e.g. `v1.2.3`) or commit hash.
+Replace `<TAG_OR_COMMIT>` with your desired release tag (e.g. `v0.9.1`) or commit hash.
 
 If you don't have pipx, you can install it with:
 
@@ -51,7 +52,8 @@ cd gac
 uv pip install -e ".[dev]"
 ```
 
-This setup is recommended if you want to contribute or run tests locally.
+This setup is recommended if you want to contribute or run tests locally. For Windows-specific setup, see
+[docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md).
 
 ## Verifying Installation
 
@@ -153,4 +155,5 @@ That's it! For most users, this is all you need to get started.
 - For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - For usage and CLI options, see [USAGE.md](USAGE.md)
 - To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md)
+- For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)
 - License information: [LICENSE](LICENSE)

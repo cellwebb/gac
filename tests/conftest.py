@@ -2,6 +2,7 @@
 Pytest configuration file with coverage setup to avoid the module-not-measured warning.
 """
 
+import logging
 import os
 import sys
 from unittest.mock import patch
@@ -139,3 +140,10 @@ def base_mocks(
         "get_config": mock_get_config,
         "stage_files": mock_stage_files,
     }
+
+
+@pytest.fixture(autouse=True, scope="session")
+def silence_httpx_and_groq_loggers():
+    """Silence httpx and groq loggers to suppress noisy shutdown errors."""
+    for name in ("httpx", "httpcore", "groq"):
+        logging.getLogger(name).disabled = True

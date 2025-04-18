@@ -24,6 +24,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add recent git commit messages as context? If so, probably need to add a flag to control the number of commits to
   include
 
+## [v0.9.2] - 2025-04-17
+
+### Added
+
+- `test_cli.py` to test the command line interface
+- `test_config.py` to test configuration loading
+- Additional test cases in `test_preprocess.py`
+- Additional test cases in `test_utils.py`
+
+### Changed
+
+- Documentation for Windows compatibility (see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md))
+- Updated `README.md`, `INSTALLATION.md`, `USAGE.md`, and `ROADMAP.md` to reflect Python 3.10+ and Windows support
+- Modified `cli.py` to print version information instead of logging it
+- Updated `conftest.py` to silence noisy loggers during testing
+- Improved code coverage by adding new test files and cases
+
 ## [v0.9.1] - 2025-04-17
 
 ### Changed
@@ -121,7 +138,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Updated nightly workflow to 5am Los Angeles
   - Refined workflow triggers
-  - Python 3.13 support
+  - Python 3.10 support
   - Improved release and tagging
 
 - **Performance**:

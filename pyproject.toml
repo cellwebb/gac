@@ -7,7 +7,7 @@ name = "gac"
 dynamic = ["version"]
 description = 'git auto commit'
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [
@@ -16,6 +16,9 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
@@ -71,7 +74,7 @@ Source = "https://github.com/cellwebb/gac"
 
 [tool.black]
 line-length = 120
-target-version = ["py313"]
+target-version = ["py310", "py311", "py312", "py313"]
 
 [tool.coverage.run]
 source_pkgs = ["gac"]

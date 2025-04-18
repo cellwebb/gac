@@ -112,10 +112,12 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
   3. Project-level `.gac.env`
   4. User-level `~/.gac.env`
 - For more details, see [INSTALLATION.md](INSTALLATION.md).
+- For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)
 
 ## Getting Help
 
 - For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - For installation and configuration, see [INSTALLATION.md](INSTALLATION.md)
+- For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)
 - To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md)
 - License information: [LICENSE](LICENSE)

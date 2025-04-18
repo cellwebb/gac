@@ -5,11 +5,13 @@ make the process smooth for everyone.
 
 ## Table of Contents
 
-- [How to Contribute](#how-to-contribute)
-- [Coding Standards](#coding-standards)
-- [Code of Conduct](#code-of-conduct)
-- [License](#license)
-- [Where to Get Help](#where-to-get-help)
+- [Contributing to gac](#contributing-to-gac)
+  - [Table of Contents](#table-of-contents)
+  - [How to Contribute](#how-to-contribute)
+  - [Coding Standards](#coding-standards)
+  - [Code of Conduct](#code-of-conduct)
+  - [License](#license)
+  - [Where to Get Help](#where-to-get-help)
 
 ## How to Contribute
 

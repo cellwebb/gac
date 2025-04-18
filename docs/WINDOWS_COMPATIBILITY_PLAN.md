@@ -71,7 +71,7 @@ Ensure the project works seamlessly on Windows by addressing platform-specific i
 
 - **Action:** Use `pytest.mark.skipif` to skip tests not applicable to Windows.
 
-- \*\*Example:
+- **Example:**
 
   ```python
   import pytest
@@ -140,7 +140,7 @@ Ensure the project works seamlessly on Windows by addressing platform-specific i
 
 - **Action:** Check dependencies for Windows compatibility and update `requirements.txt` or `pyproject.toml`.
 
-- \*\*Example:
+- **Example:**
 
   ```bash
   pip check
@@ -148,10 +148,11 @@ Ensure the project works seamlessly on Windows by addressing platform-specific i
 
 ## Deliverables
 
-- Updated codebase with cross-platform compatibility.
-- Updated `README.md` with Windows setup instructions.
-- CI/CD configuration with Windows job.
-- Comprehensive test suite with platform-specific tests.
+- Updated codebase with cross-platform compatibility (Python 3.10+, macOS, Linux, and Windows)
+- Updated `README.md` and `INSTALLATION.md` with Windows setup instructions
+- CI/CD configuration with Windows job
+- Comprehensive test suite with platform-specific tests
+- Updated `CHANGELOG.md` with Windows compatibility changes (see [CHANGELOG.md](../CHANGELOG.md))
 
 ## Timeline
 
