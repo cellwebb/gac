@@ -4,19 +4,55 @@ on:
   push:
     branches: ["main"]
     paths-ignore:
+      # Documentation and metadata
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - "LICENSE"
       - "**.md"
-      - "docs/**"
+      # Version and config
+      - "**/__version__.py"
       - ".gitignore"
-      - "Makefile"
+      - ".editorconfig"
       - ".prettierrc"
+      - "Makefile"
+      # Images and diagrams
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.svg"
+      - "**/*.gif"
+      # Directories
+      - ".vscode/**"
+      - "docs/**"
+      - "examples/**"
+      - "scripts/**"
   pull_request:
     branches: ["main"]
     paths-ignore:
+      # Documentation and metadata
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - "LICENSE"
       - "**.md"
-      - "docs/**"
+      # Version and config
+      - "**/__version__.py"
       - ".gitignore"
-      - "Makefile"
+      - ".editorconfig"
       - ".prettierrc"
+      - "Makefile"
+      # Images and diagrams
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.svg"
+      - "**/*.gif"
+      # Directories
+      - ".vscode/**"
+      - "docs/**"
+      - "examples/**"
+      - "scripts/**"
 
 jobs:
   test:
