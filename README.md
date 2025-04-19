@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13-blue.svg)](https://www.python.org/downloads/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 [![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
@@ -18,8 +18,8 @@
 
 1. **Install**
 
-   See [INSTALLATION.md](INSTALLATION.md) for up-to-date installation instructions. Windows users: see also the Windows
-   setup section in [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md).
+   See [docs/INSTALLATION.md](docs/INSTALLATION.md) for up-to-date installation instructions. Windows users: see also
+   the Windows setup section in [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md).
 
 2. **Configure**
 
@@ -50,7 +50,7 @@
    export ANTHROPIC_API_KEY=your_anthropic_key_here
    ```
 
-   For more configuration options, see [INSTALLATION.md](INSTALLATION.md).
+   For more configuration options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 3. **Use**
 
@@ -70,7 +70,7 @@
      - Get a value: `gac config get GAC_MODEL`
      - Unset a value: `gac config unset GAC_MODEL`
 
-   See [USAGE.md](USAGE.md) for a full list of CLI flags and advanced usage.
+   See [docs/USAGE.md](docs/USAGE.md) for a full list of CLI flags and advanced usage.
 
 ## How It Works
 
@@ -84,12 +84,12 @@ messages with the help of leading AI models.
   2. Project-level `.env` (in the project root, overrides user config if present) Environment variables always take
      final precedence over both files.
 - Keep API keys out of version control
-- For troubleshooting and advanced tips, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- For troubleshooting and advanced tips, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - For Windows setup, see [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md)
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
 
 ## License
 
