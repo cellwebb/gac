@@ -7,6 +7,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.12.0] - 2025-05-07
+
+### Added
+
+- New `gac preview` command to generate commit messages for diffs without committing
+  - Preview changes against HEAD or between specific commits
+  - Supports all message generation options (one-liner, hint, model selection)
+  - Displays formatted commit message preview
+- Integration test script for preview functionality (`scripts/test_gac_preview.sh`)
+- Improved installation instructions with step-by-step commands in README.md
+- Unit tests for the preview command in `tests/test_cli.py`
+
+### Changed
+
+- Reorganized documentation files into `docs/` directory for better organization
+  - Moved `INSTALLATION.md`, `USAGE.md`, `CONTRIBUTING.md`, and `TROUBLESHOOTING.md`
+  - Updated all cross-references in README.md and other files
+- Improved prompt handling in `prompt.py`:
+  - Renamed `add_repository_context` to `extract_repository_context` for clarity
+  - Better handling of hints and empty repository context
+  - Fixed placeholder in prompt template (`<hint_text>` instead of `<context>`)
+- Removed codecov.yml in favor of GitHub default settings
+
+### Fixed
+
+- Corrected links to documentation files in README.md
+- Enhanced error handling in preview functionality for invalid git refs
+
 ## [v0.11.0] - 2025-04-18
 
 ### Added
