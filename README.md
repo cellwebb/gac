@@ -18,8 +18,25 @@
 
 1. **Install**
 
-   See [docs/INSTALLATION.md](docs/INSTALLATION.md) for up-to-date installation instructions. Windows users: see also
-   the Windows setup section in [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md).
+   ```sh
+   # Install pipx if you don't have it
+   python3 -m pip install --user pipx
+   python3 -m pipx ensurepath
+
+   # Install gac
+   pipx install git+https://github.com/cellwebb/gac.git
+   ```
+
+   Verify installation:
+
+   ```sh
+   gac --version
+   ```
+
+   Windows users: see the Windows setup section in
+   [docs/WINDOWS_COMPATIBILITY_PLAN.md](docs/WINDOWS_COMPATIBILITY_PLAN.md).
+
+   For more installation options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 2. **Configure**
 
