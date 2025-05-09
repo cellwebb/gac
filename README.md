@@ -94,6 +94,10 @@
 GAC analyzes your staged changes, repository structure, and recent commit history to generate high-quality commit
 messages with the help of leading AI models.
 
+![GAC Diff Example](https://github.com/cellwebb/gac/assets/screenshot-gac-ya.png)
+
+_Example of `gac diff` command showing commit comparison and testing enhancements_
+
 ## Best Practices
 
 - GAC loads configuration from two locations (in order of precedence):
