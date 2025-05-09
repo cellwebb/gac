@@ -1,15 +1,12 @@
+import logging
 import sys
-from typing import List, Optional
+from typing import Optional
 
 import click
 
 from gac.errors import GitError, with_error_handling
-from gac.git import get_diff, get_staged_files, run_git_command
-from gac.preprocess import (
-    filter_binary_and_minified,
-    preprocess_diff,
-    smart_truncate_diff,
-)
+from gac.git import get_diff, get_staged_files
+from gac.preprocess import filter_binary_and_minified, smart_truncate_diff, split_diff_into_sections
 from gac.utils import print_message, setup_logging
 
 
@@ -23,7 +20,9 @@ def _diff_implementation(
     commit2: Optional[str] = None,
 ) -> None:
     """Implementation of the diff command logic for easier testing."""
-    logger = setup_logging()
+    setup_logging()
+    # Get a logger for this module instead of using the return value of setup_logging
+    logger = logging.getLogger(__name__)
     logger.debug("Running diff command")
 
     # If we're comparing specific commits, don't need to check for staged changes
@@ -52,7 +51,12 @@ def _diff_implementation(
             sys.exit(1)
 
     if truncate:
-        diff_text = smart_truncate_diff(diff_text, max_tokens=max_tokens)
+        # Convert the diff text to the format expected by smart_truncate_diff
+        # (list of tuples with (section, score))
+        if isinstance(diff_text, str):
+            sections = split_diff_into_sections(diff_text)
+            scored_sections = [(section, 1.0) for section in sections]
+            diff_text = smart_truncate_diff(scored_sections, max_tokens or 1000, "anthropic:claude-3-haiku-latest")
 
     # Display the diff
     if color:
@@ -67,7 +71,7 @@ def _diff_implementation(
         print(ansi_escape.sub("", diff_text))
 
 
-@click.command()
+@click.command(name="diff")
 @click.option(
     "--filter/--no-filter",
     default=True,

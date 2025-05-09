@@ -1,4 +1,3 @@
-
 """CLI entry point for GAC.
 
 Defines the Click-based command-line interface and delegates execution to the main workflow.
@@ -13,11 +12,11 @@ from gac import __version__
 from gac.config import load_config
 from gac.config_cli import config as config_cli
 from gac.constants import Logging
-from gac.diff_cli import diff
+from gac.diff_cli import diff as diff_cli
 from gac.errors import handle_error
 from gac.init_cli import init as init_cli
 from gac.main import main
-from gac.preview_cli import preview
+from gac.preview_cli import preview as preview_cli
 from gac.utils import setup_logging
 
 config = load_config()
@@ -107,9 +106,8 @@ def cli(
 
 cli.add_command(config_cli)
 cli.add_command(init_cli)
-cli.add_command(preview)
-cli.add_command(diff)
+cli.add_command(preview_cli)
+cli.add_command(diff_cli)
 
 if __name__ == "__main__":
     cli()
-

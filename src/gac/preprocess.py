@@ -422,13 +422,13 @@ def smart_truncate_diff(scored_sections: List[Tuple[str, float]], token_limit: i
 
         result_sections.append(skipped_summary)
 
-        # Add overall summary if we have room    if current_tokens + 100 <= token_limit:
-        summary = (
-            f"\n\n[Summary: Showing {included_count} of {total_count} changed files"
-            f" ({current_tokens}/{token_limit} tokens used), "
-            f"prioritized by importance.]"
-        )
-
-        result_sections.append(summary)
+        # Add overall summary if we have room
+        if current_tokens + 100 <= token_limit:
+            summary = (
+                f"\n\n[Summary: Showing {included_count} of {total_count} changed files"
+                f" ({current_tokens}/{token_limit} tokens used), "
+                f"prioritized by importance.]"
+            )
+            result_sections.append(summary)
 
     return "".join(result_sections)
