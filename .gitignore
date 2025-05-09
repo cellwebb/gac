@@ -206,3 +206,5 @@ scripts/auto_release.py
 scripts/prep_changelog_for_release.py
 scripts/changelog_config.yaml
 scripts/changelog_prompt.md
+
+**/.claude/settings.local.json

@@ -105,12 +105,13 @@ AI_ERROR_CODES = {
 }
 
 
-def handle_error(error: Exception, exit_program: bool = False) -> None:
+def handle_error(error: Exception, exit_program: bool = False, quiet: bool = False) -> None:
     """Handle an error with proper logging and user feedback.
 
     Args:
         error: The error to handle
         exit_program: If True, exit the program after handling the error
+        quiet: If True, suppress non-error output
     """
     logger.error(f"Error: {str(error)}")
 
