@@ -14,6 +14,38 @@
 - Simple CLI workflow, drop-in replacement for `git commit`
 - Easily manage configuration with `gac config` subcommands
 
+## How It Works
+
+GAC analyzes your staged changes, repository structure, and recent commit history to generate high-quality commit
+messages with the help of leading AI models.
+
+![GAC Diff Example](assets/screenshot-gac-ya.png)
+
+## How to Use
+
+```sh
+git add .
+gac
+```
+
+### Basic Commands
+
+- Generate a commit message: `gac`
+- Generate a one-line commit message: `gac -o`
+- Add a hint for the AI: `gac -h "Fix the authentication bug"`
+- Advanced usage: Add all, auto-confirm, push a one-liner with a hint: `gac -aypo -h "update for release"`
+
+### Configuration Commands
+
+- **Initialize interactively**: `gac init` (recommended for new users)
+- **Manage configuration**: Use `gac config` commands to view, set, or unset config values:
+  - Show config: `gac config show`
+  - Set a value: `gac config set GAC_MODEL groq:meta-llama/llama-4-scout-17b-16e-instruct`
+  - Get a value: `gac config get GAC_MODEL`
+  - Unset a value: `gac config unset GAC_MODEL`
+
+See [docs/USAGE.md](docs/USAGE.md) for a full list of CLI flags and advanced usage.
+
 ## Quick Start
 
 1. **Install**
@@ -69,34 +101,16 @@
 
    For more configuration options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-3. **Use**
+3. **Verify**
+
+   Test that GAC is working properly:
 
    ```sh
-   git add .
-   gac
+   # Make a change to a file
+   echo "# Test change" >> README.md
+   git add README.md
+   gac -o # Generate a one-line commit message
    ```
-
-   - Generate a one-line commit message: `gac -o`
-   - Add a hint for the AI: `gac -h "Fix the authentication bug"`
-   - Advanced Usage: Add all, auto-confirm commit and push a one-liner with a hint: `gac -aypo -h "update for release"`
-
-   - **Initialize interactively**: `gac init` (recommended for new users)
-   - **Manage configuration**: Use `gac config` commands to view, set, or unset config values in `$HOME/.gac.env`:
-     - Show config: `gac config show`
-     - Set a value: `gac config set GAC_MODEL groq:meta-llama/llama-4-scout-17b-16e-instruct`
-     - Get a value: `gac config get GAC_MODEL`
-     - Unset a value: `gac config unset GAC_MODEL`
-
-   See [docs/USAGE.md](docs/USAGE.md) for a full list of CLI flags and advanced usage.
-
-## How It Works
-
-GAC analyzes your staged changes, repository structure, and recent commit history to generate high-quality commit
-messages with the help of leading AI models.
-
-![GAC Diff Example](https://github.com/cellwebb/gac/assets/screenshot-gac-ya.png)
-
-_Example of `gac diff` command showing commit comparison and testing enhancements_
 
 ## Best Practices
 
