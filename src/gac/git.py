@@ -1,3 +1,4 @@
+
 """Git operations for GAC.
 
 This module provides a simplified interface to Git commands.
@@ -51,6 +52,35 @@ def get_staged_files(file_type: Optional[str] = None, existing_only: bool = Fals
         return []
 
 
+def get_diff(staged: bool = True, color: bool = True) -> str:
+    """Get the diff between commits or working tree.
+    
+    Args:
+        staged: If True, show staged changes. If False, show unstaged changes.
+        color: If True, include ANSI color codes in the output.
+        
+    Returns:
+        String containing the diff output
+        
+    Raises:
+        GitError: If the git command fails
+    """
+    try:
+        args = ["diff"]
+        
+        if color:
+            args.append("--color")
+            
+        if staged:
+            args.append("--cached")
+            
+        output = run_git_command(args)
+        return output
+    except Exception as e:
+        logger.error(f"Failed to get diff: {str(e)}")
+        raise GitError(f"Failed to get diff: {str(e)}")
+
+
 def get_repo_root() -> str:
     """Get absolute path of repository root."""
     result = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
@@ -85,3 +115,4 @@ def push_changes() -> bool:
         else:
             logger.error(f"Failed to push changes: {e}")
         return False
+
