@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 @click.option("--no-format", "-nf", is_flag=True, help="Skip formatting of staged files")
 @click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
-@click.option("--show-prompt", "-s", is_flag=True, help="Show the prompt sent to the LLM")
+@click.option("--show-prompt", is_flag=True, help="Show the prompt sent to the LLM")
+@click.option("--scope", "-s", help="Add a scope to the commit message (e.g., 'on_require' in 'fix(on_require): ...')")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
 @click.option("--hint", "-h", default="", help="Additional context to include in the prompt")
@@ -51,6 +52,7 @@ def cli(
     one_liner: bool = False,
     push: bool = False,
     show_prompt: bool = False,
+    scope: str = None,
     quiet: bool = False,
     yes: bool = False,
     hint: str = "",
@@ -79,6 +81,7 @@ def cli(
                 hint=hint,
                 one_liner=one_liner,
                 show_prompt=show_prompt,
+                scope=scope,
                 require_confirmation=not yes,
                 push=push,
                 quiet=quiet,
@@ -94,6 +97,7 @@ def cli(
             "one_liner": one_liner,
             "push": push,
             "show_prompt": show_prompt,
+            "scope": scope,
             "quiet": quiet,
             "yes": yes,
             "hint": hint,

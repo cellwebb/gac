@@ -30,6 +30,7 @@ def main(
     hint: str = "",
     one_liner: bool = False,
     show_prompt: bool = False,
+    scope: Optional[str] = None,
     require_confirmation: bool = True,
     push: bool = False,
     quiet: bool = False,
@@ -96,7 +97,14 @@ def main(
     status = run_git_command(["status"])
     diff = run_git_command(["diff", "--staged"])
 
-    prompt = build_prompt(status=status, diff=diff, one_liner=one_liner, hint=hint, model=model or config["model"])
+    prompt = build_prompt(
+        status=status,
+        diff=diff,
+        one_liner=one_liner,
+        hint=hint,
+        model=model or config["model"],
+        scope=scope,
+    )
 
     if show_prompt:
         console = Console()

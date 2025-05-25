@@ -50,6 +50,11 @@ You MUST start your commit message with the most appropriate conventional commit
 - ci: Changes to CI configuration
 - chore: Miscellaneous changes not affecting src/test files
 
+If a scope is provided, include it in parentheses after the type and before the colon, like this:
+- feat(scope): description
+- fix(scope): description
+- etc.
+
 Select the prefix that best matches the primary purpose of the changes.
 If multiple prefixes apply, choose the one that represents the most significant change.
 If you cannot confidently determine a type, use 'chore'.
@@ -196,6 +201,7 @@ def build_prompt(
     hint: str = "",
     model: str = "anthropic:claude-3-haiku-latest",
     template_path: Optional[str] = None,  # Kept for API compatibility but unused
+    scope: Optional[str] = None,
 ) -> str:
     """Build a prompt for the AI model using the provided template and git information.
 
@@ -216,6 +222,13 @@ def build_prompt(
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
+
+    # Add scope to the conventions section if provided
+    if scope:
+        template = template.replace(
+            "Select the prefix that best matches the primary purpose of the changes.",
+            f"If a scope is provided, include it in parentheses after the type and before the colon, like this:\n- feat({scope}): description\n- fix({scope}): description\n- etc.\n\nSelect the prefix that best matches the primary purpose of the changes.",
+        )
 
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
