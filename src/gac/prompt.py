@@ -60,6 +60,16 @@ If multiple prefixes apply, choose the one that represents the most significant 
 If you cannot confidently determine a type, use 'chore'.
 </conventions>
 
+<scope_instructions>
+When creating the commit message, include a scope in parentheses after the type and before the colon if it helps categorize the change.
+Examples:
+- feat(auth): add login functionality
+- fix(api): handle null response
+- docs: update README
+
+Choose a short, lowercase scope that describes the area of the codebase being changed.
+</scope_instructions>
+
 <hint>
 Additional context provided by the user: <hint_text></hint_text>
 </hint>
@@ -223,12 +233,23 @@ def build_prompt(
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
-    # Add scope to the conventions section if provided
-    if scope:
-        template = template.replace(
-            "Select the prefix that best matches the primary purpose of the changes.",
-            f"If a scope is provided, include it in parentheses after the type and before the colon, like this:\n- feat({scope}): description\n- fix({scope}): description\n- etc.\n\nSelect the prefix that best matches the primary purpose of the changes.",
-        )
+    # Handle scope instructions
+    if scope is not None:  # User explicitly used --scope
+        if scope:  # User provided a specific scope
+            template = template.replace(
+                "<scope_instructions>",
+                f"The user specified the scope to be '{scope}'. "
+                f"Please include this exact scope in parentheses after the type (e.g., 'fix({scope}): ...').",
+            )
+        else:  # User used --scope without a value
+            template = template.replace(
+                "<scope_instructions>",
+                "The user requested to include a scope in the commit message. "
+                "Please determine and include the most appropriate scope in parentheses after the type.",
+            )
+    else:
+        # Remove scope instructions if --scope was not used
+        template = re.sub(r"<scope_instructions>.*?</scope_instructions>\n", "", template, flags=re.DOTALL)
 
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)

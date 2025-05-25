@@ -35,7 +35,14 @@ logger = logging.getLogger(__name__)
 @click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
 @click.option("--show-prompt", is_flag=True, help="Show the prompt sent to the LLM")
-@click.option("--scope", "-s", help="Add a scope to the commit message (e.g., 'on_require' in 'fix(on_require): ...')")
+@click.option(
+    "--scope",
+    "-s",
+    is_flag=False,
+    flag_value="",
+    default=None,
+    help="Add a scope to the commit message. If used without a value, the LLM will determine an appropriate scope.",
+)
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
 @click.option("--hint", "-h", default="", help="Additional context to include in the prompt")
