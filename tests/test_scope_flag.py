@@ -218,6 +218,7 @@ class TestScopeIntegration:
 
     def test_scope_in_generated_message(self, monkeypatch):
         """Test that scope appears in the final commit message."""
+        from gac.git import run_git_command as original_run_git_command
         from gac.main import main
 
         # Mock config
@@ -232,8 +233,22 @@ class TestScopeIntegration:
             },
         )
 
-        # Mock git operations
-        monkeypatch.setattr("gac.main.run_git_command", lambda args: "mock output")
+        # Set up a spy for the git commit command
+        class GitCommandSpy:
+            def __init__(self):
+                self.commit_message = None
+
+            def run_git_command(self, args, **kwargs):
+                if len(args) > 2 and args[0] == "commit" and args[1] == "-m":
+                    self.commit_message = args[2]
+                return "mock output"
+
+        # Create our spy instance
+        git_spy = GitCommandSpy()
+
+        # Mock both the git module and main module's run_git_command
+        monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
+        monkeypatch.setattr("gac.main.run_git_command", git_spy.run_git_command)
 
         # Mock AI to return message with scope
         def mock_generate(**kwargs):
@@ -246,51 +261,40 @@ class TestScopeIntegration:
                 return "feat: add new feature"
 
         monkeypatch.setattr("gac.main.generate_with_fallback", mock_generate)
+
+        # Don't clean the commit message (this happens after commit in the real code)
         monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)
 
-        # Track the commit message
-        commit_message = None
-
-        def capture_commit(msg):
-            nonlocal commit_message
-            commit_message = msg
-
-        # Mock git commit to capture the message
-        original_git_command = lambda args: "mock output"
-
-        def mock_git_with_capture(args):
-            if args[0] == "commit" and args[1] == "-m":
-                capture_commit(args[2])
-            return original_git_command(args)
-
-        monkeypatch.setattr("gac.main.run_git_command", mock_git_with_capture)
+        # Silence console output
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
-        # Mock click.confirm to auto-confirm
+
+        # Mock other functions needed for the test
+        monkeypatch.setattr("gac.main.get_staged_files", lambda **kwargs: ["file1.py"])
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
         # Test with specific scope
         with pytest.raises(SystemExit) as exc_info:
             main(scope="auth")
         assert exc_info.value.code == 0
-        assert commit_message == "feat(auth): add login functionality"
+        assert git_spy.commit_message == "feat(auth): add login functionality"
 
-        # Reset commit message
-        commit_message = None
+        # Reset spy for the next test
+        git_spy.commit_message = None
 
         # Test with AI-determined scope
         with pytest.raises(SystemExit) as exc_info:
             main(scope="")
         assert exc_info.value.code == 0
-        assert commit_message == "fix(api): handle null response"
+        assert git_spy.commit_message == "fix(api): handle null response"
 
-        # Reset commit message
-        commit_message = None
+        # Reset spy for the next test
+        git_spy.commit_message = None
 
         # Test without scope
         with pytest.raises(SystemExit) as exc_info:
             main(scope=None)
         assert exc_info.value.code == 0
-        assert commit_message == "feat: add new feature"
+        assert git_spy.commit_message == "feat: add new feature"
 
 
 def test_scope_flag_help():
