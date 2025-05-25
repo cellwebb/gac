@@ -19,14 +19,14 @@
 GAC analyzes your staged changes, repository structure, and recent commit history to generate high-quality commit
 messages with the help of leading AI models.
 
-![GAC Diff Example](assets/screenshot-gac-ya.png)
-
 ## How to Use
 
 ```sh
 git add .
 gac
 ```
+
+![Simple GAC Usage](assets/gac-simple-usage.png)
 
 ### Basic Commands
 
