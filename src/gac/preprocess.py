@@ -94,7 +94,12 @@ def process_sections_parallel(sections: List[str]) -> List[str]:
     """
     # Small number of sections - process sequentially to avoid overhead
     if len(sections) <= 3:
-        return [s for s in sections if not should_filter_section(s)]
+        processed = []
+        for section in sections:
+            result = process_section(section)
+            if result:
+                processed.append(result)
+        return processed
 
     filtered_sections = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=Utility.MAX_WORKERS) as executor:
@@ -117,8 +122,72 @@ def process_section(section: str) -> Optional[str]:
         Processed section or None if it should be filtered
     """
     if should_filter_section(section):
-        return None
+        # Return a summary for filtered files instead of removing completely
+        return extract_filtered_file_summary(section)
     return section
+
+
+def extract_binary_file_summary(section: str) -> str:
+    """Extract a summary of binary file changes from a diff section.
+
+    Args:
+        section: Binary file diff section
+
+    Returns:
+        Summary string showing the binary file change
+    """
+    return extract_filtered_file_summary(section, "[Binary file change]")
+
+
+def extract_filtered_file_summary(section: str, change_type: str = None) -> str:
+    """Extract a summary of filtered file changes from a diff section.
+
+    Args:
+        section: Diff section for a filtered file
+        change_type: Optional custom change type message
+
+    Returns:
+        Summary string showing the file change
+    """
+    lines = section.strip().split("\n")
+    summary_lines = []
+    filename = None
+
+    # Keep the diff header and important metadata
+    for line in lines:
+        if line.startswith("diff --git"):
+            summary_lines.append(line)
+            # Extract filename
+            match = re.search(r"diff --git a/(.*) b/", line)
+            if match:
+                filename = match.group(1)
+        elif "deleted file" in line:
+            summary_lines.append(line)
+        elif "new file" in line:
+            summary_lines.append(line)
+        elif line.startswith("index "):
+            summary_lines.append(line)
+        elif "Binary file" in line:
+            summary_lines.append("[Binary file change]")
+            break
+
+    # If we didn't get a specific change type, determine it
+    if not change_type and filename:
+        if any(re.search(pattern, section) for pattern in FilePatterns.BINARY):
+            change_type = "[Binary file change]"
+        elif is_lockfile_or_generated(filename):
+            change_type = "[Lockfile/generated file change]"
+        elif any(filename.endswith(ext) for ext in FilePatterns.MINIFIED_EXTENSIONS):
+            change_type = "[Minified file change]"
+        elif is_minified_content(section):
+            change_type = "[Minified file change]"
+        else:
+            change_type = "[Filtered file change]"
+
+    if change_type and change_type not in "\n".join(summary_lines):
+        summary_lines.append(change_type)
+
+    return "\n".join(summary_lines) + "\n" if summary_lines else ""
 
 
 def should_filter_section(section: str) -> bool:
@@ -350,7 +419,12 @@ def filter_binary_and_minified(diff: str) -> str:
     sections = split_diff_into_sections(diff)
     filtered_sections = []
     for section in sections:
-        if not should_filter_section(section):
+        if should_filter_section(section):
+            # Extract summaries for filtered files instead of removing completely
+            filtered_section = extract_filtered_file_summary(section)
+            if filtered_section:
+                filtered_sections.append(filtered_section)
+        else:
             filtered_sections.append(section)
 
     return "".join(filtered_sections)

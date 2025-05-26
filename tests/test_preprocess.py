@@ -272,11 +272,24 @@ diff --git a/README.md b/README.md
         assert not should_filter_section(section)
 
     def test_process_section(self):
-        # Should return None for filtered, section for normal
+        # Should return summary for binary, None for minified, section for normal
         binary = "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n"
         normal = "diff --git a/main.py b/main.py\n+def foo():\n+    return 1\n"
-        assert process_section(binary) is None
+        minified = "diff --git a/min.js b/min.js\n+" + ("a" * 1200)
+
+        # Binary files should return a summary
+        binary_result = process_section(binary)
+        assert binary_result is not None
+        assert "[Binary file change]" in binary_result
+        assert "file.bin" in binary_result
+
+        # Normal files should pass through
         assert process_section(normal) == normal
+
+        # Minified files should return a summary
+        minified_result = process_section(minified)
+        assert minified_result is not None
+        assert "[Minified file change]" in minified_result
 
     def test_process_sections_parallel_small(self):
         # Sequential path
@@ -285,8 +298,9 @@ diff --git a/README.md b/README.md
             "diff --git a/file.bin b/file.bin\nBinary files a/file.bin and b/file.bin differ\n",
         ]
         result = process_sections_parallel(sections)
-        assert len(result) == 1
+        assert len(result) == 2  # Both sections should be present
         assert "main.py" in result[0]
+        assert "[Binary file change]" in result[1]
 
     def test_process_sections_parallel_large(self):
         # Parallel path, 4+ sections
@@ -322,8 +336,11 @@ diff --git a/README.md b/README.md
         )
         filtered = filter_binary_and_minified(diff)
         assert "main.py" in filtered
-        assert "file.bin" not in filtered
-        assert "a" * 100 in filtered or "def foo" in filtered  # main.py content present
+        assert "file.bin" in filtered  # Binary files now show as summaries
+        assert "[Binary file change]" in filtered  # Should have the summary marker
+        assert "min.js" in filtered  # Minified files now show as summaries
+        assert "[Minified file change]" in filtered  # Should have the minified marker
+        assert "def foo" in filtered  # main.py content present
         assert "a" * 1000 not in filtered  # minified content removed
 
 
