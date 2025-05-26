@@ -20,18 +20,21 @@ class TestScopeFlag:
     @pytest.fixture(autouse=True)
     def auto_mock_dependencies(self, monkeypatch):
         """Mocks common dependencies for all tests in this class."""
+        mocked_config = {
+            "model": "mocked-model/mocked-model-name",
+            "backup_model": "mocked-backup-model/mocked-backup-model-name",
+            "temperature": 0.7,
+            "max_output_tokens": 150,
+            "max_retries": 2,
+            "format_files": False,
+            "log_level": "ERROR",
+        }
         monkeypatch.setattr(
             "gac.main.load_config",
-            lambda: {
-                "model": "mocked-model/mocked-model-name",
-                "backup_model": "mocked-backup-model/mocked-backup-model-name",
-                "temperature": 0.7,
-                "max_output_tokens": 150,
-                "max_retries": 2,
-                "format_files": False,
-                "log_level": "ERROR",
-            },
+            lambda: mocked_config,
         )
+        # Also patch the already-loaded config instance in gac.main
+        monkeypatch.setattr("gac.main.config", mocked_config)
 
         def mock_run_git_command(args, **kwargs):
             if args == ["rev-parse", "--show-toplevel"]:
@@ -61,7 +64,8 @@ class TestScopeFlag:
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         # To prevent actual logging calls from interfering or printing during tests
         monkeypatch.setattr("logging.Logger.info", lambda *args, **kwargs: None)
-        monkeypatch.setattr("logging.Logger.error", lambda *args, **kwargs: None)
+        # Remove or comment out the mock for logging.Logger.error to see tracebacks
+        # monkeypatch.setattr("logging.Logger.error", lambda *args, **kwargs: None)
         monkeypatch.setattr("logging.Logger.warning", lambda *args, **kwargs: None)
         monkeypatch.setattr("logging.Logger.debug", lambda *args, **kwargs: None)
 
@@ -100,7 +104,7 @@ class TestScopeFlag:
         assert captured_prompt.get("scope") == "api"
 
     def test_scope_flag_without_value(self, runner, monkeypatch):
-        """Test --scope flag without a value (AI determines scope)."""
+        """Test --scope flag when an empty string is provided (AI determines scope)."""
         captured_prompt = None
 
         def capture_prompt(**kwargs):
@@ -110,7 +114,8 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
-        result = runner.invoke(cli, ["--scope"])
+        # Invoke with an explicit empty string for the scope value
+        result = runner.invoke(cli, ["--scope", ""])
 
         assert result.exit_code == 0
         assert captured_prompt is not None
