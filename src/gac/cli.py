@@ -24,16 +24,15 @@ logger = logging.getLogger(__name__)
 
 
 @click.group(invoke_without_command=True, context_settings=dict(ignore_unknown_options=True))
+# Git workflow options
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
-@click.option(
-    "--log-level",
-    default=config["log_level"],
-    type=click.Choice(Logging.LEVELS, case_sensitive=False),
-    help=f"Set log level (default: {config['log_level']})",
-)
 @click.option("--no-format", "-nf", is_flag=True, help="Skip formatting of staged files")
-@click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
+@click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+
+# Commit message options
+@click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
 @click.option("--show-prompt", is_flag=True, help="Show the prompt sent to the LLM")
 @click.option(
     "--scope",
@@ -43,13 +42,23 @@ logger = logging.getLogger(__name__)
     default=None,
     help="Add a scope to the commit message. If used without a value, the LLM will determine an appropriate scope.",
 )
-@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
-@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
 @click.option("--hint", "-h", default="", help="Additional context to include in the prompt")
+
+# Model options
 @click.option("--model", "-m", help="Override the default model (format: 'provider:model_name')")
-@click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
-@click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
+
+# Output options
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 @click.option("--verbose", "-v", is_flag=True, help="Increase output verbosity to INFO")
+@click.option(
+    "--log-level",
+    default=config["log_level"],
+    type=click.Choice(Logging.LEVELS, case_sensitive=False),
+    help=f"Set log level (default: {config['log_level']})",
+)
+
+# Other options
+@click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (GAC) tool")
 @click.pass_context
 def cli(
     ctx: click.Context,

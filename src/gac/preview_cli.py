@@ -16,11 +16,17 @@ from gac.prompt import build_prompt, clean_commit_message
 @click.command(name="preview")
 @click.argument("first_hash")
 @click.argument("second_hash", required=False)
+
+# Commit message options
 @click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
 @click.option("--hint", "-h", default="", help="Additional context to include in the prompt")
-@click.option("--model", "-m", help="Override the default model (format: 'provider:model_name')")
-@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 @click.option("--show-prompt", "-s", is_flag=True, help="Show the prompt sent to the LLM")
+
+# Model options
+@click.option("--model", "-m", help="Override the default model (format: 'provider:model_name')")
+
+# Output options
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 def preview(
     first_hash: str,
     second_hash: Optional[str] = None,

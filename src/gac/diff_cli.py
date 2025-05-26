@@ -1,3 +1,24 @@
+"""Git diff display command for GAC.
+
+This module implements the 'gac diff' subcommand which displays git diffs with various
+filtering and formatting options. It provides a convenient way to view staged or unstaged
+changes, compare commits, and apply smart filtering to focus on meaningful code changes.
+
+Key features:
+- Display staged or unstaged changes
+- Compare specific commits or branches
+- Filter out binary files, minified files, and lockfiles
+- Smart truncation of large diffs based on token limits
+- Colored output support for better readability
+- Integration with GAC's preprocessing logic for cleaner diffs
+
+The diff command is particularly useful for:
+- Previewing what changes will be included in the commit message
+- Reviewing filtered diffs before committing
+- Comparing code changes between branches or commits
+- Understanding what files have been modified in the staging area
+"""
+
 import logging
 import sys
 from typing import Optional
@@ -72,11 +93,28 @@ def _diff_implementation(
 
 
 @click.command(name="diff")
+# Content filtering options
 @click.option(
     "--filter/--no-filter",
     default=True,
     help="Filter out binary files, minified files, and lockfiles",
 )
+
+# Display options
+@click.option(
+    "--color/--no-color",
+    default=True,
+    help="Show colored diff output",
+)
+
+# Diff source options
+@click.option(
+    "--staged/--unstaged",
+    default=True,
+    help="Show staged changes (default) or unstaged changes",
+)
+
+# Size control options
 @click.option(
     "--truncate/--no-truncate",
     default=True,
@@ -87,16 +125,6 @@ def _diff_implementation(
     default=None,
     type=int,
     help="Maximum number of tokens to include in the diff",
-)
-@click.option(
-    "--staged/--unstaged",
-    default=True,
-    help="Show staged changes (default) or unstaged changes",
-)
-@click.option(
-    "--color/--no-color",
-    default=True,
-    help="Show colored diff output",
 )
 @click.argument("commit1", required=False)
 @click.argument("commit2", required=False)
