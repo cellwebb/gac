@@ -65,7 +65,17 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.main.run_git_command", mock_commit)
 
         # Mock get_staged_files to return some files
-        monkeypatch.setattr("gac.main.get_staged_files", lambda **kwargs: ["file.py"])
+        def mock_get_staged_files(**kwargs):
+            if kwargs.get("existing_only", False):
+                return []  # No files exist on disk
+            return ["file.py"]
+
+        monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
+
+        # Mock format_files to avoid file system access
+        monkeypatch.setattr("gac.main.format_files", lambda files, dry_run=False: [])
+        monkeypatch.setattr("gac.format.format_files", lambda files, dry_run=False: [])
 
         # Mock Console output
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
@@ -289,7 +299,18 @@ class TestScopeIntegration:
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
 
         # Mock other functions needed for the test
-        monkeypatch.setattr("gac.main.get_staged_files", lambda **kwargs: ["file1.py"])
+        def mock_get_staged_files(**kwargs):
+            if kwargs.get("existing_only", False):
+                return []  # No files exist on disk
+            return ["file1.py"]
+
+        monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
+
+        # Mock format_files to avoid file system access
+        monkeypatch.setattr("gac.main.format_files", lambda files, dry_run=False: [])
+        monkeypatch.setattr("gac.format.format_files", lambda files, dry_run=False: [])
+
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
         # Test with specific scope
