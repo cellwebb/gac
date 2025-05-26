@@ -208,3 +208,4 @@ scripts/changelog_config.yaml
 scripts/changelog_prompt.md
 
 **/.claude/settings.local.json
+.plandex-v2/
