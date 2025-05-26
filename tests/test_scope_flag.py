@@ -20,20 +20,26 @@ class TestScopeFlag:
     @pytest.fixture
     def mock_dependencies(self, monkeypatch):
         """Mock all external dependencies for CLI testing."""
-        # Mock config
-        monkeypatch.setattr(
-            "gac.main.load_config",
-            lambda: {
-                "model": "test:model",
-                "backup_model": "test:backup",
-                "temperature": 0.1,
-                "max_output_tokens": 100,
-                "max_retries": 1,
-            },
-        )
+        # Mock config - patch the module-level config object that was already loaded
+        test_config = {
+            "model": "test:model",
+            "backup_model": "test:backup",
+            "temperature": 0.1,
+            "max_output_tokens": 100,
+            "max_retries": 1,
+            "format_files": True,
+            "log_level": "ERROR",
+        }
+
+        # Patch the already-loaded config in main module
+        monkeypatch.setattr("gac.main.config", test_config)
+
+        # Also patch load_config in case it's called again
+        monkeypatch.setattr("gac.main.load_config", lambda: test_config)
+        monkeypatch.setattr("gac.config.load_config", lambda: test_config)
 
         # Mock git commands
-        def mock_git_command(args):
+        def mock_git_command(args, **kwargs):
             if "status" in args:
                 return "On branch main"
             elif "diff" in args:
@@ -51,12 +57,15 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)
 
         # Mock git commit (using run_git_command)
-        def mock_commit(args):
+        def mock_commit(args, **kwargs):
             if args[0] == "commit":
                 return None
             return mock_git_command(args)
 
         monkeypatch.setattr("gac.main.run_git_command", mock_commit)
+
+        # Mock get_staged_files to return some files
+        monkeypatch.setattr("gac.main.get_staged_files", lambda **kwargs: ["file.py"])
 
         # Mock Console output
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
@@ -218,20 +227,25 @@ class TestScopeIntegration:
 
     def test_scope_in_generated_message(self, monkeypatch):
         """Test that scope appears in the final commit message."""
-        from gac.git import run_git_command as original_run_git_command
         from gac.main import main
 
-        # Mock config
-        monkeypatch.setattr(
-            "gac.main.load_config",
-            lambda: {
-                "model": "test:model",
-                "backup_model": "test:backup",
-                "temperature": 0.1,
-                "max_output_tokens": 100,
-                "max_retries": 1,
-            },
-        )
+        # Mock config - patch the module-level config object that was already loaded
+        test_config = {
+            "model": "test:model",
+            "backup_model": "test:backup",
+            "temperature": 0.1,
+            "max_output_tokens": 100,
+            "max_retries": 1,
+            "format_files": True,
+            "log_level": "ERROR",
+        }
+
+        # Patch the already-loaded config in main module
+        monkeypatch.setattr("gac.main.config", test_config)
+
+        # Also patch load_config in case it's called again
+        monkeypatch.setattr("gac.main.load_config", lambda: test_config)
+        monkeypatch.setattr("gac.config.load_config", lambda: test_config)
 
         # Set up a spy for the git commit command
         class GitCommandSpy:
@@ -241,6 +255,12 @@ class TestScopeIntegration:
             def run_git_command(self, args, **kwargs):
                 if len(args) > 2 and args[0] == "commit" and args[1] == "-m":
                     self.commit_message = args[2]
+                elif "status" in args:
+                    return "On branch main"
+                elif "diff" in args:
+                    return "diff --git a/file.py b/file.py\n+New line"
+                elif "rev-parse" in args:
+                    return "/repo"
                 return "mock output"
 
         # Create our spy instance
