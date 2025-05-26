@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.13.1] - 2025-05-26
+
+### Fixed
+
+- Fixed filtered file handling to show summaries instead of hiding them completely
+  - Binary files now display as `[Binary file change]`
+  - Lockfiles and generated files show as `[Lockfile/generated file change]`
+  - Minified files show as `[Minified file change]`
+  - Affects both `gac diff` command output and the context sent to LLMs for commit message generation by `gac`
+  - This ensures users and LLMs are aware of all file changes while keeping output clean
+
 ## [v0.13.0] - 2025-05-25
 
 ### Added
