@@ -1,3 +1,5 @@
+# flake8: noqa: E304
+
 """CLI for previewing commit messages based on git diffs."""
 
 from typing import Optional

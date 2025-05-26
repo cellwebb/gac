@@ -1,3 +1,5 @@
+# flake8: noqa: E304
+
 """Git diff display command for GAC.
 
 This module implements the 'gac diff' subcommand which displays git diffs with various

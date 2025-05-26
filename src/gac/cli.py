@@ -1,3 +1,5 @@
+# flake8: noqa: E304
+
 """CLI entry point for GAC.
 
 Defines the Click-based command-line interface and delegates execution to the main workflow.
