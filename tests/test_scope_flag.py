@@ -17,70 +17,55 @@ class TestScopeFlag:
         """Create a CLI runner for testing."""
         return CliRunner()
 
-    @pytest.fixture
-    def mock_dependencies(self, monkeypatch):
-        """Mock all external dependencies for CLI testing."""
-        # Mock config - patch the module-level config object that was already loaded
-        test_config = {
-            "model": "test:model",
-            "backup_model": "test:backup",
-            "temperature": 0.1,
-            "max_output_tokens": 100,
-            "max_retries": 1,
-            "format_files": True,
-            "log_level": "ERROR",
-        }
+    @pytest.fixture(autouse=True)
+    def auto_mock_dependencies(self, monkeypatch):
+        """Mocks common dependencies for all tests in this class."""
+        monkeypatch.setattr(
+            "gac.main.load_config",
+            lambda: {
+                "model": "mocked-model/mocked-model-name",
+                "backup_model": "mocked-backup-model/mocked-backup-model-name",
+                "temperature": 0.7,
+                "max_output_tokens": 150,
+                "max_retries": 2,
+                "format_files": False,
+                "log_level": "ERROR",
+            },
+        )
 
-        # Patch the already-loaded config in main module
-        monkeypatch.setattr("gac.main.config", test_config)
+        def mock_run_git_command(args, **kwargs):
+            if args == ["rev-parse", "--show-toplevel"]:
+                return "/mock/repo/path"
+            if args == ["status"]:
+                return "mocked git status"
+            if args == ["diff", "--staged"]:
+                return "diff --git a/file.py b/file.py\n--- a/file.py\n+++ b/file.py\n@@ -1 +1 @@\n-old line\n+new line"
+            # Add other specific commands if main uses them before prompt
+            return "mock git output"
 
-        # Also patch load_config in case it's called again
-        monkeypatch.setattr("gac.main.load_config", lambda: test_config)
-        monkeypatch.setattr("gac.config.load_config", lambda: test_config)
+        monkeypatch.setattr("gac.main.run_git_command", mock_run_git_command)
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
-        # Mock git commands
-        def mock_git_command(args, **kwargs):
-            if "status" in args:
-                return "On branch main"
-            elif "diff" in args:
-                return "diff --git a/file.py b/file.py\n+New line"
-            elif "rev-parse" in args:
-                return "/repo"
-            else:
-                return ""
+        monkeypatch.setattr("gac.main.generate_with_fallback", lambda **kwargs: "feat(test): mock commit")
+        monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
-        monkeypatch.setattr("gac.main.run_git_command", mock_git_command)
-        monkeypatch.setattr("gac.git.run_git_command", mock_git_command)
-
-        # Mock AI generation
-        monkeypatch.setattr("gac.main.generate_with_fallback", lambda **kwargs: "feat: test commit message")
-        monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)
-
-        # Mock git commit (using run_git_command)
-        def mock_commit(args, **kwargs):
-            if args[0] == "commit":
-                return None
-            return mock_git_command(args)
-
-        monkeypatch.setattr("gac.main.run_git_command", mock_commit)
-
-        # Mock get_staged_files to return some files
-        def mock_get_staged_files(**kwargs):
-            if kwargs.get("existing_only", False):
-                return []  # No files exist on disk
-            return ["file.py"]
+        def mock_get_staged_files(existing_only=False):
+            return ["file1.py"]
 
         monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
 
-        # Mock format_files to avoid file system access
         monkeypatch.setattr("gac.main.format_files", lambda files, dry_run=False: [])
         monkeypatch.setattr("gac.format.format_files", lambda files, dry_run=False: [])
 
-        # Mock Console output
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
+        # To prevent actual logging calls from interfering or printing during tests
+        monkeypatch.setattr("logging.Logger.info", lambda *args, **kwargs: None)
+        monkeypatch.setattr("logging.Logger.error", lambda *args, **kwargs: None)
+        monkeypatch.setattr("logging.Logger.warning", lambda *args, **kwargs: None)
+        monkeypatch.setattr("logging.Logger.debug", lambda *args, **kwargs: None)
 
-    def test_scope_flag_with_value(self, runner, mock_dependencies, monkeypatch):
+    def test_scope_flag_with_value(self, runner, monkeypatch):
         """Test --scope flag with a specific value."""
         captured_prompt = None
 
@@ -97,7 +82,7 @@ class TestScopeFlag:
         assert captured_prompt is not None
         assert captured_prompt.get("scope") == "auth"
 
-    def test_scope_flag_short_with_value(self, runner, mock_dependencies, monkeypatch):
+    def test_scope_flag_short_with_value(self, runner, monkeypatch):
         """Test -s flag (short form) with a specific value."""
         captured_prompt = None
 
@@ -114,7 +99,7 @@ class TestScopeFlag:
         assert captured_prompt is not None
         assert captured_prompt.get("scope") == "api"
 
-    def test_scope_flag_without_value(self, runner, mock_dependencies, monkeypatch):
+    def test_scope_flag_without_value(self, runner, monkeypatch):
         """Test --scope flag without a value (AI determines scope)."""
         captured_prompt = None
 
@@ -131,7 +116,7 @@ class TestScopeFlag:
         assert captured_prompt is not None
         assert captured_prompt.get("scope") == ""  # Empty string when no value provided
 
-    def test_no_scope_flag(self, runner, mock_dependencies, monkeypatch):
+    def test_no_scope_flag(self, runner, monkeypatch):
         """Test behavior when --scope flag is not used."""
         captured_prompt = None
 
@@ -148,7 +133,7 @@ class TestScopeFlag:
         assert captured_prompt is not None
         assert captured_prompt.get("scope") is None  # None when flag not used
 
-    def test_scope_with_other_flags(self, runner, mock_dependencies, monkeypatch):
+    def test_scope_with_other_flags(self, runner, monkeypatch):
         """Test --scope flag combined with other flags."""
         captured_prompt = None
 
