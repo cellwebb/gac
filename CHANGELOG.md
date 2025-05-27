@@ -7,18 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.13.1] - 2025-05-26
-
-### Fixed
-
-- Fixed filtered file handling to show summaries instead of hiding them completely
-  - Binary files now display as `[Binary file change]`
-  - Lockfiles and generated files show as `[Lockfile/generated file change]`
-  - Minified files show as `[Minified file change]`
-  - Affects both `gac diff` command output and the context sent to LLMs for commit message generation by `gac`
-  - This ensures users and LLMs are aware of all file changes while keeping output clean
-
-## [v0.13.0] - 2025-05-25
+## [v0.14.0] - 2025-05-27
 
 ### Added
 
@@ -33,15 +22,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Refactored `diff_cli.py` for improved command handling and new display options.
-- Improved overall CLI command structure in `gac/cli.py` and `gac/main.py`.
-- Enhanced repository context extraction mechanism in `gac/prompt.py`.
-- Improved diff preprocessing logic for more accurate and relevant diffs.
-- Updated `README.md` extensively with detailed usage for `--scope` and `gac diff`, new examples, screenshots, and a new
-  usage image.
-- Updated `CONTRIBUTING.md` with more information on testing.
+- Simplified the `gac init` command by removing the backup model setup flow.
+- Updated the default OpenRouter model in `gac init` from `mistral-8b-latest` to `qwen/qwen3-32b`.
+- Simplified prompt instructions by removing explicit scope examples.
+- Revised `README.md` and `INSTALLATION.md` to reflect simplifications and removed features.
+- Updated tests to accommodate removed features and other code changes.
 
-## [v0.12.0] - 2025-05-07
+### Removed
+
+- Backup model functionality: removed `GAC_BACKUP_MODEL`, associated fallback logic (`generate_with_fallback`), and related configurations.
+- File formatting feature: deleted `src/gac/format.py`, related configurations, and calls from `gac.main`.
+- `gac preview` CLI command and its implementation (`src/gac/preview_cli.py`).
+- CLA assistant GitHub workflow (`.github/workflows/cla.yml`).
+
+## [v0.13.1] - 2025-05-26
+
+### Fixed
+
+- Fixed filtered file handling to show summaries instead of hiding them completely
+  - Binary files now display as `[Binary file change]`
+  - Lockfiles and generated files show as `[Lockfile/generated file change]`
+  - Minified files show as `[Minified file change]`
+  - Affects both `gac diff` command output and the context sent to LLMs for commit message generation by `gac`
+  - This ensures users and LLMs are aware of all file changes while keeping output clean
+
+## [v0.13.0] - 2025-05-25
 
 ### Added
 
