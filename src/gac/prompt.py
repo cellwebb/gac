@@ -50,11 +50,6 @@ You MUST start your commit message with the most appropriate conventional commit
 - ci: Changes to CI configuration
 - chore: Miscellaneous changes not affecting src/test files
 
-If a scope is provided, include it in parentheses after the type and before the colon, like this:
-- feat(scope): description
-- fix(scope): description
-- etc.
-
 Select the prefix that best matches the primary purpose of the changes.
 If multiple prefixes apply, choose the one that represents the most significant change.
 If you cannot confidently determine a type, use 'chore'.
