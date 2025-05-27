@@ -35,10 +35,14 @@ class TestMainCommand:
     def test_main_command(self, monkeypatch):
         """Test main command runs without error when its core logic is mocked."""
         runner = CliRunner()
-        # Patch dependencies in main_command (which is the cli group itself when no subcommand is called)
-        monkeypatch.setattr("gac.main.load_config", lambda: {})
-        monkeypatch.setattr("gac.main.main", lambda **kwargs: None)
+        # Patch gac.config.load_config to ensure that gac.cli.cli's setup phase
+        # (which uses gac.cli.config) doesn't fail, and to provide a dummy model.
+        monkeypatch.setattr(
+            "gac.config.load_config", lambda: {"log_level": "ERROR", "model": "dummy:model"}
+        )
+        # Patch the main function in 'gac.cli' module, as this is what Click calls.
+        monkeypatch.setattr("gac.cli.main", lambda **kwargs: None)
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         result = runner.invoke(cli, [])
         assert result.exit_code == 0
-        # Output is empty because gac.main.main is mocked to produce no output.
+        # Output is empty because gac.cli.main and rich.console.Console.print are mocked.

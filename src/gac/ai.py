@@ -7,7 +7,7 @@ It consolidates all AI-related functionality including token counting and commit
 import logging
 import time
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import aisuite as ai
 import tiktoken
@@ -15,7 +15,6 @@ from halo import Halo
 
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
-from gac.utils import print_message
 
 logger = logging.getLogger(__name__)
 
