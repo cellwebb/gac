@@ -73,7 +73,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Interactive `gac init` command for guided provider/model/API key configuration, including backup model support
+- Interactive `gac init` command for guided provider/model/API key configuration.
 - Improved documentation for installation, configuration, and troubleshooting (`INSTALLATION.md`, `TROUBLESHOOTING.md`,
   `README.md`)
 - Registration links for Groq, Anthropic, OpenAI, and Mistral in docs

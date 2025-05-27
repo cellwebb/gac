@@ -79,16 +79,13 @@ See [docs/USAGE.md](docs/USAGE.md) for a full list of CLI flags and advanced usa
    gac init
    ```
 
-   This will guide you to select a provider, model, and securely enter API keys for both main and backup models if
-   desired.
+   This will guide you to select a provider, model, and securely enter API keys.
 
    Example `.gac.env` output:
 
    ```env
-   GAC_MODEL='groq:meta-llama/llama-4-scout-17b-16e-instruct'
-   GROQ_API_KEY='your_groq_key_here'
-   GAC_BACKUP_MODEL='anthropic:claude-3-5-haiku-latest'
-   ANTHROPIC_API_KEY='your_anthropic_key_here'
+   GAC_MODEL=anthropic:claude-3-5-haiku-latest
+   ANTHROPIC_API_KEY=your_anthropic_key_here
    ```
 
    Or set as environment variables:
@@ -96,8 +93,6 @@ See [docs/USAGE.md](docs/USAGE.md) for a full list of CLI flags and advanced usa
    ```sh
    export GAC_MODEL=groq:meta-llama/llama-4-scout-17b-16e-instruct
    export GROQ_API_KEY=your_groq_key_here
-   export GAC_BACKUP_MODEL=anthropic:claude-3-5-haiku-latest
-   export ANTHROPIC_API_KEY=your_anthropic_key_here
    ```
 
    For more configuration options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).

@@ -32,7 +32,7 @@ def init() -> None:
         return
     provider_key = provider.lower()
     model_suggestion = dict(providers)[provider]
-    model = questionary.text(f"Enter the main model (default: {model_suggestion}):", default=model_suggestion).ask()
+    model = questionary.text(f"Enter the model (default: {model_suggestion}):", default=model_suggestion).ask()
     model_to_save = model.strip() if model.strip() else model_suggestion
     set_key(str(GAC_ENV_PATH), "GAC_MODEL", f"{provider_key}:{model_to_save}")
     click.echo(f"Set GAC_MODEL={provider_key}:{model_to_save}")
@@ -42,30 +42,5 @@ def init() -> None:
     if api_key:
         set_key(str(GAC_ENV_PATH), f"{provider_key.upper()}_API_KEY", api_key)
         click.echo(f"Set {provider_key.upper()}_API_KEY (hidden)")
-
-    # Backup model setup
-    setup_backup = questionary.confirm("Would you like to set up a backup model?", default=False).ask()
-    if setup_backup:
-        backup_provider = questionary.select("Select your backup provider:", choices=provider_names).ask()
-        if not backup_provider:
-            click.echo("Backup provider selection cancelled.")
-        else:
-            backup_provider_key = backup_provider.lower()
-            backup_model_suggestion = dict(providers)[backup_provider]
-            backup_model = questionary.text(
-                f"Enter the backup model (default: {backup_model_suggestion}):", default=backup_model_suggestion
-            ).ask()
-            backup_model_to_save = backup_model.strip() if backup_model.strip() else backup_model_suggestion
-            set_key(str(GAC_ENV_PATH), "GAC_BACKUP_MODEL", f"{backup_provider_key}:{backup_model_to_save}")
-            click.echo(f"Set GAC_BACKUP_MODEL={backup_provider_key}:{backup_model_to_save}")
-
-            # Ask for backup provider API key if different from main
-            if backup_provider_key != provider_key:
-                backup_api_key = questionary.password(
-                    f"Enter your API key for {backup_provider} (input hidden, can be set later):"
-                ).ask()
-                if backup_api_key:
-                    set_key(str(GAC_ENV_PATH), f"{backup_provider_key.upper()}_API_KEY", backup_api_key)
-                    click.echo(f"Set {backup_provider_key.upper()}_API_KEY (hidden)")
 
     click.echo(f"\nGAC environment setup complete. You can edit {GAC_ENV_PATH} to update values later.")

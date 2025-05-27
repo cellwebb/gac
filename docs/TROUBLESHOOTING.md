@@ -55,8 +55,7 @@ This guide covers common issues and solutions for installing, configuring, and r
 
 **Problem:** Authentication or API errors
 
-- If you have multiple providers or backup models, ensure you have set the correct API keys for each (e.g.,
-  `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
+- Ensure you have set the correct API keys for your chosen model (e.g., `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - Double-check your API key and provider account status
 - Ensure your key has sufficient quota and is not expired
 - Check for provider outages

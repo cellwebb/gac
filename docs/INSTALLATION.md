@@ -71,7 +71,7 @@ You should see the installed version printed.
 
 ```sh
 gac init
-# Follow the prompts to select provider, model, and enter API keys
+# Follow the prompts to select provider and model, and enter API keys
 ```
 
 2. **Stage your changes:**
@@ -96,16 +96,14 @@ For a full list of CLI flags and advanced usage, see [USAGE.md](USAGE.md).
 
 ### Recommended: Interactive Setup
 
-Run `gac init` and follow the prompts to interactively select your provider, model, and securely enter API keys for both
-main and backup models if desired. This will create or update your `$HOME/.gac.env` file.
+Run `gac init` and follow the prompts to interactively select your provider and model, and securely enter API keys. This
+will create or update your `$HOME/.gac.env` file.
 
 Example `.gac.env` output:
 
 ```env
 GAC_MODEL='groq:meta-llama/llama-4-scout-17b-16e-instruct'
 GROQ_API_KEY='your_groq_key_here'
-GAC_BACKUP_MODEL='anthropic:claude-3-5-haiku-latest'
-ANTHROPIC_API_KEY='your_anthropic_key_here'
 ```
 
 You may also set these as environment variables if preferred.
@@ -119,8 +117,6 @@ GAC supports multiple AI providers. Register for API access at the following lin
 - **OpenAI:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys) — Set `GAC_MODEL` and
   `OPENAI_API_KEY`
 - **OpenRouter:** [openrouter.ai](https://openrouter.ai/) — Set `GAC_MODEL` and `OPENROUTER_API_KEY`
-
-For backup models, set `GAC_BACKUP_MODEL` and the corresponding API key as above.
 
 ### Best Practices
 
