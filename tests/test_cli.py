@@ -37,9 +37,7 @@ class TestMainCommand:
         runner = CliRunner()
         # Patch gac.config.load_config to ensure that gac.cli.cli's setup phase
         # (which uses gac.cli.config) doesn't fail, and to provide a dummy model.
-        monkeypatch.setattr(
-            "gac.config.load_config", lambda: {"log_level": "ERROR", "model": "dummy:model"}
-        )
+        monkeypatch.setattr("gac.config.load_config", lambda: {"log_level": "ERROR", "model": "dummy:model"})
         # Patch the main function in 'gac.cli' module, as this is what Click calls.
         monkeypatch.setattr("gac.cli.main", lambda **kwargs: None)
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)

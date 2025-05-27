@@ -30,7 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Removed
 
-- Backup model functionality: removed `GAC_BACKUP_MODEL`, associated fallback logic (`generate_with_fallback`), and related configurations.
+- Backup model functionality: removed `GAC_BACKUP_MODEL`, associated fallback logic (`generate_with_fallback`), and
+  related configurations.
 - File formatting feature: deleted `src/gac/format.py`, related configurations, and calls from `gac.main`.
 - `gac preview` CLI command and its implementation (`src/gac/preview_cli.py`).
 - CLA assistant GitHub workflow (`.github/workflows/cla.yml`).
