@@ -26,7 +26,6 @@ class TestScopeFlag:
             "temperature": 0.7,
             "max_output_tokens": 150,
             "max_retries": 2,
-            "format_files": False,
             "log_level": "ERROR",
         }
         monkeypatch.setattr(
@@ -57,9 +56,6 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
-
-        monkeypatch.setattr("gac.main.format_files", lambda files, dry_run=False: [])
-        monkeypatch.setattr("gac.format.format_files", lambda files, dry_run=False: [])
 
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         # To prevent actual logging calls from interfering or printing during tests
@@ -236,7 +232,6 @@ class TestScopeIntegration:
             "temperature": 0.1,
             "max_output_tokens": 100,
             "max_retries": 1,
-            "format_files": True,
             "log_level": "ERROR",
         }
 
@@ -296,10 +291,6 @@ class TestScopeIntegration:
 
         monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
-
-        # Mock format_files to avoid file system access
-        monkeypatch.setattr("gac.main.format_files", lambda files, dry_run=False: [])
-        monkeypatch.setattr("gac.format.format_files", lambda files, dry_run=False: [])
 
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 

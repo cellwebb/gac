@@ -38,7 +38,6 @@ Generates an AI-powered commit message for staged changes and opens an editor fo
 | `--push`      | `-p`  | Push changes to remote after committing           |
 | `--yes`       | `-y`  | Automatically confirm commit without prompting    |
 | `--dry-run`   |       | Show what would happen without making any changes |
-| `--no-format` | `-nf` | Skip formatting of staged files before commit     |
 
 ## Message Customization
 

@@ -43,7 +43,6 @@ def mock_get_config():
     with patch("gac.config.get_config") as mock:
         mock.return_value = {
             "model": "anthropic:claude-3-haiku",
-            "use_formatting": True,
             "warning_limit_tokens": 1000,
         }
         yield mock

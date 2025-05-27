@@ -24,7 +24,6 @@ def load_config() -> Dict[str, Union[str, int, float, bool]]:
     config = {
         "model": os.getenv("GAC_MODEL"),
         "backup_model": os.getenv("GAC_BACKUP_MODEL"),
-        "format_files": os.getenv("GAC_FORMAT_FILES", "true").lower() == "true",
         "temperature": float(os.getenv("GAC_TEMPERATURE", EnvDefaults.TEMPERATURE)),
         "max_output_tokens": int(os.getenv("GAC_MAX_OUTPUT_TOKENS", EnvDefaults.MAX_OUTPUT_TOKENS)),
         "max_retries": int(os.getenv("GAC_RETRIES", EnvDefaults.MAX_RETRIES)),

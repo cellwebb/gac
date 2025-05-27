@@ -14,7 +14,6 @@ from rich.panel import Panel
 from gac.ai import generate_with_fallback
 from gac.config import load_config
 from gac.errors import AIError, GitError, handle_error
-from gac.format import format_files
 from gac.git import get_staged_files, push_changes, run_git_command
 from gac.prompt import build_prompt, clean_commit_message
 
@@ -25,7 +24,6 @@ config = load_config()
 
 def main(
     stage_all: bool = False,
-    should_format_files: Optional[bool] = None,
     model: Optional[str] = None,
     hint: str = "",
     one_liner: bool = False,
@@ -54,8 +52,6 @@ def main(
                 ),
                 exit_program=True,
             )
-    if should_format_files is None:
-        should_format_files = config["format_files"]
 
     backup_model = config["backup_model"]
 
@@ -86,13 +82,6 @@ def main(
             GitError("No staged changes found. Stage your changes with git add first or use --add-all"),
             exit_program=True,
         )
-
-    if should_format_files:
-        # TODO: Add logic for files that have both staged and unstaged changes
-        files_to_format = get_staged_files(existing_only=True)
-        formatted_files = format_files(files_to_format, dry_run=dry_run)
-        if formatted_files and not dry_run:
-            run_git_command(["add"] + formatted_files)
 
     status = run_git_command(["status"])
     diff = run_git_command(["diff", "--staged"])
