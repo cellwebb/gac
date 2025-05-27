@@ -11,7 +11,7 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 
-from gac.ai import generate_with_fallback
+from gac.ai import generate_commit_message
 from gac.config import load_config
 from gac.errors import AIError, GitError, handle_error
 from gac.git import get_staged_files, push_changes, run_git_command
@@ -52,8 +52,6 @@ def main(
                 ),
                 exit_program=True,
             )
-
-    backup_model = config["backup_model"]
 
     temperature = config["temperature"]
     max_output_tokens = config["max_output_tokens"]
@@ -106,10 +104,9 @@ def main(
         )
 
     try:
-        commit_message = generate_with_fallback(
-            primary_model=model,
+        commit_message = generate_commit_message(
+            model=model,
             prompt=prompt,
-            backup_model=backup_model,
             temperature=temperature,
             max_tokens=max_output_tokens,
             max_retries=max_retries,
@@ -143,7 +140,7 @@ def main(
             console.print("[green]Commit created successfully[/green]")
     except AIError as e:
         logger.error(str(e))
-        console.print("[red]All available models failed. Exiting...[/red]")
+        console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
         sys.exit(1)
 
     commit_message = clean_commit_message(commit_message)

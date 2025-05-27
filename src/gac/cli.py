@@ -18,7 +18,6 @@ from gac.diff_cli import diff as diff_cli
 from gac.errors import handle_error
 from gac.init_cli import init as init_cli
 from gac.main import main
-from gac.preview_cli import preview as preview_cli
 from gac.utils import setup_logging
 
 config = load_config()
@@ -124,7 +123,6 @@ def cli(
 
 cli.add_command(config_cli)
 cli.add_command(init_cli)
-cli.add_command(preview_cli)
 cli.add_command(diff_cli)
 
 if __name__ == "__main__":
