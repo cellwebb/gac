@@ -118,8 +118,7 @@ GAC supports multiple AI providers. Register for API access at the following lin
 - **Anthropic:** [console.anthropic.com](https://console.anthropic.com/) — Set `GAC_MODEL` and `ANTHROPIC_API_KEY`
 - **OpenAI:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys) — Set `GAC_MODEL` and
   `OPENAI_API_KEY`
-- **Mistral:** [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys) — Set `GAC_MODEL` and
-  `MISTRAL_API_KEY`
+- **OpenRouter:** [openrouter.ai](https://openrouter.ai/) — Set `GAC_MODEL` and `OPENROUTER_API_KEY`
 
 For backup models, set `GAC_BACKUP_MODEL` and the corresponding API key as above.
 

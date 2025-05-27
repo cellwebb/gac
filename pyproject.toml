@@ -28,7 +28,6 @@ dependencies = [
     "aisuite",
     "anthropic",
     "groq",
-    "mistralai",
     "ollama",
     "openai",
     "tiktoken",
@@ -138,7 +137,6 @@ dependencies = [
     "anthropic",
     "openai",
     "groq",
-    "mistralai",
   
     # Core functionality
     "pydantic",
