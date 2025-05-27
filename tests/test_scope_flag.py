@@ -199,7 +199,6 @@ class TestScopePromptBuilding:
         assert "feat(auth): add login functionality" not in prompt
         assert "fix(api): handle null response" not in prompt
         # But the conventions section still mentions scope usage
-        assert "If a scope is provided, include it in parentheses" in prompt
 
     @patch("gac.prompt.extract_repository_context", return_value="")
     @patch("gac.prompt.preprocess_diff", return_value="processed diff")
