@@ -128,27 +128,63 @@ def main(
             max_retries=max_retries,
             quiet=quiet,
         )
+        commit_message = clean_commit_message(commit_message)
 
         logger.info("Generated commit message:")
         logger.info(commit_message)
 
         console = Console()
-        console.print("[bold green]Generated commit message:[/bold green]")
-        console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+        
+        # Reroll loop
+        while True:
+            console.print("[bold green]Generated commit message:[/bold green]")
+            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
 
-        if not quiet:
-            completion_tokens = count_tokens(commit_message, model)
-            total_tokens = prompt_tokens + completion_tokens
-            console.print(
-                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} "
-                "total[/dim]"
-            )
+            if not quiet:
+                completion_tokens = count_tokens(commit_message, model)
+                total_tokens = prompt_tokens + completion_tokens
+                console.print(
+                    f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} "
+                    "total[/dim]"
+                )
 
-        if require_confirmation:
-            confirmed = click.confirm("Proceed with commit above?", default=True)
-            if not confirmed:
-                console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
-                sys.exit(0)
+            if require_confirmation:
+                # Custom prompt that accepts y/n/r
+                while True:
+                    response = click.prompt(
+                        "Proceed with commit above? [y/n/r]",
+                        type=str,
+                        default="y",
+                        show_default=False
+                    ).lower().strip()
+                    
+                    if response in ['y', 'yes']:
+                        break  # Exit both loops and proceed with commit
+                    elif response in ['n', 'no']:
+                        console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
+                        sys.exit(0)
+                    elif response in ['r', 'reroll']:
+                        console.print("[cyan]Regenerating commit message...[/cyan]\n")
+                        # Generate new message
+                        commit_message = generate_commit_message(
+                            model=model,
+                            prompt=prompt,
+                            temperature=temperature,
+                            max_tokens=max_output_tokens,
+                            max_retries=max_retries,
+                            quiet=quiet,
+                        )
+                        commit_message = clean_commit_message(commit_message)
+                        break  # Exit inner loop, continue outer loop
+                    else:
+                        console.print("[red]Invalid response. Please enter y (yes), n (no), or r (reroll).[/red]")
+                
+                # If we got here with 'y', break the outer loop
+                if response in ['y', 'yes']:
+                    break
+            else:
+                # No confirmation required, exit loop
+                break
 
         if dry_run:
             console.print("[yellow]Dry run: Commit message generated but not applied[/yellow]")
@@ -166,8 +202,6 @@ def main(
         logger.error(str(e))
         console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
         sys.exit(1)
-
-    commit_message = clean_commit_message(commit_message)
 
     if push:
         try:

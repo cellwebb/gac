@@ -20,7 +20,7 @@ class EnvDefaults:
     """Default values for environment variables."""
 
     MAX_RETRIES: int = 3
-    TEMPERATURE: float = 0.7
+    TEMPERATURE: float = 1
     MAX_OUTPUT_TOKENS: int = 512
     WARNING_LIMIT_TOKENS: int = 16384
 

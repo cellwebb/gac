@@ -25,7 +25,10 @@ gac init
 gac
 ```
 
-Generates an AI-powered commit message for staged changes and opens an editor for confirmation.
+Generates an AI-powered commit message for staged changes and prompts for confirmation. The confirmation prompt accepts:
+- `y` or `yes` - Proceed with the commit
+- `n` or `no` - Cancel the commit
+- `r` or `reroll` - Regenerate the commit message
 
 ---
 
