@@ -274,29 +274,31 @@ class TestScopeIntegration:
 
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
-        # Test with specific scope
-        with pytest.raises(SystemExit) as exc_info:
-            main(scope="auth")
-        assert exc_info.value.code == 0
-        assert git_spy.commit_message == "feat(auth): add login functionality"
+        # Mock the click.prompt to return 'y' to proceed with the commit
+        with patch('click.prompt', return_value='y'):
+            # Test with specific scope
+            with pytest.raises(SystemExit) as exc_info:
+                main(scope="auth")
+            assert exc_info.value.code == 0
+            assert git_spy.commit_message == "feat(auth): add login functionality"
 
-        # Reset spy for the next test
-        git_spy.commit_message = None
+            # Reset spy for the next test
+            git_spy.commit_message = None
 
-        # Test with AI-determined scope
-        with pytest.raises(SystemExit) as exc_info:
-            main(scope="")
-        assert exc_info.value.code == 0
-        assert git_spy.commit_message == "fix(api): handle null response"
+            # Test with AI-determined scope
+            with pytest.raises(SystemExit) as exc_info:
+                main(scope="")
+            assert exc_info.value.code == 0
+            assert git_spy.commit_message == "fix(api): handle null response"
 
-        # Reset spy for the next test
-        git_spy.commit_message = None
+            # Reset spy for the next test
+            git_spy.commit_message = None
 
-        # Test without scope
-        with pytest.raises(SystemExit) as exc_info:
-            main(scope=None)
-        assert exc_info.value.code == 0
-        assert git_spy.commit_message == "feat: add new feature"
+            # Test without scope
+            with pytest.raises(SystemExit) as exc_info:
+                main(scope=None)
+            assert exc_info.value.code == 0
+            assert git_spy.commit_message == "feat: add new feature"
 
 
 def test_scope_flag_help():

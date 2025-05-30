@@ -134,7 +134,7 @@ def main(
         logger.info(commit_message)
 
         console = Console()
-        
+
         # Reroll loop
         while True:
             console.print("[bold green]Generated commit message:[/bold green]")
@@ -151,19 +151,18 @@ def main(
             if require_confirmation:
                 # Custom prompt that accepts y/n/r
                 while True:
-                    response = click.prompt(
-                        "Proceed with commit above? [y/n/r]",
-                        type=str,
-                        default="y",
-                        show_default=False
-                    ).lower().strip()
-                    
-                    if response in ['y', 'yes']:
+                    response = (
+                        click.prompt("Proceed with commit above? [y/n/r]", type=str, default="y", show_default=False)
+                        .lower()
+                        .strip()
+                    )
+
+                    if response in ["y", "yes"]:
                         break  # Exit both loops and proceed with commit
-                    elif response in ['n', 'no']:
+                    elif response in ["n", "no"]:
                         console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
                         sys.exit(0)
-                    elif response in ['r', 'reroll']:
+                    elif response in ["r", "reroll"]:
                         console.print("[cyan]Regenerating commit message...[/cyan]\n")
                         # Generate new message
                         commit_message = generate_commit_message(
@@ -178,9 +177,9 @@ def main(
                         break  # Exit inner loop, continue outer loop
                     else:
                         console.print("[red]Invalid response. Please enter y (yes), n (no), or r (reroll).[/red]")
-                
+
                 # If we got here with 'y', break the outer loop
-                if response in ['y', 'yes']:
+                if response in ["y", "yes"]:
                     break
             else:
                 # No confirmation required, exit loop
