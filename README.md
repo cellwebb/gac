@@ -11,12 +11,13 @@
 
 ## Features
 
-- **AI-Powered Commit Messages:** Automatically generates clear, concise, and context-aware commit messages using state-of-the-art AI models.
+- **AI-Powered Commit Messages:** Automatically generates clear, concise, and context-aware commit messages using large language models.
 - **Deep Contextual Analysis:** Understands your code by analyzing staged changes, repository structure, and recent commit history to provide highly relevant suggestions.
 - **Multi-Provider & Model Support:** Flexibly works with various leading AI providers (like Anthropic, Groq, OpenAI) and models, easily configured through an interactive setup or environment variables.
 - **Seamless Git Workflow:** Integrates smoothly into your existing Git routine as a simple drop-in replacement for `git commit`.
 - **Extensive Customization:** Tailor commit messages to your needs with a rich set of flags, including one-liners (`-o`), AI hints (`-h`), commit scope (`-s`), and specific model selection (`-m`).
 - **Streamlined Workflow Commands:** Boost your productivity with convenient options to stage all changes (`-a`), auto-confirm commits (`-y`), and push to your remote repository (`-p`) in a single step.
+- **Token Usage Tracking:** Display estimated token consumption statistics (prompt, completion, and total tokens) for all AI providers using tiktoken.
 
 ## How It Works
 
@@ -38,7 +39,7 @@ gac
 Install system-wide using pipx from the GitHub repository:
 
 ```sh
-# Install pipx if you don't already have it
+# Install pipx if you don't have it
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 
@@ -46,15 +47,7 @@ python3 -m pipx ensurepath
 pipx install git+https://github.com/criteria-dev/gac.git
 ```
 
-To install a specific version (tag, branch, or commit), use:
-
-```sh
-pipx install git+https://github.com/criteria-dev/gac.git@<TAG_OR_COMMIT>
-```
-
-Replace `<TAG_OR_COMMIT>` with your desired release tag (e.g. `v0.9.1`) or commit hash.
-
-#### Verify Installation
+Verify installation:
 
 ```sh
 gac --version
@@ -117,7 +110,7 @@ Once installed and configured, using `gac` is straightforward:
    gac
    ```
 
-   This will generate a commit message and open it in your editor for review.
+   This will generate a commit message for review. Confirm with `y` to accept the message.
 
 ### Common Commands
 
@@ -125,7 +118,7 @@ Once installed and configured, using `gac` is straightforward:
 - Auto-accept the commit message: `gac -y`
 - Stage all changes and generate a commit message: `gac -a`
 - Generate a one-line commit message: `gac -o`
-- Add a hint for the AI: `gac -h "Fix the authentication bug"`
+- Add a hint for the AI: `gac -h "Fixed the authentication bug"`
 - Push the commit (requires accepting the commit message): `gac -p`
 - Advanced usage: Add all, auto-confirm, push a one-liner with a hint: `gac -aypo -h "update for release"`
 
@@ -137,7 +130,7 @@ For a full list of CLI flags, advanced options, and example workflows, see [USAG
   1. User-level `$HOME/.gac.env` (applies to all projects for the user)
   2. Project-level `.env` (in the project root, overrides user config if present) Environment variables always take final precedence over both files.
 - Keep API keys out of version control
-- For troubleshooting and advanced tips, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- For troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## Contributing
 

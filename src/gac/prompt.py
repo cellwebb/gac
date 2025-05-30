@@ -6,12 +6,10 @@ formatting, and integration with diff preprocessing.
 """
 
 import logging
-import os
 import re
 from typing import Optional
 
 from gac.constants import Utility
-from gac.git import run_git_command
 from gac.preprocess import preprocess_diff
 
 logger = logging.getLogger(__name__)
@@ -26,8 +24,7 @@ You are an expert git commit message generator. Your task is to analyze code cha
   Create a single-line commit message (50-72 characters if possible).
   Your message should be clear, concise, and descriptive of the core change.
   Use present tense ("Add feature" not "Added feature").
-  </one_liner>
-  <multi_line>
+  </one_liner><multi_line>
   Create a commit message with:
   - First line: A concise summary (50-72 characters) that could stand alone
   - Blank line after the summary
@@ -73,9 +70,6 @@ Additional context provided by the user: <hint_text></hint_text>
 <status></status>
 </git_status>
 
-<repository_context>
-</repository_context>
-
 <git_diff>
 <diff></diff>
 </git_diff>
@@ -97,164 +91,6 @@ def load_prompt_template() -> str:
     """
     logger.debug("Using default template")
     return DEFAULT_TEMPLATE
-
-
-def extract_repository_context(diff: str) -> str:
-    """Extract and format repository context from the git diff.
-
-    This function enhances the prompt by providing valuable repository context information:
-    1. File purposes extracted from docstrings
-    2. Recent commit history for the modified files
-    3. Project structure information
-
-    Args:
-        diff: The git diff to analyze
-
-    Returns:
-        Formatted repository context as a string
-    """
-    logger.debug("Extracting repository context from diff")
-    if not diff:
-        logger.debug("No diff provided, returning empty context")
-        return ""
-
-    logger.debug("Diff content starts with: %s", diff[:200] if len(diff) > 200 else diff)
-
-    # Log the full diff for debugging purposes
-    logger.debug("Full diff content (first 1000 chars): %s", diff[:1000])
-
-    # Extract affected file paths
-    file_paths = re.findall(r"diff --git a/(.*) b/", diff)
-    if not file_paths:
-        logger.debug("No file paths found in diff, returning empty context")
-        return ""
-
-    logger.debug(f"Found {len(file_paths)} files in diff: {file_paths}")
-
-    # Log the first few file paths for verification
-    for i, path in enumerate(file_paths[:5], 1):
-        logger.debug(f"File {i}/{len(file_paths)}: {path}")
-        logger.debug(f"File exists: {os.path.exists(path)}")
-        logger.debug(f"Is file: {os.path.isfile(path) if os.path.exists(path) else 'N/A'}")
-        logger.debug(f"File extension: {os.path.splitext(path)[1] if os.path.exists(path) else 'N/A'}")
-
-    context_sections = []
-
-    # 1. Extract file purpose from docstrings
-    file_purposes = []
-    logger.debug("Extracting file purposes from docstrings")
-    logger.debug(f"Files to process: {file_paths[:5]}")
-
-    for i, path in enumerate(file_paths[:5], 1):  # Limit to 5 files to avoid token bloat
-        logger.debug(f"Processing file {i}/{min(5, len(file_paths))}: {path}")
-        if path.endswith(".py"):
-            try:
-                logger.debug(f"Getting content for file: {path}")
-                # Get the file content from HEAD - don't raise if command fails
-                file_content = run_git_command(["show", f"HEAD:{path}"], silent=True, raise_on_error=False)
-                logger.debug(f"Got {len(file_content or '')} bytes for {path}")
-
-                if file_content:
-                    logger.debug(f"Looking for docstring in {path}")
-                    # Extract module docstring
-                    docstring_match = re.search(r'"""(.*?)"""', file_content, re.DOTALL)
-                    if docstring_match:
-                        docstring = docstring_match.group(1).strip()
-                        logger.debug(f"Found docstring in {path}: {docstring[:100]}...")
-                        # Get first non-empty line as summary
-                        summary = next((line for line in docstring.split("\n") if line.strip()), "")
-                        if summary:
-                            file_purposes.append(f"• {path}: {summary}")
-                            logger.debug(f"Added purpose for {path}")
-                        else:
-                            logger.debug(f"No summary found in docstring for {path}")
-                    else:
-                        logger.debug(f"No docstring found in {path}")
-                else:
-                    logger.debug(f"No content found for file: {path}")
-            except Exception as e:
-                logger.debug(f"Error extracting docstring from {path}", exc_info=True)
-
-    if file_purposes:
-        context_sections.append("File purposes:\n" + "\n".join(file_purposes))
-
-    # 2. Add recent related commits
-    logger.debug("Fetching recent related commits")
-    try:
-        # Get recent commits for the modified files
-        recent_commits = run_git_command(
-            ["log", "--pretty=format:%h %s", "-n", "3", "--", *file_paths[:5]], silent=True
-        )
-        if recent_commits:
-            commit_lines = recent_commits.split("\n")[:3]  # Limit to 3 commits
-            logger.debug(f"Found {len(commit_lines)} recent commits")
-            context_sections.append("Recent related commits:\n" + "\n".join([f"• {c}" for c in commit_lines]))
-        else:
-            logger.debug("No recent commits found for modified files")
-    except Exception as e:
-        logger.debug(f"Error getting recent commits: {e}", exc_info=True)
-
-    # 3. Add repository structure information
-    logger.debug("Fetching repository structure information")
-    try:
-        # Get the repo name
-        logger.debug("Getting remote URL")
-        remote_url = run_git_command(["config", "--get", "remote.origin.url"], silent=True)
-        if remote_url:
-            logger.debug(f"Found remote URL: {remote_url}")
-            # Extract repo name from URL
-            repo_name = re.search(r"/([^/]+?)(\.git)?$", remote_url)
-            if repo_name:
-                repo_name = repo_name.group(1)
-                logger.debug(f"Extracted repo name: {repo_name}")
-                context_sections.append(f"Repository: {repo_name}")
-        else:
-            logger.debug("No remote URL found")
-
-        # Get the branch name
-        logger.debug("Getting current branch name")
-        branch = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"], silent=True)
-        if branch:
-            logger.debug(f"On branch: {branch}")
-            context_sections.append(f"Branch: {branch}")
-        else:
-            logger.debug("Could not determine current branch")
-    except Exception as e:
-        logger.debug(f"Error getting repository info: {e}", exc_info=True)
-
-    # 4. Get directory structure for context
-    logger.debug("Analyzing directory structure")
-    if file_paths:
-        # Determine common parent directory
-        parent_dirs = [os.path.dirname(p) for p in file_paths]
-        logger.debug(f"Parent directories: {parent_dirs}")
-
-        if parent_dirs and any(parent_dirs):
-            common_dir = os.path.commonpath(parent_dirs) if len(parent_dirs) > 1 else parent_dirs[0]
-            logger.debug(f"Common directory: {common_dir}")
-
-            if common_dir:
-                try:
-                    logger.debug(f"Getting directory listing for: {common_dir}")
-                    dir_content = run_git_command(["ls-tree", "--name-only", "HEAD", common_dir], silent=True)
-                    if dir_content:
-                        dir_files = [f for f in dir_content.split("\n") if f][:5]  # Limit to 5 entries
-                        logger.debug(f"Found {len(dir_files)} files in directory")
-                        context_sections.append(
-                            f"Directory context ({common_dir}):\n" + "\n".join([f"• {f}" for f in dir_files])
-                        )
-                    else:
-                        logger.debug(f"No files found in directory: {common_dir}")
-                except Exception as e:
-                    logger.debug(f"Error getting directory context: {e}", exc_info=True)
-        else:
-            logger.debug("No valid parent directories found in file paths")
-
-    # Combine all sections with headers
-    if context_sections:
-        return "Repository Context:\n" + "\n\n".join(context_sections)
-
-    return ""
 
 
 def build_prompt(
@@ -303,23 +139,6 @@ def build_prompt(
     else:
         # Remove scope instructions if --scope was not used
         template = re.sub(r"<scope_instructions>.*?</scope_instructions>\n", "", template, flags=re.DOTALL)
-
-    # Extract and add repository context
-    repo_context = extract_repository_context(diff)
-    logger.debug(f"Extracted repository context: {repo_context}")
-    if repo_context.strip():
-        # Replace the entire repository_context section with the context
-        template = re.sub(
-            r"<repository_context>.*?</repository_context>",
-            f"<repository_context>\n{repo_context}\n</repository_context>",
-            template,
-            flags=re.DOTALL,
-        )
-        logger.debug(f"Added repository context ({len(repo_context)} characters)")
-    else:
-        # Remove the repository_context section if no context was found
-        template = re.sub(r"<repository_context>.*?</repository_context>\n*", "", template, flags=re.DOTALL)
-        logger.debug("No repository context could be extracted")
 
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
@@ -432,7 +251,6 @@ def clean_commit_message(message: str) -> str:
         message = f"chore: {message.strip()}"
 
     # Final cleanup: trim extra whitespace and ensure no more than one blank line
-    message = re.sub(r"\n{3,}", "\n\n", message)
+    message = re.sub(r"\n{3,}", "\n\n", message).strip()
 
-    # Ensure we don't have any trailing/leading whitespace
-    return message.strip()
+    return message

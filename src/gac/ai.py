@@ -25,6 +25,14 @@ def count_tokens(content: Union[str, List[Dict[str, str]], Dict[str, Any]], mode
     if not text:
         return 0
 
+    if model.startswith("anthropic"):
+        import anthropic
+
+        return anthropic.Client().messages.count_tokens(
+            model=model,
+            messages=[{"role": "user", "content": text}],
+        )
+
     try:
         encoding = get_encoding(model)
         return len(encoding.encode(text))
@@ -44,7 +52,7 @@ def extract_text_content(content: Union[str, List[Dict[str, str]], Dict[str, Any
     return ""
 
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=1)
 def get_encoding(model: str) -> tiktoken.Encoding:
     """Get the appropriate encoding for a given model."""
     model_name = model.split(":")[-1] if ":" in model else model
@@ -136,8 +144,6 @@ def generate_commit_message(
     if spinner:
         spinner.fail("Failed to generate commit message")
 
-    # Categorize the error type
-    error_type = "unknown"
     error_str = str(last_error).lower()
 
     if "api key" in error_str or "unauthorized" in error_str or "authentication" in error_str:
@@ -150,6 +156,8 @@ def generate_commit_message(
         error_type = "connection"
     elif "model" in error_str or "not found" in error_str:
         error_type = "model"
+    else:
+        error_type = "unknown"
 
     raise AIError(
         f"Failed to generate commit message after {max_retries} attempts: {last_error}", error_type=error_type

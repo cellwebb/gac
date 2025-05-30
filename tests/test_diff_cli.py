@@ -1,8 +1,6 @@
 from unittest.mock import patch
 
-import pytest
-
-from gac.diff_cli import _diff_implementation, get_diff
+from gac.diff_cli import _diff_implementation
 
 
 @patch("gac.diff_cli.sys.exit")

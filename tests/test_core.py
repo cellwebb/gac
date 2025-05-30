@@ -5,8 +5,7 @@ from unittest.mock import patch
 from gac.prompt import build_prompt
 
 
-@patch("gac.prompt.extract_repository_context", return_value="")
-def test_build_prompt(mock_extract_repo_context):
+def test_build_prompt():
     """Test build_prompt function produces expected output format."""
     # Set up test inputs
     status = "On branch main"
@@ -14,11 +13,9 @@ def test_build_prompt(mock_extract_repo_context):
     hint = "Test hint"
     one_liner = True
 
-    # Call the function directly
-    result = build_prompt(status, diff, one_liner=one_liner, hint=hint)
-
-    # Verify the mock was called with the diff
-    mock_extract_repo_context.assert_called_once_with(diff)
+    # Patch count_tokens to avoid dependency on Anthropic internals
+    with patch("gac.preprocess.count_tokens", return_value=42):
+        result = build_prompt(status, diff, one_liner=one_liner, hint=hint)
 
     # Check expected behavior: prompt contains necessary information for the LLM
     assert isinstance(result, str)
@@ -39,18 +36,17 @@ def test_build_prompt(mock_extract_repo_context):
         assert "<multi_line>" in result
 
 
-@patch("gac.prompt.extract_repository_context", return_value="")
-def test_build_prompt_without_hint(mock_extract_repo_context):
+def test_build_prompt_without_hint():
+    from unittest.mock import patch
+
     """Test build_prompt works without hint."""
     # Set up test inputs
     status = "On branch main"
     diff = "diff --git a/file.py b/file.py\n+New line"
 
-    # Call without hint and with multi-line
-    result = build_prompt(status, diff, one_liner=False)
-
-    # Verify the mock was called with the diff
-    mock_extract_repo_context.assert_called_once_with(diff)
+    # Patch count_tokens to avoid dependency on Anthropic internals
+    with patch("gac.preprocess.count_tokens", return_value=42):
+        result = build_prompt(status, diff, one_liner=False)
 
     # Check expected behavior
     assert isinstance(result, str)

@@ -22,8 +22,8 @@ def init() -> None:
     providers = [
         ("Anthropic", "claude-3-5-haiku-latest"),
         ("Groq", "meta-llama/llama-4-scout-17b-16e-instruct"),
+        ("Ollama", "gemma3"),
         ("OpenAI", "gpt-4.1-mini"),
-        ("OpenRouter", "qwen/qwen3-32b"),
     ]
     provider_names = [p[0] for p in providers]
     provider = questionary.select("Select your provider:", choices=provider_names).ask()

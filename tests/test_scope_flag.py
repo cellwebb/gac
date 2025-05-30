@@ -48,6 +48,7 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
         monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: "feat(test): mock commit")
+        monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
         def mock_get_staged_files(existing_only=False):
@@ -156,42 +157,27 @@ class TestScopeFlag:
 class TestScopePromptBuilding:
     """Test how scope affects prompt building."""
 
-    @patch("gac.prompt.extract_repository_context", return_value="")
-    @patch("gac.prompt.preprocess_diff", return_value="processed diff")
-    def test_build_prompt_with_specific_scope(self, mock_preprocess, mock_extract):
+    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    def test_build_prompt_with_specific_scope(self, mock_preprocess):
         """Test prompt building with a specific scope value."""
-        status = "On branch main"
-        diff = "diff --git a/file.py b/file.py\n+New line"
-
-        prompt = build_prompt(status, diff, scope="auth")
-
+        prompt = build_prompt("status", "diff", scope="auth")
         # Check that the scope instruction is customized
         assert "The user specified the scope to be 'auth'" in prompt
         assert "Please include this exact scope in parentheses after the type" in prompt
         assert "fix(auth):" in prompt  # Example format should be shown
 
-    @patch("gac.prompt.extract_repository_context", return_value="")
-    @patch("gac.prompt.preprocess_diff", return_value="processed diff")
-    def test_build_prompt_with_empty_scope(self, mock_preprocess, mock_extract):
+    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    def test_build_prompt_with_empty_scope(self, mock_preprocess):
         """Test prompt building when user wants AI to determine scope."""
-        status = "On branch main"
-        diff = "diff --git a/file.py b/file.py\n+New line"
-
-        prompt = build_prompt(status, diff, scope="")
-
+        prompt = build_prompt("status", "diff", scope="")
         # Check that the scope instruction asks AI to determine scope
         assert "The user requested to include a scope in the commit message" in prompt
         assert "Please determine and include the most appropriate scope" in prompt
 
-    @patch("gac.prompt.extract_repository_context", return_value="")
-    @patch("gac.prompt.preprocess_diff", return_value="processed diff")
-    def test_build_prompt_without_scope(self, mock_preprocess, mock_extract):
+    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    def test_build_prompt_without_scope(self, mock_preprocess):
         """Test prompt building when scope is not requested."""
-        status = "On branch main"
-        diff = "diff --git a/file.py b/file.py\n+New line"
-
-        prompt = build_prompt(status, diff, scope=None)
-
+        prompt = build_prompt("status", "diff", scope=None)
         # Check that scope instructions are removed
         assert "The user specified the scope to be" not in prompt
         assert "The user requested to include a scope" not in prompt
@@ -200,18 +186,14 @@ class TestScopePromptBuilding:
         assert "fix(api): handle null response" not in prompt
         # But the conventions section still mentions scope usage
 
-    @patch("gac.prompt.extract_repository_context", return_value="")
-    @patch("gac.prompt.preprocess_diff", return_value="processed diff")
-    def test_scope_with_different_values(self, mock_preprocess, mock_extract):
+    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    def test_scope_with_different_values(self, mock_preprocess):
         """Test various scope values in prompt building."""
-        status = "On branch main"
-        diff = "diff"
-
-        # Test different scope values
+        # Test with a specific scope
         scopes = ["api", "auth", "ui", "backend", "database", "config"]
 
         for scope_value in scopes:
-            prompt = build_prompt(status, diff, scope=scope_value)
+            prompt = build_prompt("status", "diff", scope=scope_value)
             assert f"The user specified the scope to be '{scope_value}'" in prompt
             assert f"fix({scope_value}):" in prompt
 
@@ -273,6 +255,7 @@ class TestScopeIntegration:
                 return "feat: add new feature"
 
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate)
+        monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
 
         # Don't clean the commit message (this happens after commit in the real code)
         monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)

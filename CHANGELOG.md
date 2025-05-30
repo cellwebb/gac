@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD024 -->
+<!-- markdownlint-disable MD013 MD024 -->
 
 # Changelog
 
@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v0.14.1] - 2025-05-27
+
+### Changed
+
+- Updated provider list in `gac init`: added Ollama with `gemma3` as the default model.
+- Simplified installation instructions and updated command examples in `README.md`.
+- Corrected previous changelog entry for v0.14.0 by removing an inaccurate statement about an OpenRouter model update.
+
+### Refactor
+
+- Removed `extract_repository_context` function and its usage in `build_prompt` from `src/gac/prompt.py` to simplify prompt generation and reduce token usage.
+
+### Fixed
+
+- Improved `clean_commit_message` function in `src/gac/prompt.py` for better formatting of commit messages.
 
 ## [v0.14.0] - 2025-05-27
 
@@ -23,7 +39,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - Simplified the `gac init` command by removing the backup model setup flow.
-- Updated the default OpenRouter model in `gac init` from `mistral-8b-latest` to `qwen/qwen3-32b`.
 - Simplified prompt instructions by removing explicit scope examples.
 - Revised `README.md` and `INSTALLATION.md` to reflect simplifications and removed features.
 - Updated tests to accommodate removed features and other code changes.

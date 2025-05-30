@@ -27,6 +27,7 @@ def load_config() -> Dict[str, Union[str, int, float, bool]]:
         "max_output_tokens": int(os.getenv("GAC_MAX_OUTPUT_TOKENS", EnvDefaults.MAX_OUTPUT_TOKENS)),
         "max_retries": int(os.getenv("GAC_RETRIES", EnvDefaults.MAX_RETRIES)),
         "log_level": os.getenv("GAC_LOG_LEVEL", Logging.DEFAULT_LEVEL),
+        "warning_limit_tokens": int(os.getenv("GAC_WARNING_LIMIT_TOKENS", EnvDefaults.WARNING_LIMIT_TOKENS)),
     }
 
     return config

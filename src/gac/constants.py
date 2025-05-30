@@ -21,7 +21,8 @@ class EnvDefaults:
 
     MAX_RETRIES: int = 3
     TEMPERATURE: float = 0.7
-    MAX_OUTPUT_TOKENS: int = 256
+    MAX_OUTPUT_TOKENS: int = 512
+    WARNING_LIMIT_TOKENS: int = 16384
 
 
 class Logging:

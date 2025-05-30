@@ -11,8 +11,9 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 
-from gac.ai import generate_commit_message
+from gac.ai import count_tokens, generate_commit_message
 from gac.config import load_config
+from gac.constants import EnvDefaults
 from gac.errors import AIError, GitError, handle_error
 from gac.git import get_staged_files, push_changes, run_git_command
 from gac.prompt import build_prompt, clean_commit_message
@@ -104,6 +105,21 @@ def main(
         )
 
     try:
+        prompt_tokens = count_tokens(prompt, model)
+
+        warning_limit = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
+        if warning_limit and prompt_tokens > warning_limit:
+            console = Console()
+            console.print(
+                f"[yellow]⚠️  Warning: Prompt contains {prompt_tokens} tokens, which exceeds the warning limit of "
+                f"{warning_limit} tokens.[/yellow]"
+            )
+            if require_confirmation:
+                proceed = click.confirm("Do you want to continue anyway?", default=True)
+                if not proceed:
+                    console.print("[yellow]Aborted due to token limit.[/yellow]")
+                    sys.exit(0)
+
         commit_message = generate_commit_message(
             model=model,
             prompt=prompt,
@@ -119,6 +135,14 @@ def main(
         console = Console()
         console.print("[bold green]Generated commit message:[/bold green]")
         console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+
+        if not quiet:
+            completion_tokens = count_tokens(commit_message, model)
+            total_tokens = prompt_tokens + completion_tokens
+            console.print(
+                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} "
+                "total[/dim]"
+            )
 
         if require_confirmation:
             confirmed = click.confirm("Proceed with commit above?", default=True)
