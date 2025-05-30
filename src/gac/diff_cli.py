@@ -56,7 +56,6 @@ def _diff_implementation(
             print_message("No staged changes found. Use 'git add' to stage changes.", level="error")
             sys.exit(1)
 
-    # Get the diff
     try:
         diff_text = get_diff(staged=staged, color=color, commit1=commit1, commit2=commit2)
         if not diff_text:
@@ -66,7 +65,6 @@ def _diff_implementation(
         print_message(f"Error getting diff: {str(e)}", level="error")
         sys.exit(1)
 
-    # Process the diff
     if filter:
         diff_text = filter_binary_and_minified(diff_text)
         if not diff_text:
@@ -81,7 +79,6 @@ def _diff_implementation(
             scored_sections = [(section, 1.0) for section in sections]
             diff_text = smart_truncate_diff(scored_sections, max_tokens or 1000, "anthropic:claude-3-haiku-latest")
 
-    # Display the diff
     if color:
         # Use git's colored diff output
         print(diff_text)

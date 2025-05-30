@@ -37,7 +37,6 @@ def init() -> None:
     set_key(str(GAC_ENV_PATH), "GAC_MODEL", f"{provider_key}:{model_to_save}")
     click.echo(f"Set GAC_MODEL={provider_key}:{model_to_save}")
 
-    # API key (hidden input)
     api_key = questionary.password("Enter your API key (input hidden, can be set later):").ask()
     if api_key:
         set_key(str(GAC_ENV_PATH), f"{provider_key.upper()}_API_KEY", api_key)
