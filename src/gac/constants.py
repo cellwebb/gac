@@ -36,8 +36,7 @@ class Utility:
     """General utility constants."""
 
     DEFAULT_ENCODING: str = "cl100k_base"  # llm encoding
-    DEFAULT_TOKEN_LIMIT: int = 8000  # Maximum tokens for processing
-    DEFAULT_DIFF_TOKEN_LIMIT: int = 6000  # Maximum tokens for diff processing
+    DEFAULT_DIFF_TOKEN_LIMIT: int = 15000  # Maximum tokens for diff processing
     MAX_WORKERS: int = os.cpu_count() or 4  # Maximum number of parallel workers
 
 
