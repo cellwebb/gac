@@ -51,6 +51,15 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
+        # Mock preprocess_diff to avoid any processing issues
+        monkeypatch.setattr("gac.prompt.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
+
+        # Mock load_prompt_template to return a simpler template for testing
+        mock_template = """<scope_instructions>scope instructions</scope_instructions>
+<status></status>
+<diff></diff>"""
+        monkeypatch.setattr("gac.prompt.load_prompt_template", lambda: mock_template)
+
         def mock_get_staged_files(existing_only=False):
             return ["file1.py"]
 
@@ -159,32 +168,32 @@ class TestScopePromptBuilding:
 
     @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_with_specific_scope(self, mock_preprocess):
-        """Test prompt building with a specific scope value."""
-        prompt = build_prompt("status", "diff", scope="auth")
-        # Check that the scope instruction is customized
-        assert "The user specified the scope to be 'auth'" in prompt
-        assert "Please include this exact scope in parentheses after the type" in prompt
-        assert "fix(auth):" in prompt  # Example format should be shown
+        """Test prompt building when scope is explicitly provided."""
+        prompt = build_prompt("status", "mock_diff", scope="ui")
+        # Check that the scope instruction includes the specific scope
+        assert "<conventions>" in prompt
+        assert "REQUIRED scope 'ui'" in prompt
+        assert "fix(ui):" in prompt
 
     @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_with_empty_scope(self, mock_preprocess):
-        """Test prompt building when user wants AI to determine scope."""
+        """Test prompt building when scope flag is used but no value is provided."""
         prompt = build_prompt("status", "diff", scope="")
-        # Check that the scope instruction asks AI to determine scope
-        assert "The user requested to include a scope in the commit message" in prompt
-        assert "Please determine and include the most appropriate scope" in prompt
+        # Check that the inferred scope section is used
+        assert "<conventions>" in prompt
+        assert "inferred scope" in prompt.lower()
+        assert "You MUST infer an appropriate scope from the changes" in prompt
 
     @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_without_scope(self, mock_preprocess):
         """Test prompt building when scope is not requested."""
         prompt = build_prompt("status", "diff", scope=None)
-        # Check that scope instructions are removed
-        assert "The user specified the scope to be" not in prompt
-        assert "The user requested to include a scope" not in prompt
-        # When scope is None, the entire scope_instructions section is removed
+        # Check that no-scope instructions are used
+        assert "<conventions>" in prompt
+        assert "Do NOT include a scope in your commit prefix" in prompt
+        # Inferred scope examples should not be present
         assert "feat(auth): add login functionality" not in prompt
-        assert "fix(api): handle null response" not in prompt
-        # But the conventions section still mentions scope usage
+        assert "fix(api): resolve null response issue" not in prompt
 
     @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
     def test_scope_with_different_values(self, mock_preprocess):
@@ -194,8 +203,9 @@ class TestScopePromptBuilding:
 
         for scope_value in scopes:
             prompt = build_prompt("status", "diff", scope=scope_value)
-            assert f"The user specified the scope to be '{scope_value}'" in prompt
-            assert f"fix({scope_value}):" in prompt
+            assert "<conventions>" in prompt
+            assert f"REQUIRED scope '{scope_value}'" in prompt
+            assert f"feat({scope_value}):" in prompt
 
 
 class TestScopeIntegration:
@@ -247,9 +257,9 @@ class TestScopeIntegration:
         # Mock AI to return message with scope
         def mock_generate(**kwargs):
             prompt = kwargs.get("prompt", "")
-            if "The user specified the scope to be 'auth'" in prompt:
+            if "REQUIRED scope 'auth'" in prompt:
                 return "feat(auth): add login functionality"
-            elif "The user requested to include a scope" in prompt:
+            elif "inferred scope" in prompt.lower():
                 return "fix(api): handle null response"
             else:
                 return "feat: add new feature"
@@ -275,7 +285,7 @@ class TestScopeIntegration:
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
         # Mock the click.prompt to return 'y' to proceed with the commit
-        with patch('click.prompt', return_value='y'):
+        with patch("click.prompt", return_value="y"):
             # Test with specific scope
             with pytest.raises(SystemExit) as exc_info:
                 main(scope="auth")

@@ -34,7 +34,7 @@ You are an expert git commit message generator. Your task is to analyze code cha
   </multi_line>
 </format>
 
-<conventions>
+<conventions_no_scope>
 You MUST start your commit message with the most appropriate conventional commit prefix:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
@@ -47,20 +47,79 @@ You MUST start your commit message with the most appropriate conventional commit
 - ci: Changes to CI configuration
 - chore: Miscellaneous changes not affecting src/test files
 
-Select the prefix that best matches the primary purpose of the changes.
+Select ONE prefix that best matches the primary purpose of the changes.
 If multiple prefixes apply, choose the one that represents the most significant change.
 If you cannot confidently determine a type, use 'chore'.
-</conventions>
 
-<scope_instructions>
-When creating the commit message, include a scope in parentheses after the type and before the colon if it helps categorize the change.
-Examples:
-- feat(auth): add login functionality
-- fix(api): handle null response
-- docs: update README
+Do NOT include a scope in your commit prefix.
+</conventions_no_scope>
 
-Choose a short, lowercase scope that describes the area of the codebase being changed.
-</scope_instructions>
+<conventions_scope_provided>
+You MUST write a conventional commit message with EXACTLY ONE type and the REQUIRED scope '{scope}'.
+
+FORMAT: type({scope}): description
+
+Select ONE type from this list that best matches the primary purpose of the changes:
+- feat: A new feature or functionality addition
+- fix: A bug fix or error correction
+- docs: Documentation changes only
+- style: Changes to code style/formatting without logic changes
+- refactor: Code restructuring without behavior changes
+- perf: Performance improvements
+- test: Adding/modifying tests
+- build: Changes to build system/dependencies
+- ci: Changes to CI configuration
+- chore: Miscellaneous changes not affecting src/test files
+
+CORRECT EXAMPLES (these formats are correct):
+✅ feat({scope}): add new feature
+✅ fix({scope}): resolve bug
+✅ refactor({scope}): improve code structure
+✅ chore({scope}): update dependencies
+
+INCORRECT EXAMPLES (these formats are wrong and must NOT be used):
+❌ chore: feat({scope}): description
+❌ fix: refactor({scope}): description
+❌ feat: feat({scope}): description
+❌ chore: chore({scope}): description
+
+You MUST NOT prefix the type({scope}) with another type. Use EXACTLY ONE type, which MUST include the scope in parentheses.
+</conventions_scope_provided>
+
+<conventions_scope_inferred>
+You MUST write a conventional commit message with EXACTLY ONE type and an inferred scope.
+
+FORMAT: type(scope): description
+
+Select ONE type from this list that best matches the primary purpose of the changes:
+- feat: A new feature or functionality addition
+- fix: A bug fix or error correction
+- docs: Documentation changes only
+- style: Changes to code style/formatting without logic changes
+- refactor: Code restructuring without behavior changes
+- perf: Performance improvements
+- test: Adding/modifying tests
+- build: Changes to build system/dependencies
+- ci: Changes to CI configuration
+- chore: Miscellaneous changes not affecting src/test files
+
+You MUST infer an appropriate scope from the changes. A good scope is concise (usually one word) and indicates the component or area that was changed.
+Examples of good scopes: api, auth, ui, core, docs, build, prompt, config
+
+CORRECT EXAMPLES (these formats are correct):
+✅ feat(auth): add login functionality
+✅ fix(api): resolve null response issue
+✅ refactor(core): improve data processing
+✅ docs(readme): update installation instructions
+
+INCORRECT EXAMPLES (these formats are wrong and must NOT be used):
+❌ chore: feat(component): description
+❌ fix: refactor(component): description
+❌ feat: feat(component): description
+❌ chore: chore(component): description
+
+You MUST NOT prefix the type(scope) with another type. Use EXACTLY ONE type, which MUST include the scope in parentheses.
+</conventions_scope_inferred>
 
 <hint>
 Additional context provided by the user: <hint_text></hint_text>
@@ -79,8 +138,7 @@ IMMEDIATELY AFTER ANALYZING THE CHANGES, RESPOND WITH ONLY THE COMMIT MESSAGE.
 DO NOT include any preamble, reasoning, explanations or anything other than the commit message itself.
 DO NOT use markdown formatting, headers, or code blocks.
 The entire response will be passed directly to 'git commit -m'.
-</instructions>
-"""
+</instructions>"""
 
 
 def load_prompt_template() -> str:
@@ -111,6 +169,7 @@ def build_prompt(
         hint: Optional hint to guide the AI
         model: Model identifier for token counting
         template_path: Unused parameter kept for API compatibility
+        scope: Optional scope parameter. None = no scope, "infer" = infer scope, any other string = use as scope
 
     Returns:
         Formatted prompt string ready to be sent to an AI model
@@ -122,23 +181,50 @@ def build_prompt(
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
-    # Handle scope instructions
-    if scope is not None:  # User explicitly used --scope
-        if scope:  # User provided a specific scope
-            template = template.replace(
-                "<scope_instructions>",
-                f"The user specified the scope to be '{scope}'. "
-                f"Please include this exact scope in parentheses after the type (e.g., 'fix({scope}): ...').",
+    # Select the appropriate conventions section based on scope parameter
+    try:
+        logger.debug(f"Processing scope parameter: {scope}")
+        if scope is None:
+            # No scope - use the plain conventions section
+            logger.debug("Using no-scope conventions")
+            template = re.sub(
+                r"<conventions_scope_provided>.*?</conventions_scope_provided>\n", "", template, flags=re.DOTALL
             )
-        else:  # User used --scope without a value
-            template = template.replace(
-                "<scope_instructions>",
-                "The user requested to include a scope in the commit message. "
-                "Please determine and include the most appropriate scope in parentheses after the type.",
+            template = re.sub(
+                r"<conventions_scope_inferred>.*?</conventions_scope_inferred>\n", "", template, flags=re.DOTALL
             )
-    else:
-        # Remove scope instructions if --scope was not used
-        template = re.sub(r"<scope_instructions>.*?</scope_instructions>\n", "", template, flags=re.DOTALL)
+            template = template.replace("<conventions_no_scope>", "<conventions>")
+            template = template.replace("</conventions_no_scope>", "</conventions>")
+        elif scope == "infer" or scope == "":
+            # User wants to infer a scope from changes (either with "infer" or empty string)
+            logger.debug(f"Using inferred-scope conventions (scope={scope})")
+            template = re.sub(
+                r"<conventions_scope_provided>.*?</conventions_scope_provided>\n", "", template, flags=re.DOTALL
+            )
+            template = re.sub(r"<conventions_no_scope>.*?</conventions_no_scope>\n", "", template, flags=re.DOTALL)
+            template = template.replace("<conventions_scope_inferred>", "<conventions>")
+            template = template.replace("</conventions_scope_inferred>", "</conventions>")
+        else:
+            # User provided a specific scope
+            logger.debug(f"Using provided-scope conventions with scope '{scope}'")
+            template = re.sub(
+                r"<conventions_scope_inferred>.*?</conventions_scope_inferred>\n", "", template, flags=re.DOTALL
+            )
+            template = re.sub(r"<conventions_no_scope>.*?</conventions_no_scope>\n", "", template, flags=re.DOTALL)
+            template = template.replace("<conventions_scope_provided>", "<conventions>")
+            template = template.replace("</conventions_scope_provided>", "</conventions>")
+            template = template.replace("{scope}", scope)
+    except Exception as e:
+        logger.error(f"Error processing scope parameter: {e}")
+        # Fallback to no scope if there's an error
+        template = re.sub(
+            r"<conventions_scope_provided>.*?</conventions_scope_provided>\n", "", template, flags=re.DOTALL
+        )
+        template = re.sub(
+            r"<conventions_scope_inferred>.*?</conventions_scope_inferred>\n", "", template, flags=re.DOTALL
+        )
+        template = template.replace("<conventions_no_scope>", "<conventions>")
+        template = template.replace("</conventions_no_scope>", "</conventions>")
 
     template = template.replace("<status></status>", status)
     template = template.replace("<diff></diff>", processed_diff)
@@ -171,6 +257,7 @@ def clean_commit_message(message: str) -> str:
     2. Removes code block markers and formatting
     3. Removes XML tags that might have leaked into the response
     4. Ensures the message starts with a conventional commit prefix
+    5. Fixes double type prefix issues (e.g., "chore: feat(scope):")
 
     Args:
         message: Raw commit message from AI
@@ -232,22 +319,39 @@ def clean_commit_message(message: str) -> str:
     ]:
         message = message.replace(tag, "")
 
-    # Ensure message starts with a conventional commit prefix
+    # Fix double type prefix issues (e.g., "chore: feat(scope):") to just "feat(scope):")
     conventional_prefixes = [
-        "feat:",
-        "fix:",
-        "docs:",
-        "style:",
-        "refactor:",
-        "perf:",
-        "test:",
-        "build:",
-        "ci:",
-        "chore:",
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "chore",
     ]
 
-    # If the message doesn't start with a conventional prefix, add one
-    if not any(message.strip().startswith(prefix) for prefix in conventional_prefixes):
+    # Look for double prefix pattern like "chore: feat(scope):" and fix it
+    # This regex looks for a conventional prefix followed by another conventional prefix with a scope
+    double_prefix_pattern = re.compile(
+        r"^(" + r"|\s*".join(conventional_prefixes) + r"):\s*(" + r"|\s*".join(conventional_prefixes) + r")\(([^)]+)\):"
+    )
+    match = double_prefix_pattern.match(message)
+
+    if match:
+        # Extract the second type and scope, which is what we want to keep
+        second_type = match.group(2)
+        scope = match.group(3)
+        description = message[match.end() :].strip()
+        message = f"{second_type}({scope}): {description}"
+
+    # Ensure message starts with a conventional commit prefix
+    if not any(
+        message.strip().startswith(prefix + ":") or message.strip().startswith(prefix + "(")
+        for prefix in conventional_prefixes
+    ):
         message = f"chore: {message.strip()}"
 
     # Final cleanup: trim extra whitespace and ensure no more than one blank line
