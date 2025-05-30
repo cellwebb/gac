@@ -1,5 +1,7 @@
 """Test module for gac.core functionality."""
 
+from unittest.mock import patch
+
 from gac.prompt import build_prompt
 
 
