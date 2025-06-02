@@ -105,7 +105,7 @@ exclude_lines = [
 max-line-length = 120
 exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist"]
 per-file-ignores = "__init__.py:F401"
-ignore = "E203,W503"
+ignore = "E203,W503,E501"
 
 [tool.hatch.version]
 source = "vcs"

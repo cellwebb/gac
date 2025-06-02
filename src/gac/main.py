@@ -34,6 +34,7 @@ def main(
     push: bool = False,
     quiet: bool = False,
     dry_run: bool = False,
+    no_verify: bool = False,
 ) -> None:
     """Main application logic for gac."""
     try:
@@ -191,10 +192,12 @@ def main(
             console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
             staged_files = get_staged_files(existing_only=False)
             console.print(f"Would commit {len(staged_files)} files")
-            staged_files = get_staged_files(existing_only=False)
             logger.info(f"Would commit {len(staged_files)} files")
         else:
-            run_git_command(["commit", "-m", commit_message])
+            commit_args = ["commit", "-m", commit_message]
+            if no_verify:
+                commit_args.append("--no-verify")
+            run_git_command(commit_args)
             logger.info("Commit created successfully")
             console.print("[green]Commit created successfully[/green]")
     except AIError as e:

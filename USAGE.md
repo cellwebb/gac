@@ -119,6 +119,22 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 - Use `--show-prompt` to debug or review the prompt sent to the AI
 - Adjust verbosity with `--log-level` or `--quiet`
 
+### Skipping Pre-commit Hooks
+
+The `--no-verify` flag allows you to skip pre-commit hooks when committing:
+
+```sh
+gac --no-verify
+```
+
+This flag is useful when:
+
+- You need to bypass failing pre-commit checks temporarily
+- You're working with repositories that have time-consuming pre-commit hooks
+- You want to commit work-in-progress code that doesn't pass all checks yet
+
+**Note:** Use this flag with caution as pre-commit hooks are typically in place to maintain code quality standards.
+
 ## Configuration Notes
 
 - The recommended way to set up gac is to run `gac init` and follow the interactive prompts.

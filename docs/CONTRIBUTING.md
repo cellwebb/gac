@@ -56,6 +56,48 @@ The CLA only needs to be signed once and will apply to all your future contribut
 - Formatting is handled by `black`, `isort`, and `flake8` (max line length: 120)
 - Write minimal, effective tests with `pytest`
 
+## Pre-commit Hooks
+
+This project uses pre-commit to ensure code quality and consistency. The following hooks are configured:
+
+- `black` - Code formatting
+- `isort` - Import sorting
+- `flake8` - Linting
+- `markdownlint-cli2` - Markdown linting
+- `prettier` - File formatting (markdown, yaml, json)
+
+### Setup
+
+1. Install pre-commit:
+
+   ```sh
+   pip install pre-commit
+   ```
+
+2. Install the git hooks:
+
+   ```sh
+   pre-commit install
+   ```
+
+3. (Optional) Run against all files:
+
+   ```sh
+   pre-commit run --all-files
+   ```
+
+The hooks will now run automatically on each commit. If any checks fail, you'll need to fix the issues before committing.
+
+### Skipping Pre-commit Hooks
+
+If you need to skip the pre-commit hooks temporarily, use the `--no-verify` flag:
+
+```sh
+git commit --no-verify -m "Your commit message"
+```
+
+Note: This should only be used when absolutely necessary, as it bypasses important code quality checks.
+
 ## Testing Guidelines
 
 The project uses pytest for testing. When adding new features or fixing bugs, please include tests that cover your

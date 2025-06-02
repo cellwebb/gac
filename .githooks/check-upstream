@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+fi
+
+# Get the current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Skip check for main/master branches (typically you don't have upstream for these)
+if [[ "$current_branch" == "main" ]] || [[ "$current_branch" == "master" ]]; then
+    exit 0
+fi
+
+# Get the remote tracking branch
+tracking_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+
+# If no tracking branch, that's okay - might be a new branch
+if [[ -z "$tracking_branch" ]]; then
+    exit 0
+fi
+
+# Fetch the latest from remote (without merging)
+echo "Checking for upstream changes..."
+git fetch --quiet
+
+# Check if local branch is behind remote
+behind_count=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
+
+if [[ "$behind_count" -gt 0 ]]; then
+    echo "⚠️  Warning: Your branch is $behind_count commit(s) behind $tracking_branch"
+    echo "Consider pulling the latest changes before committing."
+    echo ""
+    echo "To update your branch, run:"
+    echo "  git pull"
+    echo ""
+    echo "To proceed anyway, use:"
+    echo "  gac --no-verify"
+    exit 1
+fi
+
+# Check if local branch has diverged from remote
+diverged=$(git status --porcelain --branch | grep -E "ahead|behind" 2>/dev/null)
+
+if [[ -n "$diverged" ]] && [[ "$diverged" == *"ahead"* ]] && [[ "$diverged" == *"behind"* ]]; then
+    echo "⚠️  Warning: Your branch has diverged from $tracking_branch"
+    echo "Consider rebasing or merging before committing."
+    echo ""
+    echo "To proceed anyway, use:"
+    echo "  gac --no-verify"
+    exit 1
+fi
+
+exit 0

@@ -1,20 +1,28 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
         language_version: python3
         exclude: ^(\.venv/|_deprecated/)
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         args: ["--profile", "black"]
         exclude: ^(\.venv/|_deprecated/)
 
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.2.0
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8-bugbear"]
+        args: ["--max-line-length=120", "--ignore=E203,W503,E501"]
+        exclude: ^(\.venv/|_deprecated/)
+
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.11.0
+    rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
         args: ["--config", ".markdownlint-cli2.yaml"]

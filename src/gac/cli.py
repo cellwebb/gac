@@ -57,6 +57,9 @@ logger = logging.getLogger(__name__)
     help=f"Set log level (default: {config['log_level']})",
 )
 
+# Advanced options
+@click.option("--no-verify", is_flag=True, help="Skip pre-commit hooks when committing")
+
 # Other options
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (gac) tool")
 @click.pass_context
@@ -75,6 +78,7 @@ def cli(
     version: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
+    no_verify: bool = False,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
     if ctx.invoked_subcommand is None:
@@ -100,6 +104,7 @@ def cli(
                 push=push,
                 quiet=quiet,
                 dry_run=dry_run,
+                no_verify=no_verify,
             )
         except Exception as e:
             handle_error(e, exit_program=True)
@@ -118,6 +123,7 @@ def cli(
             "version": version,
             "dry_run": dry_run,
             "verbose": verbose,
+            "no_verify": no_verify,
         }
 
 
