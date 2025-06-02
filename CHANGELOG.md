@@ -7,6 +7,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.14.4] - 2025-06-02
+
+### Added
+
+- **Pre-commit Integration**: Added comprehensive pre-commit hooks configuration for code quality enforcement.
+- **--no-verify Flag**: Added new CLI flag to skip pre-commit hooks when needed.
+- **Upstream Check Hook**: Added custom pre-commit hook to check if local branch is up-to-date with remote before committing.
+
+### Improved
+
+- **Code Quality Tools**: Integrated black, isort, flake8, markdownlint-cli2, and prettier via pre-commit.
+- **Flake8 Configuration**: Configured flake8 to ignore line length checks (E501) since black handles formatting.
+- **Documentation**: Added pre-commit setup instructions to CONTRIBUTING.md.
+- **USAGE Documentation**: Added advanced section documenting the --no-verify flag usage.
+
+### Fixed
+
+- **Duplicate Code**: Removed duplicate `get_staged_files()` call in dry-run mode.
+
+### Technical
+
+- Updated pre-commit hook versions: black (25.1.0), isort (6.0.1), flake8 (7.2.0), markdownlint-cli2 (v0.18.1).
+- Added flake8-bugbear as additional dependency for enhanced linting.
+- Created `.githooks/check-upstream` script for checking remote synchronization.
+
 ## [v0.14.3] - 2025-05-30
 
 ### Added
