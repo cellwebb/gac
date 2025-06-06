@@ -93,10 +93,12 @@ def main(
 
     status = run_git_command(["status"])
     diff = run_git_command(["diff", "--staged"])
+    diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
 
     prompt = build_prompt(
         status=status,
         diff=diff,
+        diff_stat=diff_stat,
         one_liner=one_liner,
         hint=hint,
         model=model or config["model"],
@@ -161,9 +163,7 @@ def main(
                 # Custom prompt that accepts y/n/r
                 while True:
                     response = (
-                        click.prompt("Proceed with commit above? [y/n/r]", type=str, default="y", show_default=False)
-                        .lower()
-                        .strip()
+                        click.prompt("Proceed with commit above? [y/n/r]", type=str, show_default=False).lower().strip()
                     )
 
                     if response in ["y", "yes"]:

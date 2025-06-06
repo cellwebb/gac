@@ -129,6 +129,10 @@ Additional context provided by the user: <hint_text></hint_text>
 <status></status>
 </git_status>
 
+<git_diff_stat>
+<diff_stat></diff_stat>
+</git_diff_stat>
+
 <git_diff>
 <diff></diff>
 </git_diff>
@@ -154,10 +158,10 @@ def load_prompt_template() -> str:
 def build_prompt(
     status: str,
     diff: str,
+    diff_stat: str = "",
     one_liner: bool = False,
     hint: str = "",
     model: str = "anthropic:claude-3-haiku-latest",
-    template_path: Optional[str] = None,  # Kept for API compatibility but unused
     scope: Optional[str] = None,
 ) -> str:
     """Build a prompt for the AI model using the provided template and git information.
@@ -165,10 +169,10 @@ def build_prompt(
     Args:
         status: Git status output
         diff: Git diff output
+        diff_stat: Git diff stat output showing file changes summary
         one_liner: Whether to request a one-line commit message
         hint: Optional hint to guide the AI
         model: Model identifier for token counting
-        template_path: Unused parameter kept for API compatibility
         scope: Optional scope parameter. None = no scope, "infer" = infer scope, any other string = use as scope
 
     Returns:
@@ -227,6 +231,7 @@ def build_prompt(
         template = template.replace("</conventions_no_scope>", "</conventions>")
 
     template = template.replace("<status></status>", status)
+    template = template.replace("<diff_stat></diff_stat>", diff_stat)
     template = template.replace("<diff></diff>", processed_diff)
 
     # Add hint if present
