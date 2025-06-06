@@ -112,6 +112,16 @@ class TestPrompts:
         result = clean_commit_message(message)
         assert result == "feat: Add new feature"
 
+        # Test collapse of multiple blank lines
+        message = "feat: Summary\n\n\nMore details after blank lines"
+        result = clean_commit_message(message)
+        assert result == "feat: Summary\n\nMore details after blank lines"
+
+        # Test collapse of blank lines containing spaces
+        message = "feat: Summary\n   \n \n\nMore details with spaces"
+        result = clean_commit_message(message)
+        assert result == "feat: Summary\n\nMore details with spaces"
+
         # Test message with code block markers
         message = "```\nfeat: Add new feature\n```"
         result = clean_commit_message(message)

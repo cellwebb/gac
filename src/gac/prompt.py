@@ -243,8 +243,8 @@ def build_prompt(
     else:
         template = re.sub(r"<one_liner>.*?</one_liner>", "", template, flags=re.DOTALL)
 
-    # Clean up extra whitespace
-    template = re.sub(r"\n{3,}", "\n\n", template)
+    # Clean up extra whitespace, collapsing blank lines that may contain spaces
+    template = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", template)
 
     return template.strip()
 
@@ -355,6 +355,7 @@ def clean_commit_message(message: str) -> str:
         message = f"chore: {message.strip()}"
 
     # Final cleanup: trim extra whitespace and ensure no more than one blank line
-    message = re.sub(r"\n{3,}", "\n\n", message).strip()
+    # Handle blank lines that may include spaces or tabs
+    message = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", message).strip()
 
     return message
