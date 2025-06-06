@@ -129,5 +129,7 @@ def run_subprocess(
         if not silent:
             logger.debug(f"Command error: {e}")
         if raise_on_error:
-            raise
+            # Convert generic exceptions to CalledProcessError for consistency
+            error = subprocess.CalledProcessError(1, command, "", str(e))
+            raise error
         return ""

@@ -60,6 +60,9 @@ class TestTokenUsageDisplay:
         # Mock confirm to always return True
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
+        # Mock pre-commit hooks to succeed
+        monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
+
     def test_estimated_token_usage_displayed(self, runner, mock_dependencies, monkeypatch):
         """Test that estimated token usage is displayed."""
         # Mock generate_commit_message
@@ -83,7 +86,7 @@ class TestTokenUsageDisplay:
         monkeypatch.setattr("rich.console.Console.print", mock_console_print)
 
         # Run the command
-        result = runner.invoke(cli, ["--yes"])
+        result = runner.invoke(cli, ["--yes", "--no-verify"])
 
         # Check that the command succeeded
         assert result.exit_code == 0
@@ -109,7 +112,7 @@ class TestTokenUsageDisplay:
         monkeypatch.setattr("rich.console.Console.print", mock_console_print)
 
         # Run the command in quiet mode
-        result = runner.invoke(cli, ["--yes", "--quiet"])
+        result = runner.invoke(cli, ["--yes", "--quiet", "--no-verify"])
 
         # Check that the command succeeded
         assert result.exit_code == 0

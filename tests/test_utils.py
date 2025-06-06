@@ -1,5 +1,6 @@
 """Tests for gac.utils module."""
 
+import subprocess
 from unittest import mock
 
 import pytest
@@ -84,5 +85,5 @@ def test_run_subprocess_exception(monkeypatch):
     # Should raise if raise_on_error is True
     import pytest
 
-    with pytest.raises(Exception):
+    with pytest.raises(subprocess.CalledProcessError):
         run_subprocess(["fail"], raise_on_error=True)

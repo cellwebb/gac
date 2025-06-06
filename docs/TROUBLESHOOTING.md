@@ -9,7 +9,8 @@ This guide covers common issues and solutions for installing, configuring, and r
   - [1. Installation Problems](#1-installation-problems)
   - [2. Configuration Issues](#2-configuration-issues)
   - [3. Provider/API Errors](#3-providerapi-errors)
-  - [4. General Debugging](#4-general-debugging)
+  - [4. Pre-commit Hook Issues](#4-pre-commit-hook-issues)
+  - [5. General Debugging](#5-general-debugging)
   - [Still Stuck?](#still-stuck)
   - [Where to Get Further Help](#where-to-get-further-help)
 
@@ -65,7 +66,21 @@ This guide covers common issues and solutions for installing, configuring, and r
 - Verify the model name is correct and supported by your provider
 - Check provider documentation for available models
 
-## 4. General Debugging
+## 4. Pre-commit Hook Issues
+
+**Problem:** Pre-commit hooks are failing and blocking commits
+
+- Use `gac --no-verify` to skip all pre-commit hooks temporarily
+- Fix the underlying issues causing the hooks to fail
+- Consider adjusting your pre-commit configuration if hooks are too strict
+
+**Problem:** Pre-commit hooks take too long or are interfering with workflow
+
+- Use `gac --no-verify` to skip all pre-commit hooks temporarily
+- Consider configuring pre-commit hooks to be less aggressive for your workflow
+- Review your `.pre-commit-config.yaml` to optimize hook performance
+
+## 5. General Debugging
 
 - Use `gac init` to reset or update your configuration interactively
 - Use `gac --verbose` (increases output verbosity) or `gac --log-level=DEBUG` for more details

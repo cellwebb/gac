@@ -2,7 +2,6 @@
 
 from gac.__version__ import __version__
 from gac.ai import generate_commit_message
-from gac.constants import EnvDefaults, FileStatus, Logging, Utility
 from gac.git import get_staged_files, push_changes
 from gac.prompt import build_prompt, clean_commit_message
 

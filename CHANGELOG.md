@@ -7,6 +7,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.14.6] - 2025-06-06
+
+### Added
+
+- **Pre-commit Hook Integration**: Added comprehensive pre-commit hook execution before commits.
+  - Automatically runs pre-commit hooks when `.pre-commit-config.yaml` exists
+  - Validates hooks pass before proceeding with expensive AI operations
+  - Graceful fallback when pre-commit is not installed
+- **Enhanced Error Handling**: Improved subprocess error handling with consistent CalledProcessError conversion.
+
+### Improved
+
+- **User Experience**: Better error messages when pre-commit hooks fail with guidance to use `--no-verify`.
+- **Documentation Updates**:
+  - Enhanced `--no-verify` flag documentation in USAGE.md with clearer formatting and use cases
+  - Added Pre-commit Hook Issues section to TROUBLESHOOTING.md with common solutions
+  - Improved troubleshooting guide structure and navigation
+- **Code Organization**: Cleaned up imports in `__init__.py` by removing unused constants imports.
+
+### Fixed
+
+- **Test Reliability**: Updated all scope and token usage tests to properly mock pre-commit hooks.
+- **Subprocess Error Handling**: Consistent error type conversion in `run_subprocess` utility function.
+
+### Technical
+
+- Added `run_pre_commit_hooks()` function in `git.py` for centralized hook management.
+- Enhanced test coverage for pre-commit integration scenarios.
+- Improved error propagation consistency across subprocess calls.
+
 ## [v0.14.5] - 2025-06-06
 
 ### Fixed

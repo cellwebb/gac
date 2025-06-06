@@ -54,6 +54,8 @@ class TestScopeFlag:
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
         # Mock click.prompt to return 'y' for the new confirmation prompt
         monkeypatch.setattr("click.prompt", lambda *args, **kwargs: "y")
+        # Mock run_pre_commit_hooks to return True
+        monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
 
         # Mock preprocess_diff to avoid any processing issues
         monkeypatch.setattr("gac.prompt.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
@@ -95,7 +97,7 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
-        result = runner.invoke(cli, ["--scope", "auth"])
+        result = runner.invoke(cli, ["--scope", "auth", "--no-verify"])
 
         assert result.exit_code == 0
         assert captured_prompt is not None
@@ -112,7 +114,7 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
-        result = runner.invoke(cli, ["-s", "api"])
+        result = runner.invoke(cli, ["-s", "api", "--no-verify"])
 
         assert result.exit_code == 0
         assert captured_prompt is not None
@@ -130,7 +132,7 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
         # Invoke with an explicit empty string for the scope value
-        result = runner.invoke(cli, ["--scope", ""])
+        result = runner.invoke(cli, ["--scope", "", "--no-verify"])
 
         assert result.exit_code == 0
         assert captured_prompt is not None
@@ -147,7 +149,7 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
-        result = runner.invoke(cli, [])
+        result = runner.invoke(cli, ["--no-verify"])
 
         assert result.exit_code == 0
         assert captured_prompt is not None
@@ -164,7 +166,7 @@ class TestScopeFlag:
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
-        result = runner.invoke(cli, ["--one-liner", "--scope", "docs", "--hint", "Update documentation"])
+        result = runner.invoke(cli, ["--one-liner", "--scope", "docs", "--hint", "Update documentation", "--no-verify"])
 
         assert result.exit_code == 0
         assert captured_prompt is not None

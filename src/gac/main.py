@@ -15,7 +15,7 @@ from gac.ai import count_tokens, generate_commit_message
 from gac.config import load_config
 from gac.constants import EnvDefaults
 from gac.errors import AIError, GitError, handle_error
-from gac.git import get_staged_files, push_changes, run_git_command
+from gac.git import get_staged_files, push_changes, run_git_command, run_pre_commit_hooks
 from gac.prompt import build_prompt, clean_commit_message
 
 logger = logging.getLogger(__name__)
@@ -82,6 +82,14 @@ def main(
             GitError("No staged changes found. Stage your changes with git add first or use --add-all"),
             exit_program=True,
         )
+
+    # Run pre-commit hooks before doing expensive operations
+    if not no_verify and not dry_run:
+        if not run_pre_commit_hooks():
+            console = Console()
+            console.print("[red]Pre-commit hooks failed. Please fix the issues and try again.[/red]")
+            console.print("[yellow]You can use --no-verify to skip pre-commit hooks.[/yellow]")
+            sys.exit(1)
 
     status = run_git_command(["status"])
     diff = run_git_command(["diff", "--staged"])

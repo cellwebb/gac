@@ -109,6 +109,40 @@ def get_commit_hash() -> str:
     return result.decode().strip()
 
 
+def run_pre_commit_hooks() -> bool:
+    """Run pre-commit hooks if they exist.
+
+    Returns:
+        True if pre-commit hooks passed or don't exist, False if they failed.
+    """
+    # Check if .pre-commit-config.yaml exists
+    if not os.path.exists(".pre-commit-config.yaml"):
+        logger.debug("No .pre-commit-config.yaml found, skipping pre-commit hooks")
+        return True
+
+    # Check if pre-commit is installed and configured
+    try:
+        # First check if pre-commit is installed
+        result = run_subprocess(["pre-commit", "--version"], silent=True, raise_on_error=False)
+        if not result:
+            logger.debug("pre-commit not installed, skipping hooks")
+            return True
+
+        # Run pre-commit hooks on staged files
+        logger.info("Running pre-commit hooks...")
+        try:
+            run_subprocess(["pre-commit", "run"], silent=False, raise_on_error=True)
+            # If we get here, all hooks passed
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Pre-commit hooks failed with exit code {e.returncode}")
+            return False
+    except Exception as e:
+        logger.debug(f"Error running pre-commit: {e}")
+        # If pre-commit isn't available, don't block the commit
+        return True
+
+
 def push_changes() -> bool:
     """Push committed changes to the remote repository."""
     remote_exists = run_git_command(["remote"])
