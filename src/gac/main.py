@@ -13,9 +13,10 @@ from rich.panel import Panel
 
 from gac.ai import count_tokens, generate_commit_message
 from gac.config import load_config
-from gac.constants import EnvDefaults
+from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, GitError, handle_error
 from gac.git import get_staged_files, push_changes, run_git_command, run_pre_commit_hooks
+from gac.preprocess import preprocess_diff
 from gac.prompt import build_prompt, clean_commit_message
 
 logger = logging.getLogger(__name__)
@@ -95,13 +96,18 @@ def main(
     diff = run_git_command(["diff", "--staged"])
     diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
 
+    # Preprocess the diff before passing to build_prompt
+    logger.debug(f"Preprocessing diff ({len(diff)} characters)")
+    model_id = model or config["model"]
+    processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model_id)
+    logger.debug(f"Processed diff ({len(processed_diff)} characters)")
+
     prompt = build_prompt(
         status=status,
-        diff=diff,
+        processed_diff=processed_diff,
         diff_stat=diff_stat,
         one_liner=one_liner,
         hint=hint,
-        model=model or config["model"],
         scope=scope,
     )
 

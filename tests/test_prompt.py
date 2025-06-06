@@ -72,14 +72,13 @@ class TestPrompts:
     """Tests for the prompt module."""
 
     @patch("gac.prompt.load_prompt_template")
-    @patch("gac.preprocess.count_tokens", return_value=42)
-    def test_build_prompt(self, mock_count_tokens, mock_load_template):
+    def test_build_prompt(self, mock_load_template):
         """Test building a prompt from a template."""
         # Setup mock
         mock_load_template.return_value = TEST_TEMPLATE
 
         # Test with one-liner format
-        result = build_prompt("status text", "diff text", one_liner=True, hint="hint text")
+        result = build_prompt("status text", processed_diff="diff text", one_liner=True, hint="hint text")
         assert "status text" in result
         assert "diff text" in result
         assert "hint text" in result
@@ -87,7 +86,7 @@ class TestPrompts:
         assert "Create a commit message with:" not in result
 
         # Test with multi-line format
-        result = build_prompt("status text", "diff text", one_liner=False, hint="hint text")
+        result = build_prompt("status text", processed_diff="diff text", one_liner=False, hint="hint text")
         assert "status text" in result
         assert "diff text" in result
         assert "hint text" in result
@@ -95,7 +94,7 @@ class TestPrompts:
         assert "Create a commit message with:" in result
 
         # Test without hint
-        result = build_prompt("status text", "diff text", one_liner=False, hint="")
+        result = build_prompt("status text", processed_diff="diff text", one_liner=False, hint="")
         assert "status text" in result
         assert "diff text" in result
         assert "<hint>" not in result

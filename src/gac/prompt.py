@@ -157,33 +157,26 @@ def load_prompt_template() -> str:
 
 def build_prompt(
     status: str,
-    diff: str,
+    processed_diff: str,
     diff_stat: str = "",
     one_liner: bool = False,
     hint: str = "",
-    model: str = "anthropic:claude-3-haiku-latest",
     scope: Optional[str] = None,
 ) -> str:
     """Build a prompt for the AI model using the provided template and git information.
 
     Args:
         status: Git status output
-        diff: Git diff output
+        processed_diff: Git diff output, already preprocessed and ready to use
         diff_stat: Git diff stat output showing file changes summary
         one_liner: Whether to request a one-line commit message
         hint: Optional hint to guide the AI
-        model: Model identifier for token counting
         scope: Optional scope parameter. None = no scope, "infer" = infer scope, any other string = use as scope
 
     Returns:
         Formatted prompt string ready to be sent to an AI model
     """
     template = load_prompt_template()
-
-    # Preprocess the diff with smart filtering and truncation
-    logger.debug(f"Preprocessing diff ({len(diff)} characters)")
-    processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
-    logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
     # Select the appropriate conventions section based on scope parameter
     try:
