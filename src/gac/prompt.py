@@ -6,15 +6,12 @@ formatting, and integration with diff preprocessing.
 """
 
 import logging
+import os
 import re
 from typing import Optional
 
-from gac.constants import Utility
-from gac.preprocess import preprocess_diff
-
 logger = logging.getLogger(__name__)
 
-# Default template to use when no template file is found
 DEFAULT_TEMPLATE = """<role>
 You are an expert git commit message generator. Your task is to analyze code changes and create a concise, meaningful git commit message. You will receive git status and diff information. Your entire response will be used directly as a git commit message.
 </role>
@@ -125,6 +122,10 @@ You MUST NOT prefix the type(scope) with another type. Use EXACTLY ONE type, whi
 Additional context provided by the user: <hint_text></hint_text>
 </hint>
 
+<readme_summary>
+<summary></summary>
+</readme_summary>
+
 <git_status>
 <status></status>
 </git_status>
@@ -145,16 +146,6 @@ The entire response will be passed directly to 'git commit -m'.
 </instructions>"""
 
 
-def load_prompt_template() -> str:
-    """Load the prompt template from the embedded default template.
-
-    Returns:
-        Template content as string
-    """
-    logger.debug("Using default template")
-    return DEFAULT_TEMPLATE
-
-
 def build_prompt(
     status: str,
     processed_diff: str,
@@ -162,6 +153,7 @@ def build_prompt(
     one_liner: bool = False,
     hint: str = "",
     scope: Optional[str] = None,
+    repo_path: Optional[str] = None,
 ) -> str:
     """Build a prompt for the AI model using the provided template and git information.
 
@@ -172,6 +164,7 @@ def build_prompt(
         one_liner: Whether to request a one-line commit message
         hint: Optional hint to guide the AI
         scope: Optional scope parameter. None = no scope, "infer" = infer scope, any other string = use as scope
+        repo_path: Optional path to repository root for README detection
 
     Returns:
         Formatted prompt string ready to be sent to an AI model
@@ -225,7 +218,34 @@ def build_prompt(
 
     template = template.replace("<status></status>", status)
     template = template.replace("<diff_stat></diff_stat>", diff_stat)
-    template = template.replace("<diff></diff>", processed_diff)
+
+    # Add README summary if available
+    readme_summary = ""
+    if repo_path:
+        # Look for common README file names
+        readme_files = [
+            "README.md",
+            "README.rst",
+            "README.txt",
+            "README",
+            "readme.md",
+            "readme.rst",
+            "readme.txt",
+            "readme",
+        ]
+        for readme_name in readme_files:
+            readme_path = os.path.join(repo_path, readme_name)
+            if os.path.exists(readme_path):
+                readme_summary = summarize_readme_with_nlp(readme_path)
+                break
+
+    if readme_summary:
+        template = template.replace("<summary></summary>", readme_summary)
+        logger.debug(f"Added README summary ({len(readme_summary)} characters)")
+    else:
+        # Remove the entire readme_summary section if no summary available
+        template = re.sub(r"<readme_summary>.*?</readme_summary>\n?", "", template, flags=re.DOTALL)
+        logger.debug("No README summary available - section removed")
 
     # Add hint if present
     if hint:
@@ -243,6 +263,9 @@ def build_prompt(
 
     # Clean up extra whitespace, collapsing blank lines that may contain spaces
     template = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", template)
+
+    # Replace git diff LAST to avoid double-replacement when working on gac itself
+    template = template.replace("<diff></diff>", processed_diff)
 
     return template.strip()
 
@@ -357,3 +380,65 @@ def clean_commit_message(message: str) -> str:
     message = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", message).strip()
 
     return message
+
+
+def load_prompt_template() -> str:
+    """Load the prompt template from the embedded default template.
+
+    Returns:
+        Template content as string
+    """
+    logger.debug("Using default template")
+    return DEFAULT_TEMPLATE
+
+
+def summarize_readme_with_nlp(readme_path: str) -> str:
+    """Summarize README content using old-school NLP techniques.
+
+    Uses the sumy library for extractive summarization with LSA algorithm.
+
+    Args:
+        readme_path: Path to the README file
+
+    Returns:
+        Summarized text or empty string if file not found or error occurs
+    """
+    try:
+        from sumy.nlp.stemmers import Stemmer
+        from sumy.nlp.tokenizers import Tokenizer
+        from sumy.parsers.plaintext import PlaintextParser
+        from sumy.summarizers.lsa import LsaSummarizer
+        from sumy.utils import get_stop_words
+
+        # Check if README exists
+        if not os.path.exists(readme_path):
+            logger.debug(f"README file not found at {readme_path}")
+            return ""
+
+        # Read README content
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if not content.strip():
+            logger.debug("README file is empty")
+            return ""
+
+        # Parse content and create summarizer
+        parser = PlaintextParser.from_string(content, Tokenizer("english"))
+        stemmer = Stemmer("english")
+        summarizer = LsaSummarizer(stemmer)
+        summarizer.stop_words = get_stop_words("english")
+
+        # Get summary (3 sentences should be good for context)
+        sentences = summarizer(parser.document, 3)
+        summary_text = " ".join(str(sentence) for sentence in sentences)
+
+        logger.debug(f"Generated README summary ({len(summary_text)} chars)")
+        return summary_text.strip()
+
+    except ImportError:
+        logger.warning("sumy library not available - install with: pip install sumy")
+        return ""
+    except Exception as e:
+        logger.warning(f"Error summarizing README: {e}")
+        return ""

@@ -109,6 +109,7 @@ def main(
         one_liner=one_liner,
         hint=hint,
         scope=scope,
+        repo_path=git_dir.strip(),
     )
 
     if show_prompt:
