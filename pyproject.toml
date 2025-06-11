@@ -37,6 +37,10 @@ dependencies = [
     "python-dotenv",
     "docstring_parser",  # needed by aisuite but not in their deps
     
+    # NLP features
+    "sumy",
+    "numpy",
+    
     # CLI and formatting
     "click",
     "halo",

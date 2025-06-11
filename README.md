@@ -12,7 +12,7 @@
 ## Features
 
 - **AI-Powered Commit Messages:** Automatically generates clear, concise, and context-aware commit messages using large language models.
-- **Deep Contextual Analysis:** Understands your code by analyzing staged changes, repository structure, and recent commit history to provide highly relevant suggestions.
+- **Deep Contextual Analysis:** Understands your code by analyzing staged changes, repository structure, README summarization, and recent commit history to provide highly relevant suggestions.
 - **Multi-Provider & Model Support:** Flexibly works with various leading AI providers (like Anthropic, Groq, OpenAI) and models, easily configured through an interactive setup or environment variables.
 - **Seamless Git Workflow:** Integrates smoothly into your existing Git routine as a simple drop-in replacement for `git commit`.
 - **Extensive Customization:** Tailor commit messages to your needs with a rich set of flags, including one-liners (`-o`), AI hints (`-h`), commit scope (`-s`), and specific model selection (`-m`).

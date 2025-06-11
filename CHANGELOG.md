@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.14.8] - 2025-06-10
+
+### Added
+
+- **README Summarization**: Added automatic README file analysis using NLP extractive summarization to provide project context in commit message generation.
+  - Detects README files in multiple formats (README.md, README.rst, README.txt, README)
+  - Uses sumy library with LSA algorithm to extract 3 key sentences when available
+  - Gracefully degrades when sumy is not installed with informative warning message
+  - Enhances AI context understanding for more accurate commit messages
+
+### Technical
+
+- Enhanced `build_prompt()` function in `prompt.py` to include README summary in prompt template
+- Added `summarize_readme_with_nlp()` function with robust error handling for optional dependency
+- Updated prompt template with `<readme_summary>` section for contextual information
+
 ## [v0.14.7] - 2025-06-06
 
 ### Added

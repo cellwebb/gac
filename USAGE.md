@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 MD024 -->
+
 # gac Command-Line Usage
 
 This document describes all available flags and options for the `gac` CLI tool.
@@ -13,6 +15,7 @@ This document describes all available flags and options for the `gac` CLI tool.
   - [Help and Version](#help-and-version)
   - [Example Workflows](#example-workflows)
   - [Advanced](#advanced)
+    - [How gac Generates Context](#how-gac-generates-context)
     - [Skipping Pre-commit Hooks](#skipping-pre-commit-hooks)
   - [Configuration Notes](#configuration-notes)
     - [Configuration Subcommands](#configuration-subcommands)
@@ -120,6 +123,17 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 - Combine flags for more powerful workflows (e.g., `gac -ayp` to stage, auto-confirm, and push)
 - Use `--show-prompt` to debug or review the prompt sent to the AI
 - Adjust verbosity with `--log-level` or `--quiet`
+
+### How gac Generates Context
+
+When generating commit messages, gac automatically analyzes:
+
+- **Git status and diff**: Staged changes and file modifications
+- **Diff statistics**: Summary of added/removed lines and affected files
+- **README summarization**: Automatically extracts key information from README files (when available) to understand project context
+- **Repository structure**: File organization and project layout
+
+This contextual analysis helps the AI generate more accurate and meaningful commit messages that reflect both the technical changes and the project's purpose.
 
 ### Skipping Pre-commit Hooks
 

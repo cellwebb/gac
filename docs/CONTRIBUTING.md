@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 MD024 -->
+
 # Contributing to gac
 
 Thank you for your interest in contributing to this project! Your help is appreciated. Please follow these guidelines to
@@ -10,6 +12,10 @@ make the process smooth for everyone.
   - [How to Contribute](#how-to-contribute)
   - [Contributor License Agreement (CLA)](#contributor-license-agreement-cla)
   - [Coding Standards](#coding-standards)
+  - [Project Architecture](#project-architecture)
+  - [Pre-commit Hooks](#pre-commit-hooks)
+    - [Setup](#setup)
+    - [Skipping Pre-commit Hooks](#skipping-pre-commit-hooks)
   - [Testing Guidelines](#testing-guidelines)
     - [Running Tests](#running-tests)
   - [Code of Conduct](#code-of-conduct)
@@ -55,6 +61,17 @@ The CLA only needs to be signed once and will apply to all your future contribut
 - Use logging instead of print statements
 - Formatting is handled by `black`, `isort`, and `flake8` (max line length: 120)
 - Write minimal, effective tests with `pytest`
+
+## Project Architecture
+
+GAC uses a modular architecture with key components:
+
+- **Prompt System** (`prompt.py`): Handles AI prompt building, including README summarization and context extraction
+- **Optional Dependencies**: Some features use optional dependencies (e.g., `sumy` for README analysis) with graceful degradation
+- **AI Integration** (`ai.py`): Provider-agnostic AI model communication
+- **Git Operations** (`git.py`): Git command abstraction and repository analysis
+
+When working with features that have optional dependencies, ensure proper error handling and informative messaging when dependencies are unavailable.
 
 ## Pre-commit Hooks
 
