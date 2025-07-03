@@ -35,7 +35,7 @@ You are an expert git commit message generator. Your task is to analyze code cha
 You MUST start your commit message with the most appropriate conventional commit prefix:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
-- docs: Documentation changes only
+- docs: Documentation changes only (README, markdown files, comments, docstrings)
 - style: Changes to code style/formatting without logic changes
 - refactor: Code restructuring without behavior changes
 - perf: Performance improvements
@@ -46,6 +46,7 @@ You MUST start your commit message with the most appropriate conventional commit
 
 Select ONE prefix that best matches the primary purpose of the changes.
 If multiple prefixes apply, choose the one that represents the most significant change.
+IMPORTANT: If changes are ONLY to documentation files (*.md, *.rst, *.txt, README, etc.) or documentation within code (comments, docstrings), you MUST use 'docs:'.
 If you cannot confidently determine a type, use 'chore'.
 
 Do NOT include a scope in your commit prefix.
@@ -59,7 +60,7 @@ FORMAT: type({scope}): description
 Select ONE type from this list that best matches the primary purpose of the changes:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
-- docs: Documentation changes only
+- docs: Documentation changes only (README, markdown files, comments, docstrings)
 - style: Changes to code style/formatting without logic changes
 - refactor: Code restructuring without behavior changes
 - perf: Performance improvements
@@ -91,7 +92,7 @@ FORMAT: type(scope): description
 Select ONE type from this list that best matches the primary purpose of the changes:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
-- docs: Documentation changes only
+- docs: Documentation changes only (README, markdown files, comments, docstrings)
 - style: Changes to code style/formatting without logic changes
 - refactor: Code restructuring without behavior changes
 - perf: Performance improvements
