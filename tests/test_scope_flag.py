@@ -58,7 +58,7 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
 
         # Mock preprocess_diff to avoid any processing issues
-        monkeypatch.setattr("gac.prompt.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
+        monkeypatch.setattr("gac.preprocess.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
 
         # Mock load_prompt_template to return a simpler template for testing that matches new structure
         mock_template = """<conventions_no_scope>no scope</conventions_no_scope>
@@ -178,7 +178,7 @@ class TestScopeFlag:
 class TestScopePromptBuilding:
     """Test how scope affects prompt building."""
 
-    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_with_specific_scope(self, mock_preprocess):
         """Test prompt building when scope is explicitly provided."""
         # Skip the regex processing by directly mocking build_prompt's internal calls
@@ -191,7 +191,7 @@ class TestScopePromptBuilding:
             # Just check we have something in the prompt
             assert len(prompt) > 0
 
-    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_with_empty_scope(self, mock_preprocess):
         """Test prompt building when scope flag is used but no value is provided."""
         # Skip the regex processing by directly mocking build_prompt's internal calls
@@ -204,7 +204,7 @@ class TestScopePromptBuilding:
             # Just check we have something in the prompt
             assert len(prompt) > 0
 
-    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_without_scope(self, mock_preprocess):
         """Test prompt building when scope is not requested."""
         # Skip the regex processing by directly mocking build_prompt's internal calls
@@ -217,7 +217,7 @@ class TestScopePromptBuilding:
             # Just check we have something in the prompt
             assert len(prompt) > 0
 
-    @patch("gac.prompt.preprocess_diff", return_value="mock_diff")
+    @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_scope_with_different_values(self, mock_preprocess):
         """Test various scope values in prompt building."""
         # Test with a variety of valid scope values

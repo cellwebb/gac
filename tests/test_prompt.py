@@ -182,6 +182,61 @@ class TestPrompts:
         result = clean_commit_message(message)
         assert result == "refactor: Simplify authentication logic"
 
+    def test_documentation_changes_guidance(self):
+        """Test that prompt includes enhanced guidance for documentation-only changes."""
+        # Build a prompt that would be for documentation changes
+        status = """On branch feature/docs-update
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   README.md
+        modified:   docs/CONTRIBUTING.md
+"""
+        diff = """diff --git a/README.md b/README.md
+index abc123..def456 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,5 @@
+ # My Project
+ 
+-This is a simple project.
++This is a simple project with enhanced documentation.
+"""
+
+        # Build the prompt without mocking to use the real template
+        result = build_prompt(status, diff, one_liner=True)
+
+        # Verify enhanced documentation guidance is present
+        assert "docs: Documentation changes only (README, markdown files, comments, docstrings)" in result
+        assert "IMPORTANT: If changes are ONLY to documentation files" in result
+        assert "you MUST use 'docs:'" in result
+
+    def test_documentation_changes_guidance_with_scope(self):
+        """Test that documentation guidance is also present when using scopes."""
+        # Build a prompt with inferred scope
+        status = """On branch feature/docs-update
+Changes to be committed:
+        modified:   docs/API.md
+"""
+        diff = """diff --git a/docs/API.md b/docs/API.md
+index 111..222 100644
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -1,3 +1,5 @@
+ # API Documentation
+ 
+ This document describes the API endpoints.
++
++## Authentication
+"""
+
+        # Test with inferred scope
+        result = build_prompt(status, diff, one_liner=True, scope="infer")
+        assert "docs: Documentation changes only (README, markdown files, comments, docstrings)" in result
+
+        # Test with provided scope
+        result = build_prompt(status, diff, one_liner=True, scope="api")
+        assert "docs: Documentation changes only (README, markdown files, comments, docstrings)" in result
+
 
 if __name__ == "__main__":
     unittest.main()
