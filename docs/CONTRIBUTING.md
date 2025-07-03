@@ -67,11 +67,9 @@ The CLA only needs to be signed once and will apply to all your future contribut
 GAC uses a modular architecture with key components:
 
 - **Prompt System** (`prompt.py`): Handles AI prompt building, including README summarization and context extraction
-- **Optional Dependencies**: Some features use optional dependencies (e.g., `sumy` for README analysis) with graceful degradation
+- **NLP Features**: README summarization uses `sumy` for fast extractive text analysis with LSA algorithm
 - **AI Integration** (`ai.py`): Provider-agnostic AI model communication
 - **Git Operations** (`git.py`): Git command abstraction and repository analysis
-
-When working with features that have optional dependencies, ensure proper error handling and informative messaging when dependencies are unavailable.
 
 ## Pre-commit Hooks
 

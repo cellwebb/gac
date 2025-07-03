@@ -130,7 +130,7 @@ When generating commit messages, gac automatically analyzes:
 
 - **Git status and diff**: Staged changes and file modifications
 - **Diff statistics**: Summary of added/removed lines and affected files
-- **README summarization**: Automatically extracts key information from README files (when available) to understand project context
+- **README summarization**: Automatically extracts key information from README files to understand project context
 - **Repository structure**: File organization and project layout
 
 This contextual analysis helps the AI generate more accurate and meaningful commit messages that reflect both the technical changes and the project's purpose.
