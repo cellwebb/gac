@@ -129,7 +129,7 @@ Once installed and configured, using `gac` is straightforward:
 - Generate a one-line commit message: `gac -o`
 - Add a hint for the AI: `gac -h "Fixed the authentication bug"`
 - Push the commit (requires accepting the commit message): `gac -p`
-- Advanced usage: Add all, auto-confirm, push a one-liner with a hint: `gac -aypo -h "update for release"`
+- Advanced usage: Stage all changes, auto-confirm the commit message, and push the commit: `gac -ayp`
 
 For a full list of CLI flags, advanced options, and example workflows, see [USAGE.md](USAGE.md).
 
