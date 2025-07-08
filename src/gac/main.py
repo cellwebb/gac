@@ -15,7 +15,14 @@ from gac.ai import count_tokens, generate_commit_message
 from gac.config import load_config
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, GitError, handle_error
-from gac.git import get_staged_files, get_unstaged_files, push_changes, run_git_command, run_pre_commit_hooks
+from gac.git import (
+    get_all_git_data,
+    get_staged_files,
+    get_unstaged_files,
+    push_changes,
+    run_git_command,
+    run_pre_commit_hooks,
+)
 from gac.preprocess import preprocess_diff
 from gac.prompt import build_prompt, clean_commit_message
 
@@ -39,13 +46,14 @@ def main(
     no_readme: bool = False,
 ) -> None:
     """Main application logic for gac."""
+    # Get all git data upfront using parallel operations
     try:
-        git_dir = run_git_command(["rev-parse", "--show-toplevel"])
-        if not git_dir:
-            raise GitError("Not in a git repository")
-    except Exception as e:
+        git_data = get_all_git_data()
+        git_dir = git_data.repo_root
+    except GitError as e:
         logger.error(f"Error checking git repository: {e}")
-        handle_error(GitError("Not in a git repository"), exit_program=True)
+        handle_error(e, exit_program=True)
+        return
 
     if model is None:
         model = config["model"]
@@ -61,8 +69,8 @@ def main(
     max_output_tokens = config["max_output_tokens"]
     max_retries = config["max_retries"]
 
-    # Check for any changes first
-    staged_files = get_staged_files(existing_only=False)
+    # Check for any changes first (use data from git_data when possible)
+    staged_files = git_data.staged_files
     unstaged_files = get_unstaged_files(include_untracked=True)
 
     if not staged_files and not unstaged_files:
@@ -76,8 +84,9 @@ def main(
             if not dry_run:
                 logger.info("Staging all changes")
                 run_git_command(["add", "--all"])
-                # Update staged files after staging
-                staged_files = get_staged_files(existing_only=False)
+                # Re-fetch git data after staging
+                git_data = get_all_git_data()
+                staged_files = git_data.staged_files
             else:
                 # For dry run, simulate staging by combining staged and unstaged
                 logger.info("Dry run: Would stage all changes")
@@ -99,9 +108,10 @@ def main(
             console.print("[yellow]You can use --no-verify to skip pre-commit hooks.[/yellow]")
             sys.exit(1)
 
-    status = run_git_command(["status"])
-    diff = run_git_command(["diff", "--staged"])
-    diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
+    # Use git data that was already fetched in parallel
+    status = git_data.status
+    diff = git_data.staged_diff
+    diff_stat = git_data.diff_stat
 
     # Preprocess the diff before passing to build_prompt
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
@@ -243,7 +253,7 @@ def main(
                 console.print(f"Would push {len(staged_files)} files")
                 sys.exit(0)
 
-            if push_changes():
+            if push_changes(has_remote=git_data.has_remote):
                 logger.info("Changes pushed successfully")
                 console.print("[green]Changes pushed successfully[/green]")
             else:
