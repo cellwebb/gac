@@ -36,6 +36,7 @@ def main(
     quiet: bool = False,
     dry_run: bool = False,
     no_verify: bool = False,
+    no_readme: bool = False,
 ) -> None:
     """Main application logic for gac."""
     try:
@@ -115,7 +116,7 @@ def main(
         one_liner=one_liner,
         hint=hint,
         scope=scope,
-        repo_path=git_dir.strip(),
+        repo_path=git_dir.strip() if not no_readme else None,
     )
 
     if show_prompt:
