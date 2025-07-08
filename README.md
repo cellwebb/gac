@@ -11,14 +11,11 @@
 
 ## Features
 
-- **AI-Powered Commit Messages:** Automatically generates clear, concise, and context-aware commit messages using large language models.
-- **Deep Contextual Analysis:** Understands your code by analyzing staged changes, repository structure, README summarization, and recent commit history to provide highly relevant suggestions.
-- **Multi-Provider & Model Support:** Flexibly works with various leading AI providers (like Anthropic, Groq, OpenAI) and models, easily configured through an interactive setup or environment variables.
-- **Seamless Git Workflow:** Integrates smoothly into your existing Git routine as a simple drop-in replacement for `git commit`.
-- **Extensive Customization:** Tailor commit messages to your needs with a rich set of flags, including one-liners (`-o`), AI hints (`-h`), commit scope (`-s`), and specific model selection (`-m`).
-- **Streamlined Workflow Commands:** Boost your productivity with convenient options to stage all changes (`-a`), auto-confirm commits (`-y`), and push to your remote repository (`-p`) in a single step.
-- **Reroll Capability:** Not satisfied with the generated commit message? Simply type `r` or `reroll` at the confirmation prompt to generate a new message.
-- **Token Usage Tracking:** Display token consumption statistics (prompt, completion, and total tokens).
+- **AI-Powered Commits:** Generates context-aware commit messages using LLMs from multiple providers (Anthropic, Groq, OpenAI, etc.)
+- **Deep Context Analysis:** Analyzes staged changes, repository structure, README content, and recent commit history
+- **Flexible Workflow:** Works as a drop-in replacement for `git commit` with options to stage (`-a`), auto-confirm (`-y`), and push (`-p`)
+- **Customizable Messages:** Support for one-liners (`-o`), AI hints (`-h`), scopes (`-s`), and message rerolling (`r` at prompt)
+- **Token Tracking:** Displays usage statistics for prompt, completion, and total tokens
 
 ## How It Works
 
