@@ -7,6 +7,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.15.0] - 2025-07-08
+
+### Added
+
+- **Enhanced README Summarization**: Improved NLP-based README analysis with better error handling and logging.
+  - More robust file detection for multiple README formats
+  - Better integration with prompt template system
+  - Graceful fallback when sumy library is not available
+
+### Improved
+
+- **Git Operations**: Added `get_unstaged_files()` function for better change detection and tracking.
+  - Supports both modified/deleted files and untracked files
+  - Improves accuracy of file change detection
+- **Prompt Template**: Enhanced documentation detection logic for commit type selection.
+  - More explicit rules for when to use 'docs:' prefix
+  - Better handling of documentation-only changes
+
+### Fixed
+
+- **Test Coverage**: Enhanced test coverage for prompt building and README summarization features.
+  - Added comprehensive tests for summarize_readme_with_nlp function
+  - Improved mocking of external dependencies
+
+### Technical
+
+- Refactored prompt template processing to reduce duplication
+- Improved separation of concerns in prompt building logic
+- Enhanced error handling in README summarization
+- Updated documentation with clearer examples and usage guidelines
+
 ## [v0.14.8] - 2025-06-10
 
 ### Added
