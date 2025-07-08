@@ -60,6 +60,7 @@ logger = logging.getLogger(__name__)
 # Advanced options
 @click.option("--no-verify", is_flag=True, help="Skip pre-commit hooks when committing")
 @click.option("--no-readme", is_flag=True, help="Skip README summarization in prompt building")
+@click.option("--fast", is_flag=True, help="Fast mode - skip non-essential operations for speed")
 
 # Other options
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (gac) tool")
@@ -81,6 +82,7 @@ def cli(
     verbose: bool = False,
     no_verify: bool = False,
     no_readme: bool = False,
+    fast: bool = False,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
     if ctx.invoked_subcommand is None:
@@ -94,6 +96,11 @@ def cli(
             effective_log_level = "ERROR"
         setup_logging(effective_log_level)
         logger.info("Starting gac")
+
+        # Fast mode automatically enables certain optimizations
+        if fast:
+            no_readme = True
+            logger.info("Fast mode enabled - skipping README summarization")
         try:
             main(
                 stage_all=add_all,
@@ -128,6 +135,7 @@ def cli(
             "verbose": verbose,
             "no_verify": no_verify,
             "no_readme": no_readme,
+            "fast": fast,
         }
 
 

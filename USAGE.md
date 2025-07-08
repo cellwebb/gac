@@ -46,6 +46,7 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 | `--yes`       | `-y`  | Automatically confirm commit without prompting    |
 | `--dry-run`   |       | Show what would happen without making any changes |
 | `--no-verify` |       | Skip pre-commit hooks when committing             |
+| `--no-readme` |       | Skip README summarization in prompt building      |
 
 ## Message Customization
 
@@ -134,6 +135,23 @@ When generating commit messages, gac automatically analyzes:
 - **Repository structure**: File organization and project layout
 
 This contextual analysis helps the AI generate more accurate and meaningful commit messages that reflect both the technical changes and the project's purpose.
+
+### Disabling README Summarization
+
+The `--no-readme` flag disables automatic README summarization:
+
+```sh
+gac --no-readme  # Skip README analysis for faster processing
+```
+
+**Use `--no-readme` when:**
+
+- Working with very large README files that slow down processing
+- README content is not relevant to current changes
+- Minimizing token usage for cost optimization
+- Troubleshooting issues related to README parsing
+
+**Note:** README summarization provides valuable context about the project's purpose and helps generate more accurate commit messages. Only disable it when necessary.
 
 ### Skipping Pre-commit Hooks
 

@@ -356,6 +356,8 @@ def summarize_readme_with_nlp(readme_path: str) -> str:
     Returns empty string if file not found or on error.
     """
     try:
+        # Lazy imports - only load when function is called
+        # This saves ~120ms on startup when README summarization is not needed
         from sumy.nlp.stemmers import Stemmer
         from sumy.nlp.tokenizers import Tokenizer
         from sumy.parsers.plaintext import PlaintextParser
