@@ -51,6 +51,36 @@ def get_staged_files(file_type: Optional[str] = None, existing_only: bool = Fals
         return []
 
 
+def get_unstaged_files(include_untracked: bool = True) -> List[str]:
+    """Get list of unstaged and optionally untracked files.
+
+    Args:
+        include_untracked: If True, include untracked files in the result
+
+    Returns:
+        List of unstaged/untracked file paths
+    """
+    try:
+        # Get modified/deleted files that are not staged
+        modified_output = run_git_command(["diff", "--name-only"])
+        modified_files = (
+            [line.strip() for line in modified_output.splitlines() if line.strip()] if modified_output else []
+        )
+
+        if include_untracked:
+            # Get untracked files
+            untracked_output = run_git_command(["ls-files", "--others", "--exclude-standard"])
+            untracked_files = (
+                [line.strip() for line in untracked_output.splitlines() if line.strip()] if untracked_output else []
+            )
+            return modified_files + untracked_files
+
+        return modified_files
+    except GitError:
+        # If git command fails, return empty list as a fallback
+        return []
+
+
 def get_diff(
     staged: bool = True, color: bool = True, commit1: Optional[str] = None, commit2: Optional[str] = None
 ) -> str:

@@ -15,7 +15,7 @@ from gac.ai import count_tokens, generate_commit_message
 from gac.config import load_config
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, GitError, handle_error
-from gac.git import get_staged_files, push_changes, run_git_command, run_pre_commit_hooks
+from gac.git import get_staged_files, get_unstaged_files, push_changes, run_git_command, run_pre_commit_hooks
 from gac.preprocess import preprocess_diff
 from gac.prompt import build_prompt, clean_commit_message
 
@@ -60,29 +60,35 @@ def main(
     max_output_tokens = config["max_output_tokens"]
     max_retries = config["max_retries"]
 
-    if stage_all and (not dry_run):
-        logger.info("Staging all changes")
-        run_git_command(["add", "--all"])
-
-    # Check for staged and unstaged files
+    # Check for any changes first
     staged_files = get_staged_files(existing_only=False)
-    unstaged_files = get_staged_files(existing_only=True)
+    unstaged_files = get_unstaged_files(include_untracked=True)
+
     if not staged_files and not unstaged_files:
         console = Console()
         console.print("[yellow]No changes (staged or unstaged) found. Nothing to commit.[/yellow]")
         sys.exit(0)
-    elif not staged_files:
+
+    # Stage all changes if requested
+    if stage_all:
+        if unstaged_files:
+            if not dry_run:
+                logger.info("Staging all changes")
+                run_git_command(["add", "--all"])
+                # Update staged files after staging
+                staged_files = get_staged_files(existing_only=False)
+            else:
+                # For dry run, simulate staging by combining staged and unstaged
+                logger.info("Dry run: Would stage all changes")
+                staged_files = staged_files + unstaged_files
+
+    # Check if we have staged files
+    if not staged_files:
         console = Console()
         console.print(
             "[yellow]No staged changes found. Stage your changes with git add first or use --add-all.[/yellow]"
         )
         sys.exit(0)
-
-    if not get_staged_files(existing_only=False):
-        handle_error(
-            GitError("No staged changes found. Stage your changes with git add first or use --add-all"),
-            exit_program=True,
-        )
 
     # Run pre-commit hooks before doing expensive operations
     if not no_verify and not dry_run:
