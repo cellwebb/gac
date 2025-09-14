@@ -127,12 +127,25 @@ def run_pre_commit_hooks() -> bool:
 
         # Run pre-commit hooks on staged files
         logger.info("Running pre-commit hooks...")
-        try:
-            run_subprocess(["pre-commit", "run"], silent=False, raise_on_error=True)
-            # If we get here, all hooks passed
+        # Run pre-commit and capture both stdout and stderr
+        result = subprocess.run(["pre-commit", "run"], capture_output=True, text=True, check=False)
+
+        if result.returncode == 0:
+            # All hooks passed
             return True
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Pre-commit hooks failed with exit code {e.returncode}")
+        else:
+            # Pre-commit hooks failed - show the output
+            output = result.stdout if result.stdout else ""
+            error = result.stderr if result.stderr else ""
+
+            # Combine outputs (pre-commit usually outputs to stdout)
+            full_output = output + ("\n" + error if error else "")
+
+            if full_output.strip():
+                # Show which hooks failed and why
+                logger.error(f"Pre-commit hooks failed:\n{full_output}")
+            else:
+                logger.error(f"Pre-commit hooks failed with exit code {result.returncode}")
             return False
     except Exception as e:
         logger.debug(f"Error running pre-commit: {e}")
