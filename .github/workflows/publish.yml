@@ -33,21 +33,101 @@ jobs:
       - name: Setup uv virtual environment
         run: uv venv
 
-      - name: Bump version
+      - name: Sync and bump version
         run: |
-          # Install bump-my-version for version management
-          pip install bump-my-version
-          # Initialize if no version file exists
-          if [ ! -f .bumpversion.cfg ]; then
-            echo '[bumpversion]' > .bumpversion.cfg
-            echo 'current_version = 0.0.0' >> .bumpversion.cfg
-            echo 'commit = False' >> .bumpversion.cfg
-            echo 'tag = False' >> .bumpversion.cfg
-            echo '' >> .bumpversion.cfg
-            echo '[bumpversion:file:src/gac/__version__.py]' >> .bumpversion.cfg
+          # Install bump-my-version and packaging for version comparison
+          pip install bump-my-version packaging
+
+          # Sync versions between __version__.py and .bumpversion.cfg
+          python3 << 'EOF'
+          import re
+          from packaging import version
+
+          # Read version from __version__.py
+          try:
+              with open('src/gac/__version__.py', 'r') as f:
+                  content = f.read()
+                  match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
+                  version_py = match.group(1) if match else "0.0.0"
+          except FileNotFoundError:
+              version_py = "0.0.0"
+
+          # Read version from .bumpversion.cfg
+          try:
+              with open('.bumpversion.cfg', 'r') as f:
+                  content = f.read()
+                  match = re.search(r'current_version\s*=\s*([^\n]+)', content)
+                  version_cfg = match.group(1).strip() if match else "0.0.0"
+          except FileNotFoundError:
+              version_cfg = "0.0.0"
+
+          print(f"Version in __version__.py: {version_py}")
+          print(f"Version in .bumpversion.cfg: {version_cfg}")
+
+          # Compare and use the higher version
+          if version.parse(version_py) > version.parse(version_cfg):
+              print(f"Using higher version from __version__.py: {version_py}")
+              higher_version = version_py
+              needs_sync = True
+          elif version.parse(version_cfg) > version.parse(version_py):
+              print(f"Using higher version from .bumpversion.cfg: {version_cfg}")
+              higher_version = version_cfg
+              needs_sync = True
+          else:
+              print(f"Versions are equal: {version_py}")
+              higher_version = version_py
+              needs_sync = False
+
+          # Write the results for bash to read
+          with open('/tmp/sync_info.txt', 'w') as f:
+              f.write(f"{higher_version}\n{needs_sync}")
+          EOF
+
+          # Read the sync info
+          SYNC_INFO=$(cat /tmp/sync_info.txt)
+          CURRENT_VERSION=$(echo "$SYNC_INFO" | head -n1)
+          NEEDS_SYNC=$(echo "$SYNC_INFO" | tail -n1)
+
+          echo "Synchronized version: $CURRENT_VERSION"
+
+          # If versions were out of sync, update both files
+          if [ "$NEEDS_SYNC" = "True" ]; then
+            echo "Syncing version files to $CURRENT_VERSION"
+            
+            # Update .bumpversion.cfg
+            if [ ! -f .bumpversion.cfg ]; then
+              echo '[bumpversion]' > .bumpversion.cfg
+              echo "current_version = $CURRENT_VERSION" >> .bumpversion.cfg
+              echo 'commit = False' >> .bumpversion.cfg
+              echo 'tag = False' >> .bumpversion.cfg
+              echo '' >> .bumpversion.cfg
+              echo '[bumpversion:file:src/gac/__version__.py]' >> .bumpversion.cfg
+            else
+              sed -i "s/current_version = .*/current_version = $CURRENT_VERSION/" .bumpversion.cfg
+            fi
+            
+            # Update __version__.py
+            echo '"""Version information for gac package."""' > src/gac/__version__.py
+            echo "" >> src/gac/__version__.py
+            echo "__version__ = \"$CURRENT_VERSION\"" >> src/gac/__version__.py
           fi
-          # Bump patch version
-          bump-my-version bump patch --allow-dirty
+
+          # Check if version was modified in this push
+          BEFORE_SHA=${{ github.event.before }}
+          AFTER_SHA=${{ github.event.after }}
+
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            VERSION_CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null | grep -E "(__version__.py|\.bumpversion\.cfg)" && echo "true" || echo "false")
+          else
+            VERSION_CHANGED=$(git diff "$BEFORE_SHA" "$AFTER_SHA" --name-only 2>/dev/null | grep -E "(__version__.py|\.bumpversion\.cfg)" && echo "true" || echo "false")
+          fi
+
+          if [ "$VERSION_CHANGED" = "true" ]; then
+            echo "Version already bumped in this push, skipping auto-bump"
+          else
+            echo "No version change detected, proceeding with auto-bump"
+            bump-my-version bump patch --allow-dirty
+          fi
 
       - name: Build package
         run: |
