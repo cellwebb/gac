@@ -25,6 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Now displays detailed output showing which specific hooks failed and why
   - Captures and displays both stdout and stderr from pre-commit
   - Replaces generic "exit code 1" message with actionable failure information
+- **Git Module Test Coverage**: Added comprehensive tests for all git module functions
+  - Added tests for `get_staged_files` with various filtering options
+  - Added tests for `get_diff` covering staged, unstaged and commit comparison scenarios
+  - Added tests for `push_changes` covering all error and success cases
 
 ## [v0.16.2] - 2025-09-14
 
