@@ -102,8 +102,8 @@ class FileTypeImportance:
         ".ini": 3.5,  # INI config
         ".env": 3.5,  # Environment variables
         # Documentation
-        ".md": 4.0,  # Markdown
-        ".rst": 3.8,  # reStructuredText
+        ".md": 2.5,  # Markdown (reduced to prioritize code changes)
+        ".rst": 2.5,  # reStructuredText (reduced to prioritize code changes)
         # Web
         ".html": 3.5,  # HTML
         ".css": 3.5,  # CSS
