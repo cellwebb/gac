@@ -102,12 +102,12 @@ def run_subprocess(
             timeout=timeout,
         )
 
-        if result.returncode != 0 and (check or raise_on_error):
+        should_raise = result.returncode != 0 and (check or raise_on_error)
+
+        if should_raise:
             if not silent:
                 logger.debug(f"Command stderr: {result.stderr}")
-
-            error = subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
-            raise error
+            raise subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
 
         output = result.stdout
         if strip_output:
@@ -119,7 +119,7 @@ def run_subprocess(
         raise GacError(f"Command timed out: {' '.join(command)}") from e
     except subprocess.CalledProcessError as e:
         if not silent:
-            logger.error(f"Command failed: {e.stderr.strip() if hasattr(e, 'stderr') else str(e)}")
+            logger.error(f"Command failed: {e.stderr.strip() if e.stderr else str(e)}")
         if raise_on_error:
             raise
         return ""
@@ -128,6 +128,5 @@ def run_subprocess(
             logger.debug(f"Command error: {e}")
         if raise_on_error:
             # Convert generic exceptions to CalledProcessError for consistency
-            error = subprocess.CalledProcessError(1, command, "", str(e))
-            raise error from e
+            raise subprocess.CalledProcessError(1, command, "", str(e)) from e
         return ""
