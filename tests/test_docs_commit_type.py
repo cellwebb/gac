@@ -115,8 +115,6 @@ index 111222..333444 100644
 
     def test_prompt_emphasizes_docs_detection(self):
         """Test that the prompt properly emphasizes documentation-only detection."""
-        from gac.preprocess import preprocess_diff
-
         # Create a simple documentation-only diff
         diff = """diff --git a/README.md b/README.md
 index abc123..def456 100644
@@ -140,8 +138,8 @@ index abc123..def456 100644
         status = "On branch main\nChanges to be committed:\n  modified: README.md"
         diff_stat = " README.md | 9 ++++++++-"
 
-        # Process the diff
-        processed_diff = preprocess_diff(diff)
+        # Use the diff directly without preprocessing (to avoid token counting issues in tests)
+        processed_diff = diff
 
         # Build the prompt
         prompt = build_prompt(status=status, processed_diff=processed_diff, diff_stat=diff_stat)
