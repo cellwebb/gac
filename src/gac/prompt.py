@@ -36,8 +36,7 @@ You MUST start your commit message with the most appropriate conventional commit
 IMPORTANT: Check file types FIRST when determining the commit type:
 - If changes are ONLY to documentation files (*.md, *.rst, *.txt in docs/, README*, CHANGELOG*, etc.), ALWAYS use 'docs:'
 - Use 'docs:' ONLY when ALL changes are documentation files - INCLUDING README updates, regardless of how significant the changes are
-- If changes include both documentation and code files (.py, .js, .ts, etc.), use the prefix that matches the code changes, NOT 'docs:'
-- For mixed changes (code + docs), ALWAYS prioritize the code change type over 'docs:'
+- If changes include both documentation and code, use the prefix for the code changes, unless it is a documentation-only change
 
 Commit type prefixes:
 - feat: A new feature or functionality addition
@@ -65,12 +64,12 @@ FORMAT: type({scope}): description
 
 IMPORTANT: Check file types FIRST when determining the commit type:
 - If changes are ONLY to documentation files (*.md, *.rst, *.txt in docs/, README*, CHANGELOG*, etc.), ALWAYS use 'docs'
-- If changes include both documentation and code, use the prefix for the code changes
+- If changes include both documentation and code, use the prefix for the code changes, unless it is a documentation-only change
 
 Select ONE type from this list that best matches the primary purpose of the changes:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
-- docs: Documentation changes only (INCLUDING README updates, regardless of how significant)
+- docs: Documentation changes only (INCLUDING README and CHANGELOG updates, regardless of how significant)
 - style: Changes to code style/formatting without logic changes
 - refactor: Code restructuring without behavior changes
 - perf: Performance improvements
@@ -101,12 +100,12 @@ FORMAT: type(scope): description
 
 IMPORTANT: Check file types FIRST when determining the commit type:
 - If changes are ONLY to documentation files (*.md, *.rst, *.txt in docs/, README*, CHANGELOG*, etc.), ALWAYS use 'docs'
-- If changes include both documentation and code, use the prefix for the code changes
+- If changes include both documentation and code, use the prefix for the code changes, unless it is a documentation-only change
 
 Select ONE type from this list that best matches the primary purpose of the changes:
 - feat: A new feature or functionality addition
 - fix: A bug fix or error correction
-- docs: Documentation changes only (INCLUDING README updates, regardless of how significant)
+- docs: Documentation changes only (INCLUDING README and CHANGELOG updates, regardless of how significant)
 - style: Changes to code style/formatting without logic changes
 - refactor: Code restructuring without behavior changes
 - perf: Performance improvements
