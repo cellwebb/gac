@@ -21,6 +21,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Improved
 
+- **Commit Message Generation Quality**: Enhanced prompt template with better guidance for AI models
+  - Added `<focus>` section to prioritize core purpose and impact in commit messages
+  - Added `<mixed_changes>` section with clear rules for handling multi-area changes
+  - Enhanced scope inference with better guidance for component and module naming
+  - Simplified example structure to two sections: no-scope and with-scope examples
+  - Improved template consistency by aligning examples pattern with conventions sections
+  - Examples now always match the expected output format for each scope mode
 - **Pre-commit Hook Error Reporting**: Enhanced error messages when pre-commit hooks fail
   - Now displays detailed output showing which specific hooks failed and why
   - Captures and displays both stdout and stderr from pre-commit
