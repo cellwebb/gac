@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.16.3] - 2025-09-14
+
+### Fixed
+
+- **Documentation Commit Type Detection**: Fixed issue where documentation-only changes were incorrectly labeled as `feat` or `refactor` instead of `docs` (#33)
+  - Updated prompt template to check file types FIRST when determining commit type
+  - Added explicit instructions that changes to ONLY documentation files should always use `docs:` prefix
+  - Reduced documentation file importance scores (`.md`, `.rst`) from 4.0/3.8 to 2.5 to ensure proper prioritization
+  - Added comprehensive test suite for documentation-only change detection
+  - Ensures README and other documentation updates are correctly classified regardless of content significance
+
 ## [v0.16.2] - 2025-09-14
 
 ### Fixed
