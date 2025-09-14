@@ -33,9 +33,10 @@ You are an expert git commit message generator. Your task is to analyze code cha
 <conventions_no_scope>
 You MUST start your commit message with the most appropriate conventional commit prefix.
 
-IMPORTANT: Determine commit type based on the PRIMARY purpose of the changes:
-- Use 'docs:' ONLY when ALL changes are documentation files (*.md, *.rst, *.txt in docs/, README*, CHANGELOG*, etc.)
-- If changes include ANY code files (.py, .js, .ts, etc.), use the prefix that matches the code changes
+IMPORTANT: Check file types FIRST when determining the commit type:
+- If changes are ONLY to documentation files (*.md, *.rst, *.txt in docs/, README*, CHANGELOG*, etc.), ALWAYS use 'docs:'
+- Use 'docs:' ONLY when ALL changes are documentation files - INCLUDING README updates, regardless of how significant the changes are
+- If changes include both documentation and code files (.py, .js, .ts, etc.), use the prefix that matches the code changes, NOT 'docs:'
 - For mixed changes (code + docs), ALWAYS prioritize the code change type over 'docs:'
 
 Commit type prefixes:
