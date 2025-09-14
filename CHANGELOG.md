@@ -12,11 +12,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - **Documentation Commit Type Detection**: Fixed issue where documentation-only changes were incorrectly labeled as `feat` or `refactor` instead of `docs` (#33)
-  - Updated prompt template to check file types FIRST when determining commit type
-  - Added explicit instructions that changes to ONLY documentation files should always use `docs:` prefix
+  - Updated prompt template to properly determine commit type based on PRIMARY purpose of changes
+  - Refined logic to use `docs:` ONLY when ALL changes are documentation files
+  - For mixed changes (code + docs), now correctly prioritizes the code change type
   - Reduced documentation file importance scores (`.md`, `.rst`) from 4.0/3.8 to 2.5 to ensure proper prioritization
   - Added comprehensive test suite for documentation-only change detection
   - Ensures README and other documentation updates are correctly classified regardless of content significance
+
+### Improved
+
+- **Pre-commit Hook Error Reporting**: Enhanced error messages when pre-commit hooks fail
+  - Now displays detailed output showing which specific hooks failed and why
+  - Captures and displays both stdout and stderr from pre-commit
+  - Replaces generic "exit code 1" message with actionable failure information
 
 ## [v0.16.2] - 2025-09-14
 
