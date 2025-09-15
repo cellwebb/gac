@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - **Improved AI Prompt Architecture**: Separated prompt generation into system and user components for better AI model interaction
+
   - Modified `build_prompt()` to return a tuple of `(system_prompt, user_prompt)` instead of a single concatenated string
   - System prompt now contains role definition, instructions, conventions, and examples
   - User prompt contains only the actual git data (status, diff, diff_stat, and optional hints)
@@ -21,6 +22,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - AI providers now receive properly structured messages with separate system and user roles
   - Improved token counting to accurately reflect both system and user prompt usage
   - Maintains full backward compatibility with existing code using string prompts
+
+- **Enhanced CI/CD Workflows**: Modernized GitHub Actions workflows with uv/uvx for better performance
+
+  - Split single quality job into separate lint and test jobs for parallel execution
+  - Added test matrix to run tests across Python 3.10, 3.11, 3.12, and 3.13
+  - Replaced pip with uv for faster dependency resolution and caching
+  - Use uvx to run tools in isolated environments without system pollution
+  - Optimized coverage reporting to upload only once per workflow run
+
+- **Improved Version Bumping**: Migrated from deprecated .cfg to modern .toml configuration
+  - Created `.bumpversion.toml` to replace deprecated `.bumpversion.cfg`
+  - Enhanced Makefile bump commands with better error handling and user feedback
+  - Added robust git status checks before version bumping
+  - Improved version extraction using Python regex for reliability
+  - Automated changelog updates during version bumping process
 
 ## [v0.17.3] - 2025-09-14
 
