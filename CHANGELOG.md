@@ -19,11 +19,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Added comprehensive tests covering config loading and CLI behavior with scope inference
   - Included example env configuration for the new always_include_scope option
 
-- **Enhanced Reroll Functionality with User Feedback**: Improved the commit message reroll capability to accept user-provided hints
-  - Introduced support for providing hints during commit message reroll via "r \<hint\>" input format
-  - Modified confirmation prompt to inform users about the new reroll with hint option
-  - Combined initial hint with reroll hint to create conversational context for regeneration
-  - Preserved original prompt when no reroll hint is provided for backward compatibility
+- **Enhanced Reroll Functionality with User Feedback**: Improved the commit message reroll capability to accept user-provided feedback
+  - Introduced support for providing feedback during commit message reroll via "r \<feedback\>" input format
+  - Modified confirmation prompt to inform users about the new reroll with feedback option
+  - Combined initial hint with reroll feedback to create conversational context for regeneration
+  - Preserved original prompt when no reroll feedback is provided for backward compatibility
   - Improved validation logic to handle case-insensitive user responses
   - Added blank line for improved console output readability during reroll process
 

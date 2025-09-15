@@ -54,7 +54,7 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 | `--model <model>` | `-m`  | Specify the model to use for this commit    |
 | `--scope <scope>` | `-s`  | Specify the scope of changes for the commit |
 
-**Note:** You can also provide hints interactively during the reroll process by typing `r <feedback>` at the prompt.
+**Note:** You can also provide feedback interactively during the reroll process by typing `r <feedback>` at the prompt.
 
 ## Output and Verbosity
 

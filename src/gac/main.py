@@ -159,10 +159,10 @@ def main(
                 )
 
             if require_confirmation:
-                # Custom prompt that accepts y/n/r or "r <hint (optional)>"
+                # Custom prompt that accepts y/n/r or "r <feedback (optional)>"
                 while True:
                     response = click.prompt(
-                        "Proceed with commit above? [y/n/r <hint>]", type=str, show_default=False
+                        "Proceed with commit above? [y/n/r <feedback>]", type=str, show_default=False
                     ).strip()
 
                     if response.lower() in ["y", "yes"]:
@@ -171,21 +171,21 @@ def main(
                         console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
                         sys.exit(0)
                     elif response.lower() == "r" or response.lower().startswith("r ") or response.lower() == "reroll":
-                        # Parse the reroll command for optional hint
+                        # Parse the reroll command for optional feedback
                         if response.lower() == "r" or response.lower() == "reroll":
-                            # Simple reroll without hint
-                            reroll_hint = ""
+                            # Simple reroll without feedback
+                            reroll_feedback = ""
                             console.print("[cyan]Regenerating commit message...[/cyan]")
                         else:
-                            # Extract hint from "r <hint>"
-                            reroll_hint = response[2:].strip()  # Remove "r " prefix
-                            console.print(f"[cyan]Regenerating commit message with feedback: {reroll_hint}[/cyan]")
+                            # Extract feedback from "r <feedback>"
+                            reroll_feedback = response[2:].strip()  # Remove "r " prefix
+                            console.print(f"[cyan]Regenerating commit message with feedback: {reroll_feedback}[/cyan]")
 
-                        # Combine hints if reroll hint provided
+                        # Combine hints if reroll feedback provided
                         combined_hint = hint
-                        if reroll_hint:
+                        if reroll_feedback:
                             # Create conversational prompt with previous attempt and feedback
-                            conversational_hint = f"Previous attempt: '{commit_message}'. User feedback: {reroll_hint}. Please revise accordingly."
+                            conversational_hint = f"Previous attempt: '{commit_message}'. User feedback: {reroll_feedback}. Please revise accordingly."
 
                             if hint:
                                 combined_hint = f"{hint}. {conversational_hint}"
@@ -220,7 +220,7 @@ def main(
                         break  # Exit inner loop, continue outer loop
                     else:
                         console.print(
-                            "[red]Invalid response. Please enter y (yes), n (no), r (reroll), or r <hint>.[/red]"
+                            "[red]Invalid response. Please enter y (yes), n (no), r (reroll), or r <feedback>.[/red]"
                         )
 
                 # If we got here with 'y', break the outer loop
