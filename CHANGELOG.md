@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.17.2] - 2025-09-14
+
+### Fixed
+
+- **Push Failure Reporting**: Fixed issue where git push failures were incorrectly reported as successful when using the `-p` flag
+  - Updated `push_changes()` function to use `run_subprocess()` with `raise_on_error=True` for accurate failure detection
+  - Replaced generic error handling with specific `subprocess.CalledProcessError` handling to capture git push stderr output
+  - Modified main function to properly exit with error code 1 when push operations fail
+  - Improved error messages to include network connection troubleshooting hints
+  - Updated test suite to match the new implementation and ensure push failures are properly detected
+
 ## [v0.17.0] - 2025-09-14
 
 ### Added
