@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.17.4] - 2025-09-14
+
 ### Changed
 
 - **Improved AI Prompt Architecture**: Separated prompt generation into system and user components for better AI model interaction
