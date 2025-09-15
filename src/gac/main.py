@@ -121,7 +121,7 @@ def main(
         if warning_limit and prompt_tokens > warning_limit:
             console = Console()
             console.print(
-                f"[yellow]⚠️  Warning: Prompt contains {prompt_tokens} tokens, which exceeds the warning limit of "
+                f"[yellow]⚠️  WARNING: Prompt contains {prompt_tokens} tokens, which exceeds the warning limit of "
                 f"{warning_limit} tokens.[/yellow]"
             )
             if require_confirmation:
@@ -159,23 +159,58 @@ def main(
                 )
 
             if require_confirmation:
-                # Custom prompt that accepts y/n/r
+                # Custom prompt that accepts y/n/r or "r <hint (optional)>"
                 while True:
-                    response = (
-                        click.prompt("Proceed with commit above? [y/n/r]", type=str, show_default=False).lower().strip()
-                    )
+                    response = click.prompt(
+                        "Proceed with commit above? [y/n/r <hint>]", type=str, show_default=False
+                    ).strip()
 
-                    if response in ["y", "yes"]:
+                    if response.lower() in ["y", "yes"]:
                         break  # Exit both loops and proceed with commit
-                    elif response in ["n", "no"]:
+                    elif response.lower() in ["n", "no"]:
                         console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
                         sys.exit(0)
-                    elif response in ["r", "reroll"]:
-                        console.print("[cyan]Regenerating commit message...[/cyan]\n")
+                    elif response.lower() == "r" or response.lower().startswith("r ") or response.lower() == "reroll":
+                        # Parse the reroll command for optional hint
+                        if response.lower() == "r" or response.lower() == "reroll":
+                            # Simple reroll without hint
+                            reroll_hint = ""
+                            console.print("[cyan]Regenerating commit message...[/cyan]")
+                        else:
+                            # Extract hint from "r <hint>"
+                            reroll_hint = response[2:].strip()  # Remove "r " prefix
+                            console.print(f"[cyan]Regenerating commit message with feedback: {reroll_hint}[/cyan]")
+
+                        # Combine hints if reroll hint provided
+                        combined_hint = hint
+                        if reroll_hint:
+                            # Create conversational prompt with previous attempt and feedback
+                            conversational_hint = f"Previous attempt: '{commit_message}'. User feedback: {reroll_hint}. Please revise accordingly."
+
+                            if hint:
+                                combined_hint = f"{hint}. {conversational_hint}"
+                            else:
+                                combined_hint = conversational_hint
+
+                            # Regenerate prompt with conversational feedback
+                            reroll_prompt = build_prompt(
+                                status=status,
+                                processed_diff=processed_diff,
+                                diff_stat=diff_stat,
+                                one_liner=one_liner,
+                                hint=combined_hint,
+                                scope=scope,
+                            )
+                        else:
+                            # No hint given, just reroll with same prompt
+                            reroll_prompt = prompt
+
+                        console.print()  # Add blank line for readability
+
                         # Generate new message
                         commit_message = generate_commit_message(
                             model=model,
-                            prompt=prompt,
+                            prompt=reroll_prompt,
                             temperature=temperature,
                             max_tokens=max_output_tokens,
                             max_retries=max_retries,
@@ -184,10 +219,12 @@ def main(
                         commit_message = clean_commit_message(commit_message)
                         break  # Exit inner loop, continue outer loop
                     else:
-                        console.print("[red]Invalid response. Please enter y (yes), n (no), or r (reroll).[/red]")
+                        console.print(
+                            "[red]Invalid response. Please enter y (yes), n (no), r (reroll), or r <hint>.[/red]"
+                        )
 
                 # If we got here with 'y', break the outer loop
-                if response in ["y", "yes"]:
+                if response.lower() in ["y", "yes"]:
                     break
             else:
                 # No confirmation required, exit loop
