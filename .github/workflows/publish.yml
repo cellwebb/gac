@@ -1,10 +1,7 @@
-# Publishes your package to PyPI using Astral/uv for builds.
-# Set PYPI_API_TOKEN in repo secrets.
+# Publishes your package to PyPI when version is manually bumped
+# Requires PYPI_API_TOKEN in repo secrets
 
-permissions:
-  contents: write # Allows writing to the repository
-
-name: Build and Publish to PyPI
+name: Publish to PyPI
 
 on:
   push:
@@ -12,197 +9,56 @@ on:
       - main
 
 jobs:
-  build-publish:
+  publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Allows writing to the repository
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need full history for version detection
+          fetch-depth: 2 # Need current and previous commit
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install uv build twine bump-my-version packaging
-
-      - name: Setup uv virtual environment
-        run: uv venv
-
-      - name: Check if version bump is needed
+      - name: Check if version was bumped
         id: version_check
         run: |
-          echo "=== Version Bump Check ==="
+          echo "=== Checking for version bump ==="
 
-          # Skip if recent commits have skip flags
-          if git log --oneline -5 | grep -qiE '\[(skip-version-bump|skip-auto-bump|no-auto-bump|version-bump-done|ci skip)\]'; then
-            echo "Skip flag detected in recent commits"
-            echo "skip_auto_bump=true" >> $GITHUB_OUTPUT
-            exit 0
+          # Get current version
+          CURRENT_VERSION=$(grep '__version__' src/gac/__version__.py | sed 's/.*"\(.*\)".*/\1/')
+          echo "Current version: $CURRENT_VERSION"
+
+          # Get previous version from parent commit
+          PREVIOUS_VERSION=$(git show HEAD^:src/gac/__version__.py | grep '__version__' | sed 's/.*"\(.*\)".*/\1/' || echo "0.0.0")
+          echo "Previous version: $PREVIOUS_VERSION"
+
+          # Compare versions
+          if [ "$CURRENT_VERSION" = "$PREVIOUS_VERSION" ]; then
+            echo "::notice::Version unchanged ($CURRENT_VERSION). Skipping publish."
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "::notice::Version bumped from $PREVIOUS_VERSION to $CURRENT_VERSION. Publishing to PyPI."
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           fi
 
-          python3 << 'EOF'
-          import re
-          import subprocess
-          import sys
-          import os
-          from packaging import version
-
-          def get_version_from_file(file_path):
-              """Read version from __version__.py file"""
-              try:
-                  with open(file_path, 'r') as f:
-                      content = f.read()
-                      match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
-                      return match.group(1) if match else None
-              except FileNotFoundError:
-                  return None
-
-          def get_version_at_commit(commit, file_path):
-              """Get version from a file at a specific commit"""
-              try:
-                  result = subprocess.run(
-                      ['git', 'show', f'{commit}:{file_path}'],
-                      capture_output=True, text=True, check=True
-                  )
-                  match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', result.stdout)
-                  return match.group(1) if match else None
-              except subprocess.CalledProcessError:
-                  return None
-
-          def get_last_version_on_main():
-              """Get the last published version from main branch"""
-              try:
-                  # Get the parent commit on main (before the current merge)
-                  result = subprocess.run(
-                      ['git', 'rev-parse', 'HEAD~1'],
-                      capture_output=True, text=True, check=True
-                  )
-                  parent_commit = result.stdout.strip()
-                  return get_version_at_commit(parent_commit, 'src/gac/__version__.py')
-              except subprocess.CalledProcessError:
-                  return None
-
-          def parse_version_bump_type(current, previous):
-              """Determine what type of version bump occurred"""
-              if not current or not previous:
-                  return None
-              
-              curr = version.parse(current)
-              prev = version.parse(previous)
-              
-              if curr.major > prev.major:
-                  return "major"
-              elif curr.minor > prev.minor:
-                  return "minor"
-              elif curr.micro > prev.micro:
-                  return "patch"
-              else:
-                  return None
-
-          # Get versions
-          current_version = get_version_from_file('src/gac/__version__.py')
-          previous_version = get_last_version_on_main()
-
-          print(f"Current version: {current_version}")
-          print(f"Previous version on main: {previous_version}")
-
-          # Check if version was already bumped
-          skip_bump = False
-
-          if not current_version:
-              print("ERROR: Could not read current version")
-              sys.exit(1)
-
-          if not previous_version:
-              print("WARNING: Could not read previous version, assuming first release")
-              skip_bump = False
-          elif current_version == previous_version:
-              print("Version unchanged - will apply patch bump")
-              skip_bump = False
-          else:
-              curr_v = version.parse(current_version)
-              prev_v = version.parse(previous_version)
-              
-              if curr_v > prev_v:
-                  bump_type = parse_version_bump_type(current_version, previous_version)
-                  print(f"Version already bumped ({bump_type}): {previous_version} -> {current_version}")
-                  skip_bump = True
-              elif curr_v < prev_v:
-                  print(f"ERROR: Current version ({current_version}) is lower than previous ({previous_version})")
-                  sys.exit(1)
-              else:
-                  print("Version unchanged - will apply patch bump")
-                  skip_bump = False
-
-          # Sync .bumpversion.cfg if needed
-          try:
-              with open('.bumpversion.cfg', 'r') as f:
-                  cfg_content = f.read()
-                  cfg_match = re.search(r'current_version\s*=\s*([^\n]+)', cfg_content)
-                  cfg_version = cfg_match.group(1).strip() if cfg_match else None
-              
-              if cfg_version != current_version:
-                  print(f"Syncing .bumpversion.cfg: {cfg_version} -> {current_version}")
-                  new_content = re.sub(
-                      r'current_version\s*=\s*[^\n]+',
-                      f'current_version = {current_version}',
-                      cfg_content
-                  )
-                  with open('.bumpversion.cfg', 'w') as f:
-                      f.write(new_content)
-          except FileNotFoundError:
-              print("Creating .bumpversion.cfg")
-              with open('.bumpversion.cfg', 'w') as f:
-                  f.write(f'''[bumpversion]
-          current_version = {current_version}
-          commit = False
-          tag = False
-
-          [bumpversion:file:src/gac/__version__.py]
-          ''')
-
-          # Write output
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"skip_auto_bump={'true' if skip_bump else 'false'}\n")
-              f.write(f"current_version={current_version}\n")
-              f.write(f"previous_version={previous_version or '0.0.0'}\n")
-
-          if skip_bump:
-              print("\n✅ Skipping auto-bump - version already updated")
-          else:
-              print("\n⚙ Will apply patch bump")
-
-          sys.exit(0)
-          EOF
-
-      - name: Apply automatic version bump
-        if: steps.version_check.outputs.skip_auto_bump != 'true'
-        run: |
-          echo "Applying automatic patch version bump..."
-          bump-my-version bump patch --allow-dirty
+      - name: Install uv
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: pip install uv
 
       - name: Build package
-        run: |
-          uv build
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: uv build
 
       - name: Publish to PyPI
+        if: steps.version_check.outputs.version_changed == 'true'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: uv run twine upload dist/*
-
-      - name: Push version bump to GitHub
-        if: ${{ success() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "chore: bump version [ci skip]" || echo "No changes to commit"
-          git push
+          uv pip install --system twine
+          twine upload dist/*
+          echo "::notice::Successfully published version ${{ steps.version_check.outputs.current_version }} to PyPI"
