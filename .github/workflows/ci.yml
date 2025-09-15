@@ -55,7 +55,7 @@ on:
       - "scripts/**"
 
 jobs:
-  quality:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -66,28 +66,57 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          pip install ruff pytest pytest-cov pytest-asyncio
-          pip install .
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
 
       - name: Lint with ruff
-        run: ruff check .
+        run: uvx ruff check .
 
       - name: Check formatting with ruff
-        run: ruff format --check .
+        run: uvx ruff format --check .
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system pytest pytest-cov pytest-asyncio
+          uv pip install --system .
 
       - name: Run pytest with coverage
-        run: pytest --cov=gac --cov-report=xml -s
+        run: uvx pytest --cov=gac --cov-report=xml -s
 
       - name: Upload coverage reports to Codecov
+        if: matrix.python-version == '3.11' # Only upload coverage once
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: cellwebb/gac
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && matrix.python-version == '3.11' }}
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

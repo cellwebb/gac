@@ -20,6 +20,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
+
       - name: Extract version from tag
         id: get_version
         run: |
@@ -45,9 +51,6 @@ jobs:
 
           echo "✅ Version verified: $CODE_VERSION"
 
-      - name: Install uv
-        run: pip install uv
-
       - name: Build package
         run: uv build
 
@@ -56,6 +59,5 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          uv pip install --system twine
-          twine upload dist/*
+          uvx twine upload dist/*
           echo "::notice::Successfully published version ${{ steps.get_version.outputs.version }} to PyPI"
