@@ -47,7 +47,13 @@ clean:
 
 # Version bumping
 bump:
-	@git diff --exit-code || (echo "Git working directory is not clean" && exit 1)
+	@# Check for uncommitted changes before starting
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "Error: Git working directory is not clean"; \
+		echo "Please commit or stash your changes first"; \
+		git status --short; \
+		exit 1; \
+	fi
 	@echo "Bumping $(VERSION) version..."
 	@OLD_VERSION=$$(grep 'current_version' .bumpversion.toml | cut -d '"' -f2) && \
 	bump-my-version bump $(VERSION) --no-commit --no-tag && \
@@ -57,8 +63,8 @@ bump:
 	git add -A && \
 	git commit -m "chore: bump version to $$NEW_VERSION" && \
 	git tag -a "v$$NEW_VERSION" -m "Release version $$NEW_VERSION" && \
-	echo "Created tag v$$NEW_VERSION" && \
-	echo "To publish: git push && git push --tags"
+	echo "✅ Created tag v$$NEW_VERSION" && \
+	echo "📦 To publish: git push && git push --tags"
 
 bump-patch: VERSION=patch
 bump-patch: bump
