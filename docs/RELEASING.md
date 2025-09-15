@@ -46,8 +46,6 @@ This document outlines the process for releasing new versions of GAC to PyPI.
 
 ### 2. Version Bump
 
-**IMPORTANT**: Version must be bumped in the PR for CI to publish!
-
 Update version in `src/gac/__version__.py`:
 
 ```python
@@ -117,30 +115,38 @@ gac --version
 twine upload dist/*
 ```
 
-### 7. Post-release
+### 7. Create Release Tag
+
+**This step triggers the automated PyPI release!**
+
+```bash
+# Create and push the version tag
+git tag v0.15.0  # Use your actual version
+git push origin v0.15.0
+
+# GitHub Actions will now:
+# 1. Build the package
+# 2. Verify version matches tag
+# 3. Upload to PyPI
+```
+
+Monitor the [Actions tab](https://github.com/cellwebb/gac/actions) to ensure successful publication.
+
+### 8. Post-release
 
 1. **Verify the release on PyPI**:
 
    - Check [PyPI project page](https://pypi.org/project/gac/)
    - Ensure the new version is listed
 
-2. **Optional: Create Git tag** (for reference):
-
-   ```bash
-   git tag -a v0.15.0 -m "Release version 0.15.0"
-   git push origin v0.15.0
-   ```
-
-   Note: Tags are optional since CI publishes based on version changes, not tags.
-
-3. **Verify Installation**:
+2. **Verify Installation**:
 
    ```bash
    pipx install --force gac
    gac --version
    ```
 
-4. **Update Documentation**:
+3. **Update Documentation**:
    - Update README if needed
    - Update installation instructions to reference PyPI
 
@@ -148,20 +154,32 @@ twine upload dist/*
 
 The project includes `.github/workflows/publish.yml` for automated releases:
 
-- Triggers automatically when code is pushed to `main` branch
-- **Only publishes if the version in `src/gac/__version__.py` has been bumped**
+- Triggers when you push a version tag (e.g., `v0.17.3`)
+- Verifies the tag version matches `src/gac/__version__.py`
+- Automatically builds and publishes to PyPI
 - Requires `PYPI_API_TOKEN` secret in repository settings
-- No manual tagging required
 
 ### How it works
 
-1. Create a PR with your changes
-2. **Bump the version** in `src/gac/__version__.py`
-3. Update `CHANGELOG.md`
-4. Merge the PR to main
-5. CI automatically publishes to PyPI if version changed
+1. Merge your PR(s) to main with version bumped in `src/gac/__version__.py`
+2. When ready to release, create and push a tag:
 
-If the version hasn't been bumped, the CI will skip publishing (preventing duplicate uploads).
+   ```bash
+   git checkout main
+   git pull
+   git tag v0.17.3  # Use your version number
+   git push origin v0.17.3
+   ```
+
+3. GitHub Actions automatically publishes to PyPI
+4. The workflow verifies the tag matches the code version
+
+### Benefits
+
+- Full control over when to release
+- Can merge multiple PRs before releasing
+- Tags provide clear release history
+- Prevents accidental releases
 
 ## Troubleshooting
 

@@ -11,11 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- **Simplified CI/CD Publishing Workflow**: Removed complex auto-version-bumping logic in favor of manual version bumps
-  - CI now only publishes to PyPI when it detects a manual version change in PRs
-  - Prevents "file already exists" errors from duplicate publish attempts
-  - Makes version management more explicit and predictable
-  - Updated contributing guidelines to document version bump requirements
+- **Tag-Based Release Workflow**: Switched to tag-triggered releases for better control
+  - CI/CD now publishes to PyPI only when version tags are pushed (e.g., `v0.17.3`)
+  - Removed complex auto-version-bumping logic
+  - Allows batching multiple PRs before releasing
+  - Prevents accidental releases and "file already exists" errors
+  - Verifies tag version matches code version before publishing
+  - Updated documentation to explain tag-based release process
 
 ## [v0.17.2] - 2025-09-14
 

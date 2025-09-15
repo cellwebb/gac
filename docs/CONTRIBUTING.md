@@ -27,7 +27,7 @@ make the process smooth for everyone.
   2. Make your changes following the coding standards below.
   3. Add or update tests as needed.
   4. Ensure all tests pass (`pytest`).
-  5. **Bump the version** in `src/gac/__version__.py` (see Version Bumping section below).
+  5. Bump the version in `src/gac/__version__.py` if this is a releasable change.
   6. Update `CHANGELOG.md` with your changes.
   7. Submit a pull request with a clear description of your changes.
 
@@ -36,8 +36,7 @@ GitHub.
 
 ## Version Bumping
 
-**Important**: All PRs that include changes to the codebase must bump the version number.
-The CI/CD pipeline will only publish to PyPI when it detects a version change.
+**Important**: PRs should include a version bump in `src/gac/__version__.py` when they contain changes that should be released.
 
 ### How to bump the version
 
@@ -46,6 +45,15 @@ The CI/CD pipeline will only publish to PyPI when it detects a version change.
    - **Patch** (0.0.X): Bug fixes, small improvements
    - **Minor** (0.X.0): New features, backwards-compatible changes
    - **Major** (X.0.0): Breaking changes
+
+### Release Process
+
+Releases are triggered by pushing version tags:
+
+1. Merge PR(s) with version bumps to main
+2. Create a tag: `git tag v0.17.3`
+3. Push the tag: `git push origin v0.17.3`
+4. GitHub Actions automatically publishes to PyPI
 
 Example:
 

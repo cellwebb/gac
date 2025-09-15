@@ -1,12 +1,12 @@
-# Publishes your package to PyPI when version is manually bumped
+# Publishes package to PyPI when a version tag is pushed
 # Requires PYPI_API_TOKEN in repo secrets
 
 name: Publish to PyPI
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+" # Matches tags like v0.17.3
 
 jobs:
   publish:
@@ -14,51 +14,48 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2 # Need current and previous commit
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Check if version was bumped
-        id: version_check
+      - name: Extract version from tag
+        id: get_version
         run: |
-          echo "=== Checking for version bump ==="
+          # Get tag name from GITHUB_REF (refs/tags/v0.17.3 -> v0.17.3)
+          TAG=${GITHUB_REF#refs/tags/}
+          # Remove 'v' prefix to get version number
+          VERSION=${TAG#v}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version $VERSION from tag $TAG"
 
-          # Get current version
-          CURRENT_VERSION=$(grep '__version__' src/gac/__version__.py | sed 's/.*"\(.*\)".*/\1/')
-          echo "Current version: $CURRENT_VERSION"
+      - name: Verify version matches code
+        run: |
+          # Get version from code
+          CODE_VERSION=$(grep '__version__' src/gac/__version__.py | sed 's/.*"\(.*\)".*/\1/')
+          TAG_VERSION=${{ steps.get_version.outputs.version }}
 
-          # Get previous version from parent commit
-          PREVIOUS_VERSION=$(git show HEAD^:src/gac/__version__.py | grep '__version__' | sed 's/.*"\(.*\)".*/\1/' || echo "0.0.0")
-          echo "Previous version: $PREVIOUS_VERSION"
-
-          # Compare versions
-          if [ "$CURRENT_VERSION" = "$PREVIOUS_VERSION" ]; then
-            echo "::notice::Version unchanged ($CURRENT_VERSION). Skipping publish."
-            echo "version_changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "::notice::Version bumped from $PREVIOUS_VERSION to $CURRENT_VERSION. Publishing to PyPI."
-            echo "version_changed=true" >> $GITHUB_OUTPUT
-            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          if [ "$CODE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch! Code has $CODE_VERSION but tag is v$TAG_VERSION"
+            echo "Please ensure src/gac/__version__.py matches the tag version"
+            exit 1
           fi
 
+          echo "✅ Version verified: $CODE_VERSION"
+
       - name: Install uv
-        if: steps.version_check.outputs.version_changed == 'true'
         run: pip install uv
 
       - name: Build package
-        if: steps.version_check.outputs.version_changed == 'true'
         run: uv build
 
       - name: Publish to PyPI
-        if: steps.version_check.outputs.version_changed == 'true'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           uv pip install --system twine
           twine upload dist/*
-          echo "::notice::Successfully published version ${{ steps.version_check.outputs.current_version }} to PyPI"
+          echo "::notice::Successfully published version ${{ steps.get_version.outputs.version }} to PyPI"
