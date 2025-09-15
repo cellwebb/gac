@@ -7,6 +7,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.17.0] - 2025-09-14
+
+### Added
+
+- **Always Include Scope Configuration**: Added new `GAC_ALWAYS_INCLUDE_SCOPE` environment variable to enable automatic scope inference
+
+  - When enabled, gac will automatically infer commit scope even when not explicitly provided via `--scope` flag
+  - Added configuration option to control whether commits require explicit scope or can infer it automatically
+  - Updated CLI to respect the always_include_scope setting when no explicit scope is provided
+  - Added comprehensive tests covering config loading and CLI behavior with scope inference
+  - Included example env configuration for the new always_include_scope option
+
+- **Enhanced Reroll Functionality with User Feedback**: Improved the commit message reroll capability to accept user-provided hints
+  - Introduced support for providing hints during commit message reroll via "r \<hint\>" input format
+  - Modified confirmation prompt to inform users about the new reroll with hint option
+  - Combined initial hint with reroll hint to create conversational context for regeneration
+  - Preserved original prompt when no reroll hint is provided for backward compatibility
+  - Improved validation logic to handle case-insensitive user responses
+  - Added blank line for improved console output readability during reroll process
+
+### Improved
+
+- **Documentation Enhancement**: Updated documentation to reflect new interactive reroll capabilities
+  - Enhanced README.md to document the new interactive reroll capability that accepts feedback
+  - Modified USAGE.md to detail how users can provide specific regeneration hints
+  - Added documentation for advanced configuration options including scope and AI settings
+  - Clarified the difference between simple reroll and feedback-assisted message regeneration
+  - Included examples of how to use the new reroll with feedback functionality
+  - Updated warning message capitalization for better visibility
+
 ## [v0.16.3] - 2025-09-14
 
 ### Fixed
