@@ -151,6 +151,20 @@ def test_push_changes_fatal_error():
         mock_logger.error.assert_called_once_with("No configured push destination.")
 
 
+def test_push_changes_generic_exception():
+    """Test push_changes when a generic exception occurs."""
+    with (
+        patch("gac.git.run_git_command") as mock_run_git,
+        patch("gac.git.run_subprocess") as mock_run_sub,
+        patch("gac.git.logger") as mock_logger,
+    ):
+        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_sub.side_effect = Exception("Unexpected error")
+        result = push_changes()
+        assert result is False
+        mock_logger.error.assert_called_once_with("Failed to push changes: Unexpected error")
+
+
 def test_get_diff_staged():
     with patch("gac.git.run_subprocess") as mock_run:
         mock_run.return_value = "diff output"
