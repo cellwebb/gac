@@ -108,17 +108,27 @@ def test_push_changes_no_remote():
 
 def test_push_changes_success():
     """Test push_changes when push is successful."""
-    with patch("gac.git.run_git_command") as mock_run:
-        mock_run.side_effect = ["origin\n", ""]  # First call for 'git remote', second for 'git push'
+    with patch("gac.git.run_git_command") as mock_run_git, patch("gac.git.run_subprocess") as mock_run_sub:
+        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_sub.return_value = ""  # For 'git push'
         result = push_changes()
         assert result is True
-        assert mock_run.call_count == 2
+        mock_run_git.assert_called_once_with(["remote"])
+        mock_run_sub.assert_called_once_with(["git", "push"], raise_on_error=True, strip_output=True)
 
 
 def test_push_changes_git_error():
-    """Test push_changes when GitError is raised."""
-    with patch("gac.git.run_git_command") as mock_run, patch("gac.git.logger") as mock_logger:
-        mock_run.side_effect = ["origin\n", GitError("Failed to push")]  # First call for 'git remote'
+    """Test push_changes when push fails with CalledProcessError."""
+    import subprocess
+
+    with (
+        patch("gac.git.run_git_command") as mock_run_git,
+        patch("gac.git.run_subprocess") as mock_run_sub,
+        patch("gac.git.logger") as mock_logger,
+    ):
+        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        error = subprocess.CalledProcessError(1, ["git", "push"], "", "Failed to push")
+        mock_run_sub.side_effect = error
         result = push_changes()
         assert result is False
         mock_logger.error.assert_called_once_with("Failed to push changes: Failed to push")
@@ -126,11 +136,16 @@ def test_push_changes_git_error():
 
 def test_push_changes_fatal_error():
     """Test push_changes when fatal error occurs."""
-    with patch("gac.git.run_git_command") as mock_run, patch("gac.git.logger") as mock_logger:
-        mock_run.side_effect = [  # First call for 'git remote'
-            "origin\n",
-            GitError("fatal: No configured push destination"),
-        ]
+    import subprocess
+
+    with (
+        patch("gac.git.run_git_command") as mock_run_git,
+        patch("gac.git.run_subprocess") as mock_run_sub,
+        patch("gac.git.logger") as mock_logger,
+    ):
+        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        error = subprocess.CalledProcessError(1, ["git", "push"], "", "fatal: No configured push destination")
+        mock_run_sub.side_effect = error
         result = push_changes()
         assert result is False
         mock_logger.error.assert_called_once_with("No configured push destination.")

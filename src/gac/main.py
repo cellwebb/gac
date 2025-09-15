@@ -270,15 +270,13 @@ def main(
                 logger.info("Changes pushed successfully")
                 console.print("[green]Changes pushed successfully[/green]")
             else:
-                handle_error(
-                    GitError("Failed to push changes. Check your remote configuration."),
-                    exit_program=True,
+                console.print(
+                    "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
                 )
+                sys.exit(1)
         except Exception as e:
-            handle_error(
-                GitError(f"Error pushing changes: {e}"),
-                exit_program=True,
-            )
+            console.print(f"[red]Error pushing changes: {e}[/red]")
+            sys.exit(1)
 
     if not quiet:
         logger.info("Successfully committed changes with message:")

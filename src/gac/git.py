@@ -161,11 +161,16 @@ def push_changes() -> bool:
         return False
 
     try:
-        run_git_command(["push"])
+        # Use raise_on_error=True to properly catch push failures
+        run_subprocess(["git", "push"], raise_on_error=True, strip_output=True)
         return True
-    except GitError as e:
-        if "fatal: No configured push destination" in str(e):
+    except subprocess.CalledProcessError as e:
+        error_msg = e.stderr.strip() if e.stderr else str(e)
+        if "fatal: No configured push destination" in error_msg:
             logger.error("No configured push destination.")
         else:
-            logger.error(f"Failed to push changes: {e}")
+            logger.error(f"Failed to push changes: {error_msg}")
+        return False
+    except Exception as e:
+        logger.error(f"Failed to push changes: {e}")
         return False
