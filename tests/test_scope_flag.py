@@ -93,7 +93,7 @@ class TestScopeFlag:
         def capture_prompt(**kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
-            return "prompt"
+            return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
@@ -110,7 +110,7 @@ class TestScopeFlag:
         def capture_prompt(**kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
-            return "prompt"
+            return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
@@ -127,7 +127,7 @@ class TestScopeFlag:
         def capture_prompt(**kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
-            return "prompt"
+            return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
@@ -145,7 +145,7 @@ class TestScopeFlag:
         def capture_prompt(**kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
-            return "prompt"
+            return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
@@ -162,7 +162,7 @@ class TestScopeFlag:
         def capture_prompt(**kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
-            return "prompt"
+            return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
 
@@ -185,11 +185,12 @@ class TestScopePromptBuilding:
         with patch("gac.prompt.re.sub") as mock_sub:
             # Make re.sub pass through the original string
             mock_sub.side_effect = lambda pattern, repl, string, flags=0: string
-            prompt = build_prompt("status", "mock_diff", scope="ui")
+            system_prompt, user_prompt = build_prompt("status", "mock_diff", scope="ui")
             # Verify we attempted to process the right template sections
             assert mock_sub.call_count > 0
-            # Just check we have something in the prompt
-            assert len(prompt) > 0
+            # Just check we have something in both prompts
+            assert len(system_prompt) > 0
+            assert len(user_prompt) > 0
 
     @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_with_empty_scope(self, mock_preprocess):
@@ -198,11 +199,12 @@ class TestScopePromptBuilding:
         with patch("gac.prompt.re.sub") as mock_sub:
             # Make re.sub pass through the original string
             mock_sub.side_effect = lambda pattern, repl, string, flags=0: string
-            prompt = build_prompt("status", "mock_diff", scope="")
+            system_prompt, user_prompt = build_prompt("status", "mock_diff", scope="")
             # Verify we attempted to process the right template sections
             assert mock_sub.call_count > 0
-            # Just check we have something in the prompt
-            assert len(prompt) > 0
+            # Just check we have something in both prompts
+            assert len(system_prompt) > 0
+            assert len(user_prompt) > 0
 
     @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_build_prompt_without_scope(self, mock_preprocess):
@@ -211,11 +213,12 @@ class TestScopePromptBuilding:
         with patch("gac.prompt.re.sub") as mock_sub:
             # Make re.sub pass through the original string
             mock_sub.side_effect = lambda pattern, repl, string, flags=0: string
-            prompt = build_prompt("status", "mock_diff", scope=None)
+            system_prompt, user_prompt = build_prompt("status", "mock_diff", scope=None)
             # Verify we attempted to process the right template sections
             assert mock_sub.call_count > 0
-            # Just check we have something in the prompt
-            assert len(prompt) > 0
+            # Just check we have something in both prompts
+            assert len(system_prompt) > 0
+            assert len(user_prompt) > 0
 
     @patch("gac.preprocess.preprocess_diff", return_value="mock_diff")
     def test_scope_with_different_values(self, mock_preprocess):
@@ -229,11 +232,12 @@ class TestScopePromptBuilding:
             mock_sub.side_effect = lambda pattern, repl, string, flags=0: string
 
             for scope_value in scopes:
-                prompt = build_prompt("status", "mock_diff", scope=scope_value)
+                system_prompt, user_prompt = build_prompt("status", "mock_diff", scope=scope_value)
                 # Verify we attempted to process the right template sections
                 assert mock_sub.call_count > 0
-                # Just check we have something in the prompt
-                assert len(prompt) > 0
+                # Just check we have something in both prompts
+                assert len(system_prompt) > 0
+                assert len(user_prompt) > 0
                 # Reset the mock for the next iteration
                 mock_sub.reset_mock()
 
@@ -288,9 +292,16 @@ class TestScopeIntegration:
         # Mock AI to return message with scope
         def mock_generate(**kwargs):
             prompt = kwargs.get("prompt", "")
-            if "REQUIRED scope 'auth'" in prompt:
+            # Handle both string and tuple prompt formats
+            if isinstance(prompt, tuple):
+                system_prompt, user_prompt = prompt
+                prompt_text = system_prompt + " " + user_prompt
+            else:
+                prompt_text = prompt
+
+            if "REQUIRED scope 'auth'" in prompt_text:
                 return "feat(auth): add login functionality"
-            elif "inferred scope" in prompt.lower():
+            elif "inferred scope" in prompt_text.lower():
                 return "fix(api): handle null response"
             else:
                 return "feat: add new feature"

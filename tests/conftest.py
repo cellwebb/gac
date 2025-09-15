@@ -91,7 +91,7 @@ def mock_count_tokens():
 def mock_build_prompt():
     """Mock for gac.prompt.build_prompt."""
     with patch("gac.prompt.build_prompt") as mock:
-        mock.return_value = "Test prompt"
+        mock.return_value = ("Test system prompt", "Test user prompt")
         yield mock
 
 

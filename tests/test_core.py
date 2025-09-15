@@ -15,25 +15,27 @@ def test_build_prompt():
 
     # Patch count_tokens to avoid dependency on Anthropic internals
     with patch("gac.preprocess.count_tokens", return_value=42):
-        result = build_prompt(status, diff, one_liner=one_liner, hint=hint)
+        system_prompt, user_prompt = build_prompt(status, diff, one_liner=one_liner, hint=hint)
 
-    # Check expected behavior: prompt contains necessary information for the LLM
-    assert isinstance(result, str)
-    assert len(result) > 0
+    # Check expected behavior: prompts contain necessary information for the LLM
+    assert isinstance(system_prompt, str)
+    assert isinstance(user_prompt, str)
+    assert len(system_prompt) > 0
+    assert len(user_prompt) > 0
 
-    # Verify the prompt contains the essential components
+    # Verify the user prompt contains the essential components
     # These are behavioral expectations, not implementation details
-    assert status in result
-    assert diff in result
-    assert hint in result
+    assert status in user_prompt
+    assert diff in user_prompt
+    assert hint in user_prompt
 
-    # Verify one_liner flag affects the prompt content appropriately
+    # Verify one_liner flag affects the system prompt content appropriately
     if one_liner:
-        assert "<one_liner>" in result
-        assert "<multi_line>" not in result
+        assert "<one_liner>" in system_prompt
+        assert "<multi_line>" not in system_prompt
     else:
-        assert "<one_liner>" not in result
-        assert "<multi_line>" in result
+        assert "<one_liner>" not in system_prompt
+        assert "<multi_line>" in system_prompt
 
 
 def test_build_prompt_without_hint():
@@ -46,12 +48,13 @@ def test_build_prompt_without_hint():
 
     # Patch count_tokens to avoid dependency on Anthropic internals
     with patch("gac.preprocess.count_tokens", return_value=42):
-        result = build_prompt(status, diff, one_liner=False)
+        system_prompt, user_prompt = build_prompt(status, diff, one_liner=False)
 
     # Check expected behavior
-    assert isinstance(result, str)
-    assert status in result
-    assert diff in result
+    assert isinstance(system_prompt, str)
+    assert isinstance(user_prompt, str)
+    assert status in user_prompt
+    assert diff in user_prompt
     # Check content relevant to multi-line format
-    assert "<multi_line>" in result
-    assert "<one_liner>" not in result
+    assert "<multi_line>" in system_prompt
+    assert "<one_liner>" not in system_prompt

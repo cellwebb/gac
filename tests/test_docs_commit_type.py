@@ -24,7 +24,8 @@ index abc123..def456 100644
 +## New Section
 +Added more details about installation."""
 
-        prompt = build_prompt(status=status, processed_diff=diff, diff_stat="README.md | 4 +++-")
+        system_prompt, user_prompt = build_prompt(status=status, processed_diff=diff, diff_stat="README.md | 4 +++-")
+        prompt = system_prompt + "\n" + user_prompt
 
         # Check that the prompt includes the enhanced documentation detection instructions
         assert "Check file types FIRST" in prompt
@@ -69,11 +70,12 @@ index 111222..333444 100644
 +
 +[90+ lines of API documentation]"""
 
-        prompt = build_prompt(
+        system_prompt, user_prompt = build_prompt(
             status=status,
             processed_diff=diff,
             diff_stat="README.md | 47 +++++++++++++++++++++++++++++++++++++++++++++--\n docs/api.md | 90 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-",
         )
+        prompt = system_prompt + "\n" + user_prompt
 
         # The prompt should guide the AI to use 'docs:' for documentation-only changes
         assert "ONLY to documentation files" in prompt
@@ -108,7 +110,10 @@ index 111222..333444 100644
 +    return "feature"
 """
 
-        prompt = build_prompt(status=status, processed_diff=diff, diff_stat="README.md | 1 +\n src/main.py | 4 ++++")
+        system_prompt, user_prompt = build_prompt(
+            status=status, processed_diff=diff, diff_stat="README.md | 1 +\n src/main.py | 4 ++++"
+        )
+        prompt = system_prompt + "\n" + user_prompt
 
         # Check that the prompt mentions handling mixed changes
         assert "If changes include both documentation and code" in prompt
@@ -142,7 +147,8 @@ index abc123..def456 100644
         processed_diff = diff
 
         # Build the prompt
-        prompt = build_prompt(status=status, processed_diff=processed_diff, diff_stat=diff_stat)
+        system_prompt, user_prompt = build_prompt(status=status, processed_diff=processed_diff, diff_stat=diff_stat)
+        prompt = system_prompt + "\n" + user_prompt
 
         # Verify the prompt contains the enhanced instructions
         assert "Check file types FIRST" in prompt

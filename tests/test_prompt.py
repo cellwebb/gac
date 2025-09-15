@@ -78,7 +78,10 @@ class TestPrompts:
         mock_load_template.return_value = TEST_TEMPLATE
 
         # Test with one-liner format
-        result = build_prompt("status text", processed_diff="diff text", one_liner=True, hint="hint text")
+        system_prompt, user_prompt = build_prompt(
+            "status text", processed_diff="diff text", one_liner=True, hint="hint text"
+        )
+        result = system_prompt + "\n" + user_prompt
         assert "status text" in result
         assert "diff text" in result
         assert "hint text" in result
@@ -86,7 +89,10 @@ class TestPrompts:
         assert "Create a commit message with:" not in result
 
         # Test with multi-line format
-        result = build_prompt("status text", processed_diff="diff text", one_liner=False, hint="hint text")
+        system_prompt, user_prompt = build_prompt(
+            "status text", processed_diff="diff text", one_liner=False, hint="hint text"
+        )
+        result = system_prompt + "\n" + user_prompt
         assert "status text" in result
         assert "diff text" in result
         assert "hint text" in result
@@ -94,7 +100,8 @@ class TestPrompts:
         assert "Create a commit message with:" in result
 
         # Test without hint
-        result = build_prompt("status text", processed_diff="diff text", one_liner=False, hint="")
+        system_prompt, user_prompt = build_prompt("status text", processed_diff="diff text", one_liner=False, hint="")
+        result = system_prompt + "\n" + user_prompt
         assert "status text" in result
         assert "diff text" in result
         assert "<hint>" not in result

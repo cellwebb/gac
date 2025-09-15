@@ -95,7 +95,7 @@ def main(
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model_id)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
-    prompt = build_prompt(
+    system_prompt, user_prompt = build_prompt(
         status=status,
         processed_diff=processed_diff,
         diff_stat=diff_stat,
@@ -106,16 +106,19 @@ def main(
 
     if show_prompt:
         console = Console()
+        # Show both system and user prompts
+        full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
         console.print(
             Panel(
-                prompt,
+                full_prompt,
                 title="Prompt for LLM",
                 border_style="bright_blue",
             )
         )
 
     try:
-        prompt_tokens = count_tokens(prompt, model)
+        # Count tokens for both prompts
+        prompt_tokens = count_tokens(system_prompt, model) + count_tokens(user_prompt, model)
 
         warning_limit = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
         if warning_limit and prompt_tokens > warning_limit:
@@ -132,7 +135,7 @@ def main(
 
         commit_message = generate_commit_message(
             model=model,
-            prompt=prompt,
+            prompt=(system_prompt, user_prompt),
             temperature=temperature,
             max_tokens=max_output_tokens,
             max_retries=max_retries,
@@ -193,7 +196,7 @@ def main(
                                 combined_hint = conversational_hint
 
                             # Regenerate prompt with conversational feedback
-                            reroll_prompt = build_prompt(
+                            reroll_system_prompt, reroll_user_prompt = build_prompt(
                                 status=status,
                                 processed_diff=processed_diff,
                                 diff_stat=diff_stat,
@@ -202,15 +205,15 @@ def main(
                                 scope=scope,
                             )
                         else:
-                            # No hint given, just reroll with same prompt
-                            reroll_prompt = prompt
+                            # No hint given, just reroll with same prompts
+                            reroll_system_prompt, reroll_user_prompt = system_prompt, user_prompt
 
                         console.print()  # Add blank line for readability
 
                         # Generate new message
                         commit_message = generate_commit_message(
                             model=model,
-                            prompt=reroll_prompt,
+                            prompt=(reroll_system_prompt, reroll_user_prompt),
                             temperature=temperature,
                             max_tokens=max_output_tokens,
                             max_retries=max_retries,

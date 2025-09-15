@@ -93,7 +93,8 @@ class TestTokenUsageDisplay:
 
         # Check that estimated token usage was displayed
         output_text = "\n".join(captured_output)
-        assert "Token usage: 150 prompt + 10 completion = 160 total" in output_text
+        # Now we count both system and user prompts, so 150 + 150 = 300 for prompts
+        assert "Token usage: 300 prompt + 10 completion = 310 total" in output_text
 
     def test_token_usage_not_displayed_when_quiet(self, runner, mock_dependencies, monkeypatch):
         """Test that token usage is not displayed in quiet mode."""

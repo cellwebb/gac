@@ -237,8 +237,8 @@ def build_prompt(
     one_liner: bool = False,
     hint: str = "",
     scope: str | None = None,
-) -> str:
-    """Build a prompt for the AI model using the provided template and git information.
+) -> tuple[str, str]:
+    """Build system and user prompts for the AI model using the provided template and git information.
 
     Args:
         status: Git status output
@@ -249,7 +249,7 @@ def build_prompt(
         scope: Optional scope parameter. None = no scope, "infer" = infer scope, any other string = use as scope
 
     Returns:
-        Formatted prompt string ready to be sent to an AI model
+        Tuple of (system_prompt, user_prompt) ready to be sent to an AI model
     """
     template = load_prompt_template()
 
@@ -331,7 +331,49 @@ def build_prompt(
     # Clean up extra whitespace, collapsing blank lines that may contain spaces
     template = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", template)
 
-    return template.strip()
+    # Split the template into system and user prompts
+    # System prompt contains all instructions, role, conventions, examples
+    # User prompt contains the actual git data
+
+    # Extract the git data sections for the user prompt
+    user_sections = []
+
+    # Extract git status
+    status_match = re.search(r"<git_status>.*?</git_status>", template, re.DOTALL)
+    if status_match:
+        user_sections.append(status_match.group(0))
+        # Remove from system prompt
+        template = template.replace(status_match.group(0), "")
+
+    # Extract git diff stat
+    diff_stat_match = re.search(r"<git_diff_stat>.*?</git_diff_stat>", template, re.DOTALL)
+    if diff_stat_match:
+        user_sections.append(diff_stat_match.group(0))
+        # Remove from system prompt
+        template = template.replace(diff_stat_match.group(0), "")
+
+    # Extract git diff
+    diff_match = re.search(r"<git_diff>.*?</git_diff>", template, re.DOTALL)
+    if diff_match:
+        user_sections.append(diff_match.group(0))
+        # Remove from system prompt
+        template = template.replace(diff_match.group(0), "")
+
+    # Extract hint if present
+    hint_match = re.search(r"<hint>.*?</hint>", template, re.DOTALL)
+    if hint_match and hint:  # Only include if hint was provided
+        user_sections.append(hint_match.group(0))
+        # Remove from system prompt
+        template = template.replace(hint_match.group(0), "")
+
+    # System prompt is everything else (role, conventions, examples, instructions)
+    system_prompt = template.strip()
+    system_prompt = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", system_prompt)
+
+    # User prompt is the git data sections
+    user_prompt = "\n\n".join(user_sections).strip()
+
+    return system_prompt, user_prompt
 
 
 def clean_commit_message(message: str) -> str:

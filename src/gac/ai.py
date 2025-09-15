@@ -61,7 +61,7 @@ def get_encoding(model: str) -> tiktoken.Encoding:
 
 def generate_commit_message(
     model: str,
-    prompt: str,
+    prompt: str | tuple[str, str],
     temperature: float = EnvDefaults.TEMPERATURE,
     max_tokens: int = EnvDefaults.MAX_OUTPUT_TOKENS,
     max_retries: int = EnvDefaults.MAX_RETRIES,
@@ -71,7 +71,7 @@ def generate_commit_message(
 
     Args:
         model: The model to use in provider:model_name format (e.g., 'anthropic:claude-3-5-haiku-latest')
-        prompt: The formatted prompt containing diff and context
+        prompt: Either a string prompt (for backward compatibility) or tuple of (system_prompt, user_prompt)
         temperature: Controls randomness (0.0-1.0), lower values are more deterministic
         max_tokens: Maximum tokens in the response
         max_retries: Number of retry attempts if generation fails
@@ -85,8 +85,8 @@ def generate_commit_message(
 
     Example:
         >>> model = "anthropic:claude-3-5-haiku-latest"
-        >>> prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
-        >>> generate_commit_message(model, prompt)
+        >>> system_prompt, user_prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
+        >>> generate_commit_message(model, (system_prompt, user_prompt))
         'docs: Update README with installation instructions'
     """
     try:
@@ -97,6 +97,14 @@ def generate_commit_message(
         ) from err
 
     client = ai.Client()
+
+    # Handle both old (string) and new (tuple) prompt formats
+    if isinstance(prompt, tuple):
+        system_prompt, user_prompt = prompt
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
+    else:
+        # Backward compatibility: treat string as user prompt
+        messages = [{"role": "user", "content": prompt}]
 
     if quiet:
         spinner = None
@@ -112,7 +120,7 @@ def generate_commit_message(
             logger.debug(f"Trying with model {model} (attempt {retry_count + 1}/{max_retries})")
             response = client.chat.completions.create(
                 model=model,
-                messages=[{"role": "user", "content": prompt}],
+                messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
