@@ -48,18 +48,23 @@ clean:
 # Version bumping
 bump:
 	@git diff --exit-code || (echo "Git working directory is not clean" && exit 1)
-	@NEW_VERSION=$$(bump-my-version show | grep "current_version" | cut -d "'" -f4) && \
+	@echo "Bumping $(VERSION) version..."
+	@OLD_VERSION=$$(grep 'current_version' .bumpversion.toml | cut -d '"' -f2) && \
+	bump-my-version bump $(VERSION) --no-commit --no-tag && \
+	NEW_VERSION=$$(grep 'current_version' .bumpversion.toml | cut -d '"' -f2) && \
+	echo "Version bumped from $$OLD_VERSION to $$NEW_VERSION" && \
 	python scripts/prep_changelog_for_release.py CHANGELOG.md $$NEW_VERSION && \
-	git add CHANGELOG.md && \
-	git commit -m "Update CHANGELOG.md for version $$NEW_VERSION" && \
-	bump-my-version bump $(VERSION) && \
-	echo "New version: $$NEW_VERSION"
+	git add -A && \
+	git commit -m "chore: bump version to $$NEW_VERSION" && \
+	git tag -a "v$$NEW_VERSION" -m "Release version $$NEW_VERSION" && \
+	echo "Created tag v$$NEW_VERSION" && \
+	echo "To publish: git push && git push --tags"
 
 bump-patch: VERSION=patch
-bump-patch: bump --commit --tag --push
+bump-patch: bump
 
 bump-minor: VERSION=minor
-bump-minor: bump --commit --tag --push
+bump-minor: bump
 
 bump-major: VERSION=major
-bump-major: bump --commit --tag --push
+bump-major: bump
