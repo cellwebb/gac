@@ -30,7 +30,8 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 
 - `y` or `yes` - Proceed with the commit
 - `n` or `no` - Cancel the commit
-- `r` or `reroll` - Regenerate the commit message
+- `r` or `reroll` - Regenerate the commit message with the same context
+- `r <feedback>` - Regenerate with specific feedback (e.g., `r make it shorter`, `r focus on performance`)
 
 ---
 
@@ -52,6 +53,8 @@ Generates an AI-powered commit message for staged changes and prompts for confir
 | `--hint <text>`   | `-h`  | Add a hint to guide the AI                  |
 | `--model <model>` | `-m`  | Specify the model to use for this commit    |
 | `--scope <scope>` | `-s`  | Specify the scope of changes for the commit |
+
+**Note:** You can also provide hints interactively during the reroll process by typing `r <feedback>` at the prompt.
 
 ## Output and Verbosity
 
@@ -145,6 +148,17 @@ gac --no-verify  # Skip all pre-commit hooks
   2. Environment variables
   3. Project-level `.gac.env`
   4. User-level `~/.gac.env`
+
+### Advanced Configuration Options
+
+You can customize gac's behavior with these optional environment variables:
+
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
+- `GAC_TEMPERATURE=0.7` - Control AI creativity (0.0-1.0, lower = more focused)
+- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages
+- `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
+
+See `.gac.env.example` for a complete configuration template.
 
 ### Configuration Subcommands
 

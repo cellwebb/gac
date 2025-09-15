@@ -18,7 +18,7 @@
 - **Seamless Git Workflow:** Integrates smoothly into your existing Git routine as a simple drop-in replacement for `git commit`.
 - **Extensive Customization:** Tailor commit messages to your needs with a rich set of flags, including one-liners (`-o`), AI hints (`-h`), commit scope (`-s`), and specific model selection (`-m`).
 - **Streamlined Workflow Commands:** Boost your productivity with convenient options to stage all changes (`-a`), auto-confirm commits (`-y`), and push to your remote repository (`-p`) in a single step.
-- **Reroll Capability:** Not satisfied with the generated commit message? Simply type `r` or `reroll` at the confirmation prompt to generate a new message.
+- **Interactive Reroll with Feedback:** Not satisfied with the generated commit message? Use `r` for a simple regeneration, or `r <feedback>` to provide specific improvement suggestions (e.g., `r make it shorter`, `r focus on the bug fix`).
 - **Token Usage Tracking:** Display token consumption statistics (prompt, completion, and total tokens).
 
 ## How It Works
