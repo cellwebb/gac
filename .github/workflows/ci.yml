@@ -106,7 +106,7 @@ jobs:
           uv pip install --system .
 
       - name: Run pytest with coverage
-        run: uvx pytest --cov=gac --cov-report=xml -s
+        run: pytest --cov=gac --cov-report=xml -s
 
       - name: Upload coverage reports to Codecov
         if: matrix.python-version == '3.11' # Only upload coverage once
