@@ -23,7 +23,13 @@
 
 ## How It Works
 
-gac analyzes your staged changes to generate high-quality commit messages with the help of large language models.
+gac analyzes your staged changes to generate high-quality commit messages with the help of large language models. The tool uses a sophisticated prompt architecture that separates system instructions from user data, enabling better AI understanding and more consistent results.
+
+### Technical Architecture
+
+- **Dual-Prompt System**: GAC uses a separated prompt architecture where system instructions (role definition, conventions, examples) are sent as system messages, while git data (diffs, status) are sent as user messages. This follows AI best practices for improved model performance.
+- **Smart Context Analysis**: The tool examines your repository structure, recent commit history, and README files to understand the broader context of your changes.
+- **Intelligent Diff Processing**: Large diffs are automatically preprocessed to focus on the most important changes while staying within token limits.
 
 ## How to Use
 
