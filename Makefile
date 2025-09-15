@@ -55,9 +55,9 @@ bump:
 		exit 1; \
 	fi
 	@echo "Bumping $(VERSION) version..."
-	@OLD_VERSION=$$(grep 'current_version' .bumpversion.toml | cut -d '"' -f2) && \
+	@OLD_VERSION=$$(python -c "import re; content=open('.bumpversion.toml').read(); print(re.search(r'current_version = \"([^\"]+)\"', content).group(1))") && \
 	bump-my-version bump $(VERSION) --no-commit --no-tag && \
-	NEW_VERSION=$$(grep 'current_version' .bumpversion.toml | cut -d '"' -f2) && \
+	NEW_VERSION=$$(python -c "import re; content=open('.bumpversion.toml').read(); print(re.search(r'current_version = \"([^\"]+)\"', content).group(1))") && \
 	echo "Version bumped from $$OLD_VERSION to $$NEW_VERSION" && \
 	python scripts/prep_changelog_for_release.py CHANGELOG.md $$NEW_VERSION && \
 	git add -A && \
