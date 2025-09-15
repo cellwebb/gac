@@ -23,6 +23,7 @@ class EnvDefaults:
     TEMPERATURE: float = 1
     MAX_OUTPUT_TOKENS: int = 512
     WARNING_LIMIT_TOKENS: int = 16384
+    ALWAYS_INCLUDE_SCOPE: bool = False
 
 
 class Logging:

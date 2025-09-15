@@ -87,6 +87,12 @@ def cli(
             effective_log_level = "ERROR"
         setup_logging(effective_log_level)
         logger.info("Starting gac")
+
+        # Apply always_include_scope setting if no explicit scope provided
+        effective_scope = scope
+        if scope is None and config.get("always_include_scope", False):
+            effective_scope = ""  # Empty string triggers scope inference
+
         try:
             main(
                 stage_all=add_all,
@@ -94,7 +100,7 @@ def cli(
                 hint=hint,
                 one_liner=one_liner,
                 show_prompt=show_prompt,
-                scope=scope,
+                scope=effective_scope,
                 require_confirmation=not yes,
                 push=push,
                 quiet=quiet,
