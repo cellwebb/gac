@@ -46,10 +46,25 @@ This document outlines the process for releasing new versions of GAC to PyPI.
 
 ### 2. Version Bump
 
+**IMPORTANT**: Version must be bumped in the PR for CI to publish!
+
 Update version in `src/gac/__version__.py`:
 
 ```python
 __version__ = "0.15.0"  # new version
+```
+
+Or use `bump-my-version` tool:
+
+```bash
+# For bug fixes:
+bump-my-version bump patch
+
+# For new features:
+bump-my-version bump minor
+
+# For breaking changes:
+bump-my-version bump major
 ```
 
 Version numbering follows semantic versioning:
@@ -104,20 +119,19 @@ twine upload dist/*
 
 ### 7. Post-release
 
-1. **Create Git tag**:
+1. **Verify the release on PyPI**:
+
+   - Check [PyPI project page](https://pypi.org/project/gac/)
+   - Ensure the new version is listed
+
+2. **Optional: Create Git tag** (for reference):
 
    ```bash
    git tag -a v0.15.0 -m "Release version 0.15.0"
    git push origin v0.15.0
    ```
 
-2. **Create GitHub Release**:
-
-   - Go to [GitHub Releases](https://github.com/cellwebb/gac/releases)
-   - Click "Create a new release"
-   - Choose the tag you just created
-   - Add release notes from CHANGELOG.md
-   - Attach the wheel and tar.gz from `dist/`
+   Note: Tags are optional since CI publishes based on version changes, not tags.
 
 3. **Verify Installation**:
 
@@ -134,18 +148,20 @@ twine upload dist/*
 
 The project includes `.github/workflows/publish.yml` for automated releases:
 
-- Triggers on pushing tags matching `v*`
-- Automatically builds and publishes to PyPI
+- Triggers automatically when code is pushed to `main` branch
+- **Only publishes if the version in `src/gac/__version__.py` has been bumped**
 - Requires `PYPI_API_TOKEN` secret in repository settings
+- No manual tagging required
 
-To use automated release:
+### How it works
 
-```bash
-# Create and push tag
-git tag -a v0.15.0 -m "Release version 0.15.0"
-git push origin v0.15.0
-# GitHub Actions will handle the rest
-```
+1. Create a PR with your changes
+2. **Bump the version** in `src/gac/__version__.py`
+3. Update `CHANGELOG.md`
+4. Merge the PR to main
+5. CI automatically publishes to PyPI if version changed
+
+If the version hasn't been bumped, the CI will skip publishing (preventing duplicate uploads).
 
 ## Troubleshooting
 
