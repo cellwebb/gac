@@ -9,8 +9,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.18.1] - 2025-09-21
+
+### Added
+
+- **Code Formatting Consistency**: Added `.prettierrc` configuration file for consistent code formatting
+  - Defines explicit prettier configuration to ensure consistent formatting across environments
+  - Sets print width to 120 characters to match markdownlint configuration
+  - Configures standard formatting options for JSON, YAML, and markdown files
+- **Dependency Lock File**: Added `uv.lock` file for reproducible builds
+  - Ensures all team members and CI/CD pipelines use exact same dependency versions
+  - Provides deterministic dependency resolution across different environments
+  - Improves build reliability and reduces "works on my machine" issues
+
 ### Changed
 
+- **Build System Modernization**: Replaced individual linting tools with ruff for streamlined development
+  - Replaced black, isort, and flake8 with ruff in Makefile lint and format commands
+  - Removed individual tool dependencies from pyproject.toml
+  - Uses `uv run` prefix for consistent tool execution within virtual environment
+  - Significantly simplifies development tooling while maintaining code quality
 - **Pre-commit Hooks**: Migrated to ruff for faster linting and formatting
   - Replaced black, isort, and flake8 with ruff in pre-commit configuration
   - Uses `uvx ruff` for even faster execution without separate virtual environments
