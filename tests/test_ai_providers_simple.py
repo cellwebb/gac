@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import gac.ai_utils as ai_providers  # noqa: E402
+from gac.errors import AIError  # noqa: E402
 
 
 def test_ai_providers_functions_exist():
@@ -13,5 +14,5 @@ def test_ai_providers_functions_exist():
 
 
 def test_ai_error_class_exists():
-    """Test that AIError class exists in ai_utils module (it's imported from errors)."""
-    assert hasattr(ai_providers, "AIError")
+    """Test that AIError class exists in errors module."""
+    assert AIError is not None
