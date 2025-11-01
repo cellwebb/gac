@@ -34,18 +34,13 @@ class TestEditCommitMessageInplace:
             result = edit_commit_message_inplace(initial_message)
             assert result == edited_message
 
-    def test_edit_commit_message_with_context(self):
-        """Test that context parameter is accepted (currently unused)."""
+    def test_edit_commit_message_basic(self):
+        """Test basic editing functionality."""
         initial_message = "fix: bug"
-        context = {
-            "files_changed": 3,
-            "insertions": 42,
-            "deletions": 10,
-        }
 
         with mock.patch("prompt_toolkit.Application.run") as mock_run:
             mock_run.side_effect = self._setup_app_mock("fix: updated bug fix", submitted=True)
-            result = edit_commit_message_inplace(initial_message, context)
+            result = edit_commit_message_inplace(initial_message)
             assert result == "fix: updated bug fix"
 
     def test_edit_commit_message_empty_result(self):
@@ -107,26 +102,3 @@ class TestEditCommitMessageInplace:
         with mock.patch("prompt_toolkit.Application.run", side_effect=Exception("Unexpected error")):
             result = edit_commit_message_inplace("original")
             assert result is None
-
-    def test_edit_commit_message_no_context(self):
-        """Test editing without context."""
-        with mock.patch("prompt_toolkit.Application.run") as mock_run:
-            mock_run.side_effect = self._setup_app_mock("edited message", submitted=True)
-            result = edit_commit_message_inplace("original", context=None)
-            assert result == "edited message"
-
-    def test_edit_commit_message_empty_context(self):
-        """Test editing with empty context dict."""
-        with mock.patch("prompt_toolkit.Application.run") as mock_run:
-            mock_run.side_effect = self._setup_app_mock("edited message", submitted=True)
-            result = edit_commit_message_inplace("original", context={})
-            assert result == "edited message"
-
-    def test_edit_commit_message_partial_context(self):
-        """Test editing with partial context (only files_changed)."""
-        context = {"files_changed": 5}
-
-        with mock.patch("prompt_toolkit.Application.run") as mock_run:
-            mock_run.side_effect = self._setup_app_mock("edited message", submitted=True)
-            result = edit_commit_message_inplace("original", context=context)
-            assert result == "edited message"

@@ -132,7 +132,7 @@ def run_subprocess(
         return ""
 
 
-def edit_commit_message_inplace(message: str, context: dict | None = None) -> str | None:
+def edit_commit_message_inplace(message: str) -> str | None:
     """Edit commit message in-place using rich terminal editing.
 
     Uses prompt_toolkit to provide a rich editing experience with:
@@ -144,7 +144,6 @@ def edit_commit_message_inplace(message: str, context: dict | None = None) -> st
 
     Args:
         message: The initial commit message
-        context: Optional context (reserved for future use, currently unused)
 
     Returns:
         The edited commit message, or None if editing was cancelled

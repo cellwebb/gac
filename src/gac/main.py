@@ -292,21 +292,7 @@ def main(
                     if response == "":
                         continue
                     if response_lower in ["e", "edit"]:
-                        context = {
-                            "files_changed": len(staged_files),
-                        }
-
-                        if diff_stat:
-                            import re
-
-                            insertions_match = re.search(r"(\d+) insertion", diff_stat)
-                            deletions_match = re.search(r"(\d+) deletion", diff_stat)
-                            if insertions_match:
-                                context["insertions"] = int(insertions_match.group(1))
-                            if deletions_match:
-                                context["deletions"] = int(deletions_match.group(1))
-
-                        edited_message = edit_commit_message_inplace(commit_message, context)
+                        edited_message = edit_commit_message_inplace(commit_message)
                         if edited_message:
                             commit_message = edited_message
                             conversation_messages[-1] = {"role": "assistant", "content": commit_message}
