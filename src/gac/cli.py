@@ -154,5 +154,15 @@ cli.add_command(init_cli)
 cli.add_command(language_cli)
 cli.add_command(diff_cli)
 
+
+@click.command(context_settings=language_cli.context_settings)
+@click.pass_context
+def lang(ctx):
+    """Set the language for commit messages interactively. (Alias for 'language')"""
+    ctx.forward(language_cli)
+
+
+cli.add_command(lang)  # Add the lang alias
+
 if __name__ == "__main__":
     cli()
