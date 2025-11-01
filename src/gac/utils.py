@@ -3,6 +3,7 @@
 import logging
 import subprocess
 
+from prompt_toolkit import prompt
 from rich.console import Console
 from rich.theme import Theme
 
@@ -130,3 +131,53 @@ def run_subprocess(
             # Convert generic exceptions to CalledProcessError for consistency
             raise subprocess.CalledProcessError(1, command, "", str(e)) from e
         return ""
+
+
+def edit_commit_message_inplace(message: str, context: dict | None = None) -> str | None:
+    """Edit commit message in-place using rich terminal editing.
+
+    Uses prompt_toolkit to provide a rich editing experience with:
+    - Multi-line editing
+    - Vi/Emacs key bindings
+    - Line editing capabilities
+    - Esc+Enter to finish (Ctrl+D may not work on macOS)
+
+    Args:
+        message: The initial commit message
+        context: Optional context (reserved for future use, currently unused)
+
+    Returns:
+        The edited commit message, or None if editing was cancelled
+
+    Example:
+        >>> edited = edit_commit_message_inplace("feat: add feature")
+        >>> # User can edit the message using vi/emacs key bindings
+        >>> # Press Esc+Enter when done
+    """
+    try:
+        console.print("\n[info]Edit commit message (Esc+Enter when done, Ctrl+C to cancel):[/info]")
+        console.print()
+
+        # Use prompt_toolkit for rich multi-line editing
+        edited_message = prompt(
+            "",
+            multiline=True,
+            default=message,
+            vi_mode=True,  # Enable vi key bindings
+        )
+
+        # Validate the edited message
+        edited_message = edited_message.strip()
+        if not edited_message:
+            console.print("[yellow]Commit message cannot be empty. Edit cancelled.[/yellow]")
+            return None
+
+        return edited_message
+
+    except (EOFError, KeyboardInterrupt):
+        console.print("\n[yellow]Edit cancelled.[/yellow]")
+        return None
+    except Exception as e:
+        logger.error(f"Error during in-place editing: {e}")
+        console.print(f"[error]Failed to edit commit message: {e}[/error]")
+        return None

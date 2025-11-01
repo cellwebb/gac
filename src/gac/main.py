@@ -25,6 +25,7 @@ from gac.git import (
 from gac.preprocess import preprocess_diff
 from gac.prompt import build_prompt, clean_commit_message
 from gac.security import get_affected_files, scan_staged_diff
+from gac.utils import edit_commit_message_inplace
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +278,7 @@ def main(
             if require_confirmation:
                 while True:
                     response = click.prompt(
-                        "Proceed with commit above? [y/n/r/<feedback>]",
+                        "Proceed with commit above? [y/n/r/e/<feedback>]",
                         type=str,
                         show_default=False,
                     ).strip()
@@ -289,6 +290,32 @@ def main(
                         console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
                         sys.exit(0)
                     if response == "":
+                        continue
+                    if response_lower in ["e", "edit"]:
+                        context = {
+                            "files_changed": len(staged_files),
+                        }
+
+                        if diff_stat:
+                            import re
+
+                            insertions_match = re.search(r"(\d+) insertion", diff_stat)
+                            deletions_match = re.search(r"(\d+) deletion", diff_stat)
+                            if insertions_match:
+                                context["insertions"] = int(insertions_match.group(1))
+                            if deletions_match:
+                                context["deletions"] = int(deletions_match.group(1))
+
+                        edited_message = edit_commit_message_inplace(commit_message, context)
+                        if edited_message:
+                            commit_message = edited_message
+                            conversation_messages[-1] = {"role": "assistant", "content": commit_message}
+                            logger.info("Commit message edited by user")
+                            console.print("\n[bold green]Edited commit message:[/bold green]")
+                            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+                        else:
+                            console.print("[yellow]Using previous message.[/yellow]")
+                            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
                         continue
                     if response_lower in ["r", "reroll"]:
                         feedback_message = (

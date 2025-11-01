@@ -41,6 +41,7 @@ dependencies = [
     "halo",
     "questionary",
     "rich>=14.1.0",
+    "prompt_toolkit>=3.0.36",
 
 ]
 

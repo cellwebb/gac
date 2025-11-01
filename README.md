@@ -82,7 +82,7 @@ uv tool upgrade gac
 
 ### 💻 **Developer Experience**
 
-- **Interactive feedback**: Type `r` to reroll, or directly type your feedback like `make it shorter` or `focus on the bug fix`
+- **Interactive feedback**: Type `r` to reroll, `e` to edit in-place with vi/emacs keybindings, or directly type your feedback like `make it shorter` or `focus on the bug fix`
 - **One-command workflows**: Complete workflows with flags like `gac -ayp` (stage all, auto-confirm, push)
 - **Git integration**: Respects pre-commit and lefthook hooks, running them before expensive LLM operations
 
@@ -105,7 +105,7 @@ git add .
 # Generate and commit with LLM
 gac
 
-# Review → y (commit) | n (cancel) | r (reroll) | or type feedback
+# Review → y (commit) | n (cancel) | r (reroll) | e (edit) | or type feedback
 ```
 
 ### Common Commands
@@ -142,11 +142,16 @@ gac --skip-secret-scan
 
 ### Interactive Feedback System
 
-Not happy with the result? You have two options:
+Not happy with the result? You have several options:
 
 ```bash
 # Simple reroll (no feedback)
 r
+
+# Edit in-place with rich terminal editing
+e
+# Uses prompt_toolkit for multi-line editing with vi/emacs keybindings
+# Esc+Enter to finish, Ctrl+C to cancel
 
 # Or just type your feedback directly!
 make it shorter and focus on the performance improvement
@@ -155,6 +160,13 @@ explain the security implications
 
 # Press Enter on empty input to see the prompt again
 ```
+
+The edit feature (`e`) provides rich in-place terminal editing, allowing you to:
+
+- **Edit naturally**: Multi-line editing with familiar vi/emacs key bindings
+- **Make quick fixes**: Correct typos, adjust wording, or refine formatting
+- **Add details**: Include information the LLM might have missed
+- **Restructure**: Reorganize bullet points or change the message structure
 
 ---
 
