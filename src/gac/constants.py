@@ -21,7 +21,7 @@ class EnvDefaults:
     MAX_RETRIES: int = 3
     TEMPERATURE: float = 1
     MAX_OUTPUT_TOKENS: int = 1024  # includes reasoning tokens
-    WARNING_LIMIT_TOKENS: int = 16384
+    WARNING_LIMIT_TOKENS: int = 32768
     ALWAYS_INCLUDE_SCOPE: bool = False
     SKIP_SECRET_SCAN: bool = False
     VERBOSE: bool = False
