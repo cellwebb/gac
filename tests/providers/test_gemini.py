@@ -201,6 +201,22 @@ class TestGeminiEdgeCases:
                 assert len(payload["contents"]) == 1
                 assert payload["contents"][0]["role"] == "user"
 
+    def test_gemini_unsupported_role(self):
+        """Ensure unsupported roles raise a model error."""
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with pytest.raises(AIError) as exc_info:
+                call_gemini_api(
+                    "gemini-2.5-flash-lite",
+                    [
+                        {"role": "tool", "content": "Tool output"},
+                        {"role": "user", "content": "User message"},
+                    ],
+                    temperature=0.7,
+                    max_tokens=1000,
+                )
+
+            assert "unsupported message role" in str(exc_info.value).lower()
+
     def test_gemini_assistant_message_conversion(self):
         """Test assistant message converted to model role."""
         with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
@@ -255,6 +271,54 @@ class TestGeminiEdgeCases:
                 )
 
                 assert result == "final answer"
+
+    def test_gemini_non_dict_parts_are_skipped(self):
+        """Ensure non-dict parts are ignored while still returning valid text."""
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "candidates": [
+                        {
+                            "content": {
+                                "parts": [
+                                    "not a dict",
+                                    {"text": ""},
+                                    {"text": "use this"},
+                                ]
+                            }
+                        }
+                    ]
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                result = call_gemini_api("gemini-2.5-flash-lite", [{"role": "user", "content": "hi"}], 0.7, 1000)
+
+                assert result == "use this"
+
+    def test_gemini_none_content_converted_to_empty_string(self):
+        """Ensure None content values are converted to empty strings in payload."""
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"candidates": [{"content": {"parts": [{"text": "response"}]}}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                call_gemini_api(
+                    "gemini-2.5-flash-lite",
+                    [
+                        {"role": "user", "content": None},
+                        {"role": "user", "content": "second message"},
+                    ],
+                    temperature=0.7,
+                    max_tokens=1000,
+                )
+
+                payload = mock_post.call_args.kwargs["json"]
+                assert payload["contents"][0]["parts"][0]["text"] == ""
+                assert payload["contents"][1]["parts"][0]["text"] == "second message"
 
 
 @pytest.mark.integration
