@@ -40,10 +40,21 @@ class TestInplaceEditingIntegration:
                     return "e"
                 return "y"
 
+            import inspect
+
+            def mock_app_run():
+                stack = inspect.stack()
+                for frame_info in stack:
+                    frame_locals = frame_info.frame.f_locals
+                    if "text_buffer" in frame_locals and "submitted" in frame_locals:
+                        frame_locals["text_buffer"].text = "test: edited commit message"
+                        frame_locals["submitted"]["value"] = True
+                        break
+
             with (
                 mock.patch("click.prompt", side_effect=mock_click_prompt),
                 mock.patch("gac.main.generate_commit_message", return_value="test: initial commit message"),
-                mock.patch("gac.utils.prompt", return_value="test: edited commit message"),
+                mock.patch("prompt_toolkit.Application.run", side_effect=mock_app_run),
                 mock.patch.dict("os.environ", {"GAC_MODEL": "anthropic:claude-haiku-4-5"}),
             ):
                 try:
@@ -92,10 +103,21 @@ class TestInplaceEditingIntegration:
                     return "test: first message"
                 return "test: regenerated message"
 
+            import inspect
+
+            def mock_app_run():
+                stack = inspect.stack()
+                for frame_info in stack:
+                    frame_locals = frame_info.frame.f_locals
+                    if "text_buffer" in frame_locals and "submitted" in frame_locals:
+                        frame_locals["text_buffer"].text = "test: edited but will regenerate"
+                        frame_locals["submitted"]["value"] = True
+                        break
+
             with (
                 mock.patch("click.prompt", side_effect=mock_click_prompt),
                 mock.patch("gac.main.generate_commit_message", side_effect=mock_generate),
-                mock.patch("gac.utils.prompt", return_value="test: edited but will regenerate"),
+                mock.patch("prompt_toolkit.Application.run", side_effect=mock_app_run),
                 mock.patch.dict("os.environ", {"GAC_MODEL": "anthropic:claude-haiku-4-5"}),
             ):
                 try:
@@ -140,7 +162,7 @@ class TestInplaceEditingIntegration:
             with (
                 mock.patch("click.prompt", side_effect=mock_click_prompt),
                 mock.patch("gac.main.generate_commit_message", return_value="test: original message"),
-                mock.patch("gac.utils.prompt", side_effect=KeyboardInterrupt()),
+                mock.patch("prompt_toolkit.Application.run", side_effect=KeyboardInterrupt()),
                 mock.patch.dict("os.environ", {"GAC_MODEL": "anthropic:claude-haiku-4-5"}),
             ):
                 try:
