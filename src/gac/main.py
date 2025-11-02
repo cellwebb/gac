@@ -642,26 +642,26 @@ def main(
             logger.error(str(e))
             console.print(f"[red]Failed to generate grouped commits: {str(e)}[/red]")
             sys.exit(1)
-
-    try:
-        execute_single_commit_workflow(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            model=model,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-            max_retries=max_retries,
-            require_confirmation=require_confirmation,
-            quiet=quiet,
-            no_verify=no_verify,
-            dry_run=dry_run,
-            push=push,
-            show_prompt=show_prompt,
-        )
-    except AIError as e:
-        logger.error(str(e))
-        console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
-        sys.exit(1)
+    else:
+        try:
+            execute_single_commit_workflow(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model=model,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                max_retries=max_retries,
+                require_confirmation=require_confirmation,
+                quiet=quiet,
+                no_verify=no_verify,
+                dry_run=dry_run,
+                push=push,
+                show_prompt=show_prompt,
+            )
+        except AIError as e:
+            logger.error(str(e))
+            console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
