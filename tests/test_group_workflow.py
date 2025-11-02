@@ -176,6 +176,38 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
         mock_restore.assert_not_called()
 
 
+def test_group_displays_file_lists():
+    """File lists are displayed for each commit in dim/gray text."""
+    response = json.dumps(
+        {
+            "commits": [
+                {"files": ["src/auth.py", "src/login.py"], "message": "feat: add auth"},
+                {"files": ["tests/test_auth.py"], "message": "test: add auth tests"},
+                {"files": ["README.md", "docs/auth.md"], "message": "docs: document auth"},
+            ]
+        }
+    )
+
+    with (
+        patch("gac.main.run_git_command", return_value="/fake/repo"),
+        patch(
+            "gac.main.get_staged_files",
+            return_value=["src/auth.py", "src/login.py", "tests/test_auth.py", "README.md", "docs/auth.md"],
+        ),
+        patch("gac.ai.generate_grouped_commits", return_value=response),
+        patch("gac.main.console.print") as mock_print,
+        patch("gac.main.execute_commit"),
+        patch("gac.main.click.prompt", return_value="y"),
+    ):
+        with pytest.raises(SystemExit):
+            main(group=True, model="openai:gpt-4", require_confirmation=True)
+
+        print_calls = [str(call) for call in mock_print.call_args_list]
+        assert any("src/auth.py, src/login.py" in call for call in print_calls), "First commit files not displayed"
+        assert any("tests/test_auth.py" in call for call in print_calls), "Second commit files not displayed"
+        assert any("README.md, docs/auth.md" in call for call in print_calls), "Third commit files not displayed"
+
+
 @pytest.mark.parametrize(
     "num_files,expected_multiplier",
     [
