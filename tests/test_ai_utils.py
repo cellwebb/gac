@@ -5,9 +5,12 @@ These tests run without any external dependencies and test core logic.
 
 import os
 import sys
+from unittest.mock import MagicMock, patch
 
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import pytest
 
 import gac.ai_utils as ai_utils  # noqa: E402
 from gac.errors import AIError  # noqa: E402
@@ -82,3 +85,79 @@ class TestAIError:
         """Test AIError with error type."""
         error = AIError("Test error", error_type="model")
         assert error.error_type == "model"
+
+
+class TestGenerateWithRetries:
+    def test_unsupported_provider(self):
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries({}, "bad:model", [], 0.7, 100, 1, True)
+        assert e.value.error_type == "model"
+
+    def test_empty_messages(self):
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries({}, "openai:gpt-4", [], 0.7, 100, 1, True)
+        assert e.value.error_type == "model"
+
+    def test_missing_provider_func(self):
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries({}, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
+        assert e.value.error_type == "model"
+
+    @patch("gac.ai_utils.Halo")
+    def test_skip_success_message(self, mock_halo):
+        mock_spinner = MagicMock()
+        mock_halo.return_value = mock_spinner
+        funcs = {"openai": lambda **kw: "ok"}
+        ai_utils.generate_with_retries(
+            funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False, False, True
+        )
+        mock_spinner.stop.assert_called_once()
+
+    def test_empty_content(self):
+        funcs = {"openai": lambda **kw: ""}
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
+        assert e.value.error_type == "model"
+
+    def test_none_content(self):
+        funcs = {"openai": lambda **kw: None}
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
+        assert e.value.error_type == "model"
+
+    @patch("gac.ai_utils.Halo")
+    def test_auth_error_spinner_fail(self, mock_halo):
+        mock_spinner = MagicMock()
+        mock_halo.return_value = mock_spinner
+        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Invalid API key"))}
+        with pytest.raises(AIError):
+            ai_utils.generate_with_retries(
+                funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False
+            )
+        mock_spinner.fail.assert_called_once()
+
+    @patch("gac.ai_utils.time.sleep")
+    def test_retry_warning(self, mock_sleep):
+        call_count = [0]
+
+        def func(**kw):
+            call_count[0] += 1
+            if call_count[0] < 2:
+                raise Exception("fail")
+            return "ok"
+
+        funcs = {"openai": func}
+        ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
+        assert call_count[0] == 2
+
+    def test_final_auth_error(self):
+        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Invalid API key"))}
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
+        assert e.value.error_type == "authentication"
+
+    def test_final_model_error(self):
+        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Model not found"))}
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
+        assert e.value.error_type == "model"

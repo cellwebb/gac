@@ -83,6 +83,8 @@ def generate_with_retries(
     max_tokens: int,
     max_retries: int,
     quiet: bool = False,
+    is_group: bool = False,
+    skip_success_message: bool = False,
 ) -> str:
     """Generate content with retry logic using direct API calls."""
     # Parse model string to determine provider and actual model
@@ -121,10 +123,11 @@ def generate_with_retries(
         raise AIError.model_error("No messages provided for AI generation")
 
     # Set up spinner
+    message_type = "commit messages" if is_group else "commit message"
     if quiet:
         spinner = None
     else:
-        spinner = Halo(text=f"Generating commit message with {provider} {model_name}...", spinner="dots")
+        spinner = Halo(text=f"Generating {message_type} with {provider} {model_name}...", spinner="dots")
         spinner.start()
 
     last_exception = None
@@ -132,7 +135,7 @@ def generate_with_retries(
 
     for attempt in range(max_retries):
         try:
-            if not quiet and attempt > 0:
+            if not quiet and not skip_success_message and attempt > 0:
                 if spinner:
                     spinner.text = f"Retry {attempt + 1}/{max_retries} with {provider} {model_name}..."
                 logger.info(f"Retry attempt {attempt + 1}/{max_retries}")
@@ -145,7 +148,10 @@ def generate_with_retries(
             content = provider_func(model=model_name, messages=messages, temperature=temperature, max_tokens=max_tokens)
 
             if spinner:
-                spinner.succeed(f"Generated commit message with {provider} {model_name}")
+                if skip_success_message:
+                    spinner.stop()  # Stop spinner without showing success/failure
+                else:
+                    spinner.succeed(f"Generated {message_type} with {provider} {model_name}")
 
             if content is not None and content.strip():
                 return content.strip()  # type: ignore[no-any-return]
@@ -160,8 +166,8 @@ def generate_with_retries(
 
             # For authentication and model errors, don't retry
             if error_type in ["authentication", "model"]:
-                if spinner:
-                    spinner.fail(f"Failed to generate commit message with {provider} {model_name}")
+                if spinner and not skip_success_message:
+                    spinner.fail(f"Failed to generate {message_type} with {provider} {model_name}")
 
                 # Create the appropriate error type based on classification
                 if error_type == "authentication":
@@ -172,23 +178,32 @@ def generate_with_retries(
             if attempt < max_retries - 1:
                 # Exponential backoff
                 wait_time = 2**attempt
-                if not quiet:
-                    logger.warning(f"AI generation failed (attempt {attempt + 1}), retrying in {wait_time}s: {str(e)}")
+                if not quiet and not skip_success_message:
+                    if attempt == 0:
+                        logger.warning(f"AI generation failed, retrying in {wait_time}s: {str(e)}")
+                    else:
+                        logger.warning(
+                            f"AI generation failed (attempt {attempt + 1}), retrying in {wait_time}s: {str(e)}"
+                        )
 
-                if spinner:
+                if spinner and not skip_success_message:
                     for i in range(wait_time, 0, -1):
                         spinner.text = f"Retry {attempt + 1}/{max_retries} in {i}s..."
                         time.sleep(1)
                 else:
                     time.sleep(wait_time)
             else:
-                logger.error(f"AI generation failed after {max_retries} attempts: {str(e)}")
+                num_retries = max_retries
+                retry_word = "retry" if num_retries == 1 else "retries"
+                logger.error(f"AI generation failed after {num_retries} {retry_word}: {str(e)}")
 
-    if spinner:
-        spinner.fail(f"Failed to generate commit message with {provider} {model_name}")
+    if spinner and not skip_success_message:
+        spinner.fail(f"Failed to generate {message_type} with {provider} {model_name}")
 
     # If we get here, all retries failed - use the last classified error type
-    error_message = f"Failed to generate commit message after {max_retries} attempts"
+    num_retries = max_retries
+    retry_word = "retry" if num_retries == 1 else "retries"
+    error_message = f"Failed to generate {message_type} after {num_retries} {retry_word}"
     if last_error_type == "authentication":
         raise AIError.authentication_error(error_message) from last_exception
     elif last_error_type == "rate_limit":

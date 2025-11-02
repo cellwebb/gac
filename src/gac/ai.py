@@ -42,6 +42,8 @@ def generate_commit_message(
     max_tokens: int = EnvDefaults.MAX_OUTPUT_TOKENS,
     max_retries: int = EnvDefaults.MAX_RETRIES,
     quiet: bool = False,
+    is_group: bool = False,
+    skip_success_message: bool = False,
 ) -> str:
     """Generate a commit message using direct API calls to AI providers.
 
@@ -116,6 +118,8 @@ def generate_commit_message(
             max_tokens=max_tokens,
             max_retries=max_retries,
             quiet=quiet,
+            is_group=is_group,
+            skip_success_message=skip_success_message,
         )
     except AIError:
         # Re-raise AIError exceptions as-is to preserve error classification
@@ -123,3 +127,25 @@ def generate_commit_message(
     except Exception as e:
         logger.error(f"Failed to generate commit message: {e}")
         raise AIError.model_error(f"Failed to generate commit message: {e}") from e
+
+
+def generate_grouped_commits(
+    model: str,
+    prompt: list[dict[str, str]],
+    temperature: float,
+    max_tokens: int,
+    max_retries: int,
+    quiet: bool = False,
+    skip_success_message: bool = False,
+) -> str:
+    """Generate grouped commits JSON response."""
+    return generate_commit_message(
+        model=model,
+        prompt=prompt,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        max_retries=max_retries,
+        quiet=quiet,
+        is_group=True,
+        skip_success_message=skip_success_message,
+    )

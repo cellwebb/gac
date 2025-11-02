@@ -1,6 +1,8 @@
 import subprocess
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from gac.errors import GitError
 from gac.git import (
     get_commit_hash,
@@ -8,6 +10,7 @@ from gac.git import (
     get_diff,
     get_repo_root,
     get_staged_files,
+    get_staged_status,
     push_changes,
     run_lefthook_hooks,
     run_pre_commit_hooks,
@@ -75,6 +78,54 @@ def test_get_staged_files_existing_only():
         mock_isfile.side_effect = [True, False, True]  # file2.md doesn't exist
         result = get_staged_files(existing_only=True)
         assert result == ["file1.py", "file3.txt"]
+
+
+@pytest.mark.parametrize(
+    "git_output,expected_content",
+    [
+        (
+            "M\tfile1.py\nA\tfile2.md\nD\tfile3.txt",
+            ["modified:   file1.py", "new file:   file2.md", "deleted:   file3.txt"],
+        ),
+        ("R100\told_file.py\tnew_file.py", ["renamed:   new_file.py"]),
+        (
+            "M\tmodified.py\nA\tadded.py\nD\tdeleted.py\nR100\told.py\tnew.py\nC\tcopied.py\nT\ttype_changed.py",
+            [
+                "modified:   modified.py",
+                "new file:   added.py",
+                "deleted:   deleted.py",
+                "renamed:   new.py",
+                "copied:   copied.py",
+                "typechange:   type_changed.py",
+            ],
+        ),
+        ("M\tfile1.py\n\n\nA\tfile2.py\n", ["modified:   file1.py", "new file:   file2.py"]),
+    ],
+)
+def test_get_staged_status_formats(git_output, expected_content):
+    """Test get_staged_status with various file statuses."""
+    with patch("gac.git.run_git_command") as mock_run:
+        mock_run.return_value = git_output
+        result = get_staged_status()
+        assert "Changes to be committed:" in result
+        for expected in expected_content:
+            assert expected in result
+
+
+def test_get_staged_status_empty():
+    """Test get_staged_status when no files are staged."""
+    with patch("gac.git.run_git_command") as mock_run:
+        mock_run.return_value = ""
+        result = get_staged_status()
+        assert result == "No changes staged for commit."
+
+
+def test_get_staged_status_git_error():
+    """Test get_staged_status when git command fails."""
+    with patch("gac.git.run_git_command") as mock_run:
+        mock_run.side_effect = GitError("git error")
+        result = get_staged_status()
+        assert result == "No changes staged for commit."
 
 
 def test_get_diff_unstaged():

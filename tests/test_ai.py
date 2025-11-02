@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import tiktoken
 
-from gac.ai import generate_commit_message
+from gac.ai import generate_commit_message, generate_grouped_commits
 from gac.ai_utils import (
     count_tokens,
     extract_text_content,
@@ -419,3 +419,10 @@ class TestGenerateCommitMessage:
         assert exc_info.value.error_type == "model"
         assert "Failed to generate commit message" in str(exc_info.value)
         assert "Unexpected internal error" in str(exc_info.value)
+
+    @patch("gac.ai.call_openai_api")
+    def test_generate_grouped_commits(self, mock_api):
+        mock_api.return_value = '{"commits": []}'
+        msgs = [{"role": "user", "content": "test"}]
+        result = generate_grouped_commits("openai:gpt-4", msgs, 0.7, 500, 1, True, True)
+        assert result == '{"commits": []}'

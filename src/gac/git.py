@@ -50,6 +50,48 @@ def get_staged_files(file_type: str | None = None, existing_only: bool = False) 
         return []
 
 
+def get_staged_status() -> str:
+    """Get formatted status of staged files only, excluding unstaged/untracked files.
+
+    Returns:
+        Formatted status string with M/A/D/R indicators
+    """
+    try:
+        output = run_git_command(["diff", "--name-status", "--staged"])
+        if not output:
+            return "No changes staged for commit."
+
+        status_map = {
+            "M": "modified",
+            "A": "new file",
+            "D": "deleted",
+            "R": "renamed",
+            "C": "copied",
+            "T": "typechange",
+        }
+
+        status_lines = ["Changes to be committed:"]
+        for line in output.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+
+            # Parse status line (e.g., "M\tfile.py" or "R100\told.py\tnew.py")
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+
+            change_type = parts[0][0]  # First char is the status (M, A, D, R, etc.)
+            file_path = parts[-1]  # Last part is the new/current file path
+
+            status_label = status_map.get(change_type, "modified")
+            status_lines.append(f"\t{status_label}:   {file_path}")
+
+        return "\n".join(status_lines)
+    except GitError:
+        return "No changes staged for commit."
+
+
 def get_diff(staged: bool = True, color: bool = True, commit1: str | None = None, commit2: str | None = None) -> str:
     """Get the diff between commits or working tree.
 
