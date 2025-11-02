@@ -492,9 +492,6 @@ def main(
     assert max_tokens_val is not None
     max_output_tokens = int(max_tokens_val)
 
-    if group:
-        max_output_tokens *= 2
-
     max_retries_val = config["max_retries"]
     assert max_retries_val is not None
     max_retries = int(max_retries_val)
@@ -504,6 +501,13 @@ def main(
         run_git_command(["add", "--all"])
 
     staged_files = get_staged_files(existing_only=False)
+
+    if group:
+        num_files = len(staged_files)
+        multiplier = min(5, 2 + (num_files // 10))
+        max_output_tokens *= multiplier
+        logger.debug(f"Grouped mode: scaling max_output_tokens by {multiplier}x for {num_files} files")
+
     if not staged_files:
         console.print(
             "[yellow]No staged changes found. Stage your changes with git add first or use --add-all.[/yellow]"

@@ -51,7 +51,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
-**Note:** When using `--group`, the max output tokens limit is automatically doubled to accommodate the larger output required for multiple commit messages. This ensures the LLM has enough tokens to generate all grouped commits without truncation.
+**Note:** When using `--group`, the max output tokens limit is automatically scaled based on the number of files being committed (2x for 1-9 files, 3x for 10-19 files, 4x for 20-29 files, 5x for 30+ files). This ensures the LLM has enough tokens to generate all grouped commits without truncation, even for large changesets.
 
 ## Message Customization
 
@@ -200,7 +200,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
 - `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
-- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages (automatically doubled when using `--group`)
+- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
 - `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Use a custom system prompt for commit message generation
 - `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection

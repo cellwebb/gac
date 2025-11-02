@@ -174,3 +174,53 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
         assert exc.value.code == 1
         assert mock_commit.call_count == 2
         mock_restore.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "num_files,expected_multiplier",
+    [
+        (1, 2),
+        (5, 2),
+        (9, 2),
+        (10, 3),
+        (15, 3),
+        (19, 3),
+        (20, 4),
+        (25, 4),
+        (29, 4),
+        (30, 5),
+        (50, 5),
+        (100, 5),
+    ],
+)
+def test_group_token_scaling(num_files, expected_multiplier):
+    """Token scaling increases with file count: 2x(1-9), 3x(10-19), 4x(20-29), 5x(30+)."""
+    response = json.dumps({"commits": [{"files": [f"file{i}.py" for i in range(num_files)], "message": "feat: add"}]})
+    base_tokens = 512
+
+    mock_config = {
+        "temperature": 0.7,
+        "max_output_tokens": base_tokens,
+        "max_retries": 3,
+        "warning_limit_tokens": 4096,
+    }
+
+    with (
+        patch("gac.main.run_git_command", return_value="/fake/repo"),
+        patch("gac.main.get_staged_files", return_value=[f"file{i}.py" for i in range(num_files)]),
+        patch("gac.main.config", mock_config),
+        patch("gac.ai.generate_grouped_commits", return_value=response) as mock_gen,
+        patch("gac.main.console.print"),
+        patch("gac.main.execute_commit"),
+        patch("gac.main.click.prompt", return_value="y"),
+    ):
+        with pytest.raises(SystemExit):
+            main(group=True, model="openai:gpt-4", require_confirmation=True)
+
+        call_args = mock_gen.call_args
+        actual_max_tokens = call_args.kwargs["max_tokens"]
+        expected_tokens = base_tokens * expected_multiplier
+        assert actual_max_tokens == expected_tokens, (
+            f"For {num_files} files, expected {expected_multiplier}x scaling "
+            f"({expected_tokens} tokens), got {actual_max_tokens}"
+        )
