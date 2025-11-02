@@ -31,6 +31,7 @@ from gac.workflow_utils import (
     display_commit_message,
     execute_commit,
     handle_confirmation_loop,
+    restore_staging,
 )
 
 logger = logging.getLogger(__name__)
@@ -298,18 +299,29 @@ def execute_grouped_commits_workflow(
                 console.print(f"  Files: {', '.join(commit['files'])}")
                 console.print(f"  Message: {commit['message'][:50]}...")
         else:
+            original_staged_files = get_staged_files(existing_only=False)
             run_git_command(["reset", "HEAD"])
 
-            for idx, commit in enumerate(grouped_result["commits"], 1):
-                try:
-                    for file_path in commit["files"]:
-                        run_git_command(["add", "-A", file_path])
-                    execute_commit(commit["message"], no_verify)
-                    console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
-                except Exception as e:
-                    console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
-                    console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
-                    sys.exit(1)
+            try:
+                for idx, commit in enumerate(grouped_result["commits"], 1):
+                    try:
+                        for file_path in commit["files"]:
+                            run_git_command(["add", "-A", file_path])
+                        execute_commit(commit["message"], no_verify)
+                        console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
+                    except Exception as e:
+                        console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
+                        console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
+                        if idx == 1:
+                            console.print("[yellow]Restoring original staging area...[/yellow]")
+                            restore_staging(original_staged_files)
+                            console.print("[green]Original staging area restored.[/green]")
+                        sys.exit(1)
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Interrupted by user. Restoring original staging area...[/yellow]")
+                restore_staging(original_staged_files)
+                console.print("[green]Original staging area restored.[/green]")
+                sys.exit(1)
 
         if push:
             try:

@@ -112,3 +112,65 @@ def test_group_retries_when_files_missing():
         assert exc.value.code == 0
         assert mock_commit.call_count == 2
         assert mock_gen.call_count == 2
+
+
+def test_group_restores_staging_on_first_commit_failure():
+    """Staging is restored when the first commit fails."""
+    response = json.dumps(
+        {
+            "commits": [
+                {"files": ["a.py"], "message": "feat: add a"},
+                {"files": ["b.py"], "message": "feat: add b"},
+            ]
+        }
+    )
+
+    original_files = ["a.py", "b.py"]
+
+    with (
+        patch("gac.main.run_git_command", return_value="/fake/repo"),
+        patch("gac.main.get_staged_files", return_value=original_files),
+        patch("gac.ai.generate_grouped_commits", return_value=response),
+        patch("gac.main.console.print"),
+        patch("gac.main.execute_commit", side_effect=Exception("Commit failed")) as mock_commit,
+        patch("gac.main.restore_staging") as mock_restore,
+        patch("gac.main.click.prompt", return_value="y"),
+    ):
+        with pytest.raises(SystemExit) as exc:
+            main(group=True, model="openai:gpt-4", require_confirmation=True)
+        assert exc.value.code == 1
+        mock_commit.assert_called_once()
+        mock_restore.assert_called_once_with(original_files)
+
+
+def test_group_does_not_restore_staging_on_later_commit_failure():
+    """Staging is not restored when a commit after the first fails (commits already made)."""
+    response = json.dumps(
+        {
+            "commits": [
+                {"files": ["a.py"], "message": "feat: add a"},
+                {"files": ["b.py"], "message": "feat: add b"},
+            ]
+        }
+    )
+
+    original_files = ["a.py", "b.py"]
+
+    def commit_side_effect(msg, no_verify):
+        if "add b" in msg:
+            raise Exception("Second commit failed")
+
+    with (
+        patch("gac.main.run_git_command", return_value="/fake/repo"),
+        patch("gac.main.get_staged_files", return_value=original_files),
+        patch("gac.ai.generate_grouped_commits", return_value=response),
+        patch("gac.main.console.print"),
+        patch("gac.main.execute_commit", side_effect=commit_side_effect) as mock_commit,
+        patch("gac.main.restore_staging") as mock_restore,
+        patch("gac.main.click.prompt", return_value="y"),
+    ):
+        with pytest.raises(SystemExit) as exc:
+            main(group=True, model="openai:gpt-4", require_confirmation=True)
+        assert exc.value.code == 1
+        assert mock_commit.call_count == 2
+        mock_restore.assert_not_called()

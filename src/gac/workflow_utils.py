@@ -95,3 +95,20 @@ def display_commit_message(commit_message: str, prompt_tokens: int, model: str, 
         console.print(
             f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
         )
+
+
+def restore_staging(staged_files: list[str]) -> None:
+    """Restore the git staging area to a previous state.
+
+    Args:
+        staged_files: List of file paths that should be staged
+    """
+    from gac.git import run_git_command
+
+    run_git_command(["reset", "HEAD"])
+
+    for file_path in staged_files:
+        try:
+            run_git_command(["add", file_path])
+        except Exception as e:
+            logger.warning(f"Failed to restore staging for {file_path}: {e}")
