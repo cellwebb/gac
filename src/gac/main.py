@@ -244,6 +244,9 @@ def execute_grouped_commits_workflow(
             num_commits = len(grouped_result["commits"])
             console.print(f"[bold green]Proposed Commits ({num_commits}):[/bold green]\n")
             for idx, commit in enumerate(grouped_result["commits"], 1):
+                files = commit["files"]
+                files_display = ", ".join(files)
+                console.print(f"[dim]{files_display}[/dim]")
                 commit_msg = commit["message"]
                 console.print(Panel(commit_msg, title=f"Commit Message {idx}/{num_commits}", border_style="cyan"))
                 console.print()
