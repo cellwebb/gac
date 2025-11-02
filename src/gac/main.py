@@ -17,6 +17,7 @@ from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, GitError, handle_error
 from gac.git import (
     get_staged_files,
+    get_staged_status,
     push_changes,
     run_git_command,
     run_lefthook_hooks,
@@ -25,7 +26,12 @@ from gac.git import (
 from gac.preprocess import preprocess_diff
 from gac.prompt import build_prompt, clean_commit_message
 from gac.security import get_affected_files, scan_staged_diff
-from gac.utils import edit_commit_message_inplace
+from gac.workflow_utils import (
+    check_token_warning,
+    display_commit_message,
+    execute_commit,
+    handle_confirmation_loop,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +39,405 @@ config = load_config()
 console = Console()  # Initialize console globally to prevent undefined access
 
 
+def _validate_grouped_files_or_feedback(staged: set[str], grouped_result: dict) -> tuple[bool, str, str]:
+    from collections import Counter
+
+    commits = grouped_result.get("commits", []) if isinstance(grouped_result, dict) else []
+    all_files: list[str] = []
+    for commit in commits:
+        files = commit.get("files", []) if isinstance(commit, dict) else []
+        all_files.extend([str(p) for p in files])
+
+    counts = Counter(all_files)
+    union_set = set(all_files)
+
+    duplicates = sorted([f for f, c in counts.items() if c > 1])
+    missing = sorted(staged - union_set)
+    unexpected = sorted(union_set - staged)
+
+    if not duplicates and not missing and not unexpected:
+        return True, "", ""
+
+    problems: list[str] = []
+    if missing:
+        problems.append(f"Missing: {', '.join(missing)}")
+    if unexpected:
+        problems.append(f"Not staged: {', '.join(unexpected)}")
+    if duplicates:
+        problems.append(f"Duplicates: {', '.join(duplicates)}")
+
+    feedback = f"{'; '.join(problems)}. Required files: {', '.join(sorted(staged))}. Respond with ONLY valid JSON."
+    return False, feedback, "; ".join(problems)
+
+
+def _handle_validation_retry(
+    attempts: int,
+    content_retry_budget: int,
+    raw_response: str,
+    feedback_message: str,
+    error_message: str,
+    conversation_messages: list[dict[str, str]],
+    quiet: bool,
+    retry_context: str,
+) -> bool:
+    """Handle validation retry logic. Returns True if should exit, False if should retry."""
+    conversation_messages.append({"role": "assistant", "content": raw_response})
+    conversation_messages.append({"role": "user", "content": feedback_message})
+    if attempts >= content_retry_budget:
+        logger.error(error_message)
+        console.print(f"\n[red]{error_message}[/red]")
+        console.print("\n[yellow]Raw model output:[/yellow]")
+        console.print(Panel(raw_response, title="Model Output", border_style="yellow"))
+        return True
+    if not quiet:
+        console.print(f"[yellow]Retry {attempts} of {content_retry_budget - 1}: {retry_context}[/yellow]")
+    return False
+
+
+def execute_grouped_commits_workflow(
+    *,
+    system_prompt: str,
+    user_prompt: str,
+    model: str,
+    temperature: float,
+    max_output_tokens: int,
+    max_retries: int,
+    require_confirmation: bool,
+    quiet: bool,
+    no_verify: bool,
+    dry_run: bool,
+    push: bool,
+    show_prompt: bool,
+) -> None:
+    """Execute the grouped commits workflow."""
+    import json
+
+    from gac.ai import generate_grouped_commits
+
+    if show_prompt:
+        full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
+        console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
+
+    conversation_messages: list[dict[str, str]] = []
+    if system_prompt:
+        conversation_messages.append({"role": "system", "content": system_prompt})
+    conversation_messages.append({"role": "user", "content": user_prompt})
+
+    provider, model_name = model.split(":", 1)
+    first_iteration = True
+    content_retry_budget = max(3, int(max_retries))
+    attempts = 0
+
+    grouped_result: dict | None = None
+    raw_response: str = ""
+
+    while True:
+        prompt_tokens = count_tokens(conversation_messages, model)
+
+        if first_iteration:
+            warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
+            assert warning_limit_val is not None
+            warning_limit = int(warning_limit_val)
+            if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
+                sys.exit(0)
+        first_iteration = False
+
+        raw_response = generate_grouped_commits(
+            model=model,
+            prompt=conversation_messages,
+            temperature=temperature,
+            max_tokens=max_output_tokens,
+            max_retries=max_retries,
+            quiet=quiet,
+            skip_success_message=True,
+        )
+
+        parsed: dict | None = None
+        extract = raw_response
+        first_brace = raw_response.find("{")
+        last_brace = raw_response.rfind("}")
+        if first_brace != -1 and last_brace != -1 and first_brace < last_brace:
+            extract = raw_response[first_brace : last_brace + 1]
+
+        try:
+            parsed = json.loads(extract)
+        except json.JSONDecodeError as e:
+            parsed = None
+            logger.debug(
+                f"JSON parsing failed: {e}. Extract length: {len(extract)}, Response length: {len(raw_response)}"
+            )
+
+        if parsed is None:
+            attempts += 1
+            feedback = "Your response was not valid JSON. Respond with ONLY valid JSON matching the expected schema. Do not include any commentary or code fences."
+            error_msg = f"Failed to parse LLM response as JSON after {attempts} retries."
+            if _handle_validation_retry(
+                attempts,
+                content_retry_budget,
+                raw_response,
+                feedback,
+                error_msg,
+                conversation_messages,
+                quiet,
+                "JSON parsing failed, asking model to fix...",
+            ):
+                sys.exit(1)
+            continue
+
+        try:
+            if "commits" not in parsed or not isinstance(parsed["commits"], list):
+                raise ValueError("Response missing 'commits' array")
+            if len(parsed["commits"]) == 0:
+                raise ValueError("No commits in response")
+            for idx, commit in enumerate(parsed["commits"]):
+                if "files" not in commit or not isinstance(commit["files"], list):
+                    raise ValueError(f"Commit {idx + 1} missing 'files' array")
+                if "message" not in commit or not isinstance(commit["message"], str):
+                    raise ValueError(f"Commit {idx + 1} missing 'message' string")
+                if len(commit["files"]) == 0:
+                    raise ValueError(f"Commit {idx + 1} has empty files list")
+                if not commit["message"].strip():
+                    raise ValueError(f"Commit {idx + 1} has empty message")
+        except (ValueError, TypeError) as e:
+            attempts += 1
+            feedback = f"Invalid response structure: {e}. Please return ONLY valid JSON following the schema with a non-empty 'commits' array of objects containing 'files' and 'message'."
+            error_msg = f"Invalid grouped commits structure after {attempts} retries: {e}"
+            if _handle_validation_retry(
+                attempts,
+                content_retry_budget,
+                raw_response,
+                feedback,
+                error_msg,
+                conversation_messages,
+                quiet,
+                "Structure validation failed, asking model to fix...",
+            ):
+                sys.exit(1)
+            continue
+
+        staged_set = set(get_staged_files(existing_only=False))
+        ok, feedback, detail_msg = _validate_grouped_files_or_feedback(staged_set, parsed)
+        if not ok:
+            attempts += 1
+            error_msg = (
+                f"Grouped commits file set mismatch after {attempts} retries{': ' + detail_msg if detail_msg else ''}"
+            )
+            if _handle_validation_retry(
+                attempts,
+                content_retry_budget,
+                raw_response,
+                feedback,
+                error_msg,
+                conversation_messages,
+                quiet,
+                "File coverage mismatch, asking model to fix...",
+            ):
+                sys.exit(1)
+            continue
+
+        grouped_result = parsed
+        conversation_messages.append({"role": "assistant", "content": raw_response})
+
+        if not quiet:
+            console.print(f"[green]✔ Generated commit messages with {provider} {model_name}[/green]")
+            num_commits = len(grouped_result["commits"])
+            console.print(f"[bold green]Proposed Commits ({num_commits}):[/bold green]\n")
+            for idx, commit in enumerate(grouped_result["commits"], 1):
+                commit_msg = commit["message"]
+                console.print(Panel(commit_msg, title=f"Commit Message {idx}/{num_commits}", border_style="cyan"))
+                console.print()
+
+            completion_tokens = count_tokens(raw_response, model)
+            total_tokens = prompt_tokens + completion_tokens
+            console.print(
+                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
+            )
+
+        if require_confirmation:
+            accepted = False
+            num_commits = len(grouped_result["commits"]) if grouped_result else 0
+            while True:
+                response = click.prompt(
+                    f"Proceed with {num_commits} commits above? [y/n/r/<feedback>]",
+                    type=str,
+                    show_default=False,
+                ).strip()
+                response_lower = response.lower()
+
+                if response_lower in ["y", "yes"]:
+                    accepted = True
+                    break
+                if response_lower in ["n", "no"]:
+                    console.print("[yellow]Commits not accepted. Exiting...[/yellow]")
+                    sys.exit(0)
+                if response == "":
+                    continue
+                if response_lower in ["r", "reroll"]:
+                    feedback_message = "Please provide alternative commit groupings using the same repository context."
+                    console.print("[cyan]Regenerating commit groups...[/cyan]")
+                    conversation_messages.append({"role": "user", "content": feedback_message})
+                    console.print()
+                    attempts = 0
+                    break
+
+                feedback_message = f"Please revise the commit groupings based on this feedback: {response}"
+                console.print(f"[cyan]Regenerating commit groups with feedback: {response}[/cyan]")
+                conversation_messages.append({"role": "user", "content": feedback_message})
+                console.print()
+                attempts = 0
+                break
+
+            if not accepted:
+                continue
+
+        num_commits = len(grouped_result["commits"]) if grouped_result else 0
+        if dry_run:
+            console.print(f"[yellow]Dry run: Would create {num_commits} commits[/yellow]")
+            for idx, commit in enumerate(grouped_result["commits"], 1):
+                console.print(f"\n[cyan]Commit {idx}/{num_commits}:[/cyan]")
+                console.print(f"  Files: {', '.join(commit['files'])}")
+                console.print(f"  Message: {commit['message'][:50]}...")
+        else:
+            run_git_command(["reset", "HEAD"])
+
+            for idx, commit in enumerate(grouped_result["commits"], 1):
+                try:
+                    for file_path in commit["files"]:
+                        run_git_command(["add", "-A", file_path])
+                    execute_commit(commit["message"], no_verify)
+                    console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
+                except Exception as e:
+                    console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
+                    console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
+                    sys.exit(1)
+
+        if push:
+            try:
+                if dry_run:
+                    console.print("[yellow]Dry run: Would push changes[/yellow]")
+                    sys.exit(0)
+                if push_changes():
+                    logger.info("Changes pushed successfully")
+                    console.print("[green]Changes pushed successfully[/green]")
+                else:
+                    console.print(
+                        "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
+                    )
+                    sys.exit(1)
+            except Exception as e:
+                console.print(f"[red]Error pushing changes: {e}[/red]")
+                sys.exit(1)
+
+        sys.exit(0)
+
+
+def execute_single_commit_workflow(
+    *,
+    system_prompt: str,
+    user_prompt: str,
+    model: str,
+    temperature: float,
+    max_output_tokens: int,
+    max_retries: int,
+    require_confirmation: bool,
+    quiet: bool,
+    no_verify: bool,
+    dry_run: bool,
+    push: bool,
+    show_prompt: bool,
+) -> None:
+    if show_prompt:
+        full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
+        console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
+
+    conversation_messages: list[dict[str, str]] = []
+    if system_prompt:
+        conversation_messages.append({"role": "system", "content": system_prompt})
+    conversation_messages.append({"role": "user", "content": user_prompt})
+
+    first_iteration = True
+    while True:
+        prompt_tokens = count_tokens(conversation_messages, model)
+        if first_iteration:
+            warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
+            assert warning_limit_val is not None
+            warning_limit = int(warning_limit_val)
+            if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
+                sys.exit(0)
+        first_iteration = False
+
+        raw_commit_message = generate_commit_message(
+            model=model,
+            prompt=conversation_messages,
+            temperature=temperature,
+            max_tokens=max_output_tokens,
+            max_retries=max_retries,
+            quiet=quiet,
+        )
+        commit_message = clean_commit_message(raw_commit_message)
+        logger.info("Generated commit message:")
+        logger.info(commit_message)
+        conversation_messages.append({"role": "assistant", "content": commit_message})
+        display_commit_message(commit_message, prompt_tokens, model, quiet)
+
+        if require_confirmation:
+            decision, conversation_messages = handle_confirmation_loop(
+                commit_message, conversation_messages, quiet, model
+            )
+            if decision == "no":
+                console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
+                sys.exit(0)
+            elif decision == "yes":
+                break
+        else:
+            break
+
+    if dry_run:
+        console.print("[yellow]Dry run: Commit message generated but not applied[/yellow]")
+        console.print("Would commit with message:")
+        console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+        staged_files = get_staged_files(existing_only=False)
+        console.print(f"Would commit {len(staged_files)} files")
+        logger.info(f"Would commit {len(staged_files)} files")
+    else:
+        execute_commit(commit_message, no_verify)
+
+    if push:
+        try:
+            if dry_run:
+                staged_files = get_staged_files(existing_only=False)
+                logger.info("Dry run: Would push changes")
+                logger.info("Would push with message:")
+                logger.info(commit_message)
+                logger.info(f"Would push {len(staged_files)} files")
+                console.print("[yellow]Dry run: Would push changes[/yellow]")
+                console.print("Would push with message:")
+                console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
+                console.print(f"Would push {len(staged_files)} files")
+                sys.exit(0)
+            if push_changes():
+                logger.info("Changes pushed successfully")
+                console.print("[green]Changes pushed successfully[/green]")
+            else:
+                console.print(
+                    "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
+                )
+                sys.exit(1)
+        except Exception as e:
+            console.print(f"[red]Error pushing changes: {e}[/red]")
+            sys.exit(1)
+
+    if not quiet:
+        logger.info("Successfully committed changes with message:")
+        logger.info(commit_message)
+        if push:
+            logger.info("Changes pushed to remote.")
+    sys.exit(0)
+
+
 def main(
     stage_all: bool = False,
+    group: bool = False,
     model: str | None = None,
     hint: str = "",
     one_liner: bool = False,
@@ -77,6 +480,9 @@ def main(
     assert max_tokens_val is not None
     max_output_tokens = int(max_tokens_val)
 
+    if group:
+        max_output_tokens *= 2
+
     max_retries_val = config["max_retries"]
     assert max_retries_val is not None
     max_retries = int(max_retries_val)
@@ -85,7 +491,6 @@ def main(
         logger.info("Staging all changes")
         run_git_command(["add", "--all"])
 
-    # Check for staged files
     staged_files = get_staged_files(existing_only=False)
     if not staged_files:
         console.print(
@@ -93,25 +498,21 @@ def main(
         )
         sys.exit(0)
 
-    # Run pre-commit and lefthook hooks before doing expensive operations
     if not no_verify and not dry_run:
-        # Run lefthook hooks
         if not run_lefthook_hooks():
             console.print("[red]Lefthook hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             sys.exit(1)
 
-        # Run pre-commit hooks
         if not run_pre_commit_hooks():
             console.print("[red]Pre-commit hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             sys.exit(1)
 
-    status = run_git_command(["status"])
+    status = get_staged_status()
     diff = run_git_command(["diff", "--staged"])
     diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
 
-    # Security scan for secrets
     if not skip_secret_scan:
         logger.info("Scanning staged changes for potential secrets...")
         secrets = scan_staged_diff(diff)
@@ -170,14 +571,12 @@ def main(
                     sys.exit(0)
 
                 console.print(f"[green]Continuing with {len(remaining_staged)} staged file(s)...[/green]")
-                # Refresh all git state variables after removing files
-                status = run_git_command(["status"])
+                status = get_staged_status()
                 diff = run_git_command(["diff", "--staged"])
                 diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
         else:
             logger.info("No secrets detected in staged changes")
 
-    # Preprocess the diff before passing to build_prompt
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
     assert model is not None
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
@@ -188,7 +587,6 @@ def main(
         system_template_path_value if isinstance(system_template_path_value, str) else None
     )
 
-    # Use language parameter if provided, otherwise fall back to config
     if language is None:
         language_value = config.get("language")
         language = language_value if isinstance(language_value, str) else None
@@ -209,173 +607,61 @@ def main(
         translate_prefixes=translate_prefixes,
     )
 
-    if show_prompt:
-        # Show both system and user prompts
-        full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
-        console.print(
-            Panel(
-                full_prompt,
-                title="Prompt for LLM",
-                border_style="bright_blue",
-            )
+    if group:
+        from gac.prompt import build_group_prompt
+
+        system_prompt, user_prompt = build_group_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            one_liner=one_liner,
+            hint=hint,
+            infer_scope=infer_scope,
+            verbose=verbose,
+            system_template_path=system_template_path,
+            language=language,
+            translate_prefixes=translate_prefixes,
         )
 
-    conversation_messages: list[dict[str, str]] = []
-    if system_prompt:
-        conversation_messages.append({"role": "system", "content": system_prompt})
-    conversation_messages.append({"role": "user", "content": user_prompt})
+        try:
+            execute_grouped_commits_workflow(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model=model,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                max_retries=max_retries,
+                require_confirmation=require_confirmation,
+                quiet=quiet,
+                no_verify=no_verify,
+                dry_run=dry_run,
+                push=push,
+                show_prompt=show_prompt,
+            )
+        except AIError as e:
+            logger.error(str(e))
+            console.print(f"[red]Failed to generate grouped commits: {str(e)}[/red]")
+            sys.exit(1)
 
     try:
-        first_iteration = True
-
-        while True:
-            prompt_tokens = count_tokens(conversation_messages, model)
-
-            if first_iteration:
-                warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
-                assert warning_limit_val is not None
-                warning_limit = int(warning_limit_val)
-                if warning_limit and prompt_tokens > warning_limit:
-                    console.print(
-                        f"[yellow]⚠️  WARNING: Prompt contains {prompt_tokens} tokens, which exceeds the warning limit of "
-                        f"{warning_limit} tokens.[/yellow]"
-                    )
-                    if require_confirmation:
-                        proceed = click.confirm("Do you want to continue anyway?", default=True)
-                        if not proceed:
-                            console.print("[yellow]Aborted due to token limit.[/yellow]")
-                            sys.exit(0)
-
-            first_iteration = False
-
-            raw_commit_message = generate_commit_message(
-                model=model,
-                prompt=conversation_messages,
-                temperature=temperature,
-                max_tokens=max_output_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
-            )
-            # Clean the commit message (no automatic prefix enforcement)
-            commit_message = clean_commit_message(raw_commit_message)
-
-            logger.info("Generated commit message:")
-            logger.info(commit_message)
-
-            conversation_messages.append({"role": "assistant", "content": commit_message})
-
-            console.print("[bold green]Generated commit message:[/bold green]")
-            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
-
-            if not quiet:
-                completion_tokens = count_tokens(commit_message, model)
-                total_tokens = prompt_tokens + completion_tokens
-                console.print(
-                    f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} "
-                    "total[/dim]"
-                )
-
-            if require_confirmation:
-                while True:
-                    response = click.prompt(
-                        "Proceed with commit above? [y/n/r/e/<feedback>]",
-                        type=str,
-                        show_default=False,
-                    ).strip()
-                    response_lower = response.lower()
-
-                    if response_lower in ["y", "yes"]:
-                        break
-                    if response_lower in ["n", "no"]:
-                        console.print("[yellow]Prompt not accepted. Exiting...[/yellow]")
-                        sys.exit(0)
-                    if response == "":
-                        continue
-                    if response_lower in ["e", "edit"]:
-                        edited_message = edit_commit_message_inplace(commit_message)
-                        if edited_message:
-                            commit_message = edited_message
-                            conversation_messages[-1] = {"role": "assistant", "content": commit_message}
-                            logger.info("Commit message edited by user")
-                            console.print("\n[bold green]Edited commit message:[/bold green]")
-                            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
-                        else:
-                            console.print("[yellow]Using previous message.[/yellow]")
-                            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
-                        continue
-                    if response_lower in ["r", "reroll"]:
-                        feedback_message = (
-                            "Please provide an alternative commit message using the same repository context."
-                        )
-                        console.print("[cyan]Regenerating commit message...[/cyan]")
-                        conversation_messages.append({"role": "user", "content": feedback_message})
-                        console.print()
-                        break
-
-                    feedback_message = f"Please revise the commit message based on this feedback: {response}"
-                    console.print(f"[cyan]Regenerating commit message with feedback: {response}[/cyan]")
-                    conversation_messages.append({"role": "user", "content": feedback_message})
-                    console.print()
-                    break
-
-                if response_lower in ["y", "yes"]:
-                    break
-            else:
-                break
-
-        if dry_run:
-            console.print("[yellow]Dry run: Commit message generated but not applied[/yellow]")
-            console.print("Would commit with message:")
-            console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
-            staged_files = get_staged_files(existing_only=False)
-            console.print(f"Would commit {len(staged_files)} files")
-            logger.info(f"Would commit {len(staged_files)} files")
-        else:
-            commit_args = ["commit", "-m", commit_message]
-            if no_verify:
-                commit_args.append("--no-verify")
-            run_git_command(commit_args)
-            logger.info("Commit created successfully")
-            console.print("[green]Commit created successfully[/green]")
+        execute_single_commit_workflow(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+            max_retries=max_retries,
+            require_confirmation=require_confirmation,
+            quiet=quiet,
+            no_verify=no_verify,
+            dry_run=dry_run,
+            push=push,
+            show_prompt=show_prompt,
+        )
     except AIError as e:
         logger.error(str(e))
         console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
         sys.exit(1)
-
-    if push:
-        try:
-            if dry_run:
-                staged_files = get_staged_files(existing_only=False)
-
-                logger.info("Dry run: Would push changes")
-                logger.info("Would push with message:")
-                logger.info(commit_message)
-                logger.info(f"Would push {len(staged_files)} files")
-
-                console.print("[yellow]Dry run: Would push changes[/yellow]")
-                console.print("Would push with message:")
-                console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
-                console.print(f"Would push {len(staged_files)} files")
-                sys.exit(0)
-
-            if push_changes():
-                logger.info("Changes pushed successfully")
-                console.print("[green]Changes pushed successfully[/green]")
-            else:
-                console.print(
-                    "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
-                )
-                sys.exit(1)
-        except Exception as e:
-            console.print(f"[red]Error pushing changes: {e}[/red]")
-            sys.exit(1)
-
-    if not quiet:
-        logger.info("Successfully committed changes with message:")
-        logger.info(commit_message)
-        if push:
-            logger.info("Changes pushed to remote.")
-    sys.exit(0)
 
 
 if __name__ == "__main__":

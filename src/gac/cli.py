@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 @click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
 # Git workflow options
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
+@click.option("--group", "-g", is_flag=True, help="Group changes into multiple logical commits")
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
@@ -70,6 +71,7 @@ logger = logging.getLogger(__name__)
 def cli(
     ctx: click.Context,
     add_all: bool = False,
+    group: bool = False,
     log_level: str = str(config["log_level"]),
     one_liner: bool = False,
     push: bool = False,
@@ -109,6 +111,7 @@ def cli(
         try:
             main(
                 stage_all=add_all,
+                group=group,
                 model=model,
                 hint=hint,
                 one_liner=one_liner,
@@ -131,6 +134,7 @@ def cli(
 
         ctx.obj = {
             "add_all": add_all,
+            "group": group,
             "log_level": log_level,
             "one_liner": one_liner,
             "push": push,

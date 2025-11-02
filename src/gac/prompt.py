@@ -246,30 +246,30 @@ DEFAULT_USER_TEMPLATE = """<hint>
 Additional context provided by the user: <hint_text></hint_text>
 </hint>
 
-<git_status>
-<status></status>
-</git_status>
+<git_diff>
+<diff></diff>
+</git_diff>
 
 <git_diff_stat>
 <diff_stat></diff_stat>
 </git_diff_stat>
 
-<git_diff>
-<diff></diff>
-</git_diff>
+<git_status>
+<status></status>
+</git_status>
 
-<instructions>
+<language_instructions>
+IMPORTANT: You MUST write the entire commit message in <language_name></language_name>.
+All text in the commit message, including the summary line and body, must be in <language_name></language_name>.
+<prefix_instruction></prefix_instruction>
+</language_instructions>
+
+<format_instructions>
 IMMEDIATELY AFTER ANALYZING THE CHANGES, RESPOND WITH ONLY THE COMMIT MESSAGE.
 DO NOT include any preamble, reasoning, explanations or anything other than the commit message itself.
 DO NOT use markdown formatting, headers, or code blocks.
 The entire response will be passed directly to 'git commit -m'.
-
-<language>
-IMPORTANT: You MUST write the entire commit message in <language_name></language_name>.
-All text in the commit message, including the summary line and body, must be in <language_name></language_name>.
-<prefix_instruction></prefix_instruction>
-</language>
-</instructions>"""
+</format_instructions>"""
 
 
 # ============================================================================
@@ -518,12 +518,98 @@ The ENTIRE commit message, including the prefix, must be in {language}."""
 
         user_template = user_template.replace("<prefix_instruction></prefix_instruction>", prefix_instruction)
     else:
-        user_template = _remove_template_section(user_template, "language")
+        user_template = _remove_template_section(user_template, "language_instructions")
         logger.debug("Using default language (English)")
 
     user_template = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", user_template)
 
     return system_template.strip(), user_template.strip()
+
+
+def build_group_prompt(
+    status: str,
+    processed_diff: str,
+    diff_stat: str,
+    one_liner: bool,
+    hint: str,
+    infer_scope: bool,
+    verbose: bool,
+    system_template_path: str | None,
+    language: str | None,
+    translate_prefixes: bool,
+) -> tuple[str, str]:
+    """Build prompt for grouped commit generation (JSON output with multiple commits)."""
+    system_prompt, user_prompt = build_prompt(
+        status=status,
+        processed_diff=processed_diff,
+        diff_stat=diff_stat,
+        one_liner=one_liner,
+        hint=hint,
+        infer_scope=infer_scope,
+        verbose=verbose,
+        system_template_path=system_template_path,
+        language=language,
+        translate_prefixes=translate_prefixes,
+    )
+
+    user_prompt = _remove_template_section(user_prompt, "format_instructions")
+
+    grouping_instructions = """
+<format_instructions>
+Your task is to split the changed files into separate, logical commits. Think of this like sorting files into different folders where each file belongs in exactly one folder.
+
+CRITICAL REQUIREMENT - Every File Used Exactly Once:
+You must assign EVERY file from the diff to exactly ONE commit.
+- NO file should be left out
+- NO file should appear in multiple commits
+- EVERY file must be used once and ONLY once
+
+Think of it like dealing cards: Once you've dealt a card to a player, that card cannot be dealt to another player.
+
+HOW TO SPLIT THE FILES:
+1. Review all changed files in the diff
+2. Group files by logical relationship (e.g., related features, bug fixes, documentation)
+3. Assign each file to exactly one commit based on what makes the most sense
+4. If a file could fit in multiple commits, pick the best fit and move on - do NOT duplicate it
+5. Continue until every single file has been assigned to a commit
+
+ORDERING:
+Order the commits in a logical sequence considering dependencies, natural progression, and overall workflow.
+
+YOUR RESPONSE FORMAT:
+Respond with valid JSON following this structure:
+```json
+{
+  "commits": [
+    {
+      "files": ["src/auth/login.ts", "src/auth/logout.ts"],
+      "message": "<commit_message_conforming_to_prescribed_structure_and_format>"
+    },
+    {
+      "files": ["src/db/schema.sql", "src/db/migrations/001.sql"],
+      "message": "<commit_message_conforming_to_prescribed_structure_and_format>"
+    },
+    {
+      "files": ["tests/auth.test.ts", "tests/db.test.ts", "README.md"],
+      "message": "<commit_message_conforming_to_prescribed_structure_and_format>"
+    }
+  ]
+}
+```
+
+☝️ Notice how EVERY file path in the example above appears exactly ONCE across all commits. "src/auth/login.ts" appears once. "tests/auth.test.ts" appears once. No file is repeated.
+
+VALIDATION CHECKLIST - Before responding, verify:
+□ Total files across all commits = Total files in the diff
+□ Each file appears in exactly 1 commit (no duplicates, no omissions)
+□ Every commit has at least one file
+□ If you list all files from all commits and count them, you get the same count as unique files in the diff
+</format_instructions>
+"""
+
+    user_prompt = user_prompt + grouping_instructions
+
+    return system_prompt, user_prompt
 
 
 # ============================================================================

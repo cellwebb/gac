@@ -66,6 +66,7 @@ uv tool upgrade gac
 - **Understands intent**: Analyzes code structure, logic, and patterns to understand the "why" behind your changes, not just what changed
 - **Semantic awareness**: Recognizes refactoring, bug fixes, features, and breaking changes to generate contextually appropriate messages
 - **Intelligent filtering**: Prioritizes meaningful changes while ignoring generated files, dependencies, and artifacts
+- **Intelligent commit grouping** - Automatically group related changes into multiple logical commits with `--group`
 
 ### 📝 **Multiple Message Formats**
 
@@ -132,6 +133,9 @@ gac -v -s
 
 # Quick one-liner for small changes
 gac -o
+
+# Group changes into logically related commits
+gac -ag
 
 # Debug what the LLM sees
 gac --show-prompt
