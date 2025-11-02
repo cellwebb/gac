@@ -78,6 +78,7 @@ class TestTokenUsageDisplay:
             return 10
 
         monkeypatch.setattr("gac.main.count_tokens", mock_count_tokens)
+        monkeypatch.setattr("gac.ai_utils.count_tokens", mock_count_tokens)
 
         # Capture console output
         captured_output = []
@@ -148,6 +149,7 @@ class TestTokenUsageDisplay:
             return 10
 
         monkeypatch.setattr("gac.main.count_tokens", fake_count_tokens)
+        monkeypatch.setattr("gac.ai_utils.count_tokens", fake_count_tokens)
 
         # Provide two commit messages, one for the initial generation and one for the reroll
         commit_messages = iter(["feat: initial", "feat: rerolled"])

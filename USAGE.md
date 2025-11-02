@@ -43,10 +43,15 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | Flag / Option | Short | Description                                        |
 | ------------- | ----- | -------------------------------------------------- |
 | `--add-all`   | `-a`  | Stage all changes before committing                |
+| `--group`     | `-g`  | Group staged changes into multiple logical commits |
 | `--push`      | `-p`  | Push changes to remote after committing            |
 | `--yes`       | `-y`  | Automatically confirm commit without prompting     |
 | `--dry-run`   |       | Show what would happen without making any changes  |
 | `--no-verify` |       | Skip pre-commit and lefthook hooks when committing |
+
+**Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
+
+**Note:** When using `--group`, the max output tokens limit is automatically doubled to accommodate the larger output required for multiple commit messages. This ensures the LLM has enough tokens to generate all grouped commits without truncation.
 
 ## Message Customization
 
@@ -117,6 +122,20 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
   gac -s
   ```
 
+- **Group staged changes into logical commits:**
+
+  ```sh
+  gac -g
+  # Groups only the files you've already staged
+  ```
+
+- **Group all changes (staged + unstaged) and auto-confirm:**
+
+  ```sh
+  gac -agy
+  # Stages everything, groups it, and auto-confirms
+  ```
+
 - **Use a specific model just for this commit:**
 
   ```sh
@@ -181,7 +200,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
 - `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
-- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages
+- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages (automatically doubled when using `--group`)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
 - `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Use a custom system prompt for commit message generation
 - `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection
