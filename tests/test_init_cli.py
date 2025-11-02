@@ -387,3 +387,99 @@ def test_init_cli_existing_api_key_zai_provider(monkeypatch):
                 env_text = env_path.read_text()
                 assert "ZAI_API_KEY='existing-zai-key'" in env_text
                 assert "Keeping existing ZAI_API_KEY" in result.output
+
+
+def test_init_cli_existing_language_keep(monkeypatch):
+    """Test behavior when user chooses to keep existing language."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\nGAC_LANGUAGE='Spanish'\nGAC_TRANSLATE_PREFIXES='true'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider, API key action, language action (Keep existing)
+                mselect.return_value.ask.side_effect = ["Groq", "Keep existing key", "Keep existing language"]
+                mtext.return_value.ask.side_effect = ["llama-4-scout"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_LANGUAGE='Spanish'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='true'" in env_text
+                assert "Keeping existing language: Spanish" in result.output
+
+
+def test_init_cli_existing_language_select_new(monkeypatch):
+    """Test behavior when user chooses to select new language."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\nGAC_LANGUAGE='Spanish'\nGAC_TRANSLATE_PREFIXES='true'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider, API key action, language action, new language, prefix choice
+                mselect.return_value.ask.side_effect = [
+                    "Groq",
+                    "Keep existing key",
+                    "Select new language",
+                    "Français",
+                    "Keep prefixes in English (feat:, fix:, etc.)",
+                ]
+                mtext.return_value.ask.side_effect = ["llama-4-scout"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_LANGUAGE='French'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
+
+
+def test_init_cli_existing_language_action_cancelled(monkeypatch):
+    """Test behavior when user cancels language action selection."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\nGAC_LANGUAGE='Spanish'\nGAC_TRANSLATE_PREFIXES='false'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider, API key action, language action (cancelled)
+                mselect.return_value.ask.side_effect = ["Groq", "Keep existing key", None]
+                mtext.return_value.ask.side_effect = ["llama-4-scout"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_LANGUAGE='Spanish'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
+                assert "Keeping existing language" in result.output
+
+
+def test_init_cli_existing_language_select_new_then_cancel(monkeypatch):
+    """Test when user selects new language but then cancels the language selection."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\nGAC_LANGUAGE='Spanish'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider, API key action, language action (Select new), language cancelled
+                mselect.return_value.ask.side_effect = ["Groq", "Keep existing key", "Select new language", None]
+                mtext.return_value.ask.side_effect = ["llama-4-scout"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_LANGUAGE='Spanish'" in env_text
+                assert "Keeping existing language" in result.output

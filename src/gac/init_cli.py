@@ -191,48 +191,120 @@ def init() -> None:
 
     # Language selection
     click.echo("\n")
-    display_names = [lang[0] for lang in Languages.LANGUAGES]
-    language_selection = questionary.select(
-        "Select a language for commit messages:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
-    ).ask()
+    existing_language = existing_env.get("GAC_LANGUAGE")
 
-    if not language_selection:
-        click.echo("Language selection cancelled. Using English (default).")
-    elif language_selection == "English":
-        click.echo("Set language to English (default)")
-    else:
-        # Handle custom input
-        if language_selection == "Custom":
-            custom_language = questionary.text("Enter the language name (e.g., 'Spanish', 'Français', '日本語'):").ask()
-            if not custom_language or not custom_language.strip():
-                click.echo("No language entered. Using English (default).")
-                language_value = None
+    if existing_language:
+        # Language already configured - offer options
+        existing_translate = existing_env.get("GAC_TRANSLATE_PREFIXES", "false")
+        translate_status = "with translated prefixes" if existing_translate == "true" else "with English prefixes"
+        click.echo(f"Language is already configured: {existing_language} ({translate_status})")
+
+        action = questionary.select(
+            "What would you like to do?",
+            choices=[
+                "Keep existing language",
+                "Select new language",
+            ],
+        ).ask()
+
+        if action is None or action.startswith("Keep existing"):
+            if action is None:
+                click.echo("Language configuration cancelled. Keeping existing language.")
             else:
-                language_value = custom_language.strip()
-        else:
-            # Find the English name for the selected language
-            language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
-
-        if language_value:
-            # Ask about prefix translation
-            prefix_choice = questionary.select(
-                "How should conventional commit prefixes be handled?",
-                choices=[
-                    "Keep prefixes in English (feat:, fix:, etc.)",
-                    f"Translate prefixes into {language_value}",
-                ],
+                click.echo(f"Keeping existing language: {existing_language}")
+        elif action.startswith("Select new"):
+            # Proceed with language selection
+            display_names = [lang[0] for lang in Languages.LANGUAGES]
+            language_selection = questionary.select(
+                "Select a language for commit messages:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
             ).ask()
 
-            if not prefix_choice:
-                click.echo("Prefix translation selection cancelled. Using English prefixes.")
-                translate_prefixes = False
+            if not language_selection:
+                click.echo("Language selection cancelled. Keeping existing language.")
+            elif language_selection == "English":
+                click.echo("Set language to English (default)")
             else:
-                translate_prefixes = prefix_choice.startswith("Translate prefixes")
+                # Handle custom input
+                if language_selection == "Custom":
+                    custom_language = questionary.text(
+                        "Enter the language name (e.g., 'Spanish', 'Français', '日本語'):"
+                    ).ask()
+                    if not custom_language or not custom_language.strip():
+                        click.echo("No language entered. Keeping existing language.")
+                        language_value = None
+                    else:
+                        language_value = custom_language.strip()
+                else:
+                    # Find the English name for the selected language
+                    language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
 
-            # Set the language and prefix translation preference
-            set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", language_value)
-            set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "true" if translate_prefixes else "false")
-            click.echo(f"Set GAC_LANGUAGE={language_value}")
-            click.echo(f"Set GAC_TRANSLATE_PREFIXES={'true' if translate_prefixes else 'false'}")
+                if language_value:
+                    # Ask about prefix translation
+                    prefix_choice = questionary.select(
+                        "How should conventional commit prefixes be handled?",
+                        choices=[
+                            "Keep prefixes in English (feat:, fix:, etc.)",
+                            f"Translate prefixes into {language_value}",
+                        ],
+                    ).ask()
+
+                    if not prefix_choice:
+                        click.echo("Prefix translation selection cancelled. Using English prefixes.")
+                        translate_prefixes = False
+                    else:
+                        translate_prefixes = prefix_choice.startswith("Translate prefixes")
+
+                    # Set the language and prefix translation preference
+                    set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", language_value)
+                    set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "true" if translate_prefixes else "false")
+                    click.echo(f"Set GAC_LANGUAGE={language_value}")
+                    click.echo(f"Set GAC_TRANSLATE_PREFIXES={'true' if translate_prefixes else 'false'}")
+    else:
+        # No existing language - proceed with normal flow
+        display_names = [lang[0] for lang in Languages.LANGUAGES]
+        language_selection = questionary.select(
+            "Select a language for commit messages:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
+        ).ask()
+
+        if not language_selection:
+            click.echo("Language selection cancelled. Using English (default).")
+        elif language_selection == "English":
+            click.echo("Set language to English (default)")
+        else:
+            # Handle custom input
+            if language_selection == "Custom":
+                custom_language = questionary.text(
+                    "Enter the language name (e.g., 'Spanish', 'Français', '日本語'):"
+                ).ask()
+                if not custom_language or not custom_language.strip():
+                    click.echo("No language entered. Using English (default).")
+                    language_value = None
+                else:
+                    language_value = custom_language.strip()
+            else:
+                # Find the English name for the selected language
+                language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
+
+            if language_value:
+                # Ask about prefix translation
+                prefix_choice = questionary.select(
+                    "How should conventional commit prefixes be handled?",
+                    choices=[
+                        "Keep prefixes in English (feat:, fix:, etc.)",
+                        f"Translate prefixes into {language_value}",
+                    ],
+                ).ask()
+
+                if not prefix_choice:
+                    click.echo("Prefix translation selection cancelled. Using English prefixes.")
+                    translate_prefixes = False
+                else:
+                    translate_prefixes = prefix_choice.startswith("Translate prefixes")
+
+                # Set the language and prefix translation preference
+                set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", language_value)
+                set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "true" if translate_prefixes else "false")
+                click.echo(f"Set GAC_LANGUAGE={language_value}")
+                click.echo(f"Set GAC_TRANSLATE_PREFIXES={'true' if translate_prefixes else 'false'}")
 
     click.echo(f"\ngac environment setup complete. You can edit {GAC_ENV_PATH} to update values later.")
