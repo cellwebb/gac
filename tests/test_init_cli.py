@@ -256,3 +256,134 @@ def test_prompt_required_text_cancelled():
         mtext.return_value.ask.return_value = None
         result = _prompt_required_text("Enter value:")
         assert result is None
+
+
+def test_init_cli_existing_api_key_leave_as_is(monkeypatch):
+    """Test behavior when user chooses to leave existing API key as-is."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider selection, API key action (Keep existing), language selection
+                mselect.return_value.ask.side_effect = [
+                    "Groq",
+                    "Keep existing key",
+                    "English",
+                ]
+                mtext.return_value.ask.side_effect = ["meta-llama/llama-4-scout-17b-16e-instruct"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GROQ_API_KEY='existing-key'" in env_text
+                assert "Keeping existing GROQ_API_KEY" in result.output
+
+
+def test_init_cli_existing_api_key_edit_replace(monkeypatch):
+    """Test behavior when user chooses to edit/replace existing API key."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='old-key'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                # Provider selection, API key action (Enter new), language selection
+                mselect.return_value.ask.side_effect = [
+                    "Groq",
+                    "Enter new key",
+                    "English",
+                ]
+                mtext.return_value.ask.side_effect = ["meta-llama/llama-4-scout-17b-16e-instruct"]
+                mpass.return_value.ask.side_effect = ["new-key"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GROQ_API_KEY='new-key'" in env_text
+                assert "old-key" not in env_text
+                assert "Updated GROQ_API_KEY" in result.output
+
+
+def test_init_cli_existing_api_key_action_cancelled(monkeypatch):
+    """Test behavior when user cancels action selection for existing API key."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider selection, API key action (cancelled), language selection
+                mselect.return_value.ask.side_effect = ["Groq", None, "English"]
+                mtext.return_value.ask.side_effect = ["meta-llama/llama-4-scout-17b-16e-instruct"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GROQ_API_KEY='existing-key'" in env_text
+                assert "Keeping existing key" in result.output
+
+
+def test_init_cli_existing_api_key_edit_with_empty_input(monkeypatch):
+    """Test behavior when user chooses edit but provides empty input."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GROQ_API_KEY='existing-key'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                # Provider selection, API key action (Enter new), language selection
+                mselect.return_value.ask.side_effect = [
+                    "Groq",
+                    "Enter new key",
+                    "English",
+                ]
+                mtext.return_value.ask.side_effect = ["meta-llama/llama-4-scout-17b-16e-instruct"]
+                mpass.return_value.ask.side_effect = [""]  # empty input
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GROQ_API_KEY='existing-key'" in env_text
+                assert "Keeping existing GROQ_API_KEY" in result.output
+
+
+def test_init_cli_existing_api_key_zai_provider(monkeypatch):
+    """Test existing API key handling for Z.AI provider (uses ZAI_API_KEY)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("ZAI_API_KEY='existing-zai-key'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+            ):
+                # Provider selection, API key action (Keep existing), language selection
+                mselect.return_value.ask.side_effect = [
+                    "Z.AI",
+                    "Keep existing key",
+                    "English",
+                ]
+                mtext.return_value.ask.side_effect = ["glm-4.6"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "ZAI_API_KEY='existing-zai-key'" in env_text
+                assert "Keeping existing ZAI_API_KEY" in result.output

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 import questionary
-from dotenv import set_key
+from dotenv import dotenv_values, set_key
 
 from gac.constants import Languages
 
@@ -27,8 +27,12 @@ def _prompt_required_text(prompt: str) -> str | None:
 def init() -> None:
     """Interactively set up $HOME/.gac.env for gac."""
     click.echo("Welcome to gac initialization!\n")
+
+    # Load existing environment values
+    existing_env = {}
     if GAC_ENV_PATH.exists():
         click.echo(f"$HOME/.gac.env already exists at {GAC_ENV_PATH}. Values will be updated.")
+        existing_env = dict(dotenv_values(str(GAC_ENV_PATH)))
     else:
         GAC_ENV_PATH.touch()
         click.echo(f"Created $HOME/.gac.env at {GAC_ENV_PATH}.")
@@ -130,29 +134,60 @@ def init() -> None:
         set_key(str(GAC_ENV_PATH), "LMSTUDIO_API_URL", url_to_save)
         click.echo(f"Set LMSTUDIO_API_URL={url_to_save}")
 
-    api_key_prompt = "Enter your API key (input hidden, can be set later):"
-    if is_ollama or is_lmstudio:
-        click.echo(
-            "This provider typically runs locally. API keys are optional unless your instance requires authentication."
-        )
-        api_key_prompt = "Enter your API key (optional, press Enter to skip):"
+    # Determine API key name based on provider
+    if is_lmstudio:
+        api_key_name = "LMSTUDIO_API_KEY"
+    elif is_zai:
+        api_key_name = "ZAI_API_KEY"
+    elif is_custom_anthropic:
+        api_key_name = "CUSTOM_ANTHROPIC_API_KEY"
+    elif is_custom_openai:
+        api_key_name = "CUSTOM_OPENAI_API_KEY"
+    else:
+        api_key_name = f"{provider_key.upper()}_API_KEY"
 
-    api_key = questionary.password(api_key_prompt).ask()
-    if api_key:
-        if is_lmstudio:
-            api_key_name = "LMSTUDIO_API_KEY"
-        elif is_zai:
-            api_key_name = "ZAI_API_KEY"
-        elif is_custom_anthropic:
-            api_key_name = "CUSTOM_ANTHROPIC_API_KEY"
-        elif is_custom_openai:
-            api_key_name = "CUSTOM_OPENAI_API_KEY"
+    # Check if API key already exists
+    existing_key = existing_env.get(api_key_name)
+
+    if existing_key:
+        # Key exists - offer options
+        click.echo(f"\n{api_key_name} is already configured.")
+        action = questionary.select(
+            "What would you like to do?",
+            choices=[
+                "Keep existing key",
+                "Enter new key",
+            ],
+        ).ask()
+
+        if action is None:
+            click.echo("API key configuration cancelled. Keeping existing key.")
+        elif action.startswith("Keep existing"):
+            click.echo(f"Keeping existing {api_key_name}")
+        elif action.startswith("Enter new"):
+            api_key = questionary.password("Enter your new API key (input hidden):").ask()
+            if api_key and api_key.strip():
+                set_key(str(GAC_ENV_PATH), api_key_name, api_key)
+                click.echo(f"Updated {api_key_name} (hidden)")
+            else:
+                click.echo(f"No key entered. Keeping existing {api_key_name}")
+    else:
+        # No existing key - prompt for new one
+        api_key_prompt = "Enter your API key (input hidden, can be set later):"
+        if is_ollama or is_lmstudio:
+            click.echo(
+                "This provider typically runs locally. API keys are optional unless your instance requires authentication."
+            )
+            api_key_prompt = "Enter your API key (optional, press Enter to skip):"
+
+        api_key = questionary.password(api_key_prompt).ask()
+        if api_key and api_key.strip():
+            set_key(str(GAC_ENV_PATH), api_key_name, api_key)
+            click.echo(f"Set {api_key_name} (hidden)")
+        elif is_ollama or is_lmstudio:
+            click.echo("Skipping API key. You can add one later if needed.")
         else:
-            api_key_name = f"{provider_key.upper()}_API_KEY"
-        set_key(str(GAC_ENV_PATH), api_key_name, api_key)
-        click.echo(f"Set {api_key_name} (hidden)")
-    elif is_ollama or is_lmstudio:
-        click.echo("Skipping API key. You can add one later if needed.")
+            click.echo("No API key entered. You can add one later by editing ~/.gac.env")
 
     # Language selection
     click.echo("\n")
