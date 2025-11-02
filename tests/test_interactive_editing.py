@@ -102,3 +102,35 @@ class TestEditCommitMessageInplace:
         with mock.patch("prompt_toolkit.Application.run", side_effect=Exception("Unexpected error")):
             result = edit_commit_message_inplace("original")
             assert result is None
+
+    def test_edit_commit_message_cursor_at_beginning(self):
+        """Test that cursor starts at the beginning of the message."""
+        initial_message = "feat: add feature"
+
+        with mock.patch("prompt_toolkit.Application") as mock_app_class:
+            mock_app = mock.MagicMock()
+            mock_app_class.return_value = mock_app
+
+            with mock.patch("prompt_toolkit.buffer.Buffer") as mock_buffer_class:
+                mock_buffer = mock.MagicMock()
+                mock_buffer_class.return_value = mock_buffer
+
+                with mock.patch("prompt_toolkit.document.Document") as mock_document_class:
+                    edit_commit_message_inplace(initial_message)
+
+                    # Verify Document was created with cursor at position 0
+                    mock_document_class.assert_called_once_with(text=initial_message, cursor_position=0)
+
+    def test_edit_commit_message_vi_mode_set(self):
+        """Test that vi mode is enabled."""
+        with mock.patch("prompt_toolkit.Application") as mock_app_class:
+            mock_app = mock.MagicMock()
+            mock_app_class.return_value = mock_app
+
+            edit_commit_message_inplace("test message")
+
+            # Verify Application was called with EditingMode.VI
+            call_kwargs = mock_app_class.call_args.kwargs
+            from prompt_toolkit.enums import EditingMode
+
+            assert call_kwargs["editing_mode"] == EditingMode.VI
