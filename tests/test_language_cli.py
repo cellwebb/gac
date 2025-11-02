@@ -61,8 +61,8 @@ def test_language_select_predefined_without_prefix_translation():
                 assert "GAC_TRANSLATE_PREFIXES=" in content and "false" in content
 
 
-def test_language_select_english_removes_setting():
-    """Test selecting English removes the language setting."""
+def test_language_select_english_sets_explicitly():
+    """Test selecting English sets the language explicitly."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
         fake_path = Path(tmpdir) / ".gac.env"
@@ -77,12 +77,14 @@ def test_language_select_english_removes_setting():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "✓ Set language to English (default)" in result.output
-                assert "Removed GAC_LANGUAGE" in result.output
+                assert "✓ Set language to English" in result.output
+                assert "GAC_LANGUAGE=English" in result.output
+                assert "GAC_TRANSLATE_PREFIXES=false" in result.output
 
-                # Verify GAC_LANGUAGE was removed from file
+                # Verify GAC_LANGUAGE was set to English
                 content = fake_path.read_text()
-                assert "GAC_LANGUAGE" not in content
+                assert "GAC_LANGUAGE='English'" in content
+                assert "GAC_TRANSLATE_PREFIXES='false'" in content
 
 
 def test_language_select_english_file_not_exists():
@@ -98,9 +100,14 @@ def test_language_select_english_file_not_exists():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "✓ Set language to English (default)" in result.output
-                # File should be created even for English
+                assert "✓ Set language to English" in result.output
+                assert "GAC_LANGUAGE=English" in result.output
+                assert "GAC_TRANSLATE_PREFIXES=false" in result.output
+                # File should be created and contain English setting
                 assert fake_path.exists()
+                content = fake_path.read_text()
+                assert "GAC_LANGUAGE='English'" in content
+                assert "GAC_TRANSLATE_PREFIXES='false'" in content
 
 
 def test_language_select_custom_language():

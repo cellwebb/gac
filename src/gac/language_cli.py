@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 import questionary
-from dotenv import set_key, unset_key
+from dotenv import set_key
 
 from gac.constants import Languages
 
@@ -30,14 +30,14 @@ def language() -> None:
         GAC_ENV_PATH.touch()
         click.echo(f"Created {GAC_ENV_PATH}")
 
-    # Handle English (default) - remove the setting
+    # Handle English - set explicitly
     if selection == "English":
-        try:
-            unset_key(str(GAC_ENV_PATH), "GAC_LANGUAGE")
-            click.echo("✓ Set language to English (default)")
-            click.echo(f"  Removed GAC_LANGUAGE from {GAC_ENV_PATH}")
-        except Exception:
-            click.echo("✓ Set language to English (default)")
+        set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", "English")
+        set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "false")
+        click.echo("✓ Set language to English")
+        click.echo("  GAC_LANGUAGE=English")
+        click.echo("  GAC_TRANSLATE_PREFIXES=false")
+        click.echo(f"\n  Configuration saved to {GAC_ENV_PATH}")
         return
 
     # Handle custom input
