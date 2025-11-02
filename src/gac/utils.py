@@ -236,7 +236,7 @@ def edit_commit_message_inplace(message: str) -> str | None:
             }
         )
 
-        app = Application(
+        app: Application[None] = Application(
             layout=layout,
             key_bindings=kb,
             full_screen=False,
