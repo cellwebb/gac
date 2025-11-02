@@ -18,7 +18,7 @@ def test_group_with_no_staged_changes(tmp_path, monkeypatch):
         patch("gac.main.console.print") as mock_print,
     ):
         with pytest.raises(SystemExit) as exc:
-            main(group=True, require_confirmation=False)
+            main(group=True, model="openai:gpt-4", require_confirmation=False)
         assert exc.value.code == 0
         assert any("No staged changes" in str(call) for call in mock_print.call_args_list)
 
