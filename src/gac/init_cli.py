@@ -222,7 +222,10 @@ def init() -> None:
             if not language_selection:
                 click.echo("Language selection cancelled. Keeping existing language.")
             elif language_selection == "English":
-                click.echo("Set language to English (default)")
+                set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", "English")
+                set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "false")
+                click.echo("Set GAC_LANGUAGE=English")
+                click.echo("Set GAC_TRANSLATE_PREFIXES=false")
             else:
                 # Handle custom input
                 if language_selection == "Custom":
@@ -269,7 +272,10 @@ def init() -> None:
         if not language_selection:
             click.echo("Language selection cancelled. Using English (default).")
         elif language_selection == "English":
-            click.echo("Set language to English (default)")
+            set_key(str(GAC_ENV_PATH), "GAC_LANGUAGE", "English")
+            set_key(str(GAC_ENV_PATH), "GAC_TRANSLATE_PREFIXES", "false")
+            click.echo("Set GAC_LANGUAGE=English")
+            click.echo("Set GAC_TRANSLATE_PREFIXES=false")
         else:
             # Handle custom input
             if language_selection == "Custom":

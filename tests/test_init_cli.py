@@ -483,3 +483,27 @@ def test_init_cli_existing_language_select_new_then_cancel(monkeypatch):
                 env_text = env_path.read_text()
                 assert "GAC_LANGUAGE='Spanish'" in env_text
                 assert "Keeping existing language" in result.output
+
+
+def test_init_cli_english_selection_sets_language(monkeypatch):
+    """Test that selecting English explicitly sets GAC_LANGUAGE=English."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                # Provider, language selection (English)
+                mselect.return_value.ask.side_effect = ["Groq", "English"]
+                mtext.return_value.ask.side_effect = ["llama-4-scout"]
+                mpass.return_value.ask.side_effect = ["api-key"]
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_LANGUAGE='English'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
