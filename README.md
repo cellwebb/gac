@@ -155,7 +155,7 @@ r
 # Edit in-place with rich terminal editing
 e
 # Uses prompt_toolkit for multi-line editing with vi/emacs keybindings
-# Esc+Enter to finish, Ctrl+C to cancel
+# Press Esc+Enter or Ctrl+S to submit, Ctrl+C to cancel
 
 # Or just type your feedback directly!
 make it shorter and focus on the performance improvement

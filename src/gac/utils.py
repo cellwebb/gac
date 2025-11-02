@@ -3,7 +3,6 @@
 import logging
 import subprocess
 
-from prompt_toolkit import prompt
 from rich.console import Console
 from rich.theme import Theme
 
@@ -133,18 +132,18 @@ def run_subprocess(
         return ""
 
 
-def edit_commit_message_inplace(message: str, context: dict | None = None) -> str | None:
+def edit_commit_message_inplace(message: str) -> str | None:
     """Edit commit message in-place using rich terminal editing.
 
     Uses prompt_toolkit to provide a rich editing experience with:
     - Multi-line editing
     - Vi/Emacs key bindings
     - Line editing capabilities
-    - Esc+Enter to finish (Ctrl+D may not work on macOS)
+    - Esc+Enter or Ctrl+S to submit
+    - Ctrl+C to cancel
 
     Args:
         message: The initial commit message
-        context: Optional context (reserved for future use, currently unused)
 
     Returns:
         The edited commit message, or None if editing was cancelled
@@ -152,27 +151,115 @@ def edit_commit_message_inplace(message: str, context: dict | None = None) -> st
     Example:
         >>> edited = edit_commit_message_inplace("feat: add feature")
         >>> # User can edit the message using vi/emacs key bindings
-        >>> # Press Esc+Enter when done
+        >>> # Press Esc+Enter or Ctrl+S to submit
     """
+    from prompt_toolkit import Application
+    from prompt_toolkit.buffer import Buffer
+    from prompt_toolkit.document import Document
+    from prompt_toolkit.enums import EditingMode
+    from prompt_toolkit.key_binding import KeyBindings
+    from prompt_toolkit.layout import HSplit, Layout, Window
+    from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
+    from prompt_toolkit.layout.margins import ScrollbarMargin
+    from prompt_toolkit.styles import Style
+
     try:
-        console.print("\n[info]Edit commit message (Esc+Enter when done, Ctrl+C to cancel):[/info]")
+        console.print("\n[info]Edit commit message:[/info]")
         console.print()
 
-        # Use prompt_toolkit for rich multi-line editing
-        edited_message = prompt(
-            "",
+        # Create buffer for text editing
+        text_buffer = Buffer(
+            document=Document(text=message, cursor_position=0),
             multiline=True,
-            default=message,
-            vi_mode=True,  # Enable vi key bindings
+            enable_history_search=False,
         )
 
-        # Validate the edited message
-        edited_message = edited_message.strip()
-        if not edited_message:
-            console.print("[yellow]Commit message cannot be empty. Edit cancelled.[/yellow]")
+        # Track submission state
+        cancelled = {"value": False}
+        submitted = {"value": False}
+
+        # Create text editor window
+        text_window = Window(
+            content=BufferControl(
+                buffer=text_buffer,
+                focus_on_click=True,
+            ),
+            height=lambda: max(5, message.count("\n") + 3),
+            wrap_lines=True,
+            right_margins=[ScrollbarMargin()],
+        )
+
+        # Create hint window
+        hint_window = Window(
+            content=FormattedTextControl(
+                text=[("class:hint", " Esc+Enter or Ctrl+S to submit | Ctrl+C to cancel ")],
+            ),
+            height=1,
+            dont_extend_height=True,
+        )
+
+        # Create layout
+        root_container = HSplit(
+            [
+                text_window,
+                hint_window,
+            ]
+        )
+
+        layout = Layout(root_container, focused_element=text_window)
+
+        # Create key bindings
+        kb = KeyBindings()
+
+        @kb.add("c-s")
+        def _(event):
+            """Submit with Ctrl+S."""
+            submitted["value"] = True
+            event.app.exit()
+
+        @kb.add("c-c")
+        def _(event):
+            """Cancel editing."""
+            cancelled["value"] = True
+            event.app.exit()
+
+        @kb.add("escape", "enter")
+        def _(event):
+            """Submit with Esc+Enter."""
+            submitted["value"] = True
+            event.app.exit()
+
+        # Create and run application
+        custom_style = Style.from_dict(
+            {
+                "hint": "#888888",
+            }
+        )
+
+        app: Application[None] = Application(
+            layout=layout,
+            key_bindings=kb,
+            full_screen=False,
+            mouse_support=False,
+            editing_mode=EditingMode.VI,  # Enable vi key bindings
+            style=custom_style,
+        )
+
+        app.run()
+
+        # Handle result
+        if cancelled["value"]:
+            console.print("\n[yellow]Edit cancelled.[/yellow]")
             return None
 
-        return edited_message
+        if submitted["value"]:
+            edited_message = text_buffer.text.strip()
+            if not edited_message:
+                console.print("[yellow]Commit message cannot be empty. Edit cancelled.[/yellow]")
+                return None
+            return edited_message
+
+        return None
 
     except (EOFError, KeyboardInterrupt):
         console.print("\n[yellow]Edit cancelled.[/yellow]")
