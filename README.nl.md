@@ -1,0 +1,238 @@
+<!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD033 MD036 -->
+
+<div align="center">
+
+# 🚀 Git Auto Commit (gac)
+
+[![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
+[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
+[![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/en/CONTRIBUTING.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | **Nederlands**
+
+**Met LLM-gedreven commitberichten die uw code begrijpen!**
+
+**Automatiseer uw commits!** Vervang `git commit -m "..."` door `gac` voor contextuele, goed geformateerde commitberichten die zijn gegenereerd door grote taalmodellen!
+
+---
+
+## Wat U Krijgt
+
+Intelligente, contextuele berichten die het **waarom** achter uw wijzigingen uitleggen:
+
+![GAC generating a contextual commit message](assets/gac-simple-usage.png)
+
+---
+
+</div>
+
+<!-- markdownlint-enable MD033 MD036 -->
+
+<!-- markdownlint-enable MD033 MD036 -->
+
+## Snel Starten
+
+### Gebruik gac zonder installatie
+
+```bash
+uvx gac init   # Configureer uw provider, model en taal
+uvx gac model  # Voer provider/model setup opnieuw uit zonder taalprompts
+uvx gac        # Genereer en commit met LLM
+```
+
+Dat is alles! Beoordeel het gegenereerde bericht en bevestig met `y`.
+
+### Installeer en gebruik gac
+
+```bash
+uv tool install gac
+gac init
+gac model
+gac
+```
+
+### Upgrade geïnstalleerde gac
+
+```bash
+uv tool upgrade gac
+```
+
+---
+
+## Belangrijkste Functies
+
+### 🌐 **Ondersteunde Providers**
+
+- **Anthropic** • **Cerebras** • **Chutes.ai** • **DeepSeek** • **Fireworks**
+- **Gemini** • **Groq** • **LM Studio** • **MiniMax** • **Mistral** • **Ollama** • **OpenAI**
+- **OpenRouter** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Aangepaste Endpoints (Anthropic/OpenAI)**
+
+### 🧠 **Slimme LLM-analyse**
+
+- **Begrijpt intentie**: Analyseert codestructuur, logica en patronen om het "waarom" achter uw wijzigingen te begrijpen, niet alleen wat er is veranderd
+- **Semantisch bewustzijn**: Herkent refactoring, bugfixes, features en breaking changes om contextueel passende berichten te genereren
+- **Intelligente filtering**: Prioriteert betekenisvolle wijzigingen en negeert gegenereerde bestanden, dependencies en artefacten
+- **Intelligente commit-groepering** - Groepeer automatisch gerelateerde wijzigingen in meerdere logische commits met `--group`
+
+### 📝 **Meerdere Berichtformaten**
+
+- **One-liner** (-o vlag): Eénregelig commitbericht in conventioneel commitformaat
+- **Standaard** (standaard): Samenvatting met bullet points die implementatiedetails uitleggen
+- **Uitgebreid** (-v vlag): Uitgebreide uitleg inclusief motivatie, technische aanpak en impactanalyse
+
+### 🌍 **Meertalige Ondersteuning**
+
+- **25+ talen**: Genereer commitberichten in Engels, Chinees, Japans, Koreaans, Spaans, Frans, Duits en 20+ andere talen
+- **Flexibele vertaling**: Kies ervoor om conventionele commit-prefixen in het Engels te houden voor tool-compatibiliteit, of vertaal ze volledig
+- **Meerdere workflows**: Stel een standaardtaal in met `gac language`, of gebruik de `-l <taal>` vlag voor eenmalige overschrijvingen
+- **Ondersteuning voor native scripts**: Volledige ondersteuning voor niet-Latijnse scripts inclusief CJK, Cyrillisch, Arabisch en meer
+
+### 💻 **Ontwikkelervaring**
+
+- **Interactieve feedback**: Typ `r` om opnieuw te rollen, `e` om ter plaats te bewerken met vi/emacs-keybindings, of typ direct uw feedback zoals `maak het korter` of `focus op de bugfix`
+- **Één-commando workflows**: Volledige workflows met vlaggen zoals `gac -ayp` (stage alles, auto-bevestig, push)
+- **Git-integratie**: Respecteert pre-commit en lefthook hooks en voert ze uit vóór dure LLM-operaties
+
+### 🛡️ **Ingebouwde Beveiliging**
+
+- **Automatische secret-detectie**: Scant op API-sleutels, wachtwoorden en tokens voor het committen
+- **Interactieve bescherming**: Vraagt voor het committen van mogelijk gevoelige gegevens met duidelijke herstelopties
+- **Slimme filtering**: Negeert voorbeeldbestanden, sjabloonbestanden en plaatshoudertekst om false positives te verminderen
+
+---
+
+## Gebruiksvoorbeelden
+
+### Basisworkflow
+
+```bash
+# Stage uw wijzigingen
+git add .
+
+# Genereer en commit met LLM
+gac
+
+# Beoordeel → y (commit) | n (annuleer) | r (opnieuw rollen) | e (bewerken) | of typ feedback
+```
+
+### Veelgebruikte Commando's
+
+| Commando        | Beschrijving                                                         |
+| --------------- | -------------------------------------------------------------------- |
+| `gac`           | Genereer commitbericht                                               |
+| `gac -y`        | Auto-bevestig (geen beoordeling nodig)                               |
+| `gac -a`        | Stage alles voordat u commitbericht genereert                        |
+| `gac -o`        | Eénregelig bericht voor triviale wijzigingen                         |
+| `gac -v`        | Uitgebreid formaat met Motivatie, Technische Aanpak en Impactanalyse |
+| `gac -h "hint"` | Voeg context toe voor LLM (bv., `gac -h "bug fix"`)                  |
+| `gac -s`        | Inclusief scope (bv., feat(auth):)                                   |
+| `gac -p`        | Commit en push                                                       |
+
+### Power User Voorbeelden
+
+```bash
+# Volledige workflow in één commando
+gac -ayp -h "release preparation"
+
+# Gedetailleerde uitleg met scope
+gac -v -s
+
+# Snelle one-liner voor kleine wijzigingen
+gac -o
+
+# Groepeer wijzigingen in logisch gerelateerde commits
+gac -ag
+
+# Debug wat de LLM ziet
+gac --show-prompt
+
+# Sla security scan over (gebruik voorzichtig)
+gac --skip-secret-scan
+```
+
+### Interactief Feedbacksysteem
+
+Niet tevreden met het resultaat? U heeft mehrere opties:
+
+```bash
+# Eenvoudige reroll (geen feedback)
+r
+
+# Bewerk ter plaatse met rijke terminalbewerking
+e
+# Gebruikt prompt_toolkit voor meerregelige bewerking met vi/emacs keybindings
+# Druk op Esc+Enter of Ctrl+S om in te dienen, Ctrl+C om te annuleren
+
+# Of typ gewoon uw feedback direct!
+maak het korter en focus op de prestatieverbetering
+gebruik conventioneel commitformaat met scope
+leg de security-implicaties uit
+
+# Druk op Enter op lege invoer om de prompt opnieuw te zien
+```
+
+De bewerkfunctie (`e`) biedt rijke inplace terminalbewerking, waarmee u kunt:
+
+- **Natuurlijk bewerken**: Meerregelige bewerking met vertrouwde vi/emacs key bindings
+- **Snelle fixes**: Typfouten corrigeren, woordkeuze aanpassen, of formattering verfijnen
+- **Details toevoegen**: Informatie toevoegen die de LLM mogelijk heeft gemist
+- **Herrstructureren**: Bullet points herorganiseren of de berichtstructuur wijzigen
+
+---
+
+## Configuratie
+
+Voer `gac init` uit om uw provider interactief te configureren, of stel omgevingsvariabelen in:
+
+Wilt u later providers of modellen wijzigen zonder taalinstellingen aan te passen? Gebruik `gac model` voor een gestroomlijnde workflow die de taalprompts overslaat.
+
+```bash
+# Voorbeeldconfiguratie
+GAC_MODEL=anthropic:your-model-name
+OPENAI_API_KEY=your_key_here
+ANTHROPIC_API_KEY=your_key_here
+```
+
+Zie `.gac.env.example` voor alle beschikbare opties.
+
+**Wilt u commitberichten in een andere taal?** Voer `gac language` uit om te kiezen uit 25+ talen inclusief Español, Français, 日本語 en meer.
+
+**Wilt u de stijl van commitberichten aanpassen?** Zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) voor begeleiding bij het schrijven van aangepaste systeemprompts.
+
+---
+
+## Project Analytics
+
+📊 **[Bekijk live gebruiksstatistieken en analyse →](https://clickpy.clickhouse.com/dashboard/gac)**
+
+Volg real-time installatiemetrieken en package downloadstatistieken.
+
+---
+
+## Hulp Krijgen
+
+- **Volledige documentatie**: [docs/USAGE.md](docs/en/USAGE.md) - Volledige CLI-referentie
+- **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
+- **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen
+- **Bijdragen**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Ontwikkelsetup en richtlijnen
+
+---
+
+<!-- markdownlint-disable MD033 MD036 -->
+
+<div align="center">
+
+Gemaakt met ❤️ voor ontwikkelaars die betere commitberichten willen
+
+[⭐ Star ons op GitHub](https://github.com/cellwebb/gac) • [🐛 Rapporteer problemen](https://github.com/cellwebb/gac/issues) • [📖 Volledige docs](USAGE.md)
+
+</div>
+
+<!-- markdownlint-enable MD033 MD036 -->
