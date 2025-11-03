@@ -1,6 +1,6 @@
 # 为 gac 贡献
 
-[English](CONTRIBUTING.md) | 简体中文
+[English](CONTRIBUTING.md) | 简体中文 | [繁體中文](CONTRIBUTING.zh-TW.md)
 
 感谢你有兴趣为本项目做出贡献！我们非常感谢你的帮助。请遵循这些指南，使每个人的流程都顺畅。
 

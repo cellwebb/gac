@@ -1,6 +1,6 @@
 # Troubleshooting gac
 
-English | [简体中文](TROUBLESHOOTING.zh-CN.md)
+English | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md)
 
 This guide covers common issues and solutions for installing, configuring, and running gac.
 

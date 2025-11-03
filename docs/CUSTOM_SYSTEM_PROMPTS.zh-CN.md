@@ -1,6 +1,6 @@
 # 自定义系统提示
 
-[English](CUSTOM_SYSTEM_PROMPTS.md) | 简体中文
+[English](CUSTOM_SYSTEM_PROMPTS.md) | 简体中文 | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md)
 
 本指南解释了如何自定义 GAC 用于生成提交信息的系统提示，允许你定义自己的提交信息风格和约定。
 
