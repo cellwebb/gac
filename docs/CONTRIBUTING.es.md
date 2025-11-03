@@ -1,6 +1,6 @@
 # Contribuir a gac
 
-English | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | **Русский** | **Español** | Português | हिन्दी
+[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Русский](CONTRIBUTING.ru.md) | **Español** | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
 
 ¡Gracias por tu interés en contribuir a este proyecto! ¡Tu ayuda es muy apreciada. Por favor, sigue estas guías para
 hacer que el proceso sea fluido para todos.
