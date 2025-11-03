@@ -1,5 +1,7 @@
 # Custom System Prompts
 
+English | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md)
+
 This guide explains how to customize the system prompt that GAC uses to generate commit messages, allowing you to define your own commit message style and conventions.
 
 ## Table of Contents
@@ -218,7 +220,7 @@ routes/auth.ts, routes/api.ts, and routes/admin.ts.
 
 **Problem:** Your custom emoji messages are getting "chore:" added.
 
-**Solution:** This shouldn't happen—GAC automatically disables conventional commit enforcement when using custom system prompts. If you see this, please [file an issue](https://github.com/anthropics/gac/issues).
+**Solution:** This shouldn't happen—GAC automatically disables conventional commit enforcement when using custom system prompts. If you see this, please [file an issue](https://github.com/cellwebb/gac/issues).
 
 ### AI ignoring my instructions
 
@@ -323,5 +325,5 @@ gac config unset GAC_SYSTEM_PROMPT_PATH
 
 ## Need Help?
 
-- Report issues: [GitHub Issues](https://github.com/anthropics/gac/issues)
+- Report issues: [GitHub Issues](https://github.com/cellwebb/gac/issues)
 - Share your custom prompts: Contributions welcome!
