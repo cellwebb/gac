@@ -76,44 +76,7 @@ bump:
 		exit 1; \
 	fi
 	@echo "Bumping $(VERSION) version..."
-	@RESULT=$$(BUMP_KIND=$(VERSION) python - <<'PY'
-import os
-import re
-from pathlib import Path
-
-version_file = Path("src/gac/__version__.py")
-content = version_file.read_text(encoding="utf-8")
-match = re.search(r'__version__ = "([^"]+)"', content)
-if match is None:
-    raise SystemExit("Unable to locate __version__ assignment.")
-old_version = match.group(1)
-parts = old_version.split(".")
-if len(parts) != 3 or not all(part.isdigit() for part in parts):
-    raise SystemExit(f"Unsupported version format: {old_version}")
-major, minor, patch = map(int, parts)
-kind = os.environ["BUMP_KIND"]
-if kind == "patch":
-    patch += 1
-elif kind == "minor":
-    minor += 1
-    patch = 0
-elif kind == "major":
-    major += 1
-    minor = 0
-    patch = 0
-else:
-    raise SystemExit(f"Unknown bump kind: {kind}")
-new_version = f"{major}.{minor}.{patch}"
-target = f'__version__ = "{old_version}"'
-if content.count(target) != 1:
-    raise SystemExit("Expected to find version assignment exactly once.")
-version_file.write_text(
-    content.replace(target, f'__version__ = "{new_version}"', 1),
-    encoding="utf-8",
-)
-print(old_version, new_version)
-PY
-) && \
+	@RESULT=$$(BUMP_KIND=$(VERSION) python -c "import os, re; from pathlib import Path; version_file = Path('src/gac/__version__.py'); content = version_file.read_text(encoding='utf-8'); match = re.search(r'__version__ = \"([^\"]+)\"', content); old_version = match.group(1); parts = old_version.split('.'); major, minor, patch = map(int, parts); kind = os.environ['BUMP_KIND']; new_version = f'{major}.{minor}.{patch + 1}' if kind == 'patch' else f'{major}.{minor + 1}.0' if kind == 'minor' else f'{major + 1}.0.0'; version_file.write_text(content.replace(f'__version__ = \"{old_version}\"', f'__version__ = \"{new_version}\"', 1), encoding='utf-8'); print(old_version, new_version)") && \
 	OLD_VERSION=$$(echo "$$RESULT" | awk '{print $$1}') && \
 	NEW_VERSION=$$(echo "$$RESULT" | awk '{print $$2}') && \
 	echo "Version bumped from $$OLD_VERSION to $$NEW_VERSION" && \
