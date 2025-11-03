@@ -200,7 +200,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
 - `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
-- `GAC_MAX_OUTPUT_TOKENS=512` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count)
+- `GAC_MAX_OUTPUT_TOKENS=4096` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count; override to go higher or lower)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
 - `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Use a custom system prompt for commit message generation
 - `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection

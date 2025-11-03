@@ -11,7 +11,7 @@ def _workflow_kwargs(**overrides):
         "user_prompt": "",
         "model": "invalid-model",
         "temperature": 0.1,
-        "max_output_tokens": 1024,
+        "max_output_tokens": 4096,
         "max_retries": 1,
         "require_confirmation": False,
         "quiet": True,
