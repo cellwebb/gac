@@ -1,6 +1,6 @@
 # gac Command-Line Usage
 
-English | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | **Русский** | Español | Português | हिन्दी
+**English** | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md)
 
 This document describes all available flags and options for the `gac` CLI tool.
 
