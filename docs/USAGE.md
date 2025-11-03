@@ -1,6 +1,6 @@
 # gac Command-Line Usage
 
-English | [简体中文](USAGE.zh-CN.md)
+English | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md)
 
 This document describes all available flags and options for the `gac` CLI tool.
 
