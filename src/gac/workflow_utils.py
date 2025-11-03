@@ -1,4 +1,6 @@
 import logging
+import tempfile
+from pathlib import Path
 
 import click
 from rich.console import Console
@@ -12,7 +14,7 @@ def handle_confirmation_loop(
     conversation_messages: list[dict[str, str]],
     quiet: bool,
     model: str,
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, str, list[dict[str, str]]]:
     from rich.panel import Panel
 
     from gac.utils import edit_commit_message_inplace
@@ -26,9 +28,9 @@ def handle_confirmation_loop(
         response_lower = response.lower()
 
         if response_lower in ["y", "yes"]:
-            return ("yes", conversation_messages)
+            return ("yes", commit_message, conversation_messages)
         if response_lower in ["n", "no"]:
-            return ("no", conversation_messages)
+            return ("no", commit_message, conversation_messages)
         if response == "":
             continue
         if response_lower in ["e", "edit"]:
@@ -47,12 +49,12 @@ def handle_confirmation_loop(
             msg = "Please provide an alternative commit message using the same repository context."
             conversation_messages.append({"role": "user", "content": msg})
             console.print("[cyan]Regenerating commit message...[/cyan]")
-            return ("regenerate", conversation_messages)
+            return ("regenerate", commit_message, conversation_messages)
 
         msg = f"Please revise the commit message based on this feedback: {response}"
         conversation_messages.append({"role": "user", "content": msg})
         console.print(f"[cyan]Regenerating commit message with feedback: {response}[/cyan]")
-        return ("regenerate", conversation_messages)
+        return ("regenerate", commit_message, conversation_messages)
 
 
 def execute_commit(commit_message: str, no_verify: bool) -> None:
@@ -97,15 +99,30 @@ def display_commit_message(commit_message: str, prompt_tokens: int, model: str, 
         )
 
 
-def restore_staging(staged_files: list[str]) -> None:
+def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> None:
     """Restore the git staging area to a previous state.
 
     Args:
         staged_files: List of file paths that should be staged
+        staged_diff: Optional staged diff to reapply for partial staging
     """
     from gac.git import run_git_command
 
     run_git_command(["reset", "HEAD"])
+
+    if staged_diff:
+        temp_path: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile("w", delete=False) as tmp:
+                tmp.write(staged_diff)
+                temp_path = Path(tmp.name)
+            run_git_command(["apply", "--cached", str(temp_path)])
+            return
+        except Exception as e:
+            logger.warning(f"Failed to reapply staged diff, falling back to file list: {e}")
+        finally:
+            if temp_path:
+                temp_path.unlink(missing_ok=True)
 
     for file_path in staged_files:
         try:
