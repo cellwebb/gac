@@ -54,7 +54,7 @@ class SecretPatterns:
     PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
 
     # Bearer Tokens (require actual token with specific characteristics)
-    BEARER_TOKEN = re.compile(r"Bearer\s+[A-Za-z0-9]{20,}[/=]*\s", re.IGNORECASE)
+    BEARER_TOKEN = re.compile(r"Bearer\s+[A-Za-z0-9]{20,}[/=]*(?:\s|$)", re.IGNORECASE)
 
     # JWT Tokens
     JWT_TOKEN = re.compile(r"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+")

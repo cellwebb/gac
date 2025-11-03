@@ -127,6 +127,14 @@ class TestSecretPatterns:
         assert not pattern.search("sk-ant-123")
         assert not pattern.search("anthropic_key_1234567890")
 
+    def test_bearer_token_pattern(self):
+        """Bearer tokens should match even at end of line."""
+        pattern = SecretPatterns.BEARER_TOKEN
+
+        assert pattern.search("Authorization: Bearer ABCDEFGHIJKLMNOPQRSTUV123456")
+        assert pattern.search("Bearer abcdefghijklmnopqrstuvwxyz1234567890\n")
+        assert not pattern.search("Add Bearer Token to the request headers")
+
 
 class TestFalsePositiveFiltering:
     """Test false positive filtering logic."""
