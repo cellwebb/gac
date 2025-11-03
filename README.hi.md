@@ -26,7 +26,7 @@ English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [�
 
 बुद्धिमान, संदर्भात्मक मैसेज जो आपके परिवर्तनों के पीछे के "क्यों" को समझाते हैं:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.png)
+![GAC generating a contextual commit message](assets/gac-simple-usage.hi.png)
 
 ---
 

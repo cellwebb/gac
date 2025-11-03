@@ -26,7 +26,7 @@ English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [�
 
 Mensagens inteligentes e contextuais que explicam o **porquê** por trás de suas alterações:
 
-![GAC gerando uma mensagem de commit contextual](assets/gac-simple-usage.png)
+![GAC gerando uma mensagem de commit contextual](assets/gac-simple-usage.pt.png)
 
 ---
 
