@@ -28,7 +28,7 @@ def _load_existing_env() -> dict[str, str]:
     existing_env: dict[str, str] = {}
     if GAC_ENV_PATH.exists():
         click.echo(f"$HOME/.gac.env already exists at {GAC_ENV_PATH}. Values will be updated.")
-        existing_env = dict(dotenv_values(str(GAC_ENV_PATH)))
+        existing_env = {k: v for k, v in dotenv_values(str(GAC_ENV_PATH)).items() if v is not None}
     else:
         GAC_ENV_PATH.touch()
         click.echo(f"Created $HOME/.gac.env at {GAC_ENV_PATH}.")
