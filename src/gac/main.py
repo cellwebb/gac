@@ -71,6 +71,31 @@ def _validate_grouped_files_or_feedback(staged: set[str], grouped_result: dict) 
     return False, feedback, "; ".join(problems)
 
 
+def _parse_model_identifier(model: str) -> tuple[str, str]:
+    """Validate and split model identifier into provider and model name."""
+    normalized = model.strip()
+    if ":" not in normalized:
+        message = (
+            f"Invalid model format: '{model}'. Expected 'provider:model', e.g. 'openai:gpt-4o-mini'. "
+            "Use 'gac config set model <provider:model>' to update your configuration."
+        )
+        logger.error(message)
+        console.print(f"[red]{message}[/red]")
+        sys.exit(1)
+
+    provider, model_name = normalized.split(":", 1)
+    if not provider or not model_name:
+        message = (
+            f"Invalid model format: '{model}'. Both provider and model name are required "
+            "(example: 'anthropic:claude-3-5-haiku-latest')."
+        )
+        logger.error(message)
+        console.print(f"[red]{message}[/red]")
+        sys.exit(1)
+
+    return provider, model_name
+
+
 def _handle_validation_retry(
     attempts: int,
     content_retry_budget: int,
@@ -115,6 +140,8 @@ def execute_grouped_commits_workflow(
 
     from gac.ai import generate_grouped_commits
 
+    provider, model_name = _parse_model_identifier(model)
+
     if show_prompt:
         full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
         console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
@@ -124,7 +151,8 @@ def execute_grouped_commits_workflow(
         conversation_messages.append({"role": "system", "content": system_prompt})
     conversation_messages.append({"role": "user", "content": user_prompt})
 
-    provider, model_name = model.split(":", 1)
+    _parse_model_identifier(model)
+
     first_iteration = True
     content_retry_budget = max(3, int(max_retries))
     attempts = 0
@@ -370,6 +398,8 @@ def execute_single_commit_workflow(
     if system_prompt:
         conversation_messages.append({"role": "system", "content": system_prompt})
     conversation_messages.append({"role": "user", "content": user_prompt})
+
+    _parse_model_identifier(model)
 
     first_iteration = True
     while True:

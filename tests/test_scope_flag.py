@@ -21,7 +21,7 @@ class TestScopeFlag:
     def auto_mock_dependencies(self, monkeypatch):
         """Mocks common dependencies for all tests in this class."""
         mocked_config = {
-            "model": "mocked-model/mocked-model-name",
+            "model": "mocked:mocked-model-name",
             "temperature": 0.7,
             "max_output_tokens": 150,
             "max_retries": 2,
