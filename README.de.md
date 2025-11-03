@@ -26,7 +26,7 @@
 
 Intelligente, kontextbezogene Nachrichten, die das **Warum** hinter Ihren Änderungen erklären:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.png)
+![GAC generating a contextual commit message](assets/gac-simple-usage.de.png)
 
 ---
 
