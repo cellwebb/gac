@@ -1,6 +1,6 @@
 # Fehlersuche bei gac
 
-**English** | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/CONTRIBUTING.md)
+**English** | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md) | [한국어](../ko/TROUBLESHOOTING.md) | **Deutsch** | [Nederlands](../nl/TROUBLESHOOTING.md)
 
 Dieser Leitfaden behandelt häufige Probleme und Lösungen für die Installation, Konfiguration und Ausführung von gac.
 

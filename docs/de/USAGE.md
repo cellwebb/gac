@@ -1,6 +1,6 @@
 # gac Kommandozeilen-Nutzung
 
-**English** | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md)
+**English** | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md) | [한국어](USAGE.ko.md) | **Deutsch** | [Nederlands](USAGE.nl.md)
 
 Dieses Dokument beschreibt alle verfügbaren Flags und Optionen für das `gac` CLI-Werkzeug.
 
