@@ -1,6 +1,6 @@
 # Troubleshooting gac
 
-[English](TROUBLESHOOTING.md) | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md) | [日本語](TROUBLESHOOTING.ja.md) | [Français](TROUBLESHOOTING.fr.md) | [Русский](TROUBLESHOOTING.ru.md) | [Español](TROUBLESHOOTING.es.md) | [Português](TROUBLESHOOTING.pt.md) | **हिन्दी**
+[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | **हिन्दी**
 
 यह गाइड gac को इंस्टॉल करने, कॉन्फ़िगर करने और चलाने के लिए सामान्य समस्याओं और समाधानों को कवर करता है।
 
@@ -171,7 +171,7 @@
 - सभी उपलब्ध command-line flags देखने के लिए `gac --help` का उपयोग करें
 - सभी वर्तमान configuration मान देखने के लिए `gac config show` का उपयोग करें
 - Error messages और stack traces के लिए logs जांचें
-- features, examples, और quick start instructions के लिए मुख्य [README.md](../README.md) जांचें
+- features, examples, और quick start instructions के लिए मुख्य [README.md](../../README.md) जांचें
 
 ## Still Stuck?
 
@@ -181,7 +181,7 @@
 
 ## Where to Get Further Help
 
-- Features और usage examples के लिए, मुख्य [README.md](../README.md) देखें
-- Custom system prompts के लिए, [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) देखें
-- Contributing guidelines के लिए, [CONTRIBUTING.md](CONTRIBUTING.md) देखें
-- License information के लिए, [../LICENSE](../LICENSE) देखें
+- Features और usage examples के लिए, मुख्य [README.md](../../README.md) देखें
+- Custom system prompts के लिए, [CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md) देखें
+- Contributing guidelines के लिए, [CONTRIBUTING.md](../CONTRIBUTING.md) देखें
+- License information के लिए, [../../LICENSE](../../LICENSE) देखें

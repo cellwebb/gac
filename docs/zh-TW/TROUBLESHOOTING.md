@@ -1,6 +1,6 @@
 # gac 故障排除
 
-[English](TROUBLESHOOTING.md) | [简体中文](TROUBLESHOOTING.zh-CN.md) | **繁體中文** | [日本語](TROUBLESHOOTING.ja.md) | [Français](TROUBLESHOOTING.fr.md) | [Русский](TROUBLESHOOTING.ru.md) | [Español](TROUBLESHOOTING.es.md) | [Português](TROUBLESHOOTING.pt.md) | [हिन्दी](TROUBLESHOOTING.hi.md)
+[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | **繁體中文** | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md)
 
 本指南涵蓋了安裝、設定和執行 gac 的常見問題和解決方案。
 
@@ -182,6 +182,6 @@
 ## 獲取更多幫助
 
 - 有關功能和使用範例，請參閱主 [README.md](../README.md)
-- 有關自訂系統提示，請參閱 [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md)
-- 有關貢獻指南，請參閱 [CONTRIBUTING.md](CONTRIBUTING.md)
+- 有關自訂系統提示，請參閱 [CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- 有關貢獻指南，請參閱 [CONTRIBUTING.md](../CONTRIBUTING.md)
 - 有關授權資訊，請參閱 [../LICENSE](../LICENSE)

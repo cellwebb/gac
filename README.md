@@ -11,7 +11,7 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/en/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
@@ -204,7 +204,7 @@ See `.gac.env.example` for all available options.
 
 **Want commit messages in another language?** Run `gac language` to select from 25+ languages including Español, Français, 日本語, and more.
 
-**Want to customize commit message style?** See [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) for guidance on writing custom system prompts.
+**Want to customize commit message style?** See [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) for guidance on writing custom system prompts.
 
 ---
 
@@ -218,10 +218,10 @@ Track real-time installation metrics and package download statistics.
 
 ## Getting Help
 
-- **Full documentation**: [USAGE.md](USAGE.md) - Complete CLI reference
-- **Custom prompts**: [CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
-- **Troubleshooting**: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Common issues and solutions
-- **Contributing**: [CONTRIBUTING.md](docs/CONTRIBUTING.md) - Development setup and guidelines
+- **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
+- **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
+- **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions
+- **Contributing**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Development setup and guidelines
 
 ---
 

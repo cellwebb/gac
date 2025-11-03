@@ -1,6 +1,6 @@
 # Устранение неполадок gac
 
-**[Русский](TROUBLESHOOTING.ru.md)** | [English](TROUBLESHOOTING.md) | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md) | [日本語](TROUBLESHOOTING.ja.md) | [Français](TROUBLESHOOTING.fr.md) | [Español](TROUBLESHOOTING.es.md) | [Português](TROUBLESHOOTING.pt.md) | [हिन्दी](TROUBLESHOOTING.hi.md)
+**Русский** | [English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md)
 
 Это руководство охватывает общие проблемы и решения для установки, настройки и запуска gac.
 
@@ -182,6 +182,6 @@
 ## Где получить дополнительную помощь
 
 - Для функций и примеров использования смотрите основной [README.md](../README.md)
-- Для пользовательских системных подсказок смотрите [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md)
-- Для руководства по содействию смотрите [CONTRIBUTING.md](CONTRIBUTING.md)
+- Для пользовательских системных подсказок смотрите [CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- Для руководства по содействию смотрите [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Для информации о лицензии смотрите [../LICENSE](../LICENSE)

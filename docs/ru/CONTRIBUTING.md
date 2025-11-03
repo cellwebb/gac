@@ -1,6 +1,6 @@
 # Участие в разработке gac
 
-**[Русский](CONTRIBUTING.ru.md)** | [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
+**Русский** | [English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md)
 
 Спасибо за ваш интерес к участию в этом проекте! Ваша помощь ценится. Пожалуйста, следуйте этим рекомендациям, чтобы сделать процесс гладким для всех.
 
@@ -345,8 +345,8 @@ uv run -- pytest tests/test_prompt.py::TestExtractRepositoryContext::test_extrac
 
 ## Где получить помощь
 
-- Для устранения неполадок смотрите [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Для использования и опций CLI смотрите [../USAGE.md](../USAGE.md)
-- Для деталей лицензии смотрите [../LICENSE](../LICENSE)
+- Для устранения неполадок смотрите [TROUBLESHOOTING.md](../en/TROUBLESHOOTING.md)
+- Для использования и опций CLI смотрите [USAGE.md](../en/USAGE.md)
+- Для деталей лицензии смотрите [LICENSE](../LICENSE)
 
 Спасибо за помощь в улучшении gac!

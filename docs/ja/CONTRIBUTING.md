@@ -1,6 +1,6 @@
 # gacへの貢献
 
-[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | **日本語** | [Français](CONTRIBUTING.fr.md) | [Русский](CONTRIBUTING.ru.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
+[English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | **日本語** | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md)
 
 このプロジェクトへの貢献にご興味をお持ちいただきありがとうございます！あなたの協力を感謝します。すべての人にとってプロセスがスムーズになるよう、これらのガイドラインに従ってください。
 
@@ -345,7 +345,7 @@ APIキーが設定されていないプロバイダーのテストはスキッ�
 
 ## ヘルプの入手先
 
-- トラブルシューティングについては [TROUBLESHOOTING.md](TROUBLESHOOTING.md) を参照
+- トラブルシューティングについては [../TROUBLESHOOTING.md](../TROUBLESHOOTING.md) を参照
 - 使用法とCLIオプションについては [../USAGE.md](../USAGE.md) を参照
 - ライセンス詳細については [../LICENSE](../LICENSE) を参照
 

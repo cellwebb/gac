@@ -1,6 +1,6 @@
 # gac में योगदान करना
 
-[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Русский](CONTRIBUTING.ru.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | **हिन्दी**
+[English](../CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | **हिन्दी**
 
 इस प्रोजेक्ट में योगदान करने में आपकी रुचि के लिए धन्यवाद! आपकी मदद की सराहना की जाती है। कृपया इन दिशानिर्देशों का पालन करें ताकि
 प्रक्रिया सभी के लिए सुगम रहे।
@@ -348,7 +348,7 @@ uv run -- pytest tests/test_prompt.py::TestExtractRepositoryContext::test_extrac
 
 ## सहायता कहां प्राप्त करें
 
-- ट्रबलशूटिंग के लिए, [TROUBLESHOOTING.md](TROUBLESHOOTING.md) देखें
+- ट्रबलशूटिंग के लिए, [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) देखें
 - उपयोग और CLI विकल्पों के लिए, [../USAGE.md](../USAGE.md) देखें
 - लाइसेंस विवरण के लिए, [../LICENSE](../LICENSE) देखें
 

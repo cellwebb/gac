@@ -1,6 +1,6 @@
 # 為 gac 貢獻
 
-[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | **繁體中文** | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Русский](CONTRIBUTING.ru.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
+[English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | **繁體中文** | [日本語](../ja/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md)
 
 感謝你有興趣為本專案做出貢獻！我們非常感謝你的幫助。請遵循這些指南，使每個人的流程都順暢。
 
@@ -346,8 +346,8 @@ uv run -- pytest tests/test_prompt.py::TestExtractRepositoryContext::test_extrac
 
 ## 獲取幫助
 
-- 有關故障排除，請參閱 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- 有關使用和 CLI 選項，請參閱 [../USAGE.md](../USAGE.md)
-- 有關授權詳細資訊，請參閱 [../LICENSE](../LICENSE)
+- 有關故障排除，請參閱 [TROUBLESHOOTING.md](../en/TROUBLESHOOTING.md)
+- 有關使用和 CLI 選項，請參閱 [../../USAGE.md](../../USAGE.md)
+- 有關授權詳細資訊，請參閱 [../../LICENSE](../../LICENSE)
 
 感謝你幫助改進 gac！

@@ -1,6 +1,6 @@
 # Custom System Prompts
 
-**English** | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md) | [Русский](CUSTOM_SYSTEM_PROMPTS.ru.md) | [Español](CUSTOM_SYSTEM_PROMPTS.es.md) | [Português](CUSTOM_SYSTEM_PROMPTS.pt.md) | [हिन्दी](CUSTOM_SYSTEM_PROMPTS.hi.md)
+**English** | [简体中文](../zh-CN/CUSTOM_SYSTEM_PROMPTS.md) | [繁體中文](../zh-TW/CUSTOM_SYSTEM_PROMPTS.md) | [日本語](../ja/CUSTOM_SYSTEM_PROMPTS.md) | [Français](../fr/CUSTOM_SYSTEM_PROMPTS.md) | [Русский](../ru/CUSTOM_SYSTEM_PROMPTS.md) | [Español](../es/CUSTOM_SYSTEM_PROMPTS.md) | [Português](../pt/CUSTOM_SYSTEM_PROMPTS.md) | [हिन्दी](../hi/CUSTOM_SYSTEM_PROMPTS.md)
 
 This guide explains how to customize the system prompt that GAC uses to generate commit messages, allowing you to define your own commit message style and conventions.
 
@@ -319,8 +319,8 @@ gac config unset GAC_SYSTEM_PROMPT_PATH
 
 ## Related Documentation
 
-- [USAGE.md](../USAGE.md) - Command-line flags and options
-- [README.md](../README.md) - Installation and basic setup
+- [USAGE.md](USAGE.md) - Command-line flags and options
+- [README.md](../../README.md) - Installation and basic setup
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - General troubleshooting
 
 ## Need Help?

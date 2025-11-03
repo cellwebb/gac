@@ -1,6 +1,6 @@
 # Dépannage de gac
 
-[English](TROUBLESHOOTING.md) | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md) | [日本語](TROUBLESHOOTING.ja.md) | [Русский](TROUBLESHOOTING.ru.md) | [Español](TROUBLESHOOTING.es.md) | [Português](TROUBLESHOOTING.pt.md) | [हिन्दी](TROUBLESHOOTING.hi.md) | **Français**
+[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md) | **Français**
 
 Ce guide couvre les problèmes courants et solutions pour installer, configurer et exécuter gac.
 
@@ -182,6 +182,6 @@ Ce guide couvre les problèmes courants et solutions pour installer, configurer 
 ## Où obtenir une aide supplémentaire
 
 - Pour les fonctionnalités et exemples d'utilisation, voir le [README.md](../README.md) principal
-- Pour les prompts système personnalisés, voir [CUSTOM_SYSTEM_PROMPTS.fr.md](CUSTOM_SYSTEM_PROMPTS.fr.md)
-- Pour les directives de contribution, voir [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md)
+- Pour les prompts système personnalisés, voir [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md)
+- Pour les directives de contribution, voir [CONTRIBUTING.md](CONTRIBUTING.md)
 - Pour les informations de licence, voir [../LICENSE](../LICENSE)
