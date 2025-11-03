@@ -1,6 +1,6 @@
 # Участие в разработке gac
 
-**[Русский](CONTRIBUTING.ru.md)** | [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md)
+**[Русский](CONTRIBUTING.ru.md)** | [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
 
 Спасибо за ваш интерес к участию в этом проекте! Ваша помощь ценится. Пожалуйста, следуйте этим рекомендациям, чтобы сделать процесс гладким для всех.
 

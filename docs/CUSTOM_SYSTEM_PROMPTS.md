@@ -1,6 +1,6 @@
 # Custom System Prompts
 
-English | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | **[Français](CUSTOM_SYSTEM_PROMPTS.fr.md)**
+English | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md) | **Русский** | Español | Português | हिन्दी
 
 This guide explains how to customize the system prompt that GAC uses to generate commit messages, allowing you to define your own commit message style and conventions.
 

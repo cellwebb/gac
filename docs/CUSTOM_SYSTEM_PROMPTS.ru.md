@@ -1,6 +1,6 @@
 # Пользовательские системные подсказки
 
-**[Русский](CUSTOM_SYSTEM_PROMPTS.ru.md)** | [English](CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md)
+**[Русский](CUSTOM_SYSTEM_PROMPTS.ru.md)** | [English](CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md) | [Español](CUSTOM_SYSTEM_PROMPTS.es.md) | [Português](CUSTOM_SYSTEM_PROMPTS.pt.md) | [हिन्दी](CUSTOM_SYSTEM_PROMPTS.hi.md)
 
 Это руководство объясняет, как настроить системную подсказку, которую GAC использует для генерации сообщений коммитов, позволяя вам определить свой собственный стиль и соглашения для сообщений коммитов.
 

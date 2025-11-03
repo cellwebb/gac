@@ -14,7 +14,7 @@
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md)
+[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **Русский** | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
 
 **能理解你代码的 LLM 驱动的提交信息！**
 

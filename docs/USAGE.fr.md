@@ -1,6 +1,6 @@
 # Utilisation en ligne de commande de gac
 
-[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | **Français**
+[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md) | **Français**
 
 Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `gac`.
 

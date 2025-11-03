@@ -14,7 +14,7 @@
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **Русский**
+English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **Русский** | Español | Português | हिन्दी
 
 **Коммиты, созданные ИИ, которые понимают ваш код!**
 
@@ -26,7 +26,7 @@ English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [�
 
 Интеллектуальные, контекстуальные сообщения, которые объясняют **почему** ваших изменений:
 
-![GAC генерирует контекстуальное сообщение коммита](assets/gac-simple-usage.png)
+![GAC генерирует контекстуальное сообщение коммита](assets/gac-simple-usage.ru.png)
 
 ---
 
