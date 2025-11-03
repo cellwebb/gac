@@ -1,5 +1,6 @@
 """CLI for initializing gac configuration interactively."""
 
+import unicodedata
 from pathlib import Path
 
 import click
@@ -241,6 +242,18 @@ def _configure_language(existing_env: dict[str, str]) -> None:
                         language_value = None
                     else:
                         language_value = custom_language.strip()
+
+                        # Check if the custom language appears to be RTL
+                        if is_rtl_text(language_value):
+                            click.echo("\n[yellow]⚠️  RTL Language Detected[/yellow]")
+                            click.echo("Right-to-left (RTL) languages like Arabic and Hebrew may not display correctly")
+                            click.echo("in commit messages due to terminal limitations. The messages will be generated")
+                            click.echo("correctly but may appear left-to-right in the display.\n")
+
+                            proceed = questionary.confirm("Do you want to proceed anyway?").ask()
+                            if not proceed:
+                                click.echo("Language selection cancelled. Keeping existing language.")
+                                language_value = None
                 else:
                     # Find the English name for the selected language
                     language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
@@ -291,6 +304,18 @@ def _configure_language(existing_env: dict[str, str]) -> None:
                     language_value = None
                 else:
                     language_value = custom_language.strip()
+
+                    # Check if the custom language appears to be RTL
+                    if is_rtl_text(language_value):
+                        click.echo("\n[yellow]⚠️  RTL Language Detected[/yellow]")
+                        click.echo("Right-to-left (RTL) languages like Arabic and Hebrew may not display correctly")
+                        click.echo("in commit messages due to terminal limitations. The messages will be generated")
+                        click.echo("correctly but may appear left-to-right in the display.\n")
+
+                        proceed = questionary.confirm("Do you want to proceed anyway?").ask()
+                        if not proceed:
+                            click.echo("Language selection cancelled. Using English (default).")
+                            language_value = None
             else:
                 # Find the English name for the selected language
                 language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
@@ -343,3 +368,30 @@ def model() -> None:
         return
 
     click.echo(f"\nModel configuration complete. You can edit {GAC_ENV_PATH} to update values later.")
+
+
+def is_rtl_text(text: str) -> bool:
+    """Detect if text contains RTL characters or is a known RTL language code.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        True if text contains RTL script characters or is RTL language code
+    """
+    # Known RTL language codes
+    rtl_codes = {"ar", "arabic", "he", "hebrew"}
+
+    # Check if it's a known RTL language code (case insensitive)
+    if text.lower().strip() in rtl_codes:
+        return True
+
+    rtl_scripts = {"Arabic", "Hebrew", "Thaana", "Nko", "Syriac", "Mandeic", "Samaritan", "Mongolian", "Phags-Pa"}
+
+    for char in text:
+        if unicodedata.name(char, "").startswith(("ARABIC", "HEBREW")):
+            return True
+        script = unicodedata.name(char, "").split()[0] if unicodedata.name(char, "") else ""
+        if script in rtl_scripts:
+            return True
+    return False

@@ -274,8 +274,6 @@ def test_language_all_predefined_languages():
         ("Deutsch", "German"),
         ("Русский", "Russian"),
         ("हिन्दी", "Hindi"),
-        ("العربية", "Arabic"),
-        ("עברית", "Hebrew"),
     ]
 
     for display_name, english_name in test_languages:
@@ -360,3 +358,147 @@ def test_language_prefix_translation_message_shows_language_name():
                 assert (
                     "Translate prefixes into Italian" in result.output or "GAC_TRANSLATE_PREFIXES=true" in result.output
                 )
+
+
+def test_rtl_detection_function():
+    """Test the RTL text detection function."""
+    from gac.language_cli import is_rtl_text
+
+    # Test RTL languages
+    assert is_rtl_text("Arabic")
+    assert is_rtl_text("arabic")
+    assert is_rtl_text("ar")
+    assert is_rtl_text("Hebrew")
+    assert is_rtl_text("hebrew")
+    assert is_rtl_text("he")
+    assert is_rtl_text("العربية")
+    assert is_rtl_text("עברית")
+
+    # Test non-RTL languages
+    assert not is_rtl_text("Spanish")
+    assert not is_rtl_text("French")
+    assert not is_rtl_text("English")
+    assert not is_rtl_text("日本語")
+    assert not is_rtl_text("中文")
+
+
+def test_language_select_rtl_predefined_arabic():
+    """Test selecting Arabic (RTL) shows warning and allows proceeding."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with patch("gac.language_cli.GAC_ENV_PATH", fake_path):
+            with (
+                patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
+                patch("questionary.select") as mock_select,
+            ):
+                # Mock RTL warning to return True (user wants to proceed)
+                mock_rtl_warning.return_value = True
+                mock_select.return_value.ask.side_effect = [
+                    "العربية",  # Select Arabic
+                    "Keep prefixes in English (feat:, fix:, etc.)",  # Prefix choice
+                ]
+
+                result = runner.invoke(language)
+
+                assert result.exit_code == 0
+                mock_rtl_warning.assert_called_once_with("Arabic")
+                assert "✓ Set language to العربية" in result.output
+                assert "GAC_LANGUAGE=Arabic" in result.output
+
+
+def test_language_select_rtl_predefined_hebrew():
+    """Test selecting Hebrew (RTL) shows warning and allows cancelling."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with patch("gac.language_cli.GAC_ENV_PATH", fake_path):
+            with (
+                patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
+                patch("questionary.select") as mock_select,
+            ):
+                # Mock RTL warning to return False (user cancels)
+                mock_rtl_warning.return_value = False
+                mock_select.return_value.ask.return_value = "עברית"  # Select Hebrew
+
+                result = runner.invoke(language)
+
+                assert result.exit_code == 0
+                mock_rtl_warning.assert_called_once_with("Hebrew")
+                assert "Language selection cancelled." in result.output
+                # File should not be modified when RTL is cancelled
+                assert not fake_path.exists() or "GAC_LANGUAGE" not in fake_path.read_text()
+
+
+def test_language_select_custom_rtl_proceed():
+    """Test selecting a custom RTL language shows warning and allows proceeding."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with patch("gac.language_cli.GAC_ENV_PATH", fake_path):
+            with (
+                patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
+                patch("questionary.select") as mock_select,
+                patch("questionary.text") as mock_text,
+            ):
+                # Mock RTL warning to return True (user wants to proceed)
+                mock_rtl_warning.return_value = True
+                mock_select.return_value.ask.side_effect = [
+                    "Custom",  # Select Custom
+                    "Keep prefixes in English (feat:, fix:, etc.)",  # Prefix choice
+                ]
+                mock_text.return_value.ask.return_value = "Persian"  # Custom RTL-like name
+
+                result = runner.invoke(language)
+
+                assert result.exit_code == 0
+                mock_rtl_warning.assert_called_once_with("Persian")
+                assert "✓ Set language to Custom" in result.output
+                assert "GAC_LANGUAGE=Persian" in result.output
+
+
+def test_language_select_custom_rtl_cancel():
+    """Test selecting a custom RTL language shows warning and allows cancelling."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with patch("gac.language_cli.GAC_ENV_PATH", fake_path):
+            with (
+                patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
+                patch("questionary.select") as mock_select,
+                patch("questionary.text") as mock_text,
+            ):
+                # Mock RTL warning to return False (user cancels)
+                mock_rtl_warning.return_value = False
+                mock_select.return_value.ask.return_value = "Custom"  # Select Custom
+                mock_text.return_value.ask.return_value = "Urdu"  # Custom RTL-like name
+
+                result = runner.invoke(language)
+
+                assert result.exit_code == 0
+                mock_rtl_warning.assert_called_once_with("Urdu")
+                assert "Language selection cancelled." in result.output
+
+
+def test_language_select_non_rtl_no_warning():
+    """Test selecting non-RTL languages doesn't show warning."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with (
+            patch("gac.language_cli.GAC_ENV_PATH", fake_path),
+            patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
+            patch("questionary.select") as mock_select,
+        ):
+            mock_select.return_value.ask.side_effect = [
+                "Español",  # Select Spanish (non-RTL)
+                "Keep prefixes in English (feat:, fix:, etc.)",  # Prefix choice
+            ]
+
+            result = runner.invoke(language)
+
+            assert result.exit_code == 0
+            # RTL warning should not be called for non-RTL languages
+            mock_rtl_warning.assert_not_called()
+            assert "✓ Set language to Español" in result.output
+            assert "GAC_LANGUAGE=Spanish" in result.output
