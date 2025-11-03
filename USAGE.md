@@ -1,5 +1,7 @@
 # gac Command-Line Usage
 
+English | [简体中文](USAGE.zh-CN.md)
+
 This document describes all available flags and options for the `gac` CLI tool.
 
 ## Table of Contents
@@ -40,14 +42,15 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
 ## Core Workflow Flags
 
-| Flag / Option | Short | Description                                        |
-| ------------- | ----- | -------------------------------------------------- |
-| `--add-all`   | `-a`  | Stage all changes before committing                |
-| `--group`     | `-g`  | Group staged changes into multiple logical commits |
-| `--push`      | `-p`  | Push changes to remote after committing            |
-| `--yes`       | `-y`  | Automatically confirm commit without prompting     |
-| `--dry-run`   |       | Show what would happen without making any changes  |
-| `--no-verify` |       | Skip pre-commit and lefthook hooks when committing |
+| Flag / Option        | Short | Description                                        |
+| -------------------- | ----- | -------------------------------------------------- |
+| `--add-all`          | `-a`  | Stage all changes before committing                |
+| `--group`            | `-g`  | Group staged changes into multiple logical commits |
+| `--push`             | `-p`  | Push changes to remote after committing            |
+| `--yes`              | `-y`  | Automatically confirm commit without prompting     |
+| `--dry-run`          |       | Show what would happen without making any changes  |
+| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing |
+| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes   |
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
@@ -71,9 +74,8 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | Flag / Option         | Short | Description                                             |
 | --------------------- | ----- | ------------------------------------------------------- |
 | `--quiet`             | `-q`  | Suppress all output except errors                       |
-| `--log-level <level>` |       | Set log level (DEBUG, INFO, WARNING, ERROR)             |
+| `--log-level <level>` |       | Set log level (debug, info, warning, error)             |
 | `--show-prompt`       |       | Print the LLM prompt used for commit message generation |
-| `--verbose`           | `-v`  | Increase output verbosity to INFO                       |
 
 ## Help and Version
 
@@ -184,9 +186,30 @@ gac --no-verify  # Skip all pre-commit and lefthook hooks
 
 **Note:** Use with caution as these hooks maintain code quality standards.
 
+### Security Scanning
+
+gac includes built-in security scanning that automatically detects potential secrets and API keys in your staged changes before committing. This helps prevent accidentally committing sensitive information.
+
+**Skipping security scans:**
+
+```sh
+gac --skip-secret-scan  # Skip security scan for this commit
+```
+
+**To disable permanently:** Set `GAC_SKIP_SECRET_SCAN=true` in your `.gac.env` file.
+
+**When to skip:**
+
+- Committing example code with placeholder keys
+- Working with test fixtures that contain dummy credentials
+- When you've verified the changes are safe
+
+**Note:** The scanner uses pattern matching to detect common secret formats. Always review your staged changes before committing.
+
 ## Configuration Notes
 
 - The recommended way to set up gac is to run `gac init` and follow the interactive prompts.
+- Already configured language and just need to switch providers or models? Run `gac model` to repeat the setup without language questions.
 - gac loads configuration in the following order of precedence:
   1. CLI flags
   2. Environment variables
@@ -205,6 +228,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Use a custom system prompt for commit message generation
 - `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection
 - `GAC_TRANSLATE_PREFIXES=true` - Translate conventional commit prefixes (feat, fix, etc.) into the target language (default: false, keeps prefixes in English)
+- `GAC_SKIP_SECRET_SCAN=true` - Disable automatic security scanning for secrets in staged changes (use with caution)
 
 See `.gac.env.example` for a complete configuration template.
 
@@ -212,14 +236,16 @@ For detailed guidance on creating custom system prompts, see [docs/CUSTOM_SYSTEM
 
 ### Configuration Subcommands
 
-The following subcommands manage configuration of your `$HOME/.gac.env` file:
+The following subcommands are available:
 
-- `gac init` — Interactive setup wizard for provider and model configuration
+- `gac init` — Interactive setup wizard for provider, model, and language configuration
+- `gac model` — Provider/model/API key setup without language prompts (ideal for quick switches)
 - `gac config show` — Show current configuration
-- `gac config set KEY VALUE` — Set a config key (value is always stored as a string)
+- `gac config set KEY VALUE` — Set a config key in `$HOME/.gac.env`
 - `gac config get KEY` — Get a config value
-- `gac config unset KEY` — Remove a config key
-- `gac language` — Interactive language selector for commit messages (sets GAC_LANGUAGE)
+- `gac config unset KEY` — Remove a config key from `$HOME/.gac.env`
+- `gac language` (or `gac lang`) — Interactive language selector for commit messages (sets GAC_LANGUAGE)
+- `gac diff` — Show filtered git diff with options for staged/unstaged changes, color, and truncation
 
 ## Getting Help
 

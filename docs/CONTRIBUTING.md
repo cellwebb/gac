@@ -1,5 +1,7 @@
 # Contributing to gac
 
+English | [简体中文](CONTRIBUTING.zh-CN.md)
+
 Thank you for your interest in contributing to this project! Your help is appreciated. Please follow these guidelines to
 make the process smooth for everyone.
 
@@ -164,9 +166,9 @@ When adding a new AI provider, you need to update multiple files across the code
   - Keep entries alphabetically sorted
   - Add comments for optional keys if applicable
 
-- [ ] **7. Update Documentation** (`README.md`)
+- [ ] **7. Update Documentation** (`README.md` and `README.zh-CN.md`)
 
-  - Add provider name to the "Supported Providers" section
+  - Add provider name to the "Supported Providers" section in both English and Chinese READMEs
   - Keep the list alphabetically sorted within its bullet points
 
 - [ ] **8. Create Comprehensive Tests** (`tests/providers/test_<provider>.py`)
@@ -348,7 +350,7 @@ By contributing, you agree that your contributions will be licensed under the sa
 ## Where to Get Help
 
 - For troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- For usage and CLI options, see [USAGE.md](USAGE.md)
-- For license details, see [LICENSE](LICENSE)
+- For usage and CLI options, see [../USAGE.md](../USAGE.md)
+- For license details, see [../LICENSE](../LICENSE)
 
 Thank you for helping improve gac!
