@@ -1,58 +1,49 @@
 # Release Process for GAC
 
-This document outlines the process for releasing new versions of GAC to PyPI.
+This document outlines the process for releasing new versions of GAC to PyPI using automated GitHub Actions.
+
+## Overview
+
+GAC uses an automated release process. When you push a version tag to GitHub, a GitHub Actions workflow automatically builds and publishes the package to PyPI. **No manual uploading is required.**
 
 ## Prerequisites
 
-1. **PyPI Account**: Create accounts at:
-
-   - [PyPI](https://pypi.org/account/register/)
-   - [TestPyPI](https://test.pypi.org/account/register/) (for testing)
-
-2. **API Tokens**: Generate tokens with "Entire account" scope:
-
-   - [PyPI token](https://pypi.org/manage/account/token/)
-   - [TestPyPI token](https://test.pypi.org/manage/account/token/)
-
-3. **Configure ~/.pypirc**:
-
-   ```ini
-   [testpypi]
-   repository = https://test.pypi.org/legacy/
-   username = __token__
-   password = pypi-AgEIcH...  # your TestPyPI token
-
-   [pypi]
-   repository = https://upload.pypi.org/legacy/
-   username = __token__
-   password = pypi-AgEIcH...  # your PyPI token
-   ```
-
-4. **Install Release Tools**:
+1. **Repository Access**: You need push access to the main repository
+2. **GitHub Actions**: The repository must have `PYPI_API_TOKEN` configured in secrets (already set up)
+3. **Local Tools**:
 
    ```bash
-   uv pip install -e ".[dev]"  # includes build and twine
+   uv pip install -e ".[dev]"  # includes bump-my-version for version management
    ```
 
 ## Release Checklist
 
 ### 1. Pre-release Checks
 
-- [ ] All tests passing: `pytest`
+- [ ] All tests passing: `make test`
 - [ ] Code formatted: `make format`
+- [ ] Linting passes: `make lint`
 - [ ] No uncommitted changes: `git status`
-- [ ] On correct branch (usually `main`)
-- [ ] Pull latest changes: `git pull`
+- [ ] On `main` branch: `git checkout main`
+- [ ] Pull latest changes: `git pull origin main`
 
 ### 2. Version Bump
 
 Update version in `src/gac/__version__.py`:
 
 ```python
-__version__ = "0.15.0"  # new version
+__version__ = "2.3.0"  # new version
 ```
 
-Or use `bump-my-version` tool:
+#### Option 1: Manual
+
+Edit the file directly following [Semantic Versioning](https://semver.org/):
+
+- **Patch** (1.6.X): Bug fixes, small improvements
+- **Minor** (1.X.0): New features, backwards-compatible changes (e.g., adding a new provider)
+- **Major** (X.0.0): Breaking changes
+
+#### Option 2: Using bump-my-version
 
 ```bash
 # For bug fixes:
@@ -65,13 +56,6 @@ bump-my-version bump minor
 bump-my-version bump major
 ```
 
-Version numbering follows semantic versioning:
-
-- MAJOR.MINOR.PATCH (e.g., 1.2.3)
-- MAJOR: Breaking changes
-- MINOR: New features, backwards compatible
-- PATCH: Bug fixes
-
 ### 3. Update Changelog
 
 Update `CHANGELOG.md` with:
@@ -79,146 +63,244 @@ Update `CHANGELOG.md` with:
 - Version number and date
 - New features
 - Bug fixes
-- Breaking changes
+- Breaking changes (if any)
 - Contributors
 
-### 4. Build Distributions
+**Example:**
+
+```markdown
+## [2.3.0] - 2024-01-15
+
+### Added
+
+- New Z.AI provider support
+- Interactive language selection with `gac language`
+
+### Fixed
+
+- Secret scanner false positives for example files
+
+### Changed
+
+- Improved error messages for missing API keys
+```
+
+### 4. Commit Version Changes
+
+```bash
+# Commit the version bump and changelog
+git add src/gac/__version__.py CHANGELOG.md
+git commit -m "chore(version): bump from 2.2.0 to 2.3.0"
+git push origin main
+```
+
+### 5. Create and Push Release Tag
+
+**This step triggers the automated release!**
+
+```bash
+# Create the version tag
+git tag v2.3.0  # Use your actual version (must match __version__.py)
+
+# Push the tag to GitHub
+git push origin v2.3.0
+```
+
+**What happens next:**
+
+1. GitHub Actions workflow (`.github/workflows/publish.yml`) is triggered
+2. Workflow verifies the tag version matches `src/gac/__version__.py`
+3. Package is automatically built using `uv build`
+4. Package is automatically published to PyPI using `twine`
+5. You'll receive a notification if it fails
+
+Monitor the [Actions tab](https://github.com/cellwebb/gac/actions) to track the release progress.
+
+### 6. Post-release Verification
+
+1. **Check GitHub Actions**:
+
+   - Go to [Actions tab](https://github.com/cellwebb/gac/actions)
+   - Verify the "Publish to PyPI" workflow succeeded
+   - Check for any errors in the logs
+
+2. **Verify on PyPI**:
+
+   - Check [PyPI project page](https://pypi.org/project/gac/)
+   - Ensure the new version is listed
+   - Verify package description and metadata look correct
+
+3. **Test Installation**:
+
+   ```bash
+   # Install the new version
+   uv tool install --reinstall gac
+
+   # Verify version
+   gac --version  # Should show the new version
+   ```
+
+4. **Create GitHub Release** (optional but recommended):
+
+   - Go to [Releases](https://github.com/cellwebb/gac/releases)
+   - Click "Draft a new release"
+   - Select your tag
+   - Copy changelog entries into the release notes
+   - Publish the release
+
+## Automated Workflow Details
+
+### How It Works
+
+The workflow in `.github/workflows/publish.yml`:
+
+1. **Triggers** on tags matching `v[0-9]+.[0-9]+.[0-9]+` (e.g., `v2.3.0`)
+2. **Extracts** version from the tag name
+3. **Verifies** tag version matches `src/gac/__version__.py`
+4. **Builds** the package using `uv build`
+5. **Publishes** to PyPI using `twine` with the `PYPI_API_TOKEN` secret
+
+### Benefits
+
+- ✅ No manual uploading required
+- ✅ Consistent build environment
+- ✅ Automatic version verification
+- ✅ Clear audit trail in GitHub Actions logs
+- ✅ Can't accidentally publish wrong version
+- ✅ Can merge multiple PRs before releasing
+
+## Version Numbering
+
+Follow [Semantic Versioning](https://semver.org/):
+
+- **MAJOR.MINOR.PATCH** (e.g., 2.3.0)
+- **MAJOR**: Breaking changes (rare)
+- **MINOR**: New features, backwards compatible (most releases)
+- **PATCH**: Bug fixes, small improvements
+
+**Examples:**
+
+- Adding a new provider: MINOR bump (2.3.0 → 2.4.0)
+- Fixing a bug: PATCH bump (2.3.0 → 2.3.1)
+- Changing CLI flags: MAJOR bump (2.3.0 → 3.0.0)
+
+## Troubleshooting
+
+### GitHub Actions workflow failed
+
+**Check the logs:**
+
+1. Go to [Actions tab](https://github.com/cellwebb/gac/actions)
+2. Click on the failed workflow run
+3. Check which step failed
+
+**Common issues:**
+
+- **Version mismatch**: Tag version doesn't match `src/gac/__version__.py`
+  - Fix: Delete the tag, update version, create tag again
+- **Build failure**: Package build errors
+  - Fix: Test build locally with `uv build`, fix errors, push changes
+- **PyPI upload failure**: Authentication or duplicate version
+  - Fix: Check PyPI token is valid in repository secrets
+
+### Delete a tag (if needed)
+
+If you pushed the wrong tag:
+
+```bash
+# Delete local tag
+git tag -d v2.3.0
+
+# Delete remote tag
+git push --delete origin v2.3.0
+```
+
+Then fix the issue and create a new tag.
+
+### Version already exists on PyPI
+
+PyPI doesn't allow re-uploading the same version. If you need to fix a bad release:
+
+1. **Yank the release** on PyPI (prevents new installs)
+2. Fix the issue in your code
+3. Bump to a new patch version (e.g., 2.3.0 → 2.3.1)
+4. Release the new version
+
+**Never reuse a version number that's been published to PyPI.**
+
+### Testing before release
+
+To test the package build without publishing:
 
 ```bash
 # Clean old builds
 rm -rf dist/ build/ *.egg-info
 
-# Build wheel and source distribution
-python -m build
+# Build the package
+uv build
 
-# Verify distributions
-twine check dist/*
+# Check the distribution
+uvx twine check dist/*
+
+# Test installation locally
+uv pip install dist/*.whl
 ```
 
-### 5. Test on TestPyPI
+## Emergency Procedures
 
-```bash
-# Upload to TestPyPI
-twine upload --repository testpypi dist/*
+### Yanking a Bad Release
 
-# Test installation (in a clean environment)
-pip install --index-url https://test.pypi.org/simple/ --no-deps gac
+If a critical bug is discovered after release:
 
-# Verify it works
-gac --version
-```
+1. **Yank on PyPI**:
 
-### 6. Release to PyPI
+   - Go to [PyPI project page](https://pypi.org/project/gac/)
+   - Select the version
+   - Click "Options" → "Yank release"
+   - Add reason (e.g., "Critical bug in secret scanner")
 
-```bash
-# Upload to real PyPI
-twine upload dist/*
-```
+2. **Release a fix**:
+   - Fix the bug
+   - Bump to new patch version
+   - Follow normal release process
 
-### 7. Create Release Tag
+Yanking doesn't delete the release but prevents new installations while allowing existing users to continue.
 
-**This step triggers the automated PyPI release!**
+### Reverting a Release
 
-```bash
-# Create and push the version tag
-git tag v0.15.0  # Use your actual version
-git push origin v0.15.0
+You **cannot** delete or replace a version on PyPI. Options:
 
-# GitHub Actions will now:
-# 1. Build the package
-# 2. Verify version matches tag
-# 3. Upload to PyPI
-```
-
-Monitor the [Actions tab](https://github.com/cellwebb/gac/actions) to ensure successful publication.
-
-### 8. Post-release
-
-1. **Verify the release on PyPI**:
-
-   - Check [PyPI project page](https://pypi.org/project/gac/)
-   - Ensure the new version is listed
-
-2. **Verify Installation**:
-
-   ```bash
-   pipx install --force gac
-   gac --version
-   ```
-
-3. **Update Documentation**:
-   - Update README if needed
-   - Update installation instructions to reference PyPI
-
-## Automated Releases (GitHub Actions)
-
-The project includes `.github/workflows/publish.yml` for automated releases:
-
-- Triggers when you push a version tag (e.g., `v0.17.3`)
-- Verifies the tag version matches `src/gac/__version__.py`
-- Automatically builds and publishes to PyPI
-- Requires `PYPI_API_TOKEN` secret in repository settings
-
-### How it works
-
-1. Merge your PR(s) to main with version bumped in `src/gac/__version__.py`
-2. When ready to release, create and push a tag:
-
-   ```bash
-   git checkout main
-   git pull
-   git tag v0.17.3  # Use your version number
-   git push origin v0.17.3
-   ```
-
-3. GitHub Actions automatically publishes to PyPI
-4. The workflow verifies the tag matches the code version
-
-### Benefits
-
-- Full control over when to release
-- Can merge multiple PRs before releasing
-- Tags provide clear release history
-- Prevents accidental releases
-
-## Troubleshooting
-
-### 403 Forbidden Error
-
-- Check token has "Entire account" scope
-- Verify username is `__token__` (with double underscores)
-- Ensure token starts with `pypi-`
-
-### Package Name Conflict
-
-- Check if name exists: `pip search <package-name>`
-- Consider alternative names if taken
-
-### Build Issues
-
-- Ensure `build` is installed: `pip install build`
-- Check `pyproject.toml` is valid
-- Verify all required files are included
-
-## Emergency Rollback
-
-If a bad release is published:
-
-1. **Yank the release** on PyPI (doesn't delete, but prevents new installs)
-2. Fix the issue
-3. Release a new patch version
-4. Never reuse a version number that's been published
-
-## Version Management Tools
-
-For automated version bumping, consider:
-
-- `bump-my-version` (already in dev dependencies)
-- Manual updates to `src/gac/__version__.py`
+1. **Yank** the bad version (recommended)
+2. **Release a fix** as a new patch version
+3. **Communicate** the issue to users via GitHub Issues/Discussions
 
 ## Security Notes
 
-- Never commit tokens to git
-- Use repository secrets for CI/CD
-- Rotate tokens periodically
-- Use 2FA on PyPI account
+- ✅ `PYPI_API_TOKEN` is stored in GitHub repository secrets
+- ✅ Only maintainers with push access can trigger releases
+- ✅ All releases are logged in GitHub Actions
+- ✅ Never commit tokens to git
+- ✅ Rotate tokens periodically
+
+## Quick Reference
+
+```bash
+# Complete release process (assuming version already bumped)
+git checkout main
+git pull origin main
+git tag v2.3.0
+git push origin v2.3.0
+
+# Monitor release
+open https://github.com/cellwebb/gac/actions
+
+# Verify after release
+uv tool install --reinstall gac
+gac --version
+```
+
+## Need Help?
+
+- Check [GitHub Actions logs](https://github.com/cellwebb/gac/actions)
+- Review [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines
+- Open an issue if you encounter problems
