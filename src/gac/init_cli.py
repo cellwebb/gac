@@ -23,20 +23,20 @@ def _prompt_required_text(prompt: str) -> str | None:
         click.echo("A value is required. Please try again.")
 
 
-@click.command()
-def init() -> None:
-    """Interactively set up $HOME/.gac.env for gac."""
-    click.echo("Welcome to gac initialization!\n")
-
-    # Load existing environment values
-    existing_env = {}
+def _load_existing_env() -> dict[str, str]:
+    """Ensure the env file exists and return its current values."""
+    existing_env: dict[str, str] = {}
     if GAC_ENV_PATH.exists():
         click.echo(f"$HOME/.gac.env already exists at {GAC_ENV_PATH}. Values will be updated.")
         existing_env = dict(dotenv_values(str(GAC_ENV_PATH)))
     else:
         GAC_ENV_PATH.touch()
         click.echo(f"Created $HOME/.gac.env at {GAC_ENV_PATH}.")
+    return existing_env
 
+
+def _configure_model(existing_env: dict[str, str]) -> bool:
+    """Run the provider/model/API key configuration flow."""
     providers = [
         ("Anthropic", "claude-haiku-4-5"),
         ("Cerebras", "zai-glm-4.6"),
@@ -63,7 +63,7 @@ def init() -> None:
     provider = questionary.select("Select your provider:", choices=provider_names).ask()
     if not provider:
         click.echo("Provider selection cancelled. Exiting.")
-        return
+        return False
     provider_key = provider.lower().replace(".", "").replace(" ", "-").replace("(", "").replace(")", "")
 
     is_ollama = provider_key == "ollama"
@@ -77,7 +77,7 @@ def init() -> None:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")
         if endpoint_id is None:
             click.echo("Streamlake configuration cancelled. Exiting.")
-            return
+            return False
         model_to_save = endpoint_id
     else:
         model_suggestion = dict(providers)[provider]
@@ -88,7 +88,7 @@ def init() -> None:
         model = questionary.text(model_prompt, default=model_suggestion).ask()
         if model is None:
             click.echo("Model entry cancelled. Exiting.")
-            return
+            return False
         model_to_save = model.strip() if model.strip() else model_suggestion
 
     set_key(str(GAC_ENV_PATH), "GAC_MODEL", f"{provider_key}:{model_to_save}")
@@ -98,7 +98,7 @@ def init() -> None:
         base_url = _prompt_required_text("Enter the custom Anthropic-compatible base URL (required):")
         if base_url is None:
             click.echo("Custom Anthropic base URL entry cancelled. Exiting.")
-            return
+            return False
         set_key(str(GAC_ENV_PATH), "CUSTOM_ANTHROPIC_BASE_URL", base_url)
         click.echo(f"Set CUSTOM_ANTHROPIC_BASE_URL={base_url}")
 
@@ -112,7 +112,7 @@ def init() -> None:
         base_url = _prompt_required_text("Enter the custom OpenAI-compatible base URL (required):")
         if base_url is None:
             click.echo("Custom OpenAI base URL entry cancelled. Exiting.")
-            return
+            return False
         set_key(str(GAC_ENV_PATH), "CUSTOM_OPENAI_BASE_URL", base_url)
         click.echo(f"Set CUSTOM_OPENAI_BASE_URL={base_url}")
     elif is_ollama:
@@ -120,7 +120,7 @@ def init() -> None:
         url = questionary.text(f"Enter the Ollama API URL (default: {url_default}):", default=url_default).ask()
         if url is None:
             click.echo("Ollama URL entry cancelled. Exiting.")
-            return
+            return False
         url_to_save = url.strip() if url.strip() else url_default
         set_key(str(GAC_ENV_PATH), "OLLAMA_API_URL", url_to_save)
         click.echo(f"Set OLLAMA_API_URL={url_to_save}")
@@ -129,7 +129,7 @@ def init() -> None:
         url = questionary.text(f"Enter the LM Studio API URL (default: {url_default}):", default=url_default).ask()
         if url is None:
             click.echo("LM Studio URL entry cancelled. Exiting.")
-            return
+            return False
         url_to_save = url.strip() if url.strip() else url_default
         set_key(str(GAC_ENV_PATH), "LMSTUDIO_API_URL", url_to_save)
         click.echo(f"Set LMSTUDIO_API_URL={url_to_save}")
@@ -189,7 +189,11 @@ def init() -> None:
         else:
             click.echo("No API key entered. You can add one later by editing ~/.gac.env")
 
-    # Language selection
+    return True
+
+
+def _configure_language(existing_env: dict[str, str]) -> None:
+    """Run the language configuration flow."""
     click.echo("\n")
     existing_language = existing_env.get("GAC_LANGUAGE")
 
@@ -313,4 +317,29 @@ def init() -> None:
                 click.echo(f"Set GAC_LANGUAGE={language_value}")
                 click.echo(f"Set GAC_TRANSLATE_PREFIXES={'true' if translate_prefixes else 'false'}")
 
+    return
+
+
+@click.command()
+def init() -> None:
+    """Interactively set up $HOME/.gac.env for gac."""
+    click.echo("Welcome to gac initialization!\n")
+
+    existing_env = _load_existing_env()
+    if not _configure_model(existing_env):
+        return
+    _configure_language(existing_env)
+
     click.echo(f"\ngac environment setup complete. You can edit {GAC_ENV_PATH} to update values later.")
+
+
+@click.command()
+def model() -> None:
+    """Interactively update provider/model/API key without language prompts."""
+    click.echo("Welcome to gac model configuration!\n")
+
+    existing_env = _load_existing_env()
+    if not _configure_model(existing_env):
+        return
+
+    click.echo(f"\nModel configuration complete. You can edit {GAC_ENV_PATH} to update values later.")

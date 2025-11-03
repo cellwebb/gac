@@ -17,6 +17,7 @@ from gac.constants import Languages, Logging
 from gac.diff_cli import diff as diff_cli
 from gac.errors import handle_error
 from gac.init_cli import init as init_cli
+from gac.init_cli import model as model_cli
 from gac.language_cli import language as language_cli
 from gac.main import main
 from gac.utils import setup_logging
@@ -154,9 +155,10 @@ def cli(
 
 
 cli.add_command(config_cli)
+cli.add_command(diff_cli)
 cli.add_command(init_cli)
 cli.add_command(language_cli)
-cli.add_command(diff_cli)
+cli.add_command(model_cli)
 
 
 @click.command(context_settings=language_cli.context_settings)

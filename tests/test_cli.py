@@ -6,30 +6,38 @@ from gac.cli import cli
 
 class TestMainCommand:
     @pytest.fixture
-    def mock_init(self, monkeypatch):
-        # Patch the init command's callback directly in its source module
-        def dummy_init(*args, **kwargs):
+    def mock_init_commands(self, monkeypatch):
+        # Patch the init and model commands' callbacks directly in their source module
+        def dummy_command(*args, **kwargs):
             pass
 
-        monkeypatch.setattr("gac.init_cli.init.callback", dummy_init)
+        monkeypatch.setattr("gac.init_cli.init.callback", dummy_command)
+        monkeypatch.setattr("gac.init_cli.model.callback", dummy_command)
         yield
 
-    def test_init_success(self, monkeypatch, mock_init):
+    def test_init_success(self, monkeypatch, mock_init_commands):
         """Test 'gac init' runs without error when all dependencies succeed."""
         runner = CliRunner()
-        # The init command's callback is already mocked by mock_init.
+        # The init command's callback is already mocked by mock_init_commands.
         # No need to mock load_config or run_git_command for gac.init_cli here.
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         result = runner.invoke(cli, ["init"])
         assert result.exit_code == 0
 
-    def test_init_not_in_git_repo(self, monkeypatch, mock_init):
+    def test_init_not_in_git_repo(self, monkeypatch, mock_init_commands):
         """Test 'gac init' runs (it doesn't check for git repo status itself)."""
         runner = CliRunner()
-        # The init command's callback is already mocked by mock_init.
+        # The init command's callback is already mocked by mock_init_commands.
         # No need to mock load_config or run_git_command for gac.init_cli here.
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         result = runner.invoke(cli, ["init"])
+        assert result.exit_code == 0
+
+    def test_model_success(self, monkeypatch, mock_init_commands):
+        """Test 'gac model' runs without error when all dependencies succeed."""
+        runner = CliRunner()
+        monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
+        result = runner.invoke(cli, ["model"])
         assert result.exit_code == 0
 
     def test_main_command(self, monkeypatch):
