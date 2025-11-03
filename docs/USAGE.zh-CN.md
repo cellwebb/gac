@@ -1,6 +1,6 @@
 # gac 命令行使用
 
-[English](USAGE.md) | 简体中文 | [繁體中文](USAGE.zh-TW.md)
+[English](USAGE.md) | **简体中文** | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md)
 
 本文档介绍了 `gac` CLI 工具的所有可用标志和选项。
 

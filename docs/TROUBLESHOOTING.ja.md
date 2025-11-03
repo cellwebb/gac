@@ -1,6 +1,6 @@
 # gacのトラブルシューティング
 
-English | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md) | **日本語**
+[English](TROUBLESHOOTING.md) | [简体中文](TROUBLESHOOTING.zh-CN.md) | [繁體中文](TROUBLESHOOTING.zh-TW.md) | **日本語** | [Français](TROUBLESHOOTING.fr.md)
 
 このガイドでは、gacのインストール、設定、実行に関する一般的な問題と解決策について説明します。
 

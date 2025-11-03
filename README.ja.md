@@ -11,7 +11,7 @@
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.ja.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Français](README.fr.md)
 
 **LLM を活用した、あなたのコードを理解するコミットメッセージ！**
 

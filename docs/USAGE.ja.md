@@ -1,6 +1,6 @@
 # gac コマンドライン使用法
 
-English | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | **日本語**
+[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | **日本語** | [Français](USAGE.fr.md)
 
 このドキュメントでは、`gac` CLIツールで利用可能なすべてのフラグとオプションについて説明します。
 

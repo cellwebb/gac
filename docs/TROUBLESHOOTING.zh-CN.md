@@ -1,6 +1,6 @@
 # gac 故障排除
 
-[English](TROUBLESHOOTING.md) | 简体中文 | [繁體中文](TROUBLESHOOTING.zh-TW.md)
+[English](TROUBLESHOOTING.md) | **简体中文** | [繁體中文](TROUBLESHOOTING.zh-TW.md) | [日本語](TROUBLESHOOTING.ja.md) | [Français](TROUBLESHOOTING.fr.md)
 
 本指南涵盖了安装、配置和运行 gac 的常见问题和解决方案。
 

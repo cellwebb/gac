@@ -1,6 +1,6 @@
 # カスタムシステムプロンプト
 
-English | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | **日本語**
+[English](CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | **日本語** | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md)
 
 このガイドでは、GACがコミットメッセージの生成に使用するシステムプロンプトをカスタマイズする方法について説明し、独自のコミットメッセージスタイルと規約を定義できるようにします。
 
