@@ -1,4 +1,7 @@
 <!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD033 MD036 -->
+
+<div align="center">
 
 # 🚀 Git Auto Commit (gac)
 
@@ -26,6 +29,12 @@ Intelligent, contextual messages that explain the **why** behind your changes:
 ![GAC generating a contextual commit message](assets/gac-simple-usage.png)
 
 ---
+
+</div>
+
+<!-- markdownlint-enable MD033 MD036 -->
+
+<!-- markdownlint-enable MD033 MD036 -->
 
 ## Quick Start
 

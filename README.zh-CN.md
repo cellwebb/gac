@@ -1,4 +1,7 @@
 <!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD033 MD036 -->
+
+<div align="center">
 
 # 🚀 Git Auto Commit (gac)
 
@@ -26,6 +29,12 @@
 ![GAC 生成上下文提交信息](assets/gac-simple-usage.zh-CN.png)
 
 ---
+
+</div>
+
+<!-- markdownlint-enable MD033 MD036 -->
+
+<!-- markdownlint-enable MD033 MD036 -->
 
 ## 快速开始
 

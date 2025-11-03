@@ -1,4 +1,7 @@
 <!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD033 MD036 -->
+
+<div align="center">
 
 # 🚀 Git Auto Commit (gac)
 
@@ -26,6 +29,12 @@
 ![GACが文脈に応じたコミットメッセージを生成](assets/gac-simple-usage.ja.png)
 
 ---
+
+</div>
+
+<!-- markdownlint-enable MD033 MD036 -->
+
+<!-- markdownlint-enable MD033 MD036 -->
 
 ## クイックスタート
 
