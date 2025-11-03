@@ -140,7 +140,7 @@ def test_group_restores_staging_on_first_commit_failure():
             main(group=True, model="openai:gpt-4", require_confirmation=True)
         assert exc.value.code == 1
         mock_commit.assert_called_once()
-        mock_restore.assert_called_once_with(original_files)
+        mock_restore.assert_called_once_with(original_files, "/fake/repo")
 
 
 def test_group_does_not_restore_staging_on_later_commit_failure():

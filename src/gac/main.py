@@ -303,6 +303,7 @@ def execute_grouped_commits_workflow(
                 console.print(f"  Message: {commit['message'][:50]}...")
         else:
             original_staged_files = get_staged_files(existing_only=False)
+            original_staged_diff = run_git_command(["diff", "--cached", "--binary"], silent=True)
             run_git_command(["reset", "HEAD"])
 
             try:
@@ -317,12 +318,12 @@ def execute_grouped_commits_workflow(
                         console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
                         if idx == 1:
                             console.print("[yellow]Restoring original staging area...[/yellow]")
-                            restore_staging(original_staged_files)
+                            restore_staging(original_staged_files, original_staged_diff)
                             console.print("[green]Original staging area restored.[/green]")
                         sys.exit(1)
             except KeyboardInterrupt:
                 console.print("\n[yellow]Interrupted by user. Restoring original staging area...[/yellow]")
-                restore_staging(original_staged_files)
+                restore_staging(original_staged_files, original_staged_diff)
                 console.print("[green]Original staging area restored.[/green]")
                 sys.exit(1)
 
@@ -396,7 +397,7 @@ def execute_single_commit_workflow(
         display_commit_message(commit_message, prompt_tokens, model, quiet)
 
         if require_confirmation:
-            decision, conversation_messages = handle_confirmation_loop(
+            decision, commit_message, conversation_messages = handle_confirmation_loop(
                 commit_message, conversation_messages, quiet, model
             )
             if decision == "no":
