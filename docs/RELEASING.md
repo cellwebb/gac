@@ -13,7 +13,7 @@ GAC uses an automated release process. When you push a version tag to GitHub, a 
 3. **Local Tools**:
 
    ```bash
-   uv pip install -e ".[dev]"  # includes bump-my-version for version management
+   uv pip install -e ".[dev]"  # includes make for version management
    ```
 
 ## Release Checklist
@@ -43,17 +43,17 @@ Edit the file directly following [Semantic Versioning](https://semver.org/):
 - **Minor** (1.X.0): New features, backwards-compatible changes (e.g., adding a new provider)
 - **Major** (X.0.0): Breaking changes
 
-#### Option 2: Using bump-my-version
+#### Option 2: Using make bump-level
 
 ```bash
 # For bug fixes:
-bump-my-version bump patch
+make bump-patch
 
 # For new features:
-bump-my-version bump minor
+make bump-minor
 
 # For breaking changes:
-bump-my-version bump major
+make bump-major
 ```
 
 ### 3. Update Changelog
