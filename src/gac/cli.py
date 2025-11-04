@@ -133,7 +133,7 @@ def cli(
                 no_verify=no_verify,
                 skip_secret_scan=skip_secret_scan or bool(config.get("skip_secret_scan", False)),
                 language=resolved_language,
-                hook_timeout=hook_timeout if hook_timeout > 0 else int(config.get("hook_timeout", 120)),
+                hook_timeout=hook_timeout if hook_timeout > 0 else int(config.get("hook_timeout", 120) or 120),
             )
         except Exception as e:
             handle_error(e, exit_program=True)
