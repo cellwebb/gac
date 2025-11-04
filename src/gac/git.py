@@ -14,6 +14,63 @@ from gac.utils import run_subprocess
 logger = logging.getLogger(__name__)
 
 
+def run_subprocess_with_encoding_fallback(
+    command: list[str], silent: bool = False, timeout: int = 60
+) -> subprocess.CompletedProcess:
+    """Run subprocess with encoding fallback, returning full CompletedProcess object.
+
+    This is used for cases where we need both stdout and stderr separately,
+    like pre-commit and lefthook hook execution.
+
+    Args:
+        command: List of command arguments
+        silent: If True, suppress debug logging
+        timeout: Command timeout in seconds
+
+    Returns:
+        CompletedProcess object with stdout, stderr, and returncode
+    """
+    from gac.utils import get_safe_encodings
+
+    encodings = get_safe_encodings()
+    last_exception = None
+
+    for encoding in encodings:
+        try:
+            if not silent:
+                logger.debug(f"Running command: {' '.join(command)} (encoding: {encoding})")
+
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+                encoding=encoding,
+                errors="replace",
+            )
+            return result
+        except UnicodeError as e:
+            last_exception = e
+            if not silent:
+                logger.debug(f"Failed to decode with {encoding}: {e}")
+            continue
+        except subprocess.TimeoutExpired:
+            raise
+        except Exception as e:
+            if not silent:
+                logger.debug(f"Command error: {e}")
+            # Try next encoding for non-timeout errors
+            last_exception = e
+            continue
+
+    # If we get here, all encodings failed
+    if last_exception:
+        raise subprocess.CalledProcessError(1, command, "", f"Encoding error: {last_exception}") from last_exception
+    else:
+        raise subprocess.CalledProcessError(1, command, "", "All encoding attempts failed")
+
+
 def run_git_command(args: list[str], silent: bool = False, timeout: int = 30) -> str:
     """Run a git command and return the output."""
     command = ["git"] + args
@@ -132,20 +189,20 @@ def get_diff(staged: bool = True, color: bool = True, commit1: str | None = None
 
 def get_repo_root() -> str:
     """Get absolute path of repository root."""
-    result = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
-    return result.decode().strip()
+    result = run_git_command(["rev-parse", "--show-toplevel"])
+    return result
 
 
 def get_current_branch() -> str:
     """Get name of current git branch."""
-    result = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-    return result.decode().strip()
+    result = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"])
+    return result
 
 
 def get_commit_hash() -> str:
     """Get SHA-1 hash of current commit."""
-    result = subprocess.check_output(["git", "rev-parse", "HEAD"])
-    return result.decode().strip()
+    result = run_git_command(["rev-parse", "HEAD"])
+    return result
 
 
 def run_pre_commit_hooks() -> bool:
@@ -170,7 +227,7 @@ def run_pre_commit_hooks() -> bool:
         # Run pre-commit hooks on staged files
         logger.info("Running pre-commit hooks...")
         # Run pre-commit and capture both stdout and stderr
-        result = subprocess.run(["pre-commit", "run"], capture_output=True, text=True, check=False)
+        result = run_subprocess_with_encoding_fallback(["pre-commit", "run"])
 
         if result.returncode == 0:
             # All hooks passed
@@ -220,7 +277,7 @@ def run_lefthook_hooks() -> bool:
         # Run lefthook hooks on staged files
         logger.info("Running Lefthook hooks...")
         # Run lefthook and capture both stdout and stderr
-        result = subprocess.run(["lefthook", "run", "pre-commit"], capture_output=True, text=True, check=False)
+        result = run_subprocess_with_encoding_fallback(["lefthook", "run", "pre-commit"])
 
         if result.returncode == 0:
             # All hooks passed

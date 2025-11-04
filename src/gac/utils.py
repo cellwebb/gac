@@ -1,7 +1,9 @@
 """Utility functions for gac."""
 
+import locale
 import logging
 import subprocess
+import sys
 
 from rich.console import Console
 from rich.theme import Theme
@@ -65,18 +67,47 @@ def print_message(message: str, level: str = "info") -> None:
     console.print(message, style=level)
 
 
-def run_subprocess(
+def get_safe_encodings() -> list[str]:
+    """Get a list of safe encodings to try for subprocess calls, in order of preference.
+
+    Returns:
+        List of encoding strings to try, with UTF-8 first
+    """
+    encodings = ["utf-8"]
+
+    # Add locale encoding as fallback
+    locale_encoding = locale.getpreferredencoding(False)
+    if locale_encoding and locale_encoding not in encodings:
+        encodings.append(locale_encoding)
+
+    # Windows-specific fallbacks
+    if sys.platform == "win32":
+        windows_encodings = ["cp65001", "cp936", "cp1252"]  # UTF-8, GBK, Windows-1252
+        for enc in windows_encodings:
+            if enc not in encodings:
+                encodings.append(enc)
+
+    # Final fallback to system default
+    if "utf-8" not in encodings:
+        encodings.append("utf-8")
+
+    return encodings
+
+
+def run_subprocess_with_encoding(
     command: list[str],
+    encoding: str,
     silent: bool = False,
     timeout: int = 60,
     check: bool = True,
     strip_output: bool = True,
     raise_on_error: bool = True,
 ) -> str:
-    """Run a subprocess command safely and return the output.
+    """Run subprocess with a specific encoding, handling encoding errors gracefully.
 
     Args:
         command: List of command arguments
+        encoding: Specific encoding to use
         silent: If True, suppress debug logging
         timeout: Command timeout in seconds
         check: Whether to check return code (for compatibility)
@@ -91,7 +122,7 @@ def run_subprocess(
         subprocess.CalledProcessError: If the command fails and raise_on_error is True
     """
     if not silent:
-        logger.debug(f"Running command: {' '.join(command)}")
+        logger.debug(f"Running command: {' '.join(command)} (encoding: {encoding})")
 
     try:
         result = subprocess.run(
@@ -100,6 +131,8 @@ def run_subprocess(
             text=True,
             check=False,
             timeout=timeout,
+            encoding=encoding,
+            errors="replace",  # Replace problematic characters instead of crashing
         )
 
         should_raise = result.returncode != 0 and (check or raise_on_error)
@@ -123,6 +156,11 @@ def run_subprocess(
         if raise_on_error:
             raise
         return ""
+    except UnicodeError as e:
+        # This should be rare with errors="replace", but handle it just in case
+        if not silent:
+            logger.debug(f"Encoding error with {encoding}: {e}")
+        raise
     except Exception as e:
         if not silent:
             logger.debug(f"Command error: {e}")
@@ -130,6 +168,69 @@ def run_subprocess(
             # Convert generic exceptions to CalledProcessError for consistency
             raise subprocess.CalledProcessError(1, command, "", str(e)) from e
         return ""
+
+
+def run_subprocess(
+    command: list[str],
+    silent: bool = False,
+    timeout: int = 60,
+    check: bool = True,
+    strip_output: bool = True,
+    raise_on_error: bool = True,
+) -> str:
+    """Run a subprocess command safely and return the output, trying multiple encodings.
+
+    Args:
+        command: List of command arguments
+        silent: If True, suppress debug logging
+        timeout: Command timeout in seconds
+        check: Whether to check return code (for compatibility)
+        strip_output: Whether to strip whitespace from output
+        raise_on_error: Whether to raise an exception on error
+
+    Returns:
+        Command output as string
+
+    Raises:
+        GacError: If the command times out
+        subprocess.CalledProcessError: If the command fails and raise_on_error is True
+
+    Note:
+        Tries multiple encodings in order: utf-8, locale encoding, platform-specific fallbacks
+        This prevents UnicodeDecodeError on systems with non-UTF-8 locales (e.g., Chinese Windows)
+    """
+    encodings = get_safe_encodings()
+    last_exception = None
+
+    for encoding in encodings:
+        try:
+            return run_subprocess_with_encoding(
+                command=command,
+                encoding=encoding,
+                silent=silent,
+                timeout=timeout,
+                check=check,
+                strip_output=strip_output,
+                raise_on_error=raise_on_error,
+            )
+        except UnicodeError as e:
+            last_exception = e
+            if not silent:
+                logger.debug(f"Failed to decode with {encoding}: {e}")
+            continue
+        except (subprocess.CalledProcessError, GacError, subprocess.TimeoutExpired):
+            # These are not encoding-related errors, so don't retry with other encodings
+            raise
+
+    # If we get here, all encodings failed with UnicodeError
+    if not silent:
+        logger.error(f"Failed to decode command output with any encoding: {encodings}")
+
+    # Raise the last UnicodeError we encountered
+    if last_exception:
+        raise subprocess.CalledProcessError(1, command, "", f"Encoding error: {last_exception}") from last_exception
+    else:
+        raise subprocess.CalledProcessError(1, command, "", "All encoding attempts failed")
 
 
 def edit_commit_message_inplace(message: str) -> str | None:
