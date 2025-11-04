@@ -1,15 +1,30 @@
 """CLI for selecting commit message language interactively."""
 
+import os
 import unicodedata
 from pathlib import Path
 
 import click
 import questionary
-from dotenv import set_key
+from dotenv import load_dotenv, set_key
 
 from gac.constants import Languages
 
 GAC_ENV_PATH = Path.home() / ".gac.env"
+
+
+def should_show_rtl_warning() -> bool:
+    """Check if RTL warning should be shown based on saved preference.
+
+    Returns:
+        True if warning should be shown, False if user previously confirmed
+    """
+    # Load the current config to check RTL confirmation
+    if GAC_ENV_PATH.exists():
+        load_dotenv(GAC_ENV_PATH)
+        rtl_confirmed = os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on")
+        return not rtl_confirmed
+    return True  # Show warning if no config exists
 
 
 def is_rtl_text(text: str) -> bool:
@@ -138,6 +153,10 @@ def show_rtl_warning(language_name: str) -> bool:
     click.echo("that properly support RTL text (like most web interfaces and modern tools).\n")
 
     proceed = questionary.confirm("Do you want to proceed anyway?").ask()
+    if proceed:
+        # Remember that user has confirmed RTL acceptance
+        set_key(str(GAC_ENV_PATH), "GAC_RTL_CONFIRMED", "true")
+        click.echo("✓ RTL preference saved - you won't see this warning again")
     return proceed if proceed is not None else False
 
 
@@ -180,9 +199,12 @@ def language() -> None:
 
         # Check if the custom language appears to be RTL
         if is_rtl_text(language_value):
-            if not show_rtl_warning(language_value):
-                click.echo("Language selection cancelled.")
-                return
+            if not should_show_rtl_warning():
+                click.echo(f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)")
+            else:
+                if not show_rtl_warning(language_value):
+                    click.echo("Language selection cancelled.")
+                    return
 
     else:
         # Find the English name for the selected language
@@ -190,9 +212,12 @@ def language() -> None:
 
         # Check if predefined language is RTL
         if is_rtl_text(language_value):
-            if not show_rtl_warning(language_value):
-                click.echo("Language selection cancelled.")
-                return
+            if not should_show_rtl_warning():
+                click.echo(f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)")
+            else:
+                if not show_rtl_warning(language_value):
+                    click.echo("Language selection cancelled.")
+                    return
 
     # Ask about prefix translation
     click.echo()  # Blank line for spacing

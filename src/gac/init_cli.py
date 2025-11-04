@@ -1,15 +1,56 @@
 """CLI for initializing gac configuration interactively."""
 
-import unicodedata
+import os
 from pathlib import Path
 
 import click
 import questionary
-from dotenv import dotenv_values, set_key
+from dotenv import dotenv_values, load_dotenv, set_key
 
 from gac.constants import Languages
 
 GAC_ENV_PATH = Path.home() / ".gac.env"
+
+
+def _should_show_rtl_warning_for_init() -> bool:
+    """Check if RTL warning should be shown based on init's GAC_ENV_PATH.
+
+    Returns:
+        True if warning should be shown, False if user previously confirmed
+    """
+    if GAC_ENV_PATH.exists():
+        load_dotenv(GAC_ENV_PATH)
+        rtl_confirmed = os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on")
+        return not rtl_confirmed
+    return True  # Show warning if no config exists
+
+
+def _show_rtl_warning_for_init(language_name: str) -> bool:
+    """Show RTL language warning for init command and save preference to GAC_ENV_PATH.
+
+    Args:
+        language_name: Name of the RTL language
+
+    Returns:
+        True if user wants to proceed, False if they cancel
+    """
+
+    terminal_width = 80  # Use default width
+    title = "⚠️  RTL Language Detected".center(terminal_width)
+
+    click.echo()
+    click.echo(click.style(title, fg="yellow", bold=True))
+    click.echo()
+    click.echo("Right-to-left (RTL) languages may not display correctly in gac due to terminal limitations.")
+    click.echo("However, the commit messages will work fine and should be readable in Git clients")
+    click.echo("that properly support RTL text (like most web interfaces and modern tools).\n")
+
+    proceed = questionary.confirm("Do you want to proceed anyway?").ask()
+    if proceed:
+        # Remember that user has confirmed RTL acceptance
+        set_key(str(GAC_ENV_PATH), "GAC_RTL_CONFIRMED", "true")
+        click.echo("✓ RTL preference saved - you won't see this warning again")
+    return proceed if proceed is not None else False
 
 
 def _prompt_required_text(prompt: str) -> str | None:
@@ -195,6 +236,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
 
 def _configure_language(existing_env: dict[str, str]) -> None:
     """Run the language configuration flow."""
+    from gac.language_cli import is_rtl_text
+
     click.echo("\n")
     existing_language = existing_env.get("GAC_LANGUAGE")
 
@@ -249,18 +292,26 @@ def _configure_language(existing_env: dict[str, str]) -> None:
 
                         # Check if the custom language appears to be RTL
                         if is_rtl_text(language_value):
-                            click.echo("\n[yellow]⚠️  RTL Language Detected[/yellow]")
-                            click.echo("Right-to-left (RTL) languages like Arabic and Hebrew may not display correctly")
-                            click.echo("in commit messages due to terminal limitations. The messages will be generated")
-                            click.echo("correctly but may appear left-to-right in the display.\n")
-
-                            proceed = questionary.confirm("Do you want to proceed anyway?").ask()
-                            if not proceed:
-                                click.echo("Language selection cancelled. Keeping existing language.")
-                                language_value = None
+                            if not _should_show_rtl_warning_for_init():
+                                click.echo(
+                                    f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)"
+                                )
+                            else:
+                                if not _show_rtl_warning_for_init(language_value):
+                                    click.echo("Language selection cancelled. Keeping existing language.")
+                                    language_value = None
                 else:
                     # Find the English name for the selected language
                     language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
+
+                    # Check if predefined language is RTL
+                    if is_rtl_text(language_value):
+                        if not _should_show_rtl_warning_for_init():
+                            click.echo(f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)")
+                        else:
+                            if not _show_rtl_warning_for_init(language_value):
+                                click.echo("Language selection cancelled. Keeping existing language.")
+                                language_value = None
 
                 if language_value:
                     # Ask about prefix translation
@@ -315,18 +366,24 @@ def _configure_language(existing_env: dict[str, str]) -> None:
 
                     # Check if the custom language appears to be RTL
                     if is_rtl_text(language_value):
-                        click.echo("\n[yellow]⚠️  RTL Language Detected[/yellow]")
-                        click.echo("Right-to-left (RTL) languages like Arabic and Hebrew may not display correctly")
-                        click.echo("in commit messages due to terminal limitations. The messages will be generated")
-                        click.echo("correctly but may appear left-to-right in the display.\n")
-
-                        proceed = questionary.confirm("Do you want to proceed anyway?").ask()
-                        if not proceed:
-                            click.echo("Language selection cancelled. Using English (default).")
-                            language_value = None
+                        if not _should_show_rtl_warning_for_init():
+                            click.echo(f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)")
+                        else:
+                            if not _show_rtl_warning_for_init(language_value):
+                                click.echo("Language selection cancelled. Using English (default).")
+                                language_value = None
             else:
                 # Find the English name for the selected language
                 language_value = next(lang[1] for lang in Languages.LANGUAGES if lang[0] == language_selection)
+
+                # Check if predefined language is RTL
+                if is_rtl_text(language_value):
+                    if not _should_show_rtl_warning_for_init():
+                        click.echo(f"\nℹ️  Using RTL language {language_value} (RTL warning previously confirmed)")
+                    else:
+                        if not _show_rtl_warning_for_init(language_value):
+                            click.echo("Language selection cancelled. Using English (default).")
+                            language_value = None
 
             if language_value:
                 # Ask about prefix translation
@@ -376,30 +433,3 @@ def model() -> None:
         return
 
     click.echo(f"\nModel configuration complete. You can edit {GAC_ENV_PATH} to update values later.")
-
-
-def is_rtl_text(text: str) -> bool:
-    """Detect if text contains RTL characters or is a known RTL language code.
-
-    Args:
-        text: Text to analyze
-
-    Returns:
-        True if text contains RTL script characters or is RTL language code
-    """
-    # Known RTL language codes
-    rtl_codes = {"ar", "arabic", "he", "hebrew"}
-
-    # Check if it's a known RTL language code (case insensitive)
-    if text.lower().strip() in rtl_codes:
-        return True
-
-    rtl_scripts = {"Arabic", "Hebrew", "Thaana", "Nko", "Syriac", "Mandeic", "Samaritan", "Mongolian", "Phags-Pa"}
-
-    for char in text:
-        if unicodedata.name(char, "").startswith(("ARABIC", "HEBREW")):
-            return True
-        script = unicodedata.name(char, "").split()[0] if unicodedata.name(char, "") else ""
-        if script in rtl_scripts:
-            return True
-    return False

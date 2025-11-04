@@ -41,6 +41,7 @@ def load_config() -> dict[str, str | int | float | bool | None]:
         "system_prompt_path": os.getenv("GAC_SYSTEM_PROMPT_PATH"),
         "language": os.getenv("GAC_LANGUAGE"),
         "translate_prefixes": os.getenv("GAC_TRANSLATE_PREFIXES", "false").lower() in ("true", "1", "yes", "on"),
+        "rtl_confirmed": os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on"),
     }
 
     return config
