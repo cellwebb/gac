@@ -1,6 +1,6 @@
 # Uso de Línea de Comandos de gac
 
-[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | **Español** | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md)
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | **Español** | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 Este documento describe todas las banderas y opciones disponibles para la herramienta CLI de `gac`.
 
@@ -16,6 +16,7 @@ Este documento describe todas las banderas y opciones disponibles para la herram
   - [Flujos de Trabajo de Ejemplo](#flujos-de-trabajo-de-ejemplo)
   - [Avanzado](#avanzado)
     - [Omitir Hooks Pre-commit y Lefthook](#omitir-hooks-pre-commit-y-lefthook)
+    - [Escaneo de Seguridad](#escaneo-de-seguridad)
   - [Notas de Configuración](#notas-de-configuración)
     - [Opciones de Configuración Avanzadas](#opciones-de-configuración-avanzadas)
     - [Subcomandos de Configuración](#subcomandos-de-configuración)
@@ -232,7 +233,7 @@ Puedes personalizar el comportamiento de gac con estas variables de entorno opci
 
 Consulta `.gac.env.example` para una plantilla de configuración completa.
 
-Para guía detallada sobre creating prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md).
+Para guía detallada sobre creating prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md).
 
 ### Subcomandos de Configuración
 
@@ -249,8 +250,8 @@ Los siguientes subcomandos están disponibles:
 
 ## Obtención de Ayuda
 
-- Para prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
-- Para solución de problemas y consejos avanzados, consulta [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- Para instalación y configuración, consulta [README.md#installation-and-configuration](README.md#installation-and-configuration)
-- Para contribuir, consulta [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
-- Información de licencia: [LICENSE](LICENSE)
+- Para prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- Para solución de problemas y consejos avanzados, consulta [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- Para instalación y configuración, consulta [README.md#configuración](../README.es.md#configuración)
+- Para contribuir, consulta [docs/CONTRIBUTING.md](../CONTRIBUTING.md)
+- Información de licencia: [LICENSE](../LICENSE)

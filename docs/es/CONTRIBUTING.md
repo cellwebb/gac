@@ -1,6 +1,6 @@
 # Contribuir a gac
 
-[English](../CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | **Español** | [Português](../pt/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md)
+[English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | [한국어](../ko/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | **Español** | [Português](../pt/CONTRIBUTING.md) | [Deutsch](../de/CONTRIBUTING.md) | [Nederlands](../nl/CONTRIBUTING.md)
 
 ¡Gracias por tu interés en contribuir a este proyecto! ¡Tu ayuda es muy apreciada. Por favor, sigue estas guías para
 hacer que el proceso sea fluido para todos.
@@ -349,8 +349,8 @@ Al contribuir, aceptas que tus contribuciones serán licenciadas bajo la misma l
 
 ## Dónde Obtener Ayuda
 
-- Para solución de problemas, ver [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Para uso y opciones de CLI, ver [../USAGE.md](../USAGE.md)
-- Para detalles de licencia, ver [../LICENSE](../LICENSE)
+- Para solución de problemas, ver [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- Para uso y opciones de CLI, ver [USAGE.md](../USAGE.md)
+- Para detalles de licencia, ver [LICENSE](../LICENSE)
 
 ¡Gracias por ayudar a mejorar gac!

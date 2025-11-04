@@ -1,6 +1,6 @@
 # Использование командной строки gac
 
-**[Русский](USAGE.ru.md)** | [English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md)
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | **Русский** | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 Этот документ описывает все доступные флаги и опции для CLI-инструмента `gac`.
 

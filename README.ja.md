@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.ja.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/ja/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **LLM を活用した、あなたのコードを理解するコミットメッセージ！**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **別の言語でコミットメッセージが必要ですか？** `gac language を実行して、Español、Français、日本語など 25 以上の言語から選択してください。
 
-**コミットメッセージスタイルをカスタマイズしたいですか？** カスタムシステムプロンプトの作成ガイドについては [docs/CUSTOM_SYSTEM_PROMPTS.ja.md](docs/CUSTOM_SYSTEM_PROMPTS.ja.md) を参照。
+**コミットメッセージスタイルをカスタマイズしたいですか？** カスタムシステムプロンプトの作成ガイドについては [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) を参照。
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## ヘルプ
 
-- **完全なドキュメント**: [USAGE.md](USAGE.md) - 完全な CLI リファレンス
-- **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.ja.md](docs/CUSTOM_SYSTEM_PROMPTS.ja.md) - コミットメッセージスタイルのカスタマイズ
-- **トラブルシューティング**: [TROUBLESHOOTING.ja.md](docs/TROUBLESHOOTING.ja.md) - 一般的な問題と解決策
-- **貢献**: [CONTRIBUTING.ja.md](docs/CONTRIBUTING.ja.md) - 開発設定とガイドライン
+- **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
+- **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ
+- **トラブルシューティング**: [TROUBLESHOOTING.md](docs/ja/TROUBLESHOOTING.md) - 一般的な問題と解決策
+- **貢献**: [CONTRIBUTING.md](docs/ja/CONTRIBUTING.md) - 開発設定とガイドライン
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 より良いコミットメッセージを求める開発者のために ❤️ で作成
 
-[⭐ GitHub でスターを付ける](https://github.com/cellwebb/gac) • [🐛 問題を報告](https://github.com/cellwebb/gac/issues) • [📖 完全なドキュメント](USAGE.md)
+[⭐ GitHub でスターを付ける](https://github.com/cellwebb/gac) • [🐛 問題を報告](https://github.com/cellwebb/gac/issues) • [📖 完全なドキュメント](docs/ja/USAGE.md)
 
 </div>
 

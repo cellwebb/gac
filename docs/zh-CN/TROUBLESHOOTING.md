@@ -1,6 +1,6 @@
 # gac 故障排除
 
-[English](../en/TROUBLESHOOTING.md) | **简体中文** | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md)
+[English](../en/TROUBLESHOOTING.md) | **简体中文** | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [한국어](../ko/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [Deutsch](../de/TROUBLESHOOTING.md) | [Nederlands](../nl/TROUBLESHOOTING.md)
 
 本指南涵盖了安装、配置和运行 gac 的常见问题和解决方案。
 
@@ -184,4 +184,4 @@
 - 有关功能和使用示例，请参阅主 [README.md](../README.md)
 - 有关自定义系统提示，请参阅 [CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
 - 有关贡献指南，请参阅 [CONTRIBUTING.md](../CONTRIBUTING.md)
-- 有关许可证信息，请参阅 [../LICENSE](../LICENSE)
+- 有关许可证信息，请参阅 [../../LICENSE](../../LICENSE)

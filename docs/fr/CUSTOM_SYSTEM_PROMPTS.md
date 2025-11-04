@@ -1,6 +1,6 @@
 # Prompts système personnalisés
 
-[English](CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | **Français**
+[English](../en/CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](../zh-CN/CUSTOM_SYSTEM_PROMPTS.md) | [繁體中文](../zh-TW/CUSTOM_SYSTEM_PROMPTS.md) | [日本語](../ja/CUSTOM_SYSTEM_PROMPTS.md) | [한국어](../ko/CUSTOM_SYSTEM_PROMPTS.md) | [हिन्दी](../hi/CUSTOM_SYSTEM_PROMPTS.md) | **Français** | [Русский](../ru/CUSTOM_SYSTEM_PROMPTS.md) | [Español](../es/CUSTOM_SYSTEM_PROMPTS.md) | [Português](../pt/CUSTOM_SYSTEM_PROMPTS.md) | [Deutsch](../de/CUSTOM_SYSTEM_PROMPTS.md) | [Nederlands](../nl/CUSTOM_SYSTEM_PROMPTS.md)
 
 Ce guide explique comment personnaliser le prompt système que GAC utilise pour générer des messages de commit, vous permettant de définir votre propre style et conventions de message de commit.
 
@@ -172,7 +172,7 @@ Utilisez le temps présent et la voix active.
 Exemple :
 Refactoriser le middleware d'authentification pour utiliser l'injection de dépendances
 
-QUOI : Remplacé l'état d'authentification global par AuthService injectable. Mis à jour
+QUOI : Rempli l'état d'authentification global par AuthService injectable. Mis à jour
 tous les gestionnaires de routes pour accepter AuthService par injection de constructeur.
 
 POURQUOI : L'état global rendait les tests difficiles et créait des dépendances cachées.

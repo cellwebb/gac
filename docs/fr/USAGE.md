@@ -1,6 +1,6 @@
 # Utilisation en ligne de commande de gac
 
-[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md) | **Français**
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | **Français** | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `gac`.
 
@@ -232,7 +232,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 
 Voir `.gac.env.example` pour un modèle de configuration complet.
 
-Pour des conseils détaillés sur la création de prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](docs/CUSTOM_SYSTEM_PROMPTS.fr.md).
+Pour des conseils détaillés sur la création de prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](../CUSTOM_SYSTEM_PROMPTS.fr.md).
 
 ### Sous-commandes de configuration
 
@@ -249,8 +249,8 @@ Les sous-commandes suivantes sont disponibles :
 
 ## Obtenir de l'aide
 
-- Pour les prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](docs/CUSTOM_SYSTEM_PROMPTS.fr.md)
-- Pour le dépannage et conseils avancés, voir [docs/TROUBLESHOOTING.fr.md](docs/TROUBLESHOOTING.fr.md)
-- Pour l'installation et la configuration, voir [README.md#installation-and-configuration](README.md#installation-and-configuration)
-- Pour contribuer, voir [docs/CONTRIBUTING.fr.md](docs/CONTRIBUTING.fr.md)
-- Informations de licence : [LICENSE](LICENSE)
+- Pour les prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](../CUSTOM_SYSTEM_PROMPTS.fr.md)
+- Pour le dépannage et conseils avancés, voir [docs/TROUBLESHOOTING.fr.md](../TROUBLESHOOTING.fr.md)
+- Pour l'installation et la configuration, voir [README.md#installation-and-configuration](../README.md#installation-and-configuration)
+- Pour contribuer, voir [docs/CONTRIBUTING.fr.md](../CONTRIBUTING.fr.md)
+- Informations de licence : [LICENSE](../LICENSE)

@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/zh-CN/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **Русский** | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
+[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **能理解你代码的 LLM 驱动的提交信息！**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **想要其他语言的提交信息？**运行 `gac language` 从 25 多种语言中选择，包括 Español、Français、日本語 等。
 
-**想要自定义提交信息风格？**请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) 了解编写自定义系统提示的指导。
+**想要自定义提交信息风格？**请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) 了解编写自定义系统提示的指导。
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## 获取帮助
 
-- **完整文档**：[USAGE.md](USAGE.md) - 完整的 CLI 参考
-- **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格
-- **故障排除**：[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - 常见问题和解决方案
-- **贡献**：[CONTRIBUTING.md](docs/CONTRIBUTING.md) - 开发设置和指南
+- **完整文档**：[USAGE.md](docs/zh-CN/USAGE.md) - 完整的 CLI 参考
+- **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格
+- **故障排除**：[TROUBLESHOOTING.md](docs/zh-CN/TROUBLESHOOTING.md) - 常见问题和解决方案
+- **贡献**：[CONTRIBUTING.md](docs/zh-CN/CONTRIBUTING.md) - 开发设置和指南
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 用 ❤️ 为想要更好提交信息的开发者制作
 
-[⭐ 在 GitHub 上给我们点星](https://github.com/cellwebb/gac) • [🐛 报告问题](https://github.com/cellwebb/gac/issues) • [📖 完整文档](USAGE.md)
+[⭐ 在 GitHub 上给我们点星](https://github.com/cellwebb/gac) • [🐛 报告问题](https://github.com/cellwebb/gac/issues) • [📖 完整文档](docs/zh-CN/USAGE.md)
 
 </div>
 

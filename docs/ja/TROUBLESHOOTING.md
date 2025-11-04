@@ -1,6 +1,6 @@
 # gacのトラブルシューティング
 
-[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | **日本語** | [Français](../fr/TROUBLESHOOTING.md)
+[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | **日本語** | [한국어](../ko/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | [Español](../es/TROUBLESHOOTING.md) | [Português](../pt/TROUBLESHOOTING.md) | [Deutsch](../de/TROUBLESHOOTING.md) | [Nederlands](../nl/TROUBLESHOOTING.md)
 
 このガイドでは、gacのインストール、設定、実行に関する一般的な問題と解決策について説明します。
 
@@ -182,6 +182,6 @@
 ## さらにヘルプを得る場所
 
 - 機能と使用例についてはメインの [README.md](../../README.md) を参照
-- カスタムシステムプロンプトについては [CUSTOM_SYSTEM_PROMPTS.ja.md](CUSTOM_SYSTEM_PROMPTS.ja.md) を参照
-- 貢献ガイドラインについては [CONTRIBUTING.ja.md](CONTRIBUTING.ja.md) を参照
+- カスタムシステムプロンプトについては [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) を参照
+- 貢献ガイドラインについては [CONTRIBUTING.md](CONTRIBUTING.md) を参照
 - ライセンス情報については [../../LICENSE](../../LICENSE) を参照

@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/badge/ruff-checked-blue.svg)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/hi/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | **हिन्दी**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | **हिन्दी** | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **LLM-संचालित कमिट मैसेज जो आपके कोड को समझते हैं!**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **दूसरी भाषा में कमिट मैसेज चाहिए?** Español, Français, 日本語, और अन्य सहित 25+ भाषाओं में से चुनने के लिए `gac language` चलाएं।
 
-**कमिट मैसेज स्टाइल को कस्टमाइज़ करना चाहते हैं?** कस्टम सिस्टम प्रॉम्प्ट्स लिखने पर मार्गदर्शन के लिए [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) देखें।
+**कमिट मैसेज स्टाइल को कस्टमाइज़ करना चाहते हैं?** कस्टम सिस्टम प्रॉम्प्ट्स लिखने पर मार्गदर्शन के लिए [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) देखें।
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## सहायता प्राप्त करना
 
-- **पूर्ण दस्तावेज़**: [USAGE.md](USAGE.md) - पूर्ण CLI रेफरेंस
-- **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें
-- **समस्या निवारण**: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - सामान्य समस्याएं और समाधान
-- **योगदान**: [CONTRIBUTING.md](docs/CONTRIBUTING.md) - डेवलपमेंट सेटअप और दिशानिर्देश
+- **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
+- **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें
+- **समस्या निवारण**: [TROUBLESHOOTING.md](docs/hi/TROUBLESHOOTING.md) - सामान्य समस्याएं और समाधान
+- **योगदान**: [CONTRIBUTING.md](docs/hi/CONTRIBUTING.md) - डेवलपमेंट सेटअप और दिशानिर्देश
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 बेहतर कमिट मैसेज चाहने वाले डेवलपर्स के लिए ❤️ के साथ बनाया गया
 
-[⭐ GitHub पर हमें स्टार करें](https://github.com/cellwebb/gac) • [🐛 इश्यू रिपोर्ट करें](https://github.com/cellwebb/gac/issues) • [📖 पूरे डॉक्स](USAGE.md)
+[⭐ GitHub पर हमें स्टार करें](https://github.com/cellwebb/gac) • [🐛 इश्यू रिपोर्ट करें](https://github.com/cellwebb/gac/issues) • [📖 पूरे डॉक्स](docs/hi/USAGE.md)
 
 </div>
 

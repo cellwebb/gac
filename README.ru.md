@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/ru/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **Русский** | Español | Português | हिन्दी
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | [Français](README.fr.md) | **Русский** | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **Коммиты, созданные ИИ, которые понимают ваш код!**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **Хотите сообщения коммитов на другом языке?** Запустите `gac language` для выбора из 25+ языков, включая Español, Français, 日本語 и другие.
 
-**Хотите настроить стиль сообщений коммитов?** См. [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) для руководства по написанию пользовательских системных промптов.
+**Хотите настроить стиль сообщений коммитов?** См. [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) для руководства по написанию пользовательских системных промптов.
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## Получение помощи
 
-- **Полная документация**: [USAGE.md](USAGE.md) - Полное справочное руководство по CLI
-- **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов
-- **Устранение неполадок**: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Распространённые проблемы и решения
-- **Вклад в проект**: [CONTRIBUTING.md](docs/CONTRIBUTING.md) - Настройка среды разработки и руководства
+- **Полная документация**: [USAGE.md](docs/ru/USAGE.md) - Полное справочное руководство по CLI
+- **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов
+- **Устранение неполадок**: [TROUBLESHOOTING.md](docs/ru/TROUBLESHOOTING.md) - Распространённые проблемы и решения
+- **Вклад в проект**: [CONTRIBUTING.md](docs/ru/CONTRIBUTING.md) - Настройка среды разработки и руководства
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 Сделано с ❤️ для разработчиков, которые хотят лучшие сообщения коммитов
 
-[⭐ Поставьте нам звезду на GitHub](https://github.com/cellwebb/gac) • [🐛 Сообщить о проблемах](https://github.com/cellwebb/gac/issues) • [📖 Полная документация](USAGE.md)
+[⭐ Поставьте нам звезду на GitHub](https://github.com/cellwebb/gac) • [🐛 Сообщить о проблемах](https://github.com/cellwebb/gac/issues) • [📖 Полная документация](docs/ru/USAGE.md)
 
 </div>
 

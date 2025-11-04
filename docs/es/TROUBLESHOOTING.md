@@ -1,6 +1,6 @@
 # Solución de problemas de gac
 
-[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | **Español** | [Português](../pt/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md)
+[English](../en/TROUBLESHOOTING.md) | [简体中文](../zh-CN/TROUBLESHOOTING.md) | [繁體中文](../zh-TW/TROUBLESHOOTING.md) | [日本語](../ja/TROUBLESHOOTING.md) | [한국어](../ko/TROUBLESHOOTING.md) | [हिन्दी](../hi/TROUBLESHOOTING.md) | [Français](../fr/TROUBLESHOOTING.md) | [Русский](../ru/TROUBLESHOOTING.md) | **Español** | [Português](../pt/TROUBLESHOOTING.md) | [Deutsch](../de/TROUBLESHOOTING.md) | [Nederlands](../nl/TROUBLESHOOTING.md)
 
 Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejecutar gac.
 
@@ -93,7 +93,7 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 
 - La agrupación la determina el análisis del LLM de tus cambios
 - El LLM puede crear un solo commit si determina que los cambios están lógicamente relacionados
-- Intenta agregar pistas con `-h "pista"` para guiar la lógica de agrupación (ej. `-h "separar corrección de error de refactorización"`)
+- Intenta agregar pistas con `-h "pista"` para guiar la lógica de agrupación (ej., `-h "separar corrección de error de refactorización"`)
 - Revisa los grupos generados antes de confirmar
 - Si la agrupación no funciona bien para tu caso de uso, en su lugar confirma los cambios por separado
 
@@ -182,6 +182,6 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 ## Dónde Obtener Ayuda Adicional
 
 - Para características y ejemplos de uso, consulta el [README.md](../README.md) principal
-- Para prompts de sistema personalizados, consulta [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md)
-- Para pautas de contribución, consulta [CONTRIBUTING.md](CONTRIBUTING.md)
-- Para información de licencia, consulta [../LICENSE](../LICENSE)
+- Para prompts de sistema personalizados, consulta [CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- Para pautas de contribución, consulta [CONTRIBUTING.md](../CONTRIBUTING.md)
+- Para información de licencia, consulta [LICENSE](../LICENSE)

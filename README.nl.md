@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/en/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/nl/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | **Nederlands**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | **Nederlands**
 
 **Met LLM-gedreven commitberichten die uw code begrijpen!**
 
@@ -204,7 +204,7 @@ Zie `.gac.env.example` voor alle beschikbare opties.
 
 **Wilt u commitberichten in een andere taal?** Voer `gac language` uit om te kiezen uit 25+ talen inclusief Español, Français, 日本語 en meer.
 
-**Wilt u de stijl van commitberichten aanpassen?** Zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) voor begeleiding bij het schrijven van aangepaste systeemprompts.
+**Wilt u de stijl van commitberichten aanpassen?** Zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) voor begeleiding bij het schrijven van aangepaste systeemprompts.
 
 ---
 
@@ -218,10 +218,10 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 
 ## Hulp Krijgen
 
-- **Volledige documentatie**: [docs/USAGE.md](docs/en/USAGE.md) - Volledige CLI-referentie
-- **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
-- **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen
-- **Bijdragen**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Ontwikkelsetup en richtlijnen
+- **Volledige documentatie**: [docs/USAGE.md](docs/nl/USAGE.md) - Volledige CLI-referentie
+- **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
+- **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/nl/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen
+- **Bijdragen**: [docs/CONTRIBUTING.md](docs/nl/CONTRIBUTING.md) - Ontwikkelsetup en richtlijnen
 
 ---
 
@@ -231,7 +231,7 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 
 Gemaakt met ❤️ voor ontwikkelaars die betere commitberichten willen
 
-[⭐ Star ons op GitHub](https://github.com/cellwebb/gac) • [🐛 Rapporteer problemen](https://github.com/cellwebb/gac/issues) • [📖 Volledige docs](USAGE.md)
+[⭐ Star ons op GitHub](https://github.com/cellwebb/gac) • [🐛 Rapporteer problemen](https://github.com/cellwebb/gac/issues) • [📖 Volledige docs](docs/nl/USAGE.md)
 
 </div>
 

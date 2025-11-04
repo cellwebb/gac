@@ -1,6 +1,6 @@
 # gac 命令行使用
 
-[English](USAGE.md) | **简体中文** | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | [Español](USAGE.es.md) | [Português](USAGE.pt.md) | [हिन्दी](USAGE.hi.md)
+[English](../en/USAGE.md) | **简体中文** | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 本文档介绍了 `gac` CLI 工具的所有可用标志和选项。
 
@@ -233,7 +233,7 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 
 查看 `.gac.env.example` 了解完整的配置模板。
 
-有关创建自定义系统提示的详细指导，请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)。
+有关创建自定义系统提示的详细指导，请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)。
 
 ### 配置子命令
 
@@ -250,8 +250,8 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 
 ## 获取帮助
 
-- 有关自定义系统提示，请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
-- 有关故障排除和高级提示，请参阅 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- 有关安装和配置，请参阅 [README.md#installation-and-configuration](README.md#installation-and-configuration)
-- 要贡献，请参阅 [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
-- 许可证信息：[LICENSE](LICENSE)
+- 有关自定义系统提示，请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- 有关故障排除和高级提示，请参阅 [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- 有关安装和配置，请参阅 [README.md#installation-and-configuration](../README.md#installation-and-configuration)
+- 要贡献，请参阅 [docs/CONTRIBUTING.md](../CONTRIBUTING.md)
+- 许可证信息：[LICENSE](../../LICENSE)

@@ -1,6 +1,6 @@
 # カスタムシステムプロンプト
 
-[English](CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](CUSTOM_SYSTEM_PROMPTS.zh-CN.md) | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | **日本語** | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md) | [Русский](CUSTOM_SYSTEM_PROMPTS.ru.md) | [Español](CUSTOM_SYSTEM_PROMPTS.es.md) | [Português](CUSTOM_SYSTEM_PROMPTS.pt.md) | [हिन्दी](CUSTOM_SYSTEM_PROMPTS.hi.md)
+[English](../en/CUSTOM_SYSTEM_PROMPTS.md) | [简体中文](../zh-CN/CUSTOM_SYSTEM_PROMPTS.md) | [繁體中文](../zh-TW/CUSTOM_SYSTEM_PROMPTS.md) | **日本語** | [한국어](../ko/CUSTOM_SYSTEM_PROMPTS.md) | [हिन्दी](../hi/CUSTOM_SYSTEM_PROMPTS.md) | [Français](../fr/CUSTOM_SYSTEM_PROMPTS.md) | [Русский](../ru/CUSTOM_SYSTEM_PROMPTS.md) | [Español](../es/CUSTOM_SYSTEM_PROMPTS.md) | [Português](../pt/CUSTOM_SYSTEM_PROMPTS.md) | [Deutsch](../de/CUSTOM_SYSTEM_PROMPTS.md) | [Nederlands](../nl/CUSTOM_SYSTEM_PROMPTS.md)
 
 このガイドでは、GACがコミットメッセージの生成に使用するシステムプロンプトをカスタマイズする方法について説明し、独自のコミットメッセージスタイルと規約を定義できるようにします。
 
@@ -224,7 +224,7 @@ routes/auth.ts、routes/api.ts、routes/admin.tsの移行が必要。
 
 ### AIが指示を無視している
 
-**問題:** 生成されたメッセージがカスタン形式に従っていない。
+**問題:** 生成されたメッセージがカcustomize形式に従っていない。
 
 **解決策:**
 
@@ -321,7 +321,7 @@ gac config unset GAC_SYSTEM_PROMPT_PATH
 
 - [USAGE.md](../USAGE.md) - コマンドラインフラグとオプション
 - [README.md](../README.md) - インストールと基本セットアップ
-- [TROUBLESHOOTING.ja.md](TROUBLESHOOTING.ja.md) - 一般的なトラブルシューティング
+- [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - 一般的なトラブルシューティング
 
 ## ヘルプが必要ですか？
 

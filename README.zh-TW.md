@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/zh-TW/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md) | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **能理解你程式碼的 LLM 驅動的提交訊息！**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **想要其他語言的提交訊息？**執行 `gac language` 從 25 多種語言中選擇，包括 Español、Français、日本語 等。
 
-**想要自訂提交訊息風格？**請參閱 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) 了解編寫自訂系統提示的指導。
+**想要自訂提交訊息風格？**請參閱 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/zh-TW/CUSTOM_SYSTEM_PROMPTS.md) 了解編寫自訂系統提示的指導。
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## 獲取協助
 
-- **完整文件**：[USAGE.md](USAGE.md) - 完整的 CLI 參考
-- **自訂提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md) - 自訂提交訊息風格
-- **故障排除**：[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - 常見問題和解決方案
-- **貢獻**：[CONTRIBUTING.md](docs/CONTRIBUTING.md) - 開發設定和指南
+- **完整文件**：[USAGE.md](docs/zh-TW/USAGE.md) - 完整的 CLI 參考
+- **自訂提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-TW/CUSTOM_SYSTEM_PROMPTS.md) - 自訂提交訊息風格
+- **故障排除**：[TROUBLESHOOTING.md](docs/zh-TW/TROUBLESHOOTING.md) - 常見問題和解決方案
+- **貢獻**：[CONTRIBUTING.md](docs/zh-TW/CONTRIBUTING.md) - 開發設定和指南
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 用 ❤️ 為想要更好提交訊息的開發者製作
 
-[⭐ 在 GitHub 上給我們點星](https://github.com/cellwebb/gac) • [🐛 報告問題](https://github.com/cellwebb/gac/issues) • [📖 完整文件](USAGE.md)
+[⭐ 在 GitHub 上給我們點星](https://github.com/cellwebb/gac) • [🐛 報告問題](https://github.com/cellwebb/gac/issues) • [📖 完整文件](docs/zh-TW/USAGE.md)
 
 </div>
 

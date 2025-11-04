@@ -1,6 +1,6 @@
 # 为 gac 贡献
 
-[English](CONTRIBUTING.md) | **简体中文** | [繁體中文](CONTRIBUTING.zh-TW.md) | [日本語](CONTRIBUTING.ja.md) | [Français](CONTRIBUTING.fr.md) | [Русский](CONTRIBUTING.ru.md) | [Español](CONTRIBUTING.es.md) | [Português](CONTRIBUTING.pt.md) | [हिन्दी](CONTRIBUTING.hi.md)
+[English](../en/CONTRIBUTING.md) | **简体中文** | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | [한국어](../ko/CONTRIBUTING.md) | [हिन्दी](../hi/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [Deutsch](../de/CONTRIBUTING.md) | [Nederlands](../nl/CONTRIBUTING.md)
 
 感谢你有兴趣为本项目做出贡献！我们非常感谢你的帮助。请遵循这些指南，使每个人的流程都顺畅。
 
@@ -346,8 +346,8 @@ uv run -- pytest tests/test_prompt.py::TestExtractRepositoryContext::test_extrac
 
 ## 获取帮助
 
-- 有关故障排除，请参阅 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- 有关使用和 CLI 选项，请参阅 [../USAGE.md](../USAGE.md)
-- 有关许可证详细信息，请参阅 [../LICENSE](../LICENSE)
+- 有关故障排除，请参阅 [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- 有关使用和 CLI 选项，请参阅 [USAGE.md](../USAGE.md)
+- 有关许可证详细信息，请参阅 [../../LICENSE](../../LICENSE)
 
 感谢你帮助改进 gac！

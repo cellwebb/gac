@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/CONTRIBUTING.fr.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/fr/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **Français** | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [हिन्दी](README.hi.md) | **Français** | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **Messages de commit alimentés par l'IA qui comprennent votre code !**
 
@@ -204,7 +204,7 @@ Voir `.gac.env.example` pour toutes les options disponibles.
 
 **Vous voulez des messages de commit dans une autre langue ?** Exécutez `gac language` pour sélectionner parmi 25+ langues incluant Español, Français, 日本語 et plus.
 
-**Vous voulez personnaliser le style des messages de commit ?** Voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](docs/CUSTOM_SYSTEM_PROMPTS.fr.md) pour des conseils sur la récitation de prompts système personnalisés.
+**Vous voulez personnaliser le style des messages de commit ?** Voir [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/fr/CUSTOM_SYSTEM_PROMPTS.md) pour des conseils sur la récitation de prompts système personnalisés.
 
 ---
 
@@ -218,10 +218,10 @@ Suivez les métriques d'installation en temps réel et les statistiques de tél�
 
 ## Obtenir de l'aide
 
-- **Documentation complète** : [USAGE.md](USAGE.md) - Référence CLI complète
-- **Prompts personnalisés** : [CUSTOM_SYSTEM_PROMPTS.fr.md](docs/CUSTOM_SYSTEM_PROMPTS.fr.md) - Personnaliser le style des messages de commit
-- **Dépannage** : [TROUBLESHOOTING.fr.md](docs/TROUBLESHOOTING.fr.md) - Problèmes courants et solutions
-- **Contribuer** : [CONTRIBUTING.fr.md](docs/CONTRIBUTING.fr.md) - Configuration de développement et lignes directrices
+- **Documentation complète** : [USAGE.md](docs/fr/USAGE.md) - Référence CLI complète
+- **Prompts personnalisés** : [CUSTOM_SYSTEM_PROMPTS.md](docs/fr/CUSTOM_SYSTEM_PROMPTS.md) - Personnaliser le style des messages de commit
+- **Dépannage** : [TROUBLESHOOTING.md](docs/fr/TROUBLESHOOTING.md) - Problèmes courants et solutions
+- **Contribuer** : [CONTRIBUTING.md](docs/fr/CONTRIBUTING.md) - Configuration de développement et lignes directrices
 
 ---
 
@@ -231,7 +231,7 @@ Suivez les métriques d'installation en temps réel et les statistiques de tél�
 
 Fait avec ❤️ pour les développeurs qui veulent de meilleurs messages de commit
 
-[⭐ Mettez-nous une étoile sur GitHub](https://github.com/cellwebb/gac) • [🐛 Signaler des problèmes](https://github.com/cellwebb/gac/issues) • [📖 Documentation complète](USAGE.md)
+[⭐ Mettez-nous une étoile sur GitHub](https://github.com/cellwebb/gac) • [🐛 Signaler des problèmes](https://github.com/cellwebb/gac/issues) • [📖 Documentation complète](docs/fr/USAGE.md)
 
 </div>
 

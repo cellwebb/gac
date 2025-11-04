@@ -1,6 +1,6 @@
 # 自定义系统提示
 
-[English](CUSTOM_SYSTEM_PROMPTS.md) | **简体中文** | [繁體中文](CUSTOM_SYSTEM_PROMPTS.zh-TW.md) | [日本語](CUSTOM_SYSTEM_PROMPTS.ja.md) | [Français](CUSTOM_SYSTEM_PROMPTS.fr.md)
+[English](../en/CUSTOM_SYSTEM_PROMPTS.md) | **简体中文** | [繁體中文](../zh-TW/CUSTOM_SYSTEM_PROMPTS.md) | [日本語](../ja/CUSTOM_SYSTEM_PROMPTS.md) | [한국어](../ko/CUSTOM_SYSTEM_PROMPTS.md) | [हिन्दी](../hi/CUSTOM_SYSTEM_PROMPTS.md) | [Français](../fr/CUSTOM_SYSTEM_PROMPTS.md) | [Русский](../ru/CUSTOM_SYSTEM_PROMPTS.md) | [Español](../es/CUSTOM_SYSTEM_PROMPTS.md) | [Português](../pt/CUSTOM_SYSTEM_PROMPTS.md) | [Deutsch](../de/CUSTOM_SYSTEM_PROMPTS.md) | [Nederlands](../nl/CUSTOM_SYSTEM_PROMPTS.md)
 
 本指南解释了如何自定义 GAC 用于生成提交信息的系统提示，允许你定义自己的提交信息风格和约定。
 
@@ -108,7 +108,7 @@ GAC 在生成提交信息时使用两个提示：
 
 ### 基于表情符号的提交风格
 
-参见 [`custom_system_prompt.example.zh-CN.txt`](../custom_system_prompt.example.zh-CN.txt) 以获得完整的基于表情符号的示例（或 [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) 英文版）。
+参见 [`custom_system_prompt.example.zh-CN.txt`](../../custom_system_prompt.example.zh-CN.txt) 以获得完整的基于表情符号的示例（或 [`custom_system_prompt.example.txt`](../../custom_system_prompt.example.txt) 英文版）。
 
 **快速片段：**
 
@@ -321,7 +321,7 @@ gac config unset GAC_SYSTEM_PROMPT_PATH
 
 - [USAGE.md](../USAGE.md) - 命令行标志和选项
 - [README.md](../README.md) - 安装和基本设置
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - 一般故障排除
+- [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - 一般故障排除
 
 ## 需要帮助？
 

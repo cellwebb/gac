@@ -1,6 +1,6 @@
 # gac कमांड-लाइन उपयोग
 
-English | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | Español | Português | **हिन्दी**
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | **हिन्दी** | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 यह दस्तावेज़ `gac` CLI टूल के लिए सभी उपलब्ध फ्लैग और विकल्पों का वर्णन करता है।
 

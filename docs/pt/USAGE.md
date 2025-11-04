@@ -1,6 +1,6 @@
 # Uso da Linha de Comando gac
 
-English | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | [日本語](USAGE.ja.md) | [Français](USAGE.fr.md) | [Русский](USAGE.ru.md) | Español | **Português** | हिन्दी
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | **Português** | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 Este documento descreve todas as flags e opções disponíveis para a ferramenta CLI `gac`.
 
@@ -232,7 +232,7 @@ Você pode personalizar o comportamento do gac com estas variáveis de ambiente 
 
 Veja `.gac.env.example` para um modelo de configuração completo.
 
-Para orientação detalhada sobre criação de prompts de sistema personalizados, veja [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md).
+Para orientação detalhada sobre criação de prompts de sistema personalizados, veja [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md).
 
 ### Subcomandos de Configuração
 
@@ -249,8 +249,8 @@ Os seguintes subcomandos estão disponíveis:
 
 ## Obtendo Ajuda
 
-- Para prompts de sistema personalizados, veja [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
-- Para solução de problemas e dicas avançadas, veja [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- Para instalação e configuração, veja [README.md#installation-and-configuration](README.md#installation-and-configuration)
-- Para contribuir, veja [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
-- Informações de licença: [LICENSE](LICENSE)
+- Para prompts de sistema personalizados, veja [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- Para solução de problemas e dicas avançadas, veja [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- Para instalação e configuração, veja [README.md#installation-and-configuration](../README.md#installation-and-configuration)
+- Para contribuir, veja [docs/CONTRIBUTING.md](../CONTRIBUTING.md)
+- Informações de licença: [LICENSE](../LICENSE)

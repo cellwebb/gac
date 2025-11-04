@@ -1,6 +1,6 @@
 # gac コマンドライン使用法
 
-[English](USAGE.md) | [简体中文](USAGE.zh-CN.md) | [繁體中文](USAGE.zh-TW.md) | **日本語** | [Français](USAGE.fr.md)
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | **日本語** | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 このドキュメントでは、`gac` CLIツールで利用可能なすべてのフラグとオプションについて説明します。
 
@@ -204,7 +204,7 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 - ダミーの認証情報を含むテストフィクスチャを扱っている場合
 - 変更が安全であることを確認した場合
 
-**注意:** スキャナーはパターンマッチングを使用して一般的な秘密形式を検出します。コミット前に常ステージされた変更を確認してください。
+**注意:** スキャナーはパターンマッチングを使用して一般的な秘密形式を検出します。コミット前に常に確認してください。
 
 ## 設定に関する注意
 
@@ -232,7 +232,7 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 
 完全な設定テンプレートについては `.gac.env.example` を参照。
 
-カスタムシステムプロンプト作成の詳細なガイドについては [docs/CUSTOM_SYSTEM_PROMPTS.ja.md](docs/CUSTOM_SYSTEM_PROMPTS.ja.md) を参照。
+カスタムシステムプロンプト作成の詳細なガイドについては [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) を参照。
 
 ### 設定サブコマンド
 
@@ -249,8 +249,8 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 
 ## ヘルプ
 
-- カスタムシステムプロンプトについては [docs/CUSTOM_SYSTEM_PROMPTS.ja.md](docs/CUSTOM_SYSTEM_PROMPTS.ja.md) を参照
-- トラブルシューティングと高度なヒントについては [docs/TROUBLESHOOTING.ja.md](docs/TROUBLESHOOTING.ja.md) を参照
-- インストールと設定については [README.md#installation-and-configuration](README.md#installation-and-configuration) を参照
-- 貢献については [docs/CONTRIBUTING.ja.md](docs/CONTRIBUTING.ja.md) を参照
-- ライセンス情報: [LICENSE](LICENSE)
+- カスタムシステムプロンプトについては [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) を参照
+- トラブルシューティングと高度なヒントについては [TROUBLESHOOTING.md](TROUBLESHOOTING.md) を参照
+- インストールと設定については [../README.md](../README.md) を参照
+- 貢献については [CONTRIBUTING.md](CONTRIBUTING.md) を参照
+- ライセンス情報: [../LICENSE](../LICENSE)

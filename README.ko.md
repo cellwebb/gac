@@ -11,10 +11,10 @@
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/en/CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/ko/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [हिन्दी](README.hi.md) | **한국어** | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **한국어** | [हिन्दी](README.hi.md) | [Français](README.fr.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md) | [Deutsch](README.de.md) | [Nederlands](README.nl.md)
 
 **코드를 이해하는 LLM 기반 커밋 메시지!**
 
@@ -204,7 +204,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 **다른 언어로 커밋 메시지를 원하시나요?** `gac language`를 실행하여 Español, Français, 日本어 등 25개 이상 언어 중에서 선택하세요.
 
-**커밋 메시지 스타일을 사용자 정의하고 싶으신가요?** 사용자 정의 시스템 프롬프트 작성에 대한 안내는 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md)를 참조하세요.
+**커밋 메시지 스타일을 사용자 정의하고 싶으신가요?** 사용자 정의 시스템 프롬프트 작성에 대한 안내는 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md)를 참조하세요.
 
 ---
 
@@ -218,10 +218,10 @@ ANTHROPIC_API_KEY=your_key_here
 
 ## 도움말 얻기
 
-- **전체 문서**: [docs/USAGE.md](docs/en/USAGE.md) - 완전한 CLI 참조
-- **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의
-- **문제 해결**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - 일반적인 문제 및 해결책
-- **기여**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - 개발 설정 및 가이드라인
+- **전체 문서**: [docs/USAGE.md](docs/ko/USAGE.md) - 완전한 CLI 참조
+- **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의
+- **문제 해결**: [docs/TROUBLESHOOTING.md](docs/ko/TROUBLESHOOTING.md) - 일반적인 문제 및 해결책
+- **기여**: [docs/CONTRIBUTING.md](docs/ko/CONTRIBUTING.md) - 개발 설정 및 가이드라인
 
 ---
 
@@ -231,7 +231,7 @@ ANTHROPIC_API_KEY=your_key_here
 
 더 나은 커밋 메시지를 원하는 개발자들을 위해 ❤️로 만들었습니다
 
-[⭐ GitHub에서 스타하기](https://github.com/cellwebb/gac) • [🐛 이슈 보고](https://github.com/cellwebb/gac/issues) • [📖 전체 문서](USAGE.md)
+[⭐ GitHub에서 스타하기](https://github.com/cellwebb/gac) • [🐛 이슈 보고](https://github.com/cellwebb/gac/issues) • [📖 전체 문서](docs/ko/USAGE.md)
 
 </div>
 
