@@ -391,6 +391,7 @@ def test_language_select_rtl_predefined_arabic():
             with (
                 patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
                 patch("questionary.select") as mock_select,
+                patch("gac.language_cli.should_show_rtl_warning", return_value=True),  # Force warning to show
             ):
                 # Mock RTL warning to return True (user wants to proceed)
                 mock_rtl_warning.return_value = True
@@ -416,6 +417,7 @@ def test_language_select_rtl_predefined_hebrew():
             with (
                 patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
                 patch("questionary.select") as mock_select,
+                patch("gac.language_cli.should_show_rtl_warning", return_value=True),  # Force warning to show
             ):
                 # Mock RTL warning to return False (user cancels)
                 mock_rtl_warning.return_value = False
@@ -440,6 +442,7 @@ def test_language_select_custom_rtl_proceed():
                 patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
                 patch("questionary.select") as mock_select,
                 patch("questionary.text") as mock_text,
+                patch("gac.language_cli.should_show_rtl_warning", return_value=True),  # Force warning to show
             ):
                 # Mock RTL warning to return True (user wants to proceed)
                 mock_rtl_warning.return_value = True
@@ -467,6 +470,7 @@ def test_language_select_custom_rtl_cancel():
                 patch("gac.language_cli.show_rtl_warning") as mock_rtl_warning,
                 patch("questionary.select") as mock_select,
                 patch("questionary.text") as mock_text,
+                patch("gac.language_cli.should_show_rtl_warning", return_value=True),  # Force warning to show
             ):
                 # Mock RTL warning to return False (user cancels)
                 mock_rtl_warning.return_value = False
