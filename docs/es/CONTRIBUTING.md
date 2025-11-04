@@ -166,7 +166,7 @@ Al añadir un nuevo proveedor de IA, necesitas actualizar múltiples archivos en
   - Mantén las entradas ordenadas alfabéticamente
   - Añade comentarios para claves opcionales si aplica
 
-- [ ] **7. Actualizar Documentación** (`README.md` y `README.zh-CN.md`)
+- [ ] **7. Actualizar Documentación** (`README.md` y `docs/zh-CN/README.md`)
 
   - Añade nombre del proveedor a la sección "Proveedores Soportados" en ambos README, inglés y chino
   - Mantén la lista ordenada alfabéticamente dentro de sus puntos

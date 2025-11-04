@@ -165,7 +165,7 @@ bump-my-version bump major
   - 保持条目按字母顺序排序
   - 如果适用，为可选密钥添加注释
 
-- [ ] **7. 更新文档**（`README.md` 和 `README.zh-CN.md`）
+- [ ] **7. 更新文档**（`README.md` 和 `docs/zh-CN/README.md`）
 
   - 在英文和中文 README 的"支持的提供商"部分添加提供商名称
   - 在其要点中保持列表按字母顺序排序

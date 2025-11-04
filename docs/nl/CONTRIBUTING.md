@@ -165,7 +165,7 @@ Bij het toevoegen van een nieuwe AI provider moet u meerdere bestanden in de cod
   - Houd entries alfabetisch gesorteerd
   - Voeg commentaren toe voor optionele sleutels indien van toepassing
 
-- [ ] **7. Update Documentatie** (`README.md` en `README.zh-CN.md`)
+- [ ] **7. Update Documentatie** (`README.md` en `docs/zh-CN/README.md`)
 
   - Voeg providernaam toe aan de "Supported Providers" sectie in zowel Engelse als Chinese README's
   - Houd de lijst alfabetisch gesorteerd binnen de bullet points

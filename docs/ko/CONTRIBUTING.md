@@ -165,7 +165,7 @@ bump-my-version bump major
   - 항목을 알파벳순으로 정렬된 상태로 유지
   - 해당하는 경우 선택적 키에 대한 주석 추가
 
-- [ ] **7. 문서 업데이트** (`README.md` 및 `README.zh-CN.md`)
+- [ ] **7. 문서 업데이트** (`README.md` 및 `docs/zh-CN/README.md`)
 
   - 영어 및 중국어 README 모두의 "Supported Providers" 섹션에 프로바이더 이름 추가
   - 글 머리 기호 내에서 알파벳순으로 정렬된 상태로 유지

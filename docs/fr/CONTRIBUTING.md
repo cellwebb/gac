@@ -165,7 +165,7 @@ Lors de l'ajout d'un nouveau fournisseur d'IA, vous devez mettre à jour plusieu
   - Gardez les entrées triées alphabétiquement
   - Ajoutez des commentaires pour les clés optionnelles si applicable
 
-- [ ] **7. Mettre à jour la documentation** (`README.md` et `README.zh-CN.md`)
+- [ ] **7. Mettre à jour la documentation** (`README.md` et `docs/zh-CN/README.md`)
 
   - Ajoutez le nom du fournisseur à la section "Supported Providers" dans les README anglais et chinois
   - Gardez la liste triée alphabétiquement dans ses puces

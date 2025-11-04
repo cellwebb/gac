@@ -165,7 +165,7 @@ Beim Hinzufügen eines neuen KI-Anbieters müssen Sie mehrere Dateien im gesamte
   - Einträge alphabetisch sortiert halten
   - Kommentare für optionale Schlüssel hinzufügen, falls zutreffend
 
-- [ ] **7. Dokumentation aktualisieren** (`README.md` und `README.zh-CN.md`)
+- [ ] **7. Dokumentation aktualisieren** (`README.md` und `docs/zh-CN/README.md`)
 
   - Anbietername zum Abschnitt "Supported Providers" in beiden englischen und chinesischen READMEs hinzufügen
   - Die Liste innerhalb ihrer Aufzählungspunkte alphabetisch sortiert halten

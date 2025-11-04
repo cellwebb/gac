@@ -166,7 +166,7 @@ When adding a new AI provider, you need to update multiple files across the code
   - Keep entries alphabetically sorted
   - Add comments for optional keys if applicable
 
-- [ ] **7. Update Documentation** (`README.md` and `README.zh-CN.md`)
+- [ ] **7. Update Documentation** (`README.md` and `docs/zh-CN/README.md`)
 
   - Add provider name to the "Supported Providers" section in both English and Chinese READMEs
   - Keep the list alphabetically sorted within its bullet points
