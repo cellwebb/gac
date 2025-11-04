@@ -108,7 +108,7 @@ Ihre gesamte Antwort wird direkt als Commit-Nachricht verwendet.
 
 ### Emoji-basierter Commit-Stil
 
-Siehe [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) für ein vollständiges Emoji-basiertes Beispiel.
+Siehe [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) für ein vollständiges Emoji-basiertes Beispiel.
 
 **Schneller Ausschnitt:**
 
@@ -207,7 +207,7 @@ routes/auth.ts, routes/api.ts und routes/admin.ts.
 
 ### Tips
 
-- **Beginnen Sie mit dem Beispiel** - Kopieren Sie `custom_system_prompt.example.txt` und modifizieren Sie es
+- **Beginnen Sie mit dem Beispiel** - Kopieren Sie `../../examples/custom_system_prompt.example.txt` und modifizieren Sie es
 - **Testen Sie mit `--dry-run`** - Sehen Sie das Ergebnis, ohne einen Commit zu machen
 - **Verwenden Sie `--show-prompt`** - Sehen Sie, was an die KI gesendet wird
 - **Iterieren Sie basierend auf Ergebnissen** - Wenn Nachrichten nicht ganz richtig sind, passen Sie Ihre Anweisungen an

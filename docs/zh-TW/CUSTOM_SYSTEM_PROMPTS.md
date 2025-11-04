@@ -108,7 +108,7 @@ GAC 在生成提交訊息時使用兩個提示：
 
 ### 基於表情符號的提交風格
 
-參見 [`custom_system_prompt.example.zh-TW.txt`](../custom_system_prompt.example.zh-TW.txt) 以獲得完整的基於表情符號的範例（或 [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) 英文版）。
+參見 [`custom_system_prompt.example.zh-TW.txt`](../../examples/custom_system_prompt.example.zh-TW.txt) 以獲得完整的基於表情符號的範例（或 [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) 英文版）。
 
 **快速片段：**
 
@@ -207,7 +207,7 @@ routes/auth.ts、routes/api.ts 和 routes/admin.ts 進行遷移。
 
 ### 技巧
 
-- **從範例開始** - 複製 `custom_system_prompt.example.zh-TW.txt` 或 `custom_system_prompt.example.txt` 並修改它
+- **從範例開始** - 複製 `../../examples/custom_system_prompt.example.zh-TW.txt` 或 `../../examples/custom_system_prompt.example.txt` 並修改它
 - **使用 `--dry-run` 測試** - 在不進行提交的情況下查看結果
 - **使用 `--show-prompt`** - 查看傳送給 AI 的內容
 - **根據結果迭代** - 如果訊息不太對，調整你的指令

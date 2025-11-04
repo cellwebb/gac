@@ -108,7 +108,7 @@ GACはコミットメッセージを生成する際に2つのプロンプトを�
 
 ### 絵文字ベースのコミットスタイル
 
-完全な絵文字ベースの例については [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) を参照。
+完全な絵文字ベースの例については [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) を参照。
 
 **簡単なスニペット:**
 
@@ -207,7 +207,7 @@ routes/auth.ts、routes/api.ts、routes/admin.tsの移行が必要。
 
 ### ヒント
 
-- **例から開始** - `custom_system_prompt.example.txt` をコピーして修正
+- **例から開始** - `../../examples/custom_system_prompt.example.txt` をコピーして修正
 - **`--dry-run`でテスト** - コミットなしで結果を確認
 - **`--show-prompt`を使用** - AIに送信されているものを確認
 - **結果に基づいて反復** - メッセージが適切でなければ指示を調整

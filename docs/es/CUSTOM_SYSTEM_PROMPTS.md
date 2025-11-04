@@ -108,7 +108,7 @@ Tu respuesta completa se usará directamente como el mensaje de commit.
 
 ### Estilo de Commit Basado en Emojis
 
-Ver [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) para un ejemplo completo basado en emojis.
+Ver [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) para un ejemplo completo basado en emojis.
 
 **Fragmento rápido:**
 
@@ -207,7 +207,7 @@ routes/auth.ts, routes/api.ts y routes/admin.ts.
 
 ### Consejos
 
-- **Comienza con el ejemplo** - Copia `custom_system_prompt.example.txt` y modifícalo
+- **Comienza con el ejemplo** - Copia `../../examples/custom_system_prompt.example.txt` y modifícalo
 - **Prueba con `--dry-run`** - Ve el resultado sin hacer un commit
 - **Usa `--show-prompt`** - Ve qué se está enviando a la IA
 - **Itera basado en resultados** - Si los mensajes no son del todo correctos, ajusta tus instrucciones

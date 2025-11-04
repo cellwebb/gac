@@ -108,7 +108,7 @@ Uw gehele respons zal direct worden gebruikt als het commitbericht.
 
 ### Emoji-gebaseerde Commit Stijl
 
-Zie [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) voor een compleet emoji-gebaseerd voorbeeld.
+Zie [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) voor een compleet emoji-gebaseerd voorbeeld.
 
 **Quick snippet:**
 
@@ -207,7 +207,7 @@ routes/auth.ts, routes/api.ts en routes/admin.ts.
 
 ### Tips
 
-- **Start met het voorbeeld** - Kopieer `custom_system_prompt.example.txt` en pas het aan
+- **Start met het voorbeeld** - Kopieer `../../examples/custom_system_prompt.example.txt` en pas het aan
 - **Test met `--dry-run`** - Zie het resultaat zonder een commit te maken
 - **Gebruik `--show-prompt`** - Zie wat er naar de AI wordt gestuurd
 - **Iteer op basis van resultaten** - Als berichten niet helemaal goed zijn, pas uw instructies aan

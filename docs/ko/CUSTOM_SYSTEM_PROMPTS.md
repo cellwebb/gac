@@ -108,7 +108,7 @@ GAC는 커밋 메시지를 생성할 때 두 개의 프롬프트를 사용합니
 
 ### 이모지 기반 커밋 스타일
 
-[`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt)에서 완전한 이모지 기반 예제를 확인하세요.
+[`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt)에서 완전한 이모지 기반 예제를 확인하세요.
 
 **빠른 코드 조각:**
 
@@ -207,7 +207,7 @@ routes/auth.ts, routes/api.ts 및 routes/admin.ts 마이그레이션 필요.
 
 ### 팁
 
-- **예제로 시작** - `custom_system_prompt.example.txt`를 복사하여 수정
+- **예제로 시작** - `../../examples/custom_system_prompt.example.txt`를 복사하여 수정
 - **`--dry-run`으로 테스트** - 커밋 없이 결과 확인
 - **`--show-prompt` 사용** - AI에 보내진 내용 확인
 - **결과를 기반으로 개선** - 메시지가 완벽하지 않으면 지시 조정

@@ -108,7 +108,7 @@ Your entire response will be used directly as the commit message.
 
 ### Emoji-Based Commit Style
 
-See [`custom_system_prompt.example.txt`](../custom_system_prompt.example.txt) for a complete emoji-based example.
+See [`custom_system_prompt.example.txt`](../../examples/custom_system_prompt.example.txt) for a complete emoji-based example.
 
 **Quick snippet:**
 
@@ -207,7 +207,7 @@ routes/auth.ts, routes/api.ts, and routes/admin.ts.
 
 ### Tips
 
-- **Start with the example** - Copy `custom_system_prompt.example.txt` and modify it
+- **Start with the example** - Copy `../../examples/custom_system_prompt.example.txt` and modify it
 - **Test with `--dry-run`** - See the result without making a commit
 - **Use `--show-prompt`** - See what's being sent to the AI
 - **Iterate based on results** - If messages aren't quite right, adjust your instructions
