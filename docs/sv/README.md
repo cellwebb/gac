@@ -26,7 +26,7 @@
 
 Intelligenta, kontextuella meddelanden som förklarar **varför** bakom dina ändringar:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.png)
+![GAC generating a contextual commit message](assets/gac-simple-usage.sv.png)
 
 ---
 
