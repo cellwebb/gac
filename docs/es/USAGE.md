@@ -252,6 +252,6 @@ Los siguientes subcomandos están disponibles:
 
 - Para prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
 - Para solución de problemas y consejos avanzados, consulta [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
-- Para instalación y configuración, consulta [README.md#configuración](../README.es.md#configuración)
+- Para instalación y configuración, consulta [README.md#configuración](README.md#configuración)
 - Para contribuir, consulta [docs/CONTRIBUTING.md](../CONTRIBUTING.md)
 - Información de licencia: [LICENSE](../LICENSE)
