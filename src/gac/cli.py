@@ -66,6 +66,12 @@ logger = logging.getLogger(__name__)
 # Advanced options
 @click.option("--no-verify", is_flag=True, help="Skip pre-commit and lefthook hooks when committing")
 @click.option("--skip-secret-scan", is_flag=True, help="Skip security scan for secrets in staged changes")
+@click.option(
+    "--hook-timeout",
+    type=int,
+    default=0,
+    help="Timeout for pre-commit and lefthook hooks in seconds (0 to use configuration)",
+)
 # Other options
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (gac) tool")
 @click.pass_context
@@ -88,6 +94,7 @@ def cli(
     verbose: bool = False,
     no_verify: bool = False,
     skip_secret_scan: bool = False,
+    hook_timeout: int = 0,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
     if ctx.invoked_subcommand is None:
@@ -126,6 +133,7 @@ def cli(
                 no_verify=no_verify,
                 skip_secret_scan=skip_secret_scan or bool(config.get("skip_secret_scan", False)),
                 language=resolved_language,
+                hook_timeout=hook_timeout if hook_timeout > 0 else int(config.get("hook_timeout", 120)),
             )
         except Exception as e:
             handle_error(e, exit_program=True)
@@ -151,6 +159,7 @@ def cli(
             "verbose": verbose,
             "no_verify": no_verify,
             "skip_secret_scan": skip_secret_scan,
+            "hook_timeout": hook_timeout,
         }
 
 

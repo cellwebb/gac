@@ -42,6 +42,7 @@ def load_config() -> dict[str, str | int | float | bool | None]:
         "language": os.getenv("GAC_LANGUAGE"),
         "translate_prefixes": os.getenv("GAC_TRANSLATE_PREFIXES", "false").lower() in ("true", "1", "yes", "on"),
         "rtl_confirmed": os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on"),
+        "hook_timeout": int(os.getenv("GAC_HOOK_TIMEOUT", EnvDefaults.HOOK_TIMEOUT)),
     }
 
     return config

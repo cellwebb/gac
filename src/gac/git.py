@@ -205,7 +205,7 @@ def get_commit_hash() -> str:
     return result
 
 
-def run_pre_commit_hooks() -> bool:
+def run_pre_commit_hooks(hook_timeout: int = 120) -> bool:
     """Run pre-commit hooks if they exist.
 
     Returns:
@@ -225,9 +225,9 @@ def run_pre_commit_hooks() -> bool:
             return True
 
         # Run pre-commit hooks on staged files
-        logger.info("Running pre-commit hooks...")
+        logger.info(f"Running pre-commit hooks with {hook_timeout}s timeout...")
         # Run pre-commit and capture both stdout and stderr
-        result = run_subprocess_with_encoding_fallback(["pre-commit", "run"])
+        result = run_subprocess_with_encoding_fallback(["pre-commit", "run"], timeout=hook_timeout)
 
         if result.returncode == 0:
             # All hooks passed
@@ -252,7 +252,7 @@ def run_pre_commit_hooks() -> bool:
         return True
 
 
-def run_lefthook_hooks() -> bool:
+def run_lefthook_hooks(hook_timeout: int = 120) -> bool:
     """Run Lefthook hooks if they exist.
 
     Returns:
@@ -275,9 +275,9 @@ def run_lefthook_hooks() -> bool:
             return True
 
         # Run lefthook hooks on staged files
-        logger.info("Running Lefthook hooks...")
+        logger.info(f"Running Lefthook hooks with {hook_timeout}s timeout...")
         # Run lefthook and capture both stdout and stderr
-        result = run_subprocess_with_encoding_fallback(["lefthook", "run", "pre-commit"])
+        result = run_subprocess_with_encoding_fallback(["lefthook", "run", "pre-commit"], timeout=hook_timeout)
 
         if result.returncode == 0:
             # All hooks passed

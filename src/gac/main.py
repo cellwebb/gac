@@ -134,6 +134,7 @@ def execute_grouped_commits_workflow(
     dry_run: bool,
     push: bool,
     show_prompt: bool,
+    hook_timeout: int = 120,
 ) -> None:
     """Execute the grouped commits workflow."""
     import json
@@ -389,6 +390,7 @@ def execute_single_commit_workflow(
     dry_run: bool,
     push: bool,
     show_prompt: bool,
+    hook_timeout: int = 120,
 ) -> None:
     if show_prompt:
         full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
@@ -497,6 +499,7 @@ def main(
     no_verify: bool = False,
     skip_secret_scan: bool = False,
     language: str | None = None,
+    hook_timeout: int = 120,
 ) -> None:
     """Main application logic for gac."""
     try:
@@ -549,12 +552,12 @@ def main(
         sys.exit(0)
 
     if not no_verify and not dry_run:
-        if not run_lefthook_hooks():
+        if not run_lefthook_hooks(hook_timeout):
             console.print("[red]Lefthook hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             sys.exit(1)
 
-        if not run_pre_commit_hooks():
+        if not run_pre_commit_hooks(hook_timeout):
             console.print("[red]Pre-commit hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             sys.exit(1)
@@ -687,6 +690,7 @@ def main(
                 dry_run=dry_run,
                 push=push,
                 show_prompt=show_prompt,
+                hook_timeout=hook_timeout,
             )
         except AIError as e:
             logger.error(str(e))
@@ -707,6 +711,7 @@ def main(
                 dry_run=dry_run,
                 push=push,
                 show_prompt=show_prompt,
+                hook_timeout=hook_timeout,
             )
         except AIError as e:
             logger.error(str(e))
