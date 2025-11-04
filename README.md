@@ -14,7 +14,7 @@
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/en/CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**English** | [简体中文](docs/zh-CN/README.md) | [繁體中文](docs/zh-TW/README.md) | [日本語](docs/ja/README.md) | [한국어](docs/ko/README.md) | [हिन्दी](docs/hi/README.md) | [Tiếng Việt](docs/vi/README.md) | [Français](docs/fr/README.md) | [Русский](docs/ru/README.md) | [Español](docs/es/README.md) | [Português](docs/pt/README.md) | [Deutsch](docs/de/README.md) | [Nederlands](docs/nl/README.md)
+**English** | [简体中文](docs/zh-CN/README.md) | [繁體中文](docs/zh-TW/README.md) | [日本語](docs/ja/README.md) | [한국어](docs/ko/README.md) | [हिन्दी](docs/hi/README.md) | [Tiếng Việt](docs/vi/README.md) | [Français](docs/fr/README.md) | [Русский](docs/ru/README.md) | [Español](docs/es/README.md) | [Português](docs/pt/README.md) | [Norsk](docs/no/README.md) | [Svenska](docs/sv/README.md) | [Deutsch](docs/de/README.md) | [Nederlands](docs/nl/README.md) | [Italiano](docs/it/README.md)
 
 **LLM-powered commit messages that understand your code!**
 
