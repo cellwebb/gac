@@ -26,7 +26,7 @@
 
 智能的、上下文相关的信息，解释你更改背后的**原因**：
 
-![GAC 生成上下文提交信息](assets/gac-simple-usage.zh-CN.png)
+![GAC 生成上下文提交信息](../../assets/gac-simple-usage.zh-CN.png)
 
 ---
 

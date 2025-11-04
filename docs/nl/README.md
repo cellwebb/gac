@@ -26,7 +26,7 @@
 
 Intelligente, contextuele berichten die het **waarom** achter uw wijzigingen uitleggen:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.nl.png)
+![GAC generating a contextual commit message](../../assets/gac-simple-usage.nl.png)
 
 ---
 

@@ -26,7 +26,7 @@
 
 Des messages intelligents et contextuels qui expliquent le **pourquoi** derrière vos changements :
 
-![GAC générant un message de commit contextuel](assets/gac-simple-usage.fr.png)
+![GAC générant un message de commit contextuel](../../assets/gac-simple-usage.fr.png)
 
 ---
 

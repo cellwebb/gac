@@ -26,7 +26,7 @@
 
 변경 사항背后的 **이유**를 설명하는 지능적이고 맥락적인 메시지:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.ko.png)
+![GAC generating a contextual commit message](../../assets/gac-simple-usage.ko.png)
 
 ---
 

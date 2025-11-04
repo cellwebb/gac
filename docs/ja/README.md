@@ -26,7 +26,7 @@
 
 変更の背後にある「なぜ」を説明する、知的で文脈に応じたメッセージが得られます：
 
-![GACが文脈に応じたコミットメッセージを生成](assets/gac-simple-usage.ja.png)
+![GACが文脈に応じたコミットメッセージを生成](../../assets/gac-simple-usage.ja.png)
 
 ---
 

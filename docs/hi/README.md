@@ -26,7 +26,7 @@
 
 बुद्धिमान, संदर्भात्मक मैसेज जो आपके परिवर्तनों के पीछे के "क्यों" को समझाते हैं:
 
-![GAC generating a contextual commit message](assets/gac-simple-usage.hi.png)
+![GAC generating a contextual commit message](../../assets/gac-simple-usage.hi.png)
 
 ---
 

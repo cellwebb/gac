@@ -26,7 +26,7 @@
 
 智慧的、上下文相關的訊息，解釋你變更背後的**原因**：
 
-![GAC 生成上下文提交訊息](assets/gac-simple-usage.zh-TW.png)
+![GAC 生成上下文提交訊息](../../assets/gac-simple-usage.zh-TW.png)
 
 ---
 
