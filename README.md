@@ -34,8 +34,6 @@ Intelligent, contextual messages that explain the **why** behind your changes:
 
 <!-- markdownlint-enable MD033 MD036 -->
 
-<!-- markdownlint-enable MD033 MD036 -->
-
 ## Quick Start
 
 ### Use gac without installing

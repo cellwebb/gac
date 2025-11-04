@@ -1,6 +1,6 @@
 # gac 命令列使用
 
-[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | **繁體中文** | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | **繁體中文** | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Tiếng Việt](../vi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md)
 
 本文件介紹了 `gac` CLI 工具的所有可用標誌和選項。
 
