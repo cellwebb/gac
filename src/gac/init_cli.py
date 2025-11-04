@@ -221,7 +221,11 @@ def _configure_language(existing_env: dict[str, str]) -> None:
             # Proceed with language selection
             display_names = [lang[0] for lang in Languages.LANGUAGES]
             language_selection = questionary.select(
-                "Select a language for commit messages:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
+                "Select a language for commit messages:",
+                choices=display_names,
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
             ).ask()
 
             if not language_selection:
@@ -283,7 +287,11 @@ def _configure_language(existing_env: dict[str, str]) -> None:
         # No existing language - proceed with normal flow
         display_names = [lang[0] for lang in Languages.LANGUAGES]
         language_selection = questionary.select(
-            "Select a language for commit messages:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
+            "Select a language for commit messages:",
+            choices=display_names,
+            use_shortcuts=True,
+            use_arrow_keys=True,
+            use_jk_keys=False,
         ).ask()
 
         if not language_selection:

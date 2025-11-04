@@ -148,7 +148,7 @@ def language() -> None:
 
     display_names = [lang[0] for lang in Languages.LANGUAGES]
     selection = questionary.select(
-        "Choose your language:", choices=display_names, use_shortcuts=True, use_arrow_keys=True
+        "Choose your language:", choices=display_names, use_shortcuts=True, use_arrow_keys=True, use_jk_keys=False
     ).ask()
 
     if not selection:
