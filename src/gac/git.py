@@ -33,7 +33,7 @@ def run_subprocess_with_encoding_fallback(
     from gac.utils import get_safe_encodings
 
     encodings = get_safe_encodings()
-    last_exception = None
+    last_exception: Exception | None = None
 
     for encoding in encodings:
         try:
