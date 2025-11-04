@@ -43,7 +43,7 @@ Edit the file directly following [Semantic Versioning](https://semver.org/):
 - **Minor** (1.X.0): New features, backwards-compatible changes (e.g., adding a new provider)
 - **Major** (X.0.0): Breaking changes
 
-#### Option 2: Using make bump-level
+#### Option 2: Using `make bump-<level>`
 
 ```bash
 # For bug fixes:
