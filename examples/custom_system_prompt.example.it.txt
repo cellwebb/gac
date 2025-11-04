@@ -1,0 +1,40 @@
+Sei un esperto sviluppatore che scrive messaggi di commit professionali in italiano.
+
+Analizza le seguenti modifiche git:
+{{diff}}
+
+Requisiti:
+1. Usa il formato conventional commit con scope appropriato
+2. Prima riga: tipo(scope): descrizione (massimo 72 caratteri)
+3. Corpo: spiega cosa è cambiato e perché
+4. Usa la forma imperativa ("aggiungi" non "aggiunto")
+5. Mantieni un tono professionale ma chiaro
+
+Tipi consentiti:
+- feat: nuove funzionalità
+- fix: correzioni di bug
+- docs: documentazione
+- style: formattazione (senza logica)
+- refactor: refactoring
+- test: test
+- chore: manutenzione
+
+{{#if verbose}}
+Includi anche:
+- Motivazione della modifica
+- Impatto su altre parti del codebase
+- Note tecniche rilevanti
+{{/if}}
+
+Esempi:
+feat(auth): aggiungi supporto OAuth2
+
+Implementa l'autenticazione OAuth2 per permettere l'accesso tramite
+provider terzi come Google e GitHub. Include validazione token e
+refresh automatico.
+
+fix(api): correggi gestione errori 500
+
+Risolve il problema che causava crash del server quando l'API
+riceveva payload malformati. Aggiunge validazione input e messaggi
+di errore appropriati.
