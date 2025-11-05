@@ -210,6 +210,7 @@ gac --skip-secret-scan  # Bỏ qua quét bảo mật cho commit này
 
 - Cách được đề xuất để thiết lập gac là chạy `gac init` và làm theo các gợi ý tương tác.
 - Đã cấu hình ngôn ngữ và chỉ cần chuyển đổi nhà cung cấp hoặc mô hình? Chạy `gac model` để lặp lại thiết lập mà không có câu hỏi ngôn ngữ.
+- **Đang sử dụng Claude Code?** Xem [hướng dẫn thiết lập Claude Code](CLAUDE_CODE.md) để biết hướng dẫn xác thực OAuth.
 - gac tải cấu hình theo thứ tự ưu tiên sau:
   1. Các flag CLI
   2. Các biến môi trường

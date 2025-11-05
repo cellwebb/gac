@@ -72,6 +72,7 @@
 - सुनिश्चित करें कि आपने अपने चुने हुए मॉडल के लिए सही API keys सेट किए हैं (जैसे `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - अपनी API key और provider खाता स्थिति की दोबारा जांच करें
 - Ollama और LM Studio के लिए, पुष्टि करें कि API URL आपके स्थानीय instance से मेल खाता है। API keys केवल तभी आवश्यक हैं यदि आपने प्रमाणीकरण सक्षम किया है।
+- **Claude Code OAuth समस्याओं के लिए**, प्रमाणीकरण और टोकन समाप्ति सहायता के लिए [Claude Code सेटअप गाइड](CLAUDE_CODE.md) देखें।
 
 **Problem:** Model not available or unsupported
 

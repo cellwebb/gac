@@ -72,6 +72,7 @@
 - 确保你为所选模型设置了正确的 API 密钥（例如，`ANTHROPIC_API_KEY`，`GROQ_API_KEY`）
 - 仔细检查你的 API 密钥和提供商账户状态
 - 对于 Ollama 和 LM Studio，确认 API URL 与你的本地实例匹配。仅在启用身份验证时才需要 API 密钥。
+- **对于Claude Code OAuth问题**，请参阅[Claude Code设置指南](CLAUDE_CODE.md)获取认证和令牌过期帮助。
 
 **问题：** 模型不可用或不受支持
 

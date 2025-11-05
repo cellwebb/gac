@@ -72,6 +72,7 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 - Asegúrate de haber configurado las claves API correctas para el modelo elegido (ej. `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - Verifica doblemente tu clave API y el estado de tu cuenta del proveedor
 - Para Ollama y LM Studio, confirma que la URL de API coincida con tu instancia local. Las claves API solo son necesarias si habilitaste la autenticación.
+- **Para problemas de OAuth con Claude Code**, consulta la [guía de configuración de Claude Code](CLAUDE_CODE.md) para ayuda con autenticación y expiración de tokens.
 
 **Problema:** Modelo no disponible o no compatible
 

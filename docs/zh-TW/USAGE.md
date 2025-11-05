@@ -211,6 +211,7 @@ gac --skip-secret-scan  # 為此次提交跳過安全掃描
 
 - 設定 gac 的推薦方法是執行 `gac init` 並按照互動式提示操作。
 - 已經設定好語言，只想切換提供者或模型？執行 `gac model`，它會跳過所有語言相關的問題。
+- **使用Claude Code？** 請參閱[Claude Code設定指南](CLAUDE_CODE.md)取得OAuth驗證說明。
 - gac 按以下優先順序順序載入設定：
   1. CLI 標誌
   2. 環境變數

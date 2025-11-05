@@ -72,6 +72,7 @@
 - 선택한 모델에 대해 올바른 API 키가 설정되었는지 확인 (예: `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - API 키와 프로바이더 계정 상태를 다시 확인
 - Ollama와 LM Studio의 경우, API URL이 로컬 인스턴스와 일치하는지 확인. 인증을 활성화한 경우에만 API 키가 필요합니다.
+- **Claude Code OAuth 문제의 경우**, 인증 및 토큰 만료 도움말은 [Claude Code 설정 가이드](CLAUDE_CODE.md)를 참조하세요.
 
 **문제:** 모델을 사용할 수 없거나 지원되지 않음
 

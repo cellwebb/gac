@@ -210,6 +210,7 @@ gac --skip-secret-scan  # Sicherheits-Scan für diesen Commit überspringen
 
 - Die empfohlene Methode zur Einrichtung von gac ist, `gac init` auszuführen und den interaktiven Aufforderungen zu folgen.
 - Bereits konfigurierte Sprache und nur Anbieter oder Modelle wechseln müssen? Führen Sie `gac model` aus, um die Einrichtung ohne Sprachfragen zu wiederholen.
+- **Claude Code verwenden?** Siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für OAuth-Authentifizierungsanweisungen.
 - gac lädt Konfiguration in der folgenden Rangfolge:
   1. CLI-Flags
   2. Umgebungsvariablen

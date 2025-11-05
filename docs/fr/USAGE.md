@@ -210,6 +210,7 @@ gac --skip-secret-scan  # Sauter l'analyse de sécurité pour ce commit
 
 - La méthode recommandée pour configurer gac est d'exécuter `gac init` et de suivre les invites interactives.
 - Vous avez déjà configuré la langue et devez juste changer de fournisseurs ou de modèles ? Exécutez `gac model` pour répéter la configuration sans questions de langue.
+- **Vous utilisez Claude Code ?** Consultez le [guide de configuration Claude Code](CLAUDE_CODE.md) pour les instructions d'authentification OAuth.
 - gac charge la configuration dans l'ordre de priorité suivant :
   1. Drapeaux CLI
   2. Variables d'environnement

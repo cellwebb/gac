@@ -72,6 +72,7 @@ Denne guiden dekker vanlige problemer og løsninger for installasjon, konfiguras
 - Ensure you have set the correct API keys for your chosen model (e.g., `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - Double-check your API key and provider account status
 - For Ollama and LM Studio, confirm the API URL matches your local instance. API keys are only needed if you enabled authentication.
+- **For Claude Code OAuth-problemer**, se [Claude Code oppsettguide](CLAUDE_CODE.md) for hjelp med autentisering og token-utløp.
 
 **Problem:** Model not available or unsupported
 

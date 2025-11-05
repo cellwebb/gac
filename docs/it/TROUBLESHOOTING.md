@@ -131,6 +131,8 @@ sudo apt install python3.11
         https://api.openai.com/v1/models
    ```
 
+5. **Per problemi OAuth con Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per assistenza su autenticazione e scadenza token.
+
 ### Provider non riconosciuto
 
 **Errore**: `Unknown provider: xxx`

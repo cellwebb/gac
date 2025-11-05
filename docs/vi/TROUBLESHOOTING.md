@@ -72,6 +72,7 @@ Hướng dẫn này bao gồm các vấn đề phổ biến và giải pháp cho
 - Đảm bảo bạn đã đặt các khóa API đúng cho mô hình đã chọn (ví dụ, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - Kiểm tra lại khóa API và trạng thái tài khoản nhà cung cấp của bạn
 - Đối với Ollama và LM Studio, xác nhận URL API khớp với phiên bản địa phương của bạn. Chỉ cần khóa API nếu bạn đã bật xác thực.
+- **Đối với các vấn đề OAuth của Claude Code**, xem [hướng dẫn thiết lập Claude Code](CLAUDE_CODE.md) để được trợ giúp về xác thực và hết hạn token.
 
 **Vấn đề:** Mô hình không có sẵn hoặc không được hỗ trợ
 

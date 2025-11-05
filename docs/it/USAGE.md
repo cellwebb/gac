@@ -414,6 +414,8 @@ export GAC_MODEL="anthropic-custom:http://api.company.com:modello"
 
 ## Configurazione Avanzata
 
+- **Stai usando Claude Code?** Consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per le istruzioni di autenticazione OAuth.
+
 ### Variabili d'Ambiente
 
 ```bash
