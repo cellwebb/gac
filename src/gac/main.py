@@ -340,7 +340,7 @@ def execute_grouped_commits_workflow(
                     try:
                         for file_path in commit["files"]:
                             run_git_command(["add", "-A", file_path])
-                        execute_commit(commit["message"], no_verify)
+                        execute_commit(commit["message"], no_verify, hook_timeout)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except Exception as e:
                         console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
@@ -448,7 +448,7 @@ def execute_single_commit_workflow(
         console.print(f"Would commit {len(staged_files)} files")
         logger.info(f"Would commit {len(staged_files)} files")
     else:
-        execute_commit(commit_message, no_verify)
+        execute_commit(commit_message, no_verify, hook_timeout)
 
     if push:
         try:

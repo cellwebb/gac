@@ -282,6 +282,26 @@ def test_run_pre_commit_hooks_success():
         assert result is True
 
 
+def test_run_pre_commit_hooks_respects_custom_timeout():
+    """Custom hook timeout is passed through to subprocess execution."""
+    with (
+        patch("os.path.exists") as mock_exists,
+        patch("gac.git.run_subprocess") as mock_run,
+        patch("subprocess.run") as mock_subprocess_run,
+    ):
+        mock_exists.return_value = True
+        mock_run.return_value = "pre-commit 3.0.0"
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_subprocess_run.return_value = mock_result
+
+        run_pre_commit_hooks(hook_timeout=180)
+
+        assert mock_subprocess_run.called
+        assert mock_subprocess_run.call_args.kwargs["timeout"] == 180
+
+
 def test_run_pre_commit_hooks_failure_with_output():
     """Test when pre-commit hooks fail with detailed output."""
     with (

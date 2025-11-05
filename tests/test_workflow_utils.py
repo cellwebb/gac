@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
-from gac.workflow_utils import check_token_warning, handle_confirmation_loop, restore_staging
+from gac.constants import EnvDefaults
+from gac.workflow_utils import check_token_warning, execute_commit, handle_confirmation_loop, restore_staging
 
 
 def test_confirmation_no():
@@ -30,6 +31,30 @@ def test_confirmation_reroll():
         result, message, msgs = handle_confirmation_loop("msg", [], False, "m")
         assert result == "regenerate"
         assert message == "msg"
+
+
+def test_execute_commit_uses_hook_timeout():
+    with (
+        patch("gac.git.run_git_command") as mock_git,
+        patch("gac.workflow_utils.logger.info"),
+        patch("gac.workflow_utils.console.print"),
+    ):
+        execute_commit("feat: add hook timeout", no_verify=False, hook_timeout=180)
+
+    mock_git.assert_called_once_with(["commit", "-m", "feat: add hook timeout"], timeout=180)
+
+
+def test_execute_commit_falls_back_to_default_timeout():
+    with (
+        patch("gac.git.run_git_command") as mock_git,
+        patch("gac.workflow_utils.logger.info"),
+        patch("gac.workflow_utils.console.print"),
+    ):
+        execute_commit("fix: use defaults", no_verify=True, hook_timeout=0)
+
+    mock_git.assert_called_once_with(
+        ["commit", "-m", "fix: use defaults", "--no-verify"], timeout=EnvDefaults.HOOK_TIMEOUT
+    )
 
 
 def test_token_warning_decline():

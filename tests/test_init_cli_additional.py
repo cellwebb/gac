@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
 
 from gac.init_cli import (
@@ -14,12 +15,18 @@ from gac.init_cli import (
 )
 
 
+@pytest.fixture(autouse=True)
+def patch_gac_env_path(tmp_path, monkeypatch):
+    env_path = tmp_path / ".gac.env"
+    monkeypatch.setattr("gac.init_cli.GAC_ENV_PATH", env_path)
+    yield env_path
+
+
 def test_configure_model_custom_anthropic_provider():
     """Test _configure_model with Custom (Anthropic) provider."""
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("gac.init_cli._prompt_required_text") as mock_prompt_required,
         patch("questionary.text") as mock_text,
@@ -46,7 +53,6 @@ def test_configure_model_custom_anthropic_provider_cancel_base_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("gac.init_cli._prompt_required_text") as mock_prompt_required,
         patch("questionary.text") as mock_text,
@@ -68,7 +74,6 @@ def test_configure_model_custom_openai_provider():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("gac.init_cli._prompt_required_text") as mock_prompt_required,
         patch("questionary.password") as mock_password,
@@ -94,7 +99,6 @@ def test_configure_model_custom_openai_provider_cancel_base_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("gac.init_cli._prompt_required_text") as mock_prompt_required,
         patch("questionary.text") as mock_text,
@@ -116,7 +120,6 @@ def test_configure_model_ollama_provider_default_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
@@ -139,7 +142,6 @@ def test_configure_model_ollama_provider_cancel_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
     ):
@@ -156,7 +158,6 @@ def test_configure_model_lmstudio_provider_default_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
@@ -179,7 +180,6 @@ def test_configure_model_lmstudio_provider_cancel_url():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
     ):
@@ -196,7 +196,6 @@ def test_configure_model_zai_provider_existing_key():
     existing_env = {"ZAI_API_KEY": "existing-key"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
         patch("gac.init_cli.set_key"),
@@ -231,7 +230,6 @@ def test_configure_model_zai_provider_existing_key_action_none():
     existing_env = {"ZAI_API_KEY": "existing-key"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
         patch("gac.init_cli.set_key"),
@@ -264,7 +262,6 @@ def test_configure_model_with_empty_existing_key_enter_new():
     existing_env = {"OPENAI_API_KEY": "existing-key"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
         patch("gac.init_cli.set_key"),
@@ -297,7 +294,6 @@ def test_configure_model_local_provider_skip_key():
     existing_env = {}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
         patch("questionary.password") as mock_password,
@@ -320,7 +316,6 @@ def test_configure_language_cancel_existing_language():
     existing_env = {"GAC_LANGUAGE": "Spanish", "GAC_TRANSLATE_PREFIXES": "false"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("click.echo") as mock_echo,
         patch("questionary.select") as mock_select,
     ):
@@ -337,7 +332,6 @@ def test_configure_language_select_new_english():
     existing_env = {"GAC_LANGUAGE": "Spanish"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("click.echo"),
         patch("questionary.select") as mock_select,
         patch("gac.init_cli.set_key") as mock_set_key,
@@ -362,7 +356,6 @@ def test_configure_language_select_new_custom_cancel():
     existing_env = {"GAC_LANGUAGE": "Spanish"}
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("click.echo") as mock_echo,
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,
@@ -382,7 +375,6 @@ def test_configure_language_no_existing_cancel_selection():
     existing_env = {}  # No existing language
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("click.echo") as mock_echo,
         patch("questionary.select") as mock_select,
     ):
@@ -399,7 +391,6 @@ def test_configure_language_no_existing_custom_cancel():
     existing_env = {}  # No existing language
 
     with (
-        patch("gac.init_cli.GAC_ENV_PATH"),
         patch("click.echo") as mock_echo,
         patch("questionary.select") as mock_select,
         patch("questionary.text") as mock_text,

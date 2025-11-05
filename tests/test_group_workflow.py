@@ -8,6 +8,14 @@ import pytest
 from gac.main import main
 
 
+@pytest.fixture(autouse=True)
+def skip_git_hooks(monkeypatch):
+    """Avoid invoking lefthook/pre-commit binaries during unit tests."""
+    monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
+    monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
+    monkeypatch.setattr("gac.main.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+
+
 def test_group_with_no_staged_changes(tmp_path, monkeypatch):
     """--group with no staged changes shows appropriate error."""
     monkeypatch.chdir(tmp_path)
@@ -156,7 +164,7 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
 
     original_files = ["a.py", "b.py"]
 
-    def commit_side_effect(msg, no_verify):
+    def commit_side_effect(msg, no_verify, hook_timeout):
         if "add b" in msg:
             raise Exception("Second commit failed")
 

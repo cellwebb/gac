@@ -5,6 +5,8 @@ from pathlib import Path
 import click
 from rich.console import Console
 
+from gac.constants import EnvDefaults
+
 logger = logging.getLogger(__name__)
 console = Console()
 
@@ -57,13 +59,14 @@ def handle_confirmation_loop(
         return ("regenerate", commit_message, conversation_messages)
 
 
-def execute_commit(commit_message: str, no_verify: bool) -> None:
+def execute_commit(commit_message: str, no_verify: bool, hook_timeout: int | None = None) -> None:
     from gac.git import run_git_command
 
     commit_args = ["commit", "-m", commit_message]
     if no_verify:
         commit_args.append("--no-verify")
-    run_git_command(commit_args)
+    effective_timeout = hook_timeout if hook_timeout and hook_timeout > 0 else EnvDefaults.HOOK_TIMEOUT
+    run_git_command(commit_args, timeout=effective_timeout)
     logger.info("Commit created successfully")
     console.print("[green]Commit created successfully[/green]")
 

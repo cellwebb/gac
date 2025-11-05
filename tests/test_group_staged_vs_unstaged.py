@@ -8,6 +8,14 @@ import pytest
 from gac.main import main
 
 
+@pytest.fixture(autouse=True)
+def skip_git_hooks(monkeypatch):
+    """Ensure group staging tests don't call real git hooks."""
+    monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
+    monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
+    monkeypatch.setattr("gac.main.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+
+
 def test_group_without_add_all_only_shows_staged():
     """--group without --add-all only sends staged files to LLM."""
     staged_status = "Changes to be committed:\n\tmodified:   file1.py"
