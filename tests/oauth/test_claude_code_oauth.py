@@ -153,6 +153,76 @@ def test_start_callback_server_success_sets_result(monkeypatch: pytest.MonkeyPat
     assert event.is_set() is False
 
 
+def test_callback_handler_success_sets_code_and_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    handler = claude_code._CallbackHandler.__new__(claude_code._CallbackHandler)
+    handler.path = "/callback?code=abc&state=expected"
+    handler.result = claude_code._OAuthResult()
+
+    class FlagEvent:
+        def __init__(self) -> None:
+            self.flag = False
+
+        def set(self) -> None:
+            self.flag = True
+
+        def is_set(self) -> bool:
+            return self.flag
+
+    event = FlagEvent()
+    handler.received_event = event
+    captured: dict[str, object] = {}
+
+    def fake_write_response(status: int, body: str) -> None:
+        captured["status"] = status
+        captured["body"] = body
+
+    handler._write_response = fake_write_response  # type: ignore[method-assign]
+
+    handler.do_GET()
+
+    assert handler.result.code == "abc"
+    assert handler.result.state == "expected"
+    assert handler.result.error is None
+    assert event.is_set()
+    assert captured["status"] == 200
+    assert "Authentication Successful" in captured["body"]  # type: ignore[index]
+
+
+def test_callback_handler_failure_sets_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    handler = claude_code._CallbackHandler.__new__(claude_code._CallbackHandler)
+    handler.path = "/callback?state=expected"
+    handler.result = claude_code._OAuthResult()
+
+    class FlagEvent:
+        def __init__(self) -> None:
+            self.flag = False
+
+        def set(self) -> None:
+            self.flag = True
+
+        def is_set(self) -> bool:
+            return self.flag
+
+    event = FlagEvent()
+    handler.received_event = event
+    captured: dict[str, object] = {}
+
+    def fake_write_response(status: int, body: str) -> None:
+        captured["status"] = status
+        captured["body"] = body
+
+    handler._write_response = fake_write_response  # type: ignore[method-assign]
+
+    handler.do_GET()
+
+    assert handler.result.error == "Missing code or state"
+    assert handler.result.code is None
+    assert handler.result.state is None
+    assert event.is_set()
+    assert captured["status"] == 400
+    assert "Authentication Failed" in captured["body"]  # type: ignore[index]
+
+
 def test_exchange_code_for_tokens_success_adds_expiry(monkeypatch: pytest.MonkeyPatch) -> None:
     class DummyResponse:
         status_code = 200
