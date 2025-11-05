@@ -150,6 +150,150 @@ def test_init_cli_lmstudio_optional_api_key_and_url(monkeypatch):
                 assert "LMSTUDIO_API_KEY" not in env_text
 
 
+def test_init_cli_claude_code_keep_existing_token(monkeypatch):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = _setup_env_file(tmpdir)
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: "existing-token")
+
+            def forbid_authenticate(quiet: bool) -> bool:
+                raise AssertionError("authenticate_and_save should not be called")
+
+            monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", forbid_authenticate)
+
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                mselect.return_value.ask.side_effect = ["Claude Code", "Keep existing token", "English"]
+                mtext.return_value.ask.side_effect = [""]
+                mpass.return_value.ask.side_effect = []
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                env_text = env_path.read_text()
+                assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+                assert "GAC_LANGUAGE='English'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
+
+
+def test_init_cli_claude_code_reauthenticate_success(monkeypatch):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = _setup_env_file(tmpdir)
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: "existing-token")
+            auth_mock = mock.Mock(return_value=True)
+            monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", auth_mock)
+
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                mselect.return_value.ask.side_effect = [
+                    "Claude Code",
+                    "Re-authenticate (get new token)",
+                    "English",
+                ]
+                mtext.return_value.ask.side_effect = [""]
+                mpass.return_value.ask.side_effect = []
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                auth_mock.assert_called_once_with(quiet=False)
+                env_text = env_path.read_text()
+                assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+                assert "GAC_LANGUAGE='English'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
+
+
+def test_init_cli_claude_code_reauthenticate_failure(monkeypatch):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = _setup_env_file(tmpdir)
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: "existing-token")
+            auth_mock = mock.Mock(return_value=False)
+            monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", auth_mock)
+
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                mselect.return_value.ask.side_effect = [
+                    "Claude Code",
+                    "Re-authenticate (get new token)",
+                ]
+                mtext.return_value.ask.side_effect = [""]
+                mpass.return_value.ask.side_effect = []
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                auth_mock.assert_called_once_with(quiet=False)
+                assert "Claude Code authentication failed. Keeping existing token." in result.output
+                env_text = env_path.read_text()
+                assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+                assert "GAC_LANGUAGE" not in env_text
+
+
+def test_init_cli_claude_code_first_time_success(monkeypatch):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = _setup_env_file(tmpdir)
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: None)
+            auth_mock = mock.Mock(return_value=True)
+            monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", auth_mock)
+
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                mselect.return_value.ask.side_effect = ["Claude Code", "English"]
+                mtext.return_value.ask.side_effect = [""]
+                mpass.return_value.ask.side_effect = []
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                auth_mock.assert_called_once_with(quiet=False)
+                env_text = env_path.read_text()
+                assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+                assert "GAC_LANGUAGE='English'" in env_text
+                assert "GAC_TRANSLATE_PREFIXES='false'" in env_text
+
+
+def test_init_cli_claude_code_first_time_failure(monkeypatch):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = _setup_env_file(tmpdir)
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path):
+            monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: None)
+            auth_mock = mock.Mock(return_value=False)
+            monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", auth_mock)
+
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+            ):
+                mselect.return_value.ask.side_effect = ["Claude Code"]
+                mtext.return_value.ask.side_effect = [""]
+                mpass.return_value.ask.side_effect = []
+
+                result = runner.invoke(init)
+                assert result.exit_code == 0
+                auth_mock.assert_called_once_with(quiet=False)
+                assert "Claude Code authentication failed. Exiting." in result.output
+                env_text = env_path.read_text()
+                assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+                assert "GAC_LANGUAGE" not in env_text
+
+
 def test_init_cli_provider_selection_cancelled():
     """Test behavior when user cancels provider selection."""
     runner = CliRunner()
