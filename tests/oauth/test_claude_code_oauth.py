@@ -1,3 +1,4 @@
+import string
 import time
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
@@ -8,6 +9,24 @@ import pytest
 from gac.oauth import claude_code
 
 
+def test_urlsafe_b64encode_strips_padding() -> None:
+    encoded = claude_code._urlsafe_b64encode(b"\xff\xef")
+    assert "=" not in encoded
+    assert encoded == "_-8"
+
+
+def test_generate_code_verifier_character_set() -> None:
+    verifier = claude_code._generate_code_verifier()
+    allowed = set(string.ascii_letters + string.digits + "-_")
+    assert 43 <= len(verifier) <= 128
+    assert set(verifier) <= allowed
+
+
+def test_compute_code_challenge_known_value() -> None:
+    challenge = claude_code._compute_code_challenge("abc")
+    assert challenge == "ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0"
+
+
 def test_prepare_oauth_context_generates_valid_pkce_values() -> None:
     context = claude_code.prepare_oauth_context()
 
@@ -16,6 +35,14 @@ def test_prepare_oauth_context_generates_valid_pkce_values() -> None:
     assert context.redirect_uri is None
     expected_challenge = claude_code._compute_code_challenge(context.code_verifier)
     assert context.code_challenge == expected_challenge
+
+
+def test_get_success_and_failure_html_include_messages() -> None:
+    success_html = claude_code._get_success_html()
+    failure_html = claude_code._get_failure_html()
+
+    assert "Authentication Successful" in success_html
+    assert "Authentication Failed" in failure_html
 
 
 def test_build_authorization_url_requires_redirect() -> None:
@@ -77,6 +104,55 @@ def test_start_callback_server_returns_none_when_ports_in_use(monkeypatch: pytes
     assert context.redirect_uri is None
 
 
+def test_start_callback_server_success_sets_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyServer:
+        def __init__(self, address, handler):
+            self.address = address
+            self.handler = handler
+            self.serve_called = False
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def serve_forever(self):
+            self.serve_called = True
+
+    class FakeThread:
+        def __init__(self, target, daemon=True):
+            self.target = target
+            self.daemon = daemon
+            self.started = False
+
+        def start(self):
+            self.started = True
+            self.target()
+
+    def fake_thread(*, target, daemon=True):
+        return FakeThread(target, daemon=daemon)
+
+    monkeypatch.setattr(claude_code, "HTTPServer", DummyServer)
+    monkeypatch.setattr(claude_code.threading, "Thread", fake_thread)
+
+    context = claude_code.OAuthContext(
+        state="state",
+        code_verifier="verifier",
+        code_challenge="challenge",
+        created_at=time.time(),
+    )
+
+    result = claude_code._start_callback_server(context)
+
+    assert result is not None
+    server, oauth_result, event = result
+    assert context.redirect_uri == "http://localhost:8765/callback"
+    assert server.serve_called
+    assert isinstance(oauth_result, claude_code._OAuthResult)
+    assert event.is_set() is False
+
+
 def test_exchange_code_for_tokens_success_adds_expiry(monkeypatch: pytest.MonkeyPatch) -> None:
     class DummyResponse:
         status_code = 200
@@ -117,6 +193,36 @@ def test_exchange_code_for_tokens_returns_none_on_error_status(monkeypatch: pyte
 
     def fake_post(url, json, headers, timeout):
         return DummyResponse()
+
+    monkeypatch.setattr(claude_code.httpx, "post", fake_post)
+
+    context = claude_code.OAuthContext(
+        state="state",
+        code_verifier="verifier",
+        code_challenge="challenge",
+        created_at=time.time(),
+        redirect_uri="http://localhost:8765/callback",
+    )
+
+    tokens = claude_code.exchange_code_for_tokens("code", context)
+    assert tokens is None
+
+
+def test_exchange_code_for_tokens_raises_without_redirect() -> None:
+    context = claude_code.OAuthContext(
+        state="state",
+        code_verifier="verifier",
+        code_challenge="challenge",
+        created_at=time.time(),
+    )
+
+    with pytest.raises(RuntimeError):
+        claude_code.exchange_code_for_tokens("code", context)
+
+
+def test_exchange_code_for_tokens_handles_post_exception(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_post(*args, **kwargs):
+        raise RuntimeError("network down")
 
     monkeypatch.setattr(claude_code.httpx, "post", fake_post)
 
@@ -329,6 +435,48 @@ def test_perform_oauth_flow_handles_callback_error(monkeypatch: pytest.MonkeyPat
     assert fake_server.shutdown_called
 
 
+def test_perform_oauth_flow_returns_none_when_exchange_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    base_context = claude_code.OAuthContext(
+        state="state",
+        code_verifier="verifier",
+        code_challenge="challenge",
+        created_at=time.time(),
+    )
+
+    class FakeServer:
+        def shutdown(self) -> None:
+            self.shutdown_called = True
+
+        def __init__(self) -> None:
+            self.shutdown_called = False
+
+    class FakeEvent:
+        def wait(self, timeout: float) -> bool:
+            return True
+
+    fake_server = FakeServer()
+    fake_event = FakeEvent()
+    fake_result = SimpleNamespace(code="auth", state="state", error=None)
+
+    def fake_prepare() -> claude_code.OAuthContext:
+        return base_context
+
+    def fake_start(context: claude_code.OAuthContext):
+        context.redirect_uri = "http://localhost:8765/callback"
+        return fake_server, fake_result, fake_event
+
+    monkeypatch.setattr(claude_code, "prepare_oauth_context", fake_prepare)
+    monkeypatch.setattr(claude_code, "_start_callback_server", fake_start)
+    monkeypatch.setattr(claude_code, "build_authorization_url", lambda ctx: "http://example.com/auth")
+    monkeypatch.setattr(claude_code.webbrowser, "open", lambda url: True)
+    monkeypatch.setattr(claude_code, "exchange_code_for_tokens", lambda code, ctx: None)
+
+    result = claude_code.perform_oauth_flow(quiet=True)
+
+    assert result is None
+    assert fake_server.shutdown_called
+
+
 def test_authenticate_and_save_success(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     tokens = {"access_token": "token"}
     saved: list[str] = []
@@ -359,6 +507,12 @@ def test_authenticate_and_save_handles_save_failure(monkeypatch: pytest.MonkeyPa
     assert claude_code.authenticate_and_save(quiet=True) is False
 
 
+def test_authenticate_and_save_returns_false_when_flow_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(claude_code, "perform_oauth_flow", lambda quiet: None)
+
+    assert claude_code.authenticate_and_save(quiet=True) is False
+
+
 def test_load_stored_token_missing_file_returns_none(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     env_path = tmp_path / ".gac.env"
     if env_path.exists():
@@ -377,6 +531,16 @@ def test_load_stored_token_reads_value(monkeypatch: pytest.MonkeyPatch, tmp_path
     monkeypatch.setattr(dotenv, "dotenv_values", lambda path: {"CLAUDE_CODE_ACCESS_TOKEN": "token"})
 
     assert claude_code.load_stored_token() == "token"
+
+
+def test_load_stored_token_returns_none_when_missing_key(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    env_path = tmp_path / ".gac.env"
+    env_path.write_text("")
+
+    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
+    monkeypatch.setattr(dotenv, "dotenv_values", lambda path: {})
+
+    assert claude_code.load_stored_token() is None
 
 
 def test_save_token_success(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
