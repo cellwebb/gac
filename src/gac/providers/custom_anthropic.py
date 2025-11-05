@@ -30,7 +30,7 @@ def call_custom_anthropic_api(model: str, messages: list[dict], temperature: flo
         CUSTOM_ANTHROPIC_VERSION: API version header (optional, defaults to '2023-06-01')
 
     Args:
-        model: The model to use (e.g., 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-latest')
+        model: The model to use (e.g., 'claude-sonnet-4-5', 'claude-haiku-4-5')
         messages: List of message dictionaries with 'role' and 'content' keys
         temperature: Controls randomness (0.0-1.0)
         max_tokens: Maximum tokens in the response

@@ -83,6 +83,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Anthropic", "claude-haiku-4-5"),
         ("Cerebras", "zai-glm-4.6"),
         ("Chutes", "zai-org/GLM-4.6-FP8"),
+        ("Claude Code", "claude-sonnet-4-5"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
@@ -112,6 +113,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_lmstudio = provider_key == "lm-studio"
     is_streamlake = provider_key == "streamlake"
     is_zai = provider_key in ("zai", "zai-coding")
+    is_claude_code = provider_key == "claude-code"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
 
@@ -175,6 +177,41 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         url_to_save = url.strip() if url.strip() else url_default
         set_key(str(GAC_ENV_PATH), "LMSTUDIO_API_URL", url_to_save)
         click.echo(f"Set LMSTUDIO_API_URL={url_to_save}")
+
+    # Handle Claude Code OAuth separately
+    if is_claude_code:
+        from gac.oauth.claude_code import authenticate_and_save, load_stored_token
+
+        existing_token = load_stored_token()
+        if existing_token:
+            click.echo("\n✓ Claude Code access token already configured.")
+            action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing token",
+                    "Re-authenticate (get new token)",
+                ],
+            ).ask()
+
+            if action is None or action.startswith("Keep existing"):
+                if action is None:
+                    click.echo("Claude Code configuration cancelled. Keeping existing token.")
+                else:
+                    click.echo("Keeping existing Claude Code token")
+                return True
+            else:
+                click.echo("\n🔐 Starting Claude Code OAuth authentication...")
+                if not authenticate_and_save(quiet=False):
+                    click.echo("❌ Claude Code authentication failed. Keeping existing token.")
+                    return False
+                return True
+        else:
+            click.echo("\n🔐 Starting Claude Code OAuth authentication...")
+            click.echo("   (Your browser will open automatically)\n")
+            if not authenticate_and_save(quiet=False):
+                click.echo("\n❌ Claude Code authentication failed. Exiting.")
+                return False
+            return True
 
     # Determine API key name based on provider
     if is_lmstudio:

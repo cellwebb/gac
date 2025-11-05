@@ -141,7 +141,7 @@ gac
 - **이 커밋에만 특정 모델 사용:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **특정 언어로 커밋 메시지 생성:**

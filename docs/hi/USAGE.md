@@ -141,7 +141,7 @@ gac
 - **इस कमिट के लिए एक विशिष्ट मॉडल का उपयोग करें:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **एक विशिष्ट भाषा में कमिट मैसेज जेनरेट करें:**

@@ -141,7 +141,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 - **Ein bestimmtes Modell nur für diesen Commit verwenden:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Commit-Nachricht in einer bestimmten Sprache generieren:**

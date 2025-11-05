@@ -141,7 +141,7 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 - **Usar um modelo específico apenas para este commit:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Gerar mensagem de commit em um idioma específico:**

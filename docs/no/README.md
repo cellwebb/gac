@@ -67,7 +67,7 @@ uv tool upgrade gac
 
 ### 🌐 **Støttede Leverandører**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **DeepSeek** • **Fireworks**
+- **Anthropic** • **Cerebras** • **Claude Code** • **Chutes.ai** • **DeepSeek** • **Fireworks**
 - **Gemini** • **Groq** • **LM Studio** • **MiniMax** • **Mistral** • **Ollama** • **OpenAI**
 - **OpenRouter** • **Streamlake** • **Synthetic.new** • **Together AI**
 - **Z.AI** • **Z.AI Coding** • **Tilpassede Endepunkter (Anthropic/OpenAI)**

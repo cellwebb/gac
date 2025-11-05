@@ -32,7 +32,7 @@ class TestCustomAnthropicAPIKeyValidation:
         with temporarily_remove_env_var("CUSTOM_ANTHROPIC_API_KEY"):
             with patch.dict(os.environ, {"CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"}):
                 with pytest.raises(AIError) as exc_info:
-                    call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert_missing_api_key_error(exc_info, "custom anthropic", "CUSTOM_ANTHROPIC_API_KEY")
 
@@ -41,7 +41,7 @@ class TestCustomAnthropicAPIKeyValidation:
         with temporarily_remove_env_var("CUSTOM_ANTHROPIC_BASE_URL"):
             with patch.dict(os.environ, {"CUSTOM_ANTHROPIC_API_KEY": "test-key"}):
                 with pytest.raises(AIError) as exc_info:
-                    call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert exc_info.value.error_type == "model"
                 assert "CUSTOM_ANTHROPIC_BASE_URL" in str(exc_info.value)
@@ -68,7 +68,7 @@ class TestCustomAnthropicProviderMocked(BaseProviderTest):
 
     @property
     def model_name(self) -> str:
-        return "claude-3-5-haiku-latest"
+        return "claude-haiku-4-5"
 
     @property
     def success_response(self) -> dict[str, Any]:
@@ -250,7 +250,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -266,7 +266,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 
-                call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 called_url = mock_post.call_args[0][0]
                 assert called_url == "https://api.example.com/v1/messages"
@@ -286,7 +286,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 
-                call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 called_url = mock_post.call_args[0][0]
                 assert called_url == "https://proxy.example.com/anthropic/v1/messages"
@@ -308,7 +308,7 @@ class TestCustomAnthropicEdgeCases:
                     {"role": "user", "content": "User message"},
                 ]
 
-                result = call_custom_anthropic_api("claude-3-5-haiku-latest", messages, 0.7, 1000)
+                result = call_custom_anthropic_api("claude-haiku-4-5", messages, 0.7, 1000)
 
                 call_args = mock_post.call_args
                 payload = call_args.kwargs["json"]
@@ -334,7 +334,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 
-                call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 call_args = mock_post.call_args
                 headers = call_args.kwargs["headers"]
@@ -352,7 +352,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 
-                call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 call_args = mock_post.call_args
                 headers = call_args.kwargs["headers"]
@@ -375,7 +375,7 @@ class TestCustomAnthropicEdgeCases:
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 
-                result = call_custom_anthropic_api("claude-3-5-haiku-latest", [], 0.7, 1000)
+                result = call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert result == "actual response text"
 

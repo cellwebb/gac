@@ -87,7 +87,7 @@ def _parse_model_identifier(model: str) -> tuple[str, str]:
     if not provider or not model_name:
         message = (
             f"Invalid model format: '{model}'. Both provider and model name are required "
-            "(example: 'anthropic:claude-3-5-haiku-latest')."
+            "(example: 'anthropic:claude-haiku-4-5')."
         )
         logger.error(message)
         console.print(f"[red]{message}[/red]")

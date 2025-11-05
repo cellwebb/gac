@@ -98,6 +98,7 @@ def generate_with_retries(
         "anthropic",
         "cerebras",
         "chutes",
+        "claude-code",
         "deepseek",
         "fireworks",
         "gemini",

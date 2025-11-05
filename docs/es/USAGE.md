@@ -142,7 +142,7 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 - **Usar un modelo específico solo para este commit:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Generar mensaje de commit en un idioma específico:**

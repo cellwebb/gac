@@ -141,7 +141,7 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 - **Använd en specifik modell för denna commit:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Generera commit-meddelande på ett specifikt språk:**

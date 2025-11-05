@@ -3,6 +3,7 @@
 from .anthropic import call_anthropic_api
 from .cerebras import call_cerebras_api
 from .chutes import call_chutes_api
+from .claude_code import call_claude_code_api
 from .custom_anthropic import call_custom_anthropic_api
 from .custom_openai import call_custom_openai_api
 from .deepseek import call_deepseek_api
@@ -24,6 +25,7 @@ __all__ = [
     "call_anthropic_api",
     "call_cerebras_api",
     "call_chutes_api",
+    "call_claude_code_api",
     "call_custom_anthropic_api",
     "call_custom_openai_api",
     "call_deepseek_api",

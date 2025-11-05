@@ -141,7 +141,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 - **Gebruik een specifiek model alleen voor deze commit:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Genereer commitbericht in een specifieke taal:**

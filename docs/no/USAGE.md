@@ -141,7 +141,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 - **Use a specific model just for this commit:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Generate commit message in a specific language:**

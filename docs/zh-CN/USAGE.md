@@ -142,7 +142,7 @@ gac
 - **仅为此次提交使用特定模型：**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **以特定语言生成提交信息：**

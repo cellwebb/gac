@@ -141,7 +141,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 - **Utiliser un modèle spécifique juste pour ce commit :**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Générer un message de commit dans une langue spécifique :**

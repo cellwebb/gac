@@ -13,6 +13,7 @@ from gac.providers import (
     call_anthropic_api,
     call_cerebras_api,
     call_chutes_api,
+    call_claude_code_api,
     call_custom_anthropic_api,
     call_custom_openai_api,
     call_deepseek_api,
@@ -48,7 +49,7 @@ def generate_commit_message(
     """Generate a commit message using direct API calls to AI providers.
 
     Args:
-        model: The model to use in provider:model_name format (e.g., 'anthropic:claude-3-5-haiku-latest')
+        model: The model to use in provider:model_name format (e.g., 'anthropic:claude-haiku-4-5')
         prompt: Either a string prompt (for backward compatibility) or tuple of (system_prompt, user_prompt)
         temperature: Controls randomness (0.0-1.0), lower values are more deterministic
         max_tokens: Maximum tokens in the response
@@ -62,7 +63,7 @@ def generate_commit_message(
         AIError: If generation fails after max_retries attempts
 
     Example:
-        >>> model = "anthropic:claude-3-5-haiku-latest"
+        >>> model = "anthropic:claude-haiku-4-5"
         >>> system_prompt, user_prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
         >>> generate_commit_message(model, (system_prompt, user_prompt))
         'docs: Update README with installation instructions'
@@ -88,6 +89,7 @@ def generate_commit_message(
     provider_funcs = {
         "anthropic": call_anthropic_api,
         "cerebras": call_cerebras_api,
+        "claude-code": call_claude_code_api,
         "chutes": call_chutes_api,
         "custom-anthropic": call_custom_anthropic_api,
         "custom-openai": call_custom_openai_api,

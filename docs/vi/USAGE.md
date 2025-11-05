@@ -141,7 +141,7 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
 - **Sử dụng mô hình cụ thể chỉ cho commit này:**
 
   ```sh
-  gac -m anthropic:claude-3-5-haiku-latest
+  gac -m anthropic:claude-haiku-4-5
   ```
 
 - **Tạo thông điệp commit bằng ngôn ngữ cụ thể:**
