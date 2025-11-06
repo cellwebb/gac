@@ -714,9 +714,53 @@ def main(
                 hook_timeout=hook_timeout,
             )
         except AIError as e:
-            logger.error(str(e))
-            console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
-            sys.exit(1)
+            # Check if this is a Claude Code OAuth token expiration
+            if (
+                e.error_type == "authentication"
+                and model.startswith("claude-code:")
+                and ("expired" in str(e).lower() or "oauth" in str(e).lower())
+            ):
+                logger.error(str(e))
+                console.print("[yellow]⚠ Claude Code OAuth token has expired[/yellow]")
+                console.print("[cyan]🔐 Starting automatic re-authentication...[/cyan]")
+
+                try:
+                    from gac.oauth.claude_code import authenticate_and_save
+
+                    if authenticate_and_save(quiet=quiet):
+                        console.print("[green]✓ Re-authentication successful![/green]")
+                        console.print("[cyan]Retrying commit...[/cyan]\n")
+
+                        # Retry the commit workflow
+                        execute_single_commit_workflow(
+                            system_prompt=system_prompt,
+                            user_prompt=user_prompt,
+                            model=model,
+                            temperature=temperature,
+                            max_output_tokens=max_output_tokens,
+                            max_retries=max_retries,
+                            require_confirmation=require_confirmation,
+                            quiet=quiet,
+                            no_verify=no_verify,
+                            dry_run=dry_run,
+                            push=push,
+                            show_prompt=show_prompt,
+                            hook_timeout=hook_timeout,
+                        )
+                        return  # Success!
+                    else:
+                        console.print("[red]Re-authentication failed.[/red]")
+                        console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
+                        sys.exit(1)
+                except Exception as auth_error:
+                    console.print(f"[red]Re-authentication error: {auth_error}[/red]")
+                    console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
+                    sys.exit(1)
+            else:
+                # Non-Claude Code error or non-auth error
+                logger.error(str(e))
+                console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
+                sys.exit(1)
 
 
 if __name__ == "__main__":
