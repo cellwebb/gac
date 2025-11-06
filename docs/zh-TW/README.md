@@ -40,7 +40,6 @@
 
 ```bash
 uvx gac init   # 設定提供者、模型和語言
-uvx gac model  # 重新執行提供者/模型設定（跳過語言提示）
 uvx gac  # 使用 LLM 生成並提交
 ```
 
@@ -51,7 +50,6 @@ uvx gac  # 使用 LLM 生成並提交
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

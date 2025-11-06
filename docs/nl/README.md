@@ -40,7 +40,6 @@ Intelligente, contextuele berichten die het **waarom** achter uw wijzigingen uit
 
 ```bash
 uvx gac init   # Configureer uw provider, model en taal
-uvx gac model  # Voer provider/model setup opnieuw uit zonder taalprompts
 uvx gac        # Genereer en commit met LLM
 ```
 
@@ -51,7 +50,6 @@ Dat is alles! Beoordeel het gegenereerde bericht en bevestig met `y`.
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

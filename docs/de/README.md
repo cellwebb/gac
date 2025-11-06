@@ -40,7 +40,6 @@ Intelligente, kontextbezogene Nachrichten, die das **Warum** hinter Ihren Änder
 
 ```bash
 uvx gac init   # Konfigurieren Sie Ihren Provider, Ihr Modell und Ihre Sprache
-uvx gac model  # Provider/Modell-Setup erneut ausführen ohne Spracheingabeaufforderungen
 uvx gac  # Generieren und committen mit LLM
 ```
 
@@ -51,7 +50,6 @@ Das ist alles! Überprüfen Sie die generierte Nachricht und bestätigen Sie mit
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

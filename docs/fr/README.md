@@ -39,9 +39,8 @@ Des messages intelligents et contextuels qui expliquent le **pourquoi** derrièr
 ### Utiliser gac sans l'installer
 
 ```bash
-uvx gac init   # Configurez votre fournisseur, modèle et langue
-uvx gac model  # Relancez la configuration fournisseur/modèle sans questions de langue
-uvx gac  # Générez et commitez avec l'IA
+uvx gac init   # Configurez votre fournisseur, votre modèle et votre langue
+uvx gac  # Générez et commitez avec LLM
 ```
 
 C'est tout ! Vérifiez le message généré et confirmez avec `y`.
@@ -51,7 +50,6 @@ C'est tout ! Vérifiez le message généré et confirmez avec `y`.
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

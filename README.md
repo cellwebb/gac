@@ -40,7 +40,6 @@ Intelligent, contextual messages that explain the **why** behind your changes:
 
 ```bash
 uvx gac init   # Configure your provider, model, and language
-uvx gac model  # Re-run provider/model setup without language prompts
 uvx gac  # Generate and commit with LLM
 ```
 
@@ -51,7 +50,6 @@ That's it! Review the generated message and confirm with `y`.
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

@@ -40,8 +40,7 @@ Messaggi intelligenti e contestuali che spiegano il **perché** dietro le tue mo
 
 ```bash
 uvx gac init   # Configura il tuo provider, modello e lingua
-uvx gac model  # Ri-esegui la configurazione provider/modello senza prompt di lingua
-uvx gac  # Genera e fai il commit con LLM
+uvx gac  # Genera e fai commit con LLM
 ```
 
 Questo è tutto! Rivedi il messaggio generato e conferma con `y`.
@@ -51,7 +50,6 @@ Questo è tutto! Rivedi il messaggio generato e conferma con `y`.
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

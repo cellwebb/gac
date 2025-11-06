@@ -40,7 +40,6 @@ Intelligente, kontekstuelle meldinger som forklarer **hvorfor** bak endringene d
 
 ```bash
 uvx gac init   # Konfigurer din leverandør, modell og språk
-uvx gac model  # Kjør leverandør/modell-oppsett på nytt uten språk-spørsmål
 uvx gac        # Generer og commit med LLM
 ```
 
@@ -51,7 +50,6 @@ Det er alt! Gjennomgå den genererte meldingen og bekreft med `y`.
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

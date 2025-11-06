@@ -40,7 +40,6 @@
 
 ```bash
 uvx gac init   # プロバイダー、モデル、言語を設定
-uvx gac model  # 言語プロンプトなしでプロバイダー/モデル設定を再実行
 uvx gac  # LLMで生成してコミット
 ```
 
@@ -51,7 +50,6 @@ uvx gac  # LLMで生成してコミット
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

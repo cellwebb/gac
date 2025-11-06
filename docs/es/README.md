@@ -40,7 +40,6 @@ Mensajes inteligentes y contextuales que explican el **porqué** detrás de tus 
 
 ```bash
 uvx gac init   # Configura tu proveedor, modelo e idioma
-uvx gac model  # Vuelve a ejecutar la configuración de proveedor/modelo sin prompts de idioma
 uvx gac  # Genera y hace commit con LLM
 ```
 
@@ -51,7 +50,6 @@ uvx gac  # Genera y hace commit con LLM
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

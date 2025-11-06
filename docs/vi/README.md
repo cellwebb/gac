@@ -40,7 +40,6 @@ Thông điệp thông minh, có ngữ cảnh giải thích **tại sao** đằng
 
 ```bash
 uvx gac init   # Cấu hình nhà cung cấp, mô hình và ngôn ngữ của bạn
-uvx gac model  # Chạy lại thiết lập nhà cung cấp/mô hình mà không có gợi ý ngôn ngữ
 uvx gac  # Tạo và commit với LLM
 ```
 
@@ -51,7 +50,6 @@ Chỉ vậy thôi! Xem lại thông điệp đã tạo và xác nhận bằng `y
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 

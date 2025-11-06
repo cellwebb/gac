@@ -39,9 +39,8 @@
 ### 설치 없이 gac 사용하기
 
 ```bash
-uvx gac init   # 공급자, 모델, 언어 설정
-uvx gac model  # 언어 프롬프트 없이 공급자/모델 설정 재실행
-uvx gac  # LLM으로 생성하고 커밋
+uvx gac init   # 공급자, 모델, 언어 구성
+uvx gac  # LLM으로 생성 및 커밋
 ```
 
 이게 전부입니다! 생성된 메시지를 검토하고 `y`로 확인하세요.
@@ -51,7 +50,6 @@ uvx gac  # LLM으로 생성하고 커밋
 ```bash
 uv tool install gac
 gac init
-gac model
 gac
 ```
 
