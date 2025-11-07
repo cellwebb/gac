@@ -161,6 +161,22 @@ class TestCountTokens:
         mock_tiktoken.encoding_for_model.assert_called_with("gpt-4")
         mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
 
+    def test_no_tiktoken_mode_skips_tiktoken(self, monkeypatch):
+        """Ensure rough token counting mode bypasses tiktoken entirely."""
+        monkeypatch.setenv("GAC_NO_TIKTOKEN", "true")
+        ai_utils._should_skip_tiktoken_counting.cache_clear()
+
+        sample_text = "offline token counting"
+
+        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
+            tokens = ai_utils.count_tokens(sample_text, "openai:gpt-4")
+
+        assert tokens == len(sample_text) // 4
+        mock_get_encoding.assert_not_called()
+
+        monkeypatch.delenv("GAC_NO_TIKTOKEN", raising=False)
+        ai_utils._should_skip_tiktoken_counting.cache_clear()
+
 
 class TestAIError:
     """Test AIError class."""

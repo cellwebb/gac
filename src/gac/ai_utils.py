@@ -4,6 +4,7 @@ This module provides utility functions that support the AI provider implementati
 """
 
 import logging
+import os
 import time
 from functools import lru_cache
 from typing import Any
@@ -11,10 +12,17 @@ from typing import Any
 import tiktoken
 from halo import Halo
 
-from gac.constants import Utility
+from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
 
 logger = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=1)
+def _should_skip_tiktoken_counting() -> bool:
+    """Return True when token counting should avoid tiktoken calls entirely."""
+    value = os.getenv("GAC_NO_TIKTOKEN", str(EnvDefaults.NO_TIKTOKEN))
+    return value.lower() in ("true", "1", "yes", "on")
 
 
 def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
@@ -22,6 +30,9 @@ def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: st
     text = extract_text_content(content)
     if not text:
         return 0
+
+    if _should_skip_tiktoken_counting():
+        return len(text) // 4
 
     try:
         encoding = get_encoding(model)
@@ -48,9 +59,7 @@ def get_encoding(model: str) -> tiktoken.Encoding:
     """Get the appropriate encoding for a given model."""
     provider, model_name = model.split(":", 1) if ":" in model else (None, model)
 
-    # For local/custom providers, always use the default encoding to avoid network calls
-    local_providers = {"ollama", "lm-studio", "custom-openai", "custom-anthropic"}
-    if provider in local_providers:
+    if provider != "openai":
         return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
     try:

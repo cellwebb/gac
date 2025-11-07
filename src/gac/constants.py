@@ -25,6 +25,7 @@ class EnvDefaults:
     ALWAYS_INCLUDE_SCOPE: bool = False
     SKIP_SECRET_SCAN: bool = False
     VERBOSE: bool = False
+    NO_TIKTOKEN: bool = False
     HOOK_TIMEOUT: int = 120  # Timeout for pre-commit and lefthook hooks in seconds
 
 
