@@ -435,6 +435,7 @@ GEMINI_API_KEY="..."
 GAC_TIMEOUT=120          # Timeout in secondi
 GAC_MAX_TOKENS=1000      # Token massimi per response
 GAC_TEMPERATURE=0.3      # Creatività (0.0-1.0)
+GAC_NO_TIKTOKEN=true     # Rimani completamente offline bypassando il download di tiktoken e usando il stimatore di token approssimato integrato
 ```
 
 ### File di Configurazione
