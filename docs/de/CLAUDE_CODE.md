@@ -77,13 +77,13 @@ Claude Code bietet Zugriff auf die gleichen Modelle wie die Anthropic API. Aktue
 
 ### Token abgelaufen
 
-Wenn Sie Authentifizierungsfehler sehen, ist Ihr Token möglicherweise abgelaufen. Reauthentifizieren Sie sich durch Ausführen von:
+Wenn Sie Authentifizierungsfehler sehen, ist Ihr Token möglicherweise abgelaufen. Authentifizieren Sie sich erneut, indem Sie ausführen:
 
 ```bash
-gac model
+gac auth
 ```
 
-Wählen Sie dann "Claude Code" und wählen Sie "Reauthentifizieren (neuen Token erhalten)". Ihr Browser öffnet sich für neue OAuth-Authentifizierung.
+Ihr Browser öffnet sich automatisch für eine neue OAuth-Authentifizierung. Alternativ können Sie `gac model` ausführen, "Claude Code" auswählen und "Neu authentifizieren (neues Token erhalten)" wählen.
 
 ### "CLAUDE_CODE_ACCESS_TOKEN nicht gefunden"
 

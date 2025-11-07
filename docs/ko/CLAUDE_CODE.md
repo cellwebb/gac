@@ -80,10 +80,10 @@ Claude Code는 Anthropic API와 동일한 모델 액세스를 제공합니다. �
 인증 오류가 표시되면 토큰이 만료되었을 수 있습니다. 다음을 실행하여 재인증하세요:
 
 ```bash
-gac model
+gac auth
 ```
 
-그런 다음 "Claude Code"를 선택하고 "재인증 (새 토큰 받기)"를 선택하세요. 새 OAuth 인증을 위해 브라우저가 열릴 것입니다.
+브라우저가 자동으로 열려 새로운 OAuth 인증이 진행됩니다. 또는 `gac model`을 실행하고 "Claude Code"를 선택한 다음 "재인증(새 토큰 받기)"를 선택할 수도 있습니다.
 
 ### "CLAUDE_CODE_ACCESS_TOKEN을 찾을 수 없음"
 

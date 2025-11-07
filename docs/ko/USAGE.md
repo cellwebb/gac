@@ -237,16 +237,17 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 
 ### 구성 하위 명령어
 
-다음 하위 명령어를 사용할 수 있습니다:
+다음 하위 명령을 사용할 수 있습니다:
 
-- `gac init` — 프로바이더, 모델 및 언어 구성을 위한 대화형 설정 마법사
-- `gac model` — 언어 프롬프트 없는 프로바이더/모델/API 키 설정 (빠른 전환에 이상적)
+- `gac init` — 공급자, 모델, 언어 구성을 위한 대화형 설정 마법사
+- `gac model` — 언어 프롬프트 없는 공급자/모델/API 키 설정 (빠른 전환에 이상적)
+- `gac auth` — Claude Code OAuth 토큰 인증 또는 재인증 (토큰 만료 시 유용)
 - `gac config show` — 현재 구성 표시
-- `gac config set KEY VALUE` — `$HOME/.gac.env`에 구성 키 설정
+- `gac config set KEY VALUE` — `$HOME/.gac.env`에서 구성 키 설정
 - `gac config get KEY` — 구성 값 가져오기
 - `gac config unset KEY` — `$HOME/.gac.env`에서 구성 키 제거
-- `gac language` (또는 `gac lang`) — 커밋 메시지용 대화형 언어 선택기 (GAC_LANGUAGE 설정)
-- `gac diff` — 스테이징/스테이징되지 않은 변경, 색상 및 잘림 옵션으로 필터링된 git diff 표시
+- `gac language` (또는 `gac lang`) — 커밋 메시지를 위한 대화형 언어 선택기 (GAC_LANGUAGE 설정)
+- `gac diff` — 스테이징된/스테이징되지 않은 변경, 색상, 자르기 옵션으로 필터링된 git diff 표시
 
 ## 도움말 얻기
 

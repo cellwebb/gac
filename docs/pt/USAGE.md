@@ -239,14 +239,15 @@ Para orientação detalhada sobre criação de prompts de sistema personalizados
 
 Os seguintes subcomandos estão disponíveis:
 
-- `gac init` — Assistente de configuração interativo para provider, modelo e configuração de idioma
-- `gac model` — Configuração de provider/modelo/chave de API sem prompts de idioma (ideal para mudanças rápidas)
+- `gac init` — Assistente de configuração interativo para provedor, modelo e idioma
+- `gac model` — Configuração de provedor/modelo/chave API sem prompts de idioma (ideal para mudanças rápidas)
+- `gac auth` — Autenticar ou reautenticar token OAuth Claude Code (útil quando o token expira)
 - `gac config show` — Mostrar configuração atual
-- `gac config set KEY VALUE` — Definir uma chave de configuração em `$HOME/.gac.env`
-- `gac config get KEY` — Obter um valor de configuração
-- `gac config unset KEY` — Remover uma chave de configuração de `$HOME/.gac.env`
-- `gac language` (ou `gac lang`) — Seletor interativo de idioma para mensagens de commit (define GAC_LANGUAGE)
-- `gac diff` — Mostrar git diff filtrado com opções para alterações em stage/não em stage, cor e truncamento
+- `gac config set KEY VALUE` — Definir chave de configuração em `$HOME/.gac.env`
+- `gac config get KEY` — Obter valor de configuração
+- `gac config unset KEY` — Remover chave de configuração de `$HOME/.gac.env`
+- `gac language` (ou `gac lang`) — Seletor de idioma interativo para mensagens de commit (define GAC_LANGUAGE)
+- `gac diff` — Mostrar git diff filtrado com opções para mudanças preparadas/não preparadas, cor e truncamento
 
 ## Obtendo Ajuda
 

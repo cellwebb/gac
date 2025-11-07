@@ -241,7 +241,8 @@ gac --skip-secret-scan  # 為此次提交跳過安全掃描
 以下子命令可用：
 
 - `gac init` — 提供者、模型和語言設定的互動式設定精靈
-- `gac model` — 只更新提供者/模型/API Key 的快捷精靈（跳過語言提示）
+- `gac model` — 提供者/模型/API 金鑰設定，無語言提示（適合快速切換）
+- `gac auth` — 驗證或重新驗證 Claude Code OAuth 令牌（在令牌過期時有用）
 - `gac config show` — 顯示目前設定
 - `gac config set KEY VALUE` — 在 `$HOME/.gac.env` 中設定設定金鑰
 - `gac config get KEY` — 獲取設定值

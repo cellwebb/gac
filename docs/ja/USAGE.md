@@ -240,9 +240,10 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 以下のサブコマンドが利用可能です：
 
 - `gac init` — プロバイダー、モデル、言語設定の対話的なセットアップウィザード
-- `gac model` — 言語プロンプトなしのプロバイダー/モデル/API キーセットアップ（クイックスイッチに最適）
+- `gac model` — 言語プロンプトなしのプロバイダー/モデル/APIキー設定（クイックスイッチに最適）
+- `gac auth` — Claude Code OAuthトークンの認証または再認証（トークン期限切れ時に有用）
 - `gac config show` — 現在の設定を表示
-- `gac config set KEY VALUE` — `$HOME/.gac.env` に設定キーを設定
+- `gac config set KEY VALUE` — `$HOME/.gac.env` で設定キーを設定
 - `gac config get KEY` — 設定値を取得
 - `gac config unset KEY` — `$HOME/.gac.env` から設定キーを削除
 - `gac language` (または `gac lang`) — コミットメッセージの対話的言語セレクター（GAC_LANGUAGE を設定）

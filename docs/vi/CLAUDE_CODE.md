@@ -80,10 +80,10 @@ Xem [tài liệu Claude](https://docs.claude.com/en/docs/about-claude/models/ove
 Nếu bạn thấy lỗi xác thực, token của bạn có thể đã hết hạn. Xác thực lại bằng cách chạy:
 
 ```bash
-gac model
+gac auth
 ```
 
-Sau đó chọn "Claude Code" và chọn "Xác thực lại (lấy token mới)". Trình duyệt của bạn sẽ mở để xác thực OAuth mới.
+Trình duyệt của bạn sẽ tự động mở để xác thực OAuth mới. Ngoài ra, bạn có thể chạy `gac model`, chọn "Claude Code" và chọn "Xác thực lại (lấy token mới)".
 
 ### "Không tìm thấy CLAUDE_CODE_ACCESS_TOKEN"
 

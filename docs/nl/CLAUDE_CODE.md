@@ -77,13 +77,13 @@ Bekijk de [Claude-documentatie](https://docs.claude.com/en/docs/about-claude/mod
 
 ### Token verlopen
 
-Als u authenticatiefouten ziet, is uw token mogelijk verlopen. Herauthenticeer door uit te voeren:
+Als u authenticatiefouten ziet, is uw token mogelijk verlopen. Authenticeer opnieuw door uit te voeren:
 
 ```bash
-gac model
+gac auth
 ```
 
-Selecteer dan "Claude Code" en kies "Herauthenticeren (nieuwe token krijgen)". Uw browser zal openen voor nieuwe OAuth-authenticatie.
+Uw browser opent automatisch voor een nieuwe OAuth-authenticatie. Alternatief kunt u `gac model` uitvoeren, "Claude Code" selecteren en "Opnieuw authenticeren (nieuwe token krijgen)" kiezen.
 
 ### "CLAUDE_CODE_ACCESS_TOKEN niet gevonden"
 

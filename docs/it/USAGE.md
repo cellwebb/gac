@@ -148,6 +148,9 @@ gac init
 
 # Reconfigura solo provider/modello
 gac model
+
+# Autentica o ri-autentica il token OAuth Claude Code
+gac auth
 ```
 
 ### gac model

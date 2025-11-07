@@ -77,13 +77,13 @@ Consulta la [documentación de Claude](https://docs.claude.com/en/docs/about-cla
 
 ### Token Expirado
 
-Si ves errores de autenticación, tu token puede haber expirado. Reautentícate ejecutando:
+Si ve errores de autenticación, su token puede haber expirado. Vuelva a autenticarse ejecutando:
 
 ```bash
-gac model
+gac auth
 ```
 
-Luego selecciona "Claude Code" y elige "Reautenticar (obtener nuevo token)". Tu navegador se abrirá para nueva autenticación OAuth.
+Su navegador se abrirá automáticamente para una nueva autenticación OAuth. Alternativamente, puede ejecutar `gac model`, seleccionar "Claude Code" y elegir "Volver a autenticarse (obtener nuevo token)".
 
 ### "CLAUDE_CODE_ACCESS_TOKEN no encontrado"
 

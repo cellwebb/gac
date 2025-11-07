@@ -239,12 +239,13 @@ För detaljerad vägledning om hur man skapar anpassade systemprompter, se [docs
 
 Följande underkommandon är tillgängliga:
 
-- `gac init` — Interaktiv installationsguide för leverantör, modell och språkkonfiguration
-- `gac model` — Leverantörs-/modell-/API-nyckelsetup utan språkprompts (idealiskt för snabba byten)
+- `gac init` — Interaktiv installationsguide för leverantör, modell och språk
+- `gac model` — Leverantör/modell/API-nyckel konfiguration utan språkprompter (idealiskt för snabba byten)
+- `gac auth` — Autentisera eller återautentisera Claude Code OAuth-token (användbart när token löper ut)
 - `gac config show` — Visa nuvarande konfiguration
-- `gac config set KEY VALUE` — Ställ in en konfigureringsnyckel i `$HOME/.gac.env`
-- `gac config get KEY` — Hämta ett konfigurationsvärde
-- `gac config unset KEY` — Ta bort en konfigureringsnyckel från `$HOME/.gac.env`
+- `gac config set KEY VALUE` — Ställ in konfigurationsnyckel i `$HOME/.gac.env`
+- `gac config get KEY` — Hämta konfigurationsvärde
+- `gac config unset KEY` — Ta bort konfigurationsnyckel från `$HOME/.gac.env`
 - `gac language` (eller `gac lang`) — Interaktiv språkväljare för commit-meddelanden (ställer in GAC_LANGUAGE)
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
 

@@ -77,13 +77,13 @@ Se [Claude-dokumentasjonen](https://docs.claude.com/en/docs/about-claude/models/
 
 ### Token utløpt
 
-Hvis du ser autentiseringsfeil, kan tokenen din ha utløpt. Reautentiser ved å kjøre:
+Hvis du ser autentiseringsfeil, kan tokenet ditt ha utløpt. Autentiser på nytt ved å kjøre:
 
 ```bash
-gac model
+gac auth
 ```
 
-Velg deretter "Claude Code" og velg "Reautentiser (få ny token)". Nettleseren din vil åpne for ny OAuth-autentisering.
+Nettleseren din åpnes automatisk for ny OAuth-autentisering. Alternativt kan du kjøre `gac model`, velge "Claude Code" og velge "Autentiser på nytt (få ny token)".
 
 ### "CLAUDE_CODE_ACCESS_TOKEN ikke funnet"
 

@@ -80,10 +80,10 @@ Consulta la [documentazione di Claude](https://docs.claude.com/en/docs/about-cla
 Se vedi errori di autenticazione, il tuo token potrebbe essere scaduto. Ri-autenticati eseguendo:
 
 ```bash
-gac model
+gac auth
 ```
 
-Quindi seleziona "Claude Code" e scegli "Ri-autenticazione (ottenere nuovo token)". Il tuo browser si aprirà per nuova autenticazione OAuth.
+Il tuo browser si aprirà automaticamente per una nuova autenticazione OAuth. In alternativa, puoi eseguire `gac model`, selezionare "Claude Code" e scegliere "Ri-autenticati (ottieni nuovo token)".
 
 ### "CLAUDE_CODE_ACCESS_TOKEN non trovato"
 

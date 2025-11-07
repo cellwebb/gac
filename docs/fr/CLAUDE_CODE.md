@@ -80,10 +80,10 @@ Consultez la [documentation Claude](https://docs.claude.com/en/docs/about-claude
 Si vous voyez des erreurs d'authentification, votre jeton a peut-être expiré. Réauthentifiez-vous en exécutant :
 
 ```bash
-gac model
+gac auth
 ```
 
-Ensuite sélectionnez "Claude Code" et choisissez "Réauthentifier (obtenir nouveau jeton)". Votre navigateur s'ouvrira pour une nouvelle authentification OAuth.
+Votre navigateur s'ouvrira automatiquement pour une nouvelle authentification OAuth. Alternativement, vous pouvez exécuter `gac model`, sélectionner "Claude Code" et choisir "Se réauthentifier (obtenir un nouveau jeton)".
 
 ### "CLAUDE_CODE_ACCESS_TOKEN non trouvé"
 

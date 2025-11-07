@@ -241,12 +241,13 @@ Die folgenden Unterbefehle sind verfügbar:
 
 - `gac init` — Interaktiver Einrichtungs-Assistent für Anbieter, Modell und Sprachkonfiguration
 - `gac model` — Anbieter/Modell/API-Schlüssel-Einrichtung ohne Sprachaufforderungen (ideal für schnelle Wechsel)
+- `gac auth` — Claude Code OAuth-Token authentifizieren oder neu authentifizieren (nützlich wenn Token abläuft)
 - `gac config show` — Aktuelle Konfiguration anzeigen
-- `gac config set KEY VALUE` — Einen Konfigurationsschlüssel in `$HOME/.gac.env` setzen
-- `gac config get KEY` — Einen Konfigurationswert erhalten
-- `gac config unset KEY` — Einen Konfigurationsschlüssel aus `$HOME/.gac.env` entfernen
-- `gac language` (oder `gac lang`) — Interaktiver Sprachwähler für Commit-Nachrichten (setzt GAC_LANGUAGE)
-- `gac diff` — Gefilterten git diff mit Optionen für gestagete/unstagte Änderungen, Farbe und Kürzung anzeigen
+- `gac config set KEY VALUE` — Konfigurationsschlüssel in `$HOME/.gac.env` setzen
+- `gac config get KEY` — Konfigurationswert abrufen
+- `gac config unset KEY` — Konfigurationsschlüssel aus `$HOME/.gac.env` entfernen
+- `gac language` (oder `gac lang`) — Interaktiver Sprachselektor für Commit-Nachrichten (setzt GAC_LANGUAGE)
+- `gac diff` — Gefiltertes git diff mit Optionen für gestufte/ungestufte Änderungen, Farbe und Kürzung anzeigen
 
 ## Hilfe erhalten
 

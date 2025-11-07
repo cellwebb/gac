@@ -241,12 +241,13 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 以下子命令可用：
 
 - `gac init` — 提供商、模型和语言配置的交互式设置向导
-- `gac model` — 只更新提供商/模型/API Key 的快捷向导（跳过语言提示）
+- `gac model` — 提供商/模型/API 密钥设置，无语言提示（适合快速切换）
+- `gac auth` — 认证或重新认证 Claude Code OAuth 令牌（在令牌过期时有用）
 - `gac config show` — 显示当前配置
 - `gac config set KEY VALUE` — 在 `$HOME/.gac.env` 中设置配置键
 - `gac config get KEY` — 获取配置值
 - `gac config unset KEY` — 从 `$HOME/.gac.env` 中删除配置键
-- `gac language`（或 `gac lang`）— 提交信息的交互式语言选择器（设置 GAC_LANGUAGE）
+- `gac language`（或 `gac lang`）— 提交消息的交互式语言选择器（设置 GAC_LANGUAGE）
 - `gac diff` — 显示过滤的 git diff，具有暂存/未暂存更改、颜色和截断选项
 
 ## 获取帮助

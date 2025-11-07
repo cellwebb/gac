@@ -80,10 +80,10 @@ Claude Code 提供与 Anthropic API 相同的模型访问权限。当前的 Clau
 如果您看到身份验证错误，您的令牌可能已过期。通过运行重新身份验证：
 
 ```bash
-gac model
+gac auth
 ```
 
-然后选择"Claude Code"并选择"重新身份验证（获取新令牌）"。您的浏览器将打开进行新的 OAuth 身份验证。
+您的浏览器将自动打开进行新的 OAuth 身份验证。或者，您可以运行 `gac model`，选择"Claude Code"，然后选择"重新身份验证（获取新令牌）"。
 
 ### "未找到 CLAUDE_CODE_ACCESS_TOKEN"
 

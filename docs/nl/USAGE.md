@@ -240,13 +240,14 @@ Voor gedetailleerde begeleiding bij het maken van custom system prompts, zie [do
 De volgende subcommando's zijn beschikbaar:
 
 - `gac init` — Interactieve setup wizard voor provider, model en taalconfiguratie
-- `gac model` — Provider/model/API sleutel setup zonder taalprompts (ideaal voor snelle wissels)
-- `gac config show` — Toon huidige configuratie
-- `gac config set KEY VALUE` — Stel een config sleutel in in `$HOME/.gac.env`
-- `gac config get KEY` — Krijg een config waarde
-- `gac config unset KEY` — Verwijder een config sleutel van `$HOME/.gac.env`
-- `gac language` (of `gac lang`) — Interactieve taalkeuzemenu voor commitberichten (stelt GAC_LANGUAGE in)
-- `gac diff` — Toon gefilterde git diff met opties voor staged/unstaged wijzigingen, kleur en truncatie
+- `gac model` — Provider/model/API key setup zonder taalprompts (ideaal voor snelle wissels)
+- `gac auth` — Authenticeer of herauthenticeer Claude Code OAuth token (handig wanneer token verloopt)
+- `gac config show` — Huidige configuratie tonen
+- `gac config set KEY VALUE` — Configuratiesleutel instellen in `$HOME/.gac.env`
+- `gac config get KEY` — Configuratiewaarde krijgen
+- `gac config unset KEY` — Configuratiesleutel verwijderen uit `$HOME/.gac.env`
+- `gac language` (of `gac lang`) — Interactieve taalselector voor commitberichten (stelt GAC_LANGUAGE in)
+- `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
 
 ## Hulp Krijgen
 

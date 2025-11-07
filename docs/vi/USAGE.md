@@ -239,14 +239,15 @@ Xem `.gac.env.example` cho mẫu cấu hình hoàn chỉnh.
 
 Các lệnh con sau đây có sẵn:
 
-- `gac init` — Trình hướng dẫn thiết lập tương tác cho cấu hình nhà cung cấp, mô hình và ngôn ngữ
-- `gac model` — Thiết lập nhà cung cấp/mô hình/khóa API mà không có gợi ý ngôn ngữ (lý tưởng cho việc chuyển nhanh)
+- `gac init` — Trình hướng dẫn thiết lập tương tác cho nhà cung cấp, mô hình và cấu hình ngôn ngữ
+- `gac model` — Thiết lập nhà cung cấp/mô hình/khoá API không có lời nhắc ngôn ngữ (lý tưởng cho các thay đổi nhanh)
+- `gac auth` — Xác thực hoặc xác thực lại token OAuth Claude Code (hữu ích khi token hết hạn)
 - `gac config show` — Hiển thị cấu hình hiện tại
 - `gac config set KEY VALUE` — Đặt khóa cấu hình trong `$HOME/.gac.env`
 - `gac config get KEY` — Lấy giá trị cấu hình
 - `gac config unset KEY` — Xóa khóa cấu hình khỏi `$HOME/.gac.env`
-- `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho thông điệp commit (đặt GAC_LANGUAGE)
-- `gac diff` — Hiển thị git diff được lọc với các tùy chọn cho thay đổi staged/unstaged, màu sắc và cắt ngắn
+- `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho các thông điệp commit (đặt GAC_LANGUAGE)
+- `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
 
 ## Nhận Trợ Giúp
 

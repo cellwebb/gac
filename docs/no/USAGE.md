@@ -241,6 +241,7 @@ The following subcommands are available:
 
 - `gac init` — Interactive setup wizard for provider, model, and language configuration
 - `gac model` — Provider/model/API key setup without language prompts (ideal for quick switches)
+- `gac auth` — Authenticate or re-authenticate Claude Code OAuth token (useful when token expires)
 - `gac config show` — Show current configuration
 - `gac config set KEY VALUE` — Set a config key in `$HOME/.gac.env`
 - `gac config get KEY` — Get a config value
