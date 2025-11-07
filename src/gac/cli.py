@@ -11,6 +11,7 @@ import sys
 import click
 
 from gac import __version__
+from gac.auth_cli import auth as auth_cli
 from gac.config import load_config
 from gac.config_cli import config as config_cli
 from gac.constants import Languages, Logging
@@ -163,6 +164,7 @@ def cli(
         }
 
 
+cli.add_command(auth_cli)
 cli.add_command(config_cli)
 cli.add_command(diff_cli)
 cli.add_command(init_cli)

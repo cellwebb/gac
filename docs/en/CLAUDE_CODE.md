@@ -80,10 +80,10 @@ Check the [Claude documentation](https://docs.claude.com/en/docs/about-claude/mo
 If you see authentication errors, your token may have expired. Re-authenticate by running:
 
 ```bash
-gac model
+gac auth
 ```
 
-Then select "Claude Code" and choose "Re-authenticate (get new token)". Your browser will open for fresh OAuth authentication.
+Your browser will open automatically for fresh OAuth authentication. Alternatively, you can run `gac model`, select "Claude Code", and choose "Re-authenticate (get new token)".
 
 ### "CLAUDE_CODE_ACCESS_TOKEN not found"
 
