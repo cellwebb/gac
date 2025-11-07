@@ -131,7 +131,9 @@ sudo apt install python3.11
         https://api.openai.com/v1/models
    ```
 
-5. **Per problemi OAuth con Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per assistenza su autenticazione e scadenza token.
+5. **Per scadenza token di Claude Code**: Esegui `gac auth` per autenticarti di nuovo rapidamente e aggiornare il tuo token. Il tuo browser si aprirà automaticamente per OAuth.
+
+6. **Per altri problemi OAuth di Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per la risoluzione completa dei problemi.
 
 ### Provider non riconosciuto
 

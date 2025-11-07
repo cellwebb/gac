@@ -72,7 +72,8 @@
 - 選択したモデル用の正しいAPIキーが設定されていることを確認（例: `ANTHROPIC_API_KEY`, `GROQ_API_KEY`）
 - APIキーとプロバイダーアカウントステータスを再確認
 - OllamaとLM Studioの場合、API URLがローカルインスタンスと一致することを確認。APIキーは認証を有効にした場合にのみ必要です。
-- **Claude Code OAuthの問題については**、認証とトークンの有効期限に関するヘルプについて[Claude Code設定ガイド](CLAUDE_CODE.md)を参照してください。
+- **Claude Codeのトークン有効期限の場合**：`gac auth`を実行して素早く再認証してトークンを更新します。ブラウザが自動的にOAuthのために開きます。
+- **その他のClaude Code OAuthの問題については**、包括的なトラブルシューティングについて[Claude Code設定ガイド](CLAUDE_CODE.md)を参照してください。
 
 **問題:** モデルが利用できないまたはサポートされていない
 

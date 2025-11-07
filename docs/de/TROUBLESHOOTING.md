@@ -72,7 +72,8 @@ Dieser Leitfaden behandelt häufige Probleme und Lösungen für die Installation
 - Stellen Sie sicher, dass Sie die korrekten API-Schlüssel für Ihr gewähltes Modell gesetzt haben (z.B. `ANTHROPIC_API_KEY`, `GROQ_API_KEY`)
 - Überprüfen Sie Ihren API-Schlüssel und Anbieter-Kontostatus doppelt
 - Für Ollama und LM Studio bestätigen Sie, dass die API-URL Ihrer lokalen Instanz entspricht. API-Schlüssel werden nur benötigt, wenn Sie Authentifizierung aktiviert haben.
-- **Bei Claude Code OAuth-Problemen**, siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für Hilfe bei Authentifizierung und Token-Ablauf.
+- **Für abgelaufene Claude Code Token**: Führen Sie `gac auth` aus, um sich schnell erneut zu authentifizieren und Ihren Token zu aktualisieren. Ihr Browser öffnet sich automatisch für OAuth.
+- **Für andere Claude Code OAuth-Probleme**, siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für umfassende Fehlerbehebung.
 
 **Problem:** Modell nicht verfügbar oder nicht unterstützt
 
