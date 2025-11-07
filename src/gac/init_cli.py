@@ -103,7 +103,9 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Z.AI Coding", "glm-4.6"),
     ]
     provider_names = [p[0] for p in providers]
-    provider = questionary.select("Select your provider:", choices=provider_names).ask()
+    provider = questionary.select(
+        "Select your provider:", choices=provider_names, use_shortcuts=True, use_arrow_keys=True, use_jk_keys=False
+    ).ask()
     if not provider:
         click.echo("Provider selection cancelled. Exiting.")
         return False
@@ -191,6 +193,9 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
                     "Keep existing token",
                     "Re-authenticate (get new token)",
                 ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
             ).ask()
 
             if action is None or action.startswith("Keep existing"):
@@ -237,6 +242,9 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
                 "Keep existing key",
                 "Enter new key",
             ],
+            use_shortcuts=True,
+            use_arrow_keys=True,
+            use_jk_keys=False,
         ).ask()
 
         if action is None:
@@ -290,6 +298,9 @@ def _configure_language(existing_env: dict[str, str]) -> None:
                 "Keep existing language",
                 "Select new language",
             ],
+            use_shortcuts=True,
+            use_arrow_keys=True,
+            use_jk_keys=False,
         ).ask()
 
         if action is None or action.startswith("Keep existing"):

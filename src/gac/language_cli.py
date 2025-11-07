@@ -227,6 +227,9 @@ def language() -> None:
             "Keep prefixes in English (feat:, fix:, etc.)",
             f"Translate prefixes into {language_value}",
         ],
+        use_shortcuts=True,
+        use_arrow_keys=True,
+        use_jk_keys=False,
     ).ask()
 
     if not prefix_choice:
