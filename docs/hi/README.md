@@ -65,9 +65,10 @@ uv tool upgrade gac
 
 ### 🌐 **समर्थित प्रोवाइडर्स**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code** • **DeepSeek**
-- **Fireworks** • **Gemini** • **Groq** • **LM Studio** • **MiniMax** • **Mistral** • **Ollama**
-- **OpenAI** • **OpenRouter** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **LM Studio**
+- **MiniMax** • **Mistral** • **Ollama** • **OpenAI** • **OpenRouter**
+- **Streamlake** • **Synthetic.new** • **Together AI**
 - **Z.AI** • **Z.AI Coding** • **कस्टम एंडपॉइंट्स (Anthropic/OpenAI)**
 
 ### 🧠 **स्मार्ट LLM विश्लेषण**
