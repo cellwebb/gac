@@ -231,6 +231,7 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 - `GAC_LANGUAGE=Spanish` - 以特定语言生成提交信息（例如，Spanish、French、Japanese、German）。支持完整名称或 ISO 代码（es、fr、ja、de、zh-CN）。使用 `gac language` 进行交互式选择
 - `GAC_TRANSLATE_PREFIXES=true` - 将常规提交前缀（feat、fix 等）翻译为目标语言（默认值：false，保持前缀为英语）
 - `GAC_SKIP_SECRET_SCAN=true` - 禁用暂存更改中的密钥自动安全扫描（谨慎使用）
+- `GAC_NO_TIKTOKEN=true` - 通过绕过 `tiktoken` 下载步骤并使用内置的粗略令牌估算器来保持完全离线
 
 查看 `.gac.env.example` 了解完整的配置模板。
 

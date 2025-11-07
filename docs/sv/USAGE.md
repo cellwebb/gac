@@ -230,6 +230,7 @@ Du kan anpassa gacs beteende med dessa valfria miljövariabler:
 - `GAC_LANGUAGE=Swedish` - Generera commit-meddelanden på ett specifikt språk (t.ex. Spanish, French, Japanese, German). Stöder fullständiga namn eller ISO-koder (es, fr, ja, de, sv, zh-CN). Använd `gac language` för interaktivt val
 - `GAC_TRANSLATE_PREFIXES=true` - Översätt konventionella commit-prefix (feat, fix, etc.) till målspråket (standard: false, behåller prefix på engelska)
 - `GAC_SKIP_SECRET_SCAN=true` - Inaktivera automatisk säkerhetsskanning för hemligheter i stageade ändringar (använd med försiktighet)
+- `GAC_NO_TIKTOKEN=true` - Håll dig helt offline genom att hoppa över `tiktoken`-nedladdningssteget och använda den inbyggda grova token-uppskattningen
 
 Se `.gac.env.example` för en komplett konfigurationsmall.
 

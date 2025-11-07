@@ -230,6 +230,7 @@ Você pode personalizar o comportamento do gac com estas variáveis de ambiente 
 - `GAC_LANGUAGE=Spanish` - Gerar mensagens de commit em um idioma específico (ex: Spanish, French, Japanese, German). Suporta nomes completos ou códigos ISO (es, fr, ja, de, zh-CN). Use `gac language` para seleção interativa
 - `GAC_TRANSLATE_PREFIXES=true` - Traduzir prefixos de commit convencionais (feat, fix, etc.) para o idioma alvo (padrão: false, mantém prefixos em inglês)
 - `GAC_SKIP_SECRET_SCAN=true` - Desativar varredura de segurança automática para segredos nas alterações em stage (use com cautela)
+- `GAC_NO_TIKTOKEN=true` - Permanecer completamente offline ignorando a etapa de download do `tiktoken` e usando o estimador de tokens aproximado integrado
 
 Veja `.gac.env.example` para um modelo de configuração completo.
 

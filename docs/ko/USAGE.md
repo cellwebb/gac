@@ -230,6 +230,7 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 - `GAC_LANGUAGE=Spanish` - 특정 언어로 커밋 메시지 생성 (예: Spanish, French, Japanese, German). 전체 이름 또는 ISO 코드 지원 (es, fr, ja, de, zh-CN). 대화형 선택을 위해 `gac language` 사용
 - `GAC_TRANSLATE_PREFIXES=true` - 전통적인 커밋 접두사 (feat, fix 등)를 대상 언어로 번역 (기본값: false, 접두사를 영어로 유지)
 - `GAC_SKIP_SECRET_SCAN=true` - 스테이징된 변경 사항의 비밀에 대한 자동 보안 스캔 비활성화 (주의해서 사용)
+- `GAC_NO_TIKTOKEN=true` - `tiktoken` 다운로드 단계를 우회하고 내장된 대략적인 토큰 추정기를 사용하여 완전히 오프라인으로 유지
 
 전체 구성 템플릿은 `.gac.env.example`을 참조하세요.
 
