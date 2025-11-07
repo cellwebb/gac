@@ -28,6 +28,7 @@ def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: st
         return len(encoding.encode(text))
     except Exception as e:
         logger.error(f"Error counting tokens: {e}")
+        # Fallback to rough estimation (4 chars per token on average)
         return len(text) // 4
 
 
@@ -45,10 +46,20 @@ def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -
 @lru_cache(maxsize=1)
 def get_encoding(model: str) -> tiktoken.Encoding:
     """Get the appropriate encoding for a given model."""
-    model_name = model.split(":")[-1] if ":" in model else model
+    provider, model_name = model.split(":", 1) if ":" in model else (None, model)
+
+    # For local/custom providers, always use the default encoding to avoid network calls
+    local_providers = {"ollama", "lm-studio", "custom-openai", "custom-anthropic"}
+    if provider in local_providers:
+        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
+
     try:
         return tiktoken.encoding_for_model(model_name)
     except KeyError:
+        # Fall back to default encoding if model not found
+        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
+    except Exception:
+        # If there are any network/SSL issues, fall back to default encoding
         return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
 

@@ -72,6 +72,95 @@ class TestCountTokens:
         assert ai_utils.count_tokens([], "openai:gpt-4") == 0
         assert ai_utils.count_tokens({}, "openai:gpt-4") == 0
 
+    @patch("gac.ai_utils.tiktoken")
+    def test_local_providers_use_default_encoding(self, mock_tiktoken):
+        """Test that local providers (ollama, lm-studio, custom-openai, custom-anthropic) use default encoding without network calls."""
+        import gac.constants
+
+        # Clear the lru_cache
+        ai_utils.get_encoding.cache_clear()
+
+        mock_encoding = MagicMock()
+        mock_encoding.encode.return_value = [1, 2, 3, 4]  # 4 tokens for "Hello, world!"
+        mock_tiktoken.get_encoding.return_value = mock_encoding
+
+        text = "Hello, world!"
+
+        # Test ollama provider
+        token_count = ai_utils.count_tokens(text, "ollama:llama2")
+        assert token_count == 4
+        mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
+        mock_tiktoken.encoding_for_model.assert_not_called()
+
+        # Reset mock
+        mock_tiktoken.reset_mock()
+        ai_utils.get_encoding.cache_clear()
+
+        # Test lm-studio provider
+        token_count = ai_utils.count_tokens(text, "lm-studio:local-model")
+        assert token_count == 4
+        mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
+        mock_tiktoken.encoding_for_model.assert_not_called()
+
+        # Reset mock
+        mock_tiktoken.reset_mock()
+        ai_utils.get_encoding.cache_clear()
+
+        # Test custom-openai provider
+        token_count = ai_utils.count_tokens(text, "custom-openai:local-gpt4")
+        assert token_count == 4
+        mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
+        mock_tiktoken.encoding_for_model.assert_not_called()
+
+        # Reset mock
+        mock_tiktoken.reset_mock()
+        ai_utils.get_encoding.cache_clear()
+
+        # Test custom-anthropic provider
+        token_count = ai_utils.count_tokens(text, "custom-anthropic:local-claude")
+        assert token_count == 4
+        mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
+        mock_tiktoken.encoding_for_model.assert_not_called()
+
+    @patch("gac.ai_utils.tiktoken")
+    def test_cloud_providers_use_model_specific_encoding(self, mock_tiktoken):
+        """Test that cloud providers try to use model-specific encoding first."""
+        # Clear the lru_cache
+        ai_utils.get_encoding.cache_clear()
+
+        mock_encoding = MagicMock()
+        mock_encoding.encode.return_value = [1, 2, 3, 4]  # 4 tokens for "Hello, world!"
+        mock_tiktoken.encoding_for_model.return_value = mock_encoding
+
+        text = "Hello, world!"
+
+        # Test openai provider
+        token_count = ai_utils.count_tokens(text, "openai:gpt-4")
+        assert token_count == 4
+        mock_tiktoken.encoding_for_model.assert_called_with("gpt-4")
+        mock_tiktoken.get_encoding.assert_not_called()
+
+    @patch("gac.ai_utils.tiktoken")
+    def test_fallback_to_default_encoding_on_error(self, mock_tiktoken):
+        """Test fallback to default encoding when model-specific encoding fails."""
+        import gac.constants
+
+        # Clear the lru_cache
+        ai_utils.get_encoding.cache_clear()
+
+        mock_encoding = MagicMock()
+        mock_encoding.encode.return_value = [1, 2, 3, 4]  # 4 tokens for "Hello, world!"
+        mock_tiktoken.encoding_for_model.side_effect = Exception("Network error")
+        mock_tiktoken.get_encoding.return_value = mock_encoding
+
+        text = "Hello, world!"
+
+        # Test with cloud provider that fails
+        token_count = ai_utils.count_tokens(text, "openai:gpt-4")
+        assert token_count == 4
+        mock_tiktoken.encoding_for_model.assert_called_with("gpt-4")
+        mock_tiktoken.get_encoding.assert_called_with(gac.constants.Utility.DEFAULT_ENCODING)
+
 
 class TestAIError:
     """Test AIError class."""
