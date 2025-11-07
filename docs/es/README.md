@@ -65,9 +65,9 @@ uv tool upgrade gac
 
 ### 🌐 **Proveedores soportados**
 
-- **Anthropic** • **Cerebras** • **Claude Code** • **Chutes.ai** • **DeepSeek** • **Fireworks**
-- **Gemini** • **Groq** • **LM Studio** • **MiniMax** • **Mistral** • **Ollama** • **OpenAI**
-- **OpenRouter** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code** • **DeepSeek**
+- **Fireworks** • **Gemini** • **Groq** • **LM Studio** • **MiniMax** • **Mistral** • **Ollama**
+- **OpenAI** • **OpenRouter** • **Streamlake** • **Synthetic.new** • **Together AI**
 - **Z.AI** • **Z.AI Coding** • **Endpoints personalizados (Anthropic/OpenAI)**
 
 ### 🧠 **Análisis inteligente con LLM**
