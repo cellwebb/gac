@@ -89,7 +89,7 @@ uv tool upgrade gac
 - **25+ langues** : Générez des messages de commit en anglais, chinois, japonais, coréen, espagnol, français, allemand et 20+ autres langues
 - **Traduction flexible** : Choisissez de conserver les préfixes de commits conventionnels en anglais pour la compatibilité des outils, ou traduisez-les entièrement
 - **Workflows multiples** : Définissez une langue par défaut avec `gac language`, ou utilisez le drapeau `-l <langue>` pour des remplacements ponctuels
-- **Support des scripts natifs** : Support complet des scripts non latins incluant CJK, cyrillique, arabe et plus
+- **Support des scripts natifs** : Support complet des scripts non latins incluant CJK, cyrillique, thaï et plus
 
 ### 💻 **Expérience développeur**
 

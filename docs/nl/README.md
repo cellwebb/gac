@@ -89,7 +89,7 @@ uv tool upgrade gac
 - **25+ talen**: Genereer commitberichten in Engels, Chinees, Japans, Koreaans, Spaans, Frans, Duits en 20+ andere talen
 - **Flexibele vertaling**: Kies ervoor om conventionele commit-prefixen in het Engels te houden voor tool-compatibiliteit, of vertaal ze volledig
 - **Meerdere workflows**: Stel een standaardtaal in met `gac language`, of gebruik de `-l <taal>` vlag voor eenmalige overschrijvingen
-- **Ondersteuning voor native scripts**: Volledige ondersteuning voor niet-Latijnse scripts inclusief CJK, Cyrillisch, Arabisch en meer
+- **Ondersteuning voor native scripts**: Volledige ondersteuning voor niet-Latijnse scripts inclusief CJK, Cyrillisch, Thai en meer
 
 ### 💻 **Ontwikkelervaring**
 

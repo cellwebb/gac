@@ -89,7 +89,7 @@ uv tool upgrade gac
 - **25+ ngôn ngữ**: Tạo thông điệp commit bằng tiếng Anh, tiếng Trung, tiếng Nhật, tiếng Hàn, tiếng Tây Ban Nha, tiếng Pháp, tiếng Đức và 20+ ngôn ngữ khác
 - **Dịch linh hoạt**: Chọn giữ tiền tố commit tiêu chuẩn bằng tiếng Anh để tương thích công cụ, hoặc dịch hoàn toàn chúng
 - **Nhiều quy trình làm việc**: Đặt ngôn ngữ mặc định với `gac language`, hoặc sử dụng flag `-l <language>` để ghi đè một lần
-- **Hỗ trợ chữ viết gốc**: Hỗ trợ đầy đủ cho các chữ viết không phải Latin bao gồm CJK, Cyrillic, Ả Rập và nhiều hơn nữa
+- **Hỗ trợ chữ viết gốc**: Hỗ trợ đầy đủ cho các chữ viết không phải Latin bao gồm CJK, Cyrillic, Thai và nhiều hơn nữa
 
 ### 💻 **Trải Nghiệm Nhà Phát Triển**
 
