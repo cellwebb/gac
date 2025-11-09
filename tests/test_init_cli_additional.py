@@ -10,6 +10,8 @@ from click.testing import CliRunner
 from gac.init_cli import (
     _configure_language,
     _configure_model,
+    _should_show_rtl_warning_for_init,
+    _show_rtl_warning_for_init,
     init,
     model,
 )
@@ -20,6 +22,54 @@ def patch_gac_env_path(tmp_path, monkeypatch):
     env_path = tmp_path / ".gac.env"
     monkeypatch.setattr("gac.init_cli.GAC_ENV_PATH", env_path)
     yield env_path
+
+
+def test_should_show_rtl_warning_returns_true_when_no_env(monkeypatch, patch_gac_env_path):
+    monkeypatch.delenv("GAC_RTL_CONFIRMED", raising=False)
+
+    result = _should_show_rtl_warning_for_init()
+
+    assert result is True
+
+
+def test_should_show_rtl_warning_respects_stored_confirmation(monkeypatch, patch_gac_env_path):
+    monkeypatch.delenv("GAC_RTL_CONFIRMED", raising=False)
+    patch_gac_env_path.write_text("GAC_RTL_CONFIRMED=true\n")
+
+    result = _should_show_rtl_warning_for_init()
+
+    assert result is False
+    monkeypatch.delenv("GAC_RTL_CONFIRMED", raising=False)
+
+
+def test_show_rtl_warning_accepts_and_persists(monkeypatch, patch_gac_env_path):
+    confirm_prompt = MagicMock()
+    confirm_prompt.ask.return_value = True
+
+    with (
+        patch("questionary.confirm", return_value=confirm_prompt),
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("click.echo"),
+    ):
+        result = _show_rtl_warning_for_init("Arabic")
+
+    assert result is True
+    mock_set_key.assert_any_call(str(patch_gac_env_path), "GAC_RTL_CONFIRMED", "true")
+
+
+def test_show_rtl_warning_handles_cancelled_prompt():
+    confirm_prompt = MagicMock()
+    confirm_prompt.ask.return_value = None
+
+    with (
+        patch("questionary.confirm", return_value=confirm_prompt),
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("click.echo"),
+    ):
+        result = _show_rtl_warning_for_init("Arabic")
+
+    assert result is False
+    mock_set_key.assert_not_called()
 
 
 def test_configure_model_custom_anthropic_provider():
@@ -311,6 +361,79 @@ def test_configure_model_local_provider_skip_key():
         mock_echo.assert_any_call("Skipping API key. You can add one later if needed.")
 
 
+def test_configure_model_minimax_normalizes_provider_and_warns_missing_key():
+    """Ensure MiniMax.io provider key is normalized and warning is shown for blank API key."""
+    existing_env = {}
+
+    with (
+        patch("questionary.select") as mock_select,
+        patch("questionary.text") as mock_text,
+        patch("questionary.password") as mock_password,
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("click.echo") as mock_echo,
+    ):
+        mock_select.return_value.ask.return_value = "MiniMax.io"
+        mock_text.return_value.ask.return_value = ""  # Use default suggestion
+        mock_password.return_value.ask.return_value = ""  # Missing API key triggers warning
+
+        result = _configure_model(existing_env)
+
+    assert result is True
+    mock_set_key.assert_any_call(ANY, "GAC_MODEL", "minimax:MiniMax-M2")
+    mock_echo.assert_any_call("No API key entered. You can add one later by editing ~/.gac.env")
+
+
+def test_configure_model_synthetic_normalizes_provider_key():
+    """Ensure Synthetic.new provider key is normalized and API key stored."""
+    existing_env = {}
+
+    with (
+        patch("questionary.select") as mock_select,
+        patch("questionary.text") as mock_text,
+        patch("questionary.password") as mock_password,
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("click.echo"),
+    ):
+        mock_select.return_value.ask.return_value = "Synthetic.new"
+        mock_text.return_value.ask.return_value = "hf:zai-org/GLM-4.6"
+        mock_password.return_value.ask.return_value = "sk-synthetic"
+
+        result = _configure_model(existing_env)
+
+    assert result is True
+    mock_set_key.assert_any_call(ANY, "GAC_MODEL", "synthetic:hf:zai-org/GLM-4.6")
+    mock_set_key.assert_any_call(ANY, "SYNTHETIC_API_KEY", "sk-synthetic")
+
+
+def test_configure_model_claude_code_action_cancelled(monkeypatch):
+    """Ensure cancelling Claude Code action shows message and skips re-auth."""
+    existing_env = {}
+    monkeypatch.setattr("gac.oauth.claude_code.load_stored_token", lambda: "existing-token")
+    forbid_auth = MagicMock()
+    monkeypatch.setattr("gac.oauth.claude_code.authenticate_and_save", forbid_auth)
+
+    provider_select = MagicMock()
+    provider_select.ask.return_value = "Claude Code"
+    action_select = MagicMock()
+    action_select.ask.return_value = None  # User cancelled secondary prompt
+
+    with (
+        patch("questionary.text") as mock_text,
+        patch("questionary.password") as mock_password,
+        patch("questionary.select") as mock_select,
+        patch("click.echo") as mock_echo,
+    ):
+        mock_text.return_value.ask.return_value = "claude-sonnet-4-5"
+        mock_password.return_value.ask.return_value = "sk-token"
+        mock_select.side_effect = [provider_select, action_select]
+
+        result = _configure_model(existing_env)
+
+    assert result is True
+    forbid_auth.assert_not_called()
+    mock_echo.assert_any_call("Claude Code configuration cancelled. Keeping existing token.")
+
+
 def test_configure_language_cancel_existing_language():
     """Test _configure_language when user cancels existing language action."""
     existing_env = {"GAC_LANGUAGE": "Spanish", "GAC_TRANSLATE_PREFIXES": "false"}
@@ -404,6 +527,103 @@ def test_configure_language_no_existing_custom_cancel():
         mock_echo.assert_any_call("No language entered. Using English (default).")
 
 
+def test_configure_language_existing_custom_rtl_warning_preconfirmed():
+    """Custom RTL language with existing config should skip warning prompt when already confirmed."""
+    existing_env = {"GAC_LANGUAGE": "English", "GAC_TRANSLATE_PREFIXES": "false"}
+
+    with (
+        patch("click.echo"),
+        patch("questionary.select") as mock_select,
+        patch("questionary.text") as mock_text,
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("gac.language_cli.is_rtl_text", return_value=True),
+        patch("gac.init_cli._should_show_rtl_warning_for_init", return_value=False),
+        patch("gac.init_cli._show_rtl_warning_for_init") as mock_show_warning,
+    ):
+        mock_select.return_value.ask.side_effect = [
+            "Select new language",
+            "Custom",
+            "Translate prefixes into עברית",
+        ]
+        mock_text.return_value.ask.return_value = " עברית "
+
+        _configure_language(existing_env)
+
+    mock_show_warning.assert_not_called()
+    mock_set_key.assert_any_call(ANY, "GAC_LANGUAGE", "עברית")
+    mock_set_key.assert_any_call(ANY, "GAC_TRANSLATE_PREFIXES", "true")
+
+
+def test_configure_language_existing_predefined_rtl_user_cancels():
+    """Existing config, predefined RTL language, user cancels after warning."""
+    existing_env = {"GAC_LANGUAGE": "English"}
+
+    with (
+        patch("click.echo") as mock_echo,
+        patch("questionary.select") as mock_select,
+        patch("gac.language_cli.is_rtl_text", side_effect=lambda value: value == "Arabic"),
+        patch("gac.init_cli._should_show_rtl_warning_for_init", return_value=True),
+        patch("gac.init_cli._show_rtl_warning_for_init", return_value=False) as mock_warning,
+    ):
+        mock_select.return_value.ask.side_effect = [
+            "Select new language",
+            "العربية",
+        ]
+
+        _configure_language(existing_env)
+
+    mock_warning.assert_called_once_with("Arabic")
+    mock_echo.assert_any_call("Language selection cancelled. Keeping existing language.")
+
+
+def test_configure_language_no_existing_custom_prefix_cancel():
+    """No existing language, RTL custom selection proceeds but prefix prompt cancelled."""
+    existing_env = {}
+
+    with (
+        patch("click.echo") as mock_echo,
+        patch("questionary.select") as mock_select,
+        patch("questionary.text") as mock_text,
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("gac.language_cli.is_rtl_text", return_value=True),
+        patch("gac.init_cli._should_show_rtl_warning_for_init", return_value=True),
+        patch("gac.init_cli._show_rtl_warning_for_init", return_value=True) as mock_warning,
+    ):
+        mock_select.return_value.ask.side_effect = [
+            "Custom",
+            None,
+        ]
+        mock_text.return_value.ask.return_value = "עברית"
+
+        _configure_language(existing_env)
+
+    mock_warning.assert_called_once_with("עברית")
+    mock_echo.assert_any_call("Prefix translation selection cancelled. Using English prefixes.")
+    mock_set_key.assert_any_call(ANY, "GAC_LANGUAGE", "עברית")
+    mock_set_key.assert_any_call(ANY, "GAC_TRANSLATE_PREFIXES", "false")
+
+
+def test_configure_language_no_existing_predefined_translate_prefixes():
+    """No existing language, predefined selection should set translation flag when chosen."""
+    existing_env = {}
+
+    with (
+        patch("click.echo"),
+        patch("questionary.select") as mock_select,
+        patch("gac.init_cli.set_key") as mock_set_key,
+        patch("gac.language_cli.is_rtl_text", return_value=False),
+    ):
+        mock_select.return_value.ask.side_effect = [
+            "Français",
+            "Translate prefixes into French",
+        ]
+
+        _configure_language(existing_env)
+
+    mock_set_key.assert_any_call(ANY, "GAC_LANGUAGE", "French")
+    mock_set_key.assert_any_call(ANY, "GAC_TRANSLATE_PREFIXES", "true")
+
+
 def test_init_command_configure_model_fails():
     """Test init command when _configure_model returns False."""
     runner = CliRunner()
@@ -463,3 +683,21 @@ def test_model_command_configure_model_fails():
 
             assert result.exit_code == 0
             # Should print failure message and return early when _configure_model fails
+
+
+def test_model_command_success_message():
+    """Test model command completes and prints final reminder."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+
+        with (
+            patch("gac.init_cli.GAC_ENV_PATH", fake_path),
+            patch("gac.init_cli._configure_model", return_value=True),
+            patch("gac.init_cli._load_existing_env", return_value={}),
+            patch("click.echo") as mock_echo,
+        ):
+            result = runner.invoke(model)
+
+    assert result.exit_code == 0
+    mock_echo.assert_any_call(f"\nModel configuration complete. You can edit {fake_path} to update values later.")
