@@ -91,13 +91,13 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Gemini", "gemini-2.5-flash"),
         ("Groq", "meta-llama/llama-4-maverick-17b-128e-instruct"),
         ("LM Studio", "gemma3"),
-        ("MiniMax", "MiniMax-M2"),
+        ("MiniMax.io", "MiniMax-M2"),
         ("Mistral", "mistral-small-latest"),
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-4.1-mini"),
         ("OpenRouter", "openrouter/auto"),
         ("Streamlake", ""),
-        ("Synthetic", "hf:zai-org/GLM-4.6"),
+        ("Synthetic.new", "hf:zai-org/GLM-4.6"),
         ("Together AI", "openai/gpt-oss-20B"),
         ("Z.AI", "glm-4.5-air"),
         ("Z.AI Coding", "glm-4.6"),
@@ -118,6 +118,11 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_claude_code = provider_key == "claude-code"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
+
+    if provider_key == "minimaxio":
+        provider_key = "minimax"
+    elif provider_key == "syntheticnew":
+        provider_key = "synthetic"
 
     if is_streamlake:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")
