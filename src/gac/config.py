@@ -1,6 +1,6 @@
 """Configuration loading for gac.
 
-Handles environment variable and .env file precedence for application settings.
+Handles environment variable and .gac.env file precedence for application settings.
 """
 
 import os
@@ -12,19 +12,16 @@ from gac.constants import EnvDefaults, Logging
 
 
 def load_config() -> dict[str, str | int | float | bool | None]:
-    """Load configuration from $HOME/.gac.env, then ./.gac.env or ./.env, then environment variables."""
+    """Load configuration from $HOME/.gac.env, then ./.gac.env, then environment variables."""
     user_config = Path.home() / ".gac.env"
     if user_config.exists():
         load_dotenv(user_config)
 
-    # Check for both .gac.env and .env in project directory
+    # Check for .gac.env in project directory
     project_gac_env = Path(".gac.env")
-    project_env = Path(".env")
 
     if project_gac_env.exists():
         load_dotenv(project_gac_env, override=True)
-    elif project_env.exists():
-        load_dotenv(project_env, override=True)
 
     config = {
         "model": os.getenv("GAC_MODEL"),

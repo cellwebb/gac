@@ -48,44 +48,19 @@ def test_load_config_project_gac_env(tmp_path, monkeypatch):
         assert config["temperature"] == 0.8
 
 
-def test_load_config_project_env_fallback(tmp_path, monkeypatch):
-    """Test that .env file is used when .gac.env doesn't exist."""
-    # Change to tmp directory
+def test_load_config_ignores_plain_env_file(tmp_path, monkeypatch):
+    """Ensure .env files are ignored when loading configuration."""
     monkeypatch.chdir(tmp_path)
 
-    # Create only a .env file (no .gac.env)
     env_file = tmp_path / ".env"
-    env_file.write_text("GAC_MODEL=env-file-model\nGAC_TEMPERATURE=0.6\n")
+    env_file.write_text("GAC_MODEL=env-file-model\n")
 
-    # Mock home directory to ensure it doesn't interfere
     with patch("gac.config.Path.home") as mock_home:
         mock_home.return_value = tmp_path / "nonexistent_home"
+        monkeypatch.delenv("GAC_MODEL", raising=False)
 
         config = load_config()
-        # Should use .env file
-        assert config["model"] == "env-file-model"
-        assert config["temperature"] == 0.6
-
-
-def test_load_config_precedence(tmp_path, monkeypatch):
-    """Test that .gac.env takes precedence over .env when both exist."""
-    # Change to tmp directory
-    monkeypatch.chdir(tmp_path)
-
-    # Create both .gac.env and .env files
-    gac_env = tmp_path / ".gac.env"
-    gac_env.write_text("GAC_MODEL=gac-env-model\n")
-
-    env_file = tmp_path / ".env"
-    env_file.write_text("GAC_MODEL=env-model\n")
-
-    # Mock home directory to ensure it doesn't interfere
-    with patch("gac.config.Path.home") as mock_home:
-        mock_home.return_value = tmp_path / "nonexistent_home"
-
-        config = load_config()
-        # .gac.env should take precedence
-        assert config["model"] == "gac-env-model"
+        assert config["model"] is None
 
 
 def test_load_config_verbose(tmp_path, monkeypatch):
