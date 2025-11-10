@@ -18,13 +18,34 @@ def config():
 @config.command()
 def show() -> None:
     """Show all current config values."""
-    if not GAC_ENV_PATH.exists():
+    project_env_path = Path(".gac.env")
+    user_exists = GAC_ENV_PATH.exists()
+    project_exists = project_env_path.exists()
+
+    if not user_exists and not project_exists:
         click.echo("No $HOME/.gac.env found.")
+        click.echo("No project-level .gac.env found.")
         return
-    load_dotenv(GAC_ENV_PATH, override=True)
-    with open(GAC_ENV_PATH) as f:
-        for line in f:
-            click.echo(line.rstrip())
+
+    if user_exists:
+        click.echo(f"User config ({GAC_ENV_PATH}):")
+        with open(GAC_ENV_PATH, encoding="utf-8") as f:
+            for line in f:
+                click.echo(line.rstrip())
+    else:
+        click.echo("No $HOME/.gac.env found.")
+
+    if project_exists:
+        if user_exists:
+            click.echo("")
+        click.echo("Project config (./.gac.env):")
+        with open(project_env_path, encoding="utf-8") as f:
+            for line in f:
+                click.echo(line.rstrip())
+        click.echo("")
+        click.echo("Note: Project-level .gac.env overrides $HOME/.gac.env values for any duplicated variables.")
+    else:
+        click.echo("No project-level .gac.env found.")
 
 
 @config.command()

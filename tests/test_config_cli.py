@@ -50,6 +50,55 @@ def test_config_show_no_file():
             assert "No $HOME/.gac.env found" in result.output
 
 
+def test_config_show_project_level(monkeypatch):
+    """Test show command when only project .gac.env exists."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        project_dir = tmp_path / "project"
+        project_dir.mkdir()
+        project_env = project_dir / ".gac.env"
+        project_env.write_text("GAC_MODEL=project-model\n", encoding="utf-8")
+
+        fake_user_env = tmp_path / "home" / ".gac.env"
+        fake_user_env.parent.mkdir(parents=True, exist_ok=True)
+
+        with patch("gac.config_cli.GAC_ENV_PATH", fake_user_env):
+            monkeypatch.chdir(project_dir)
+            result = runner.invoke(config, ["show"])
+
+        assert result.exit_code == 0
+        assert "No $HOME/.gac.env found." in result.output
+        assert "Project config (./.gac.env):" in result.output
+        assert "GAC_MODEL=project-model" in result.output
+
+
+def test_config_show_includes_override_note(monkeypatch):
+    """Test show command lists both user and project config with override note."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        project_dir = tmp_path / "project"
+        project_dir.mkdir()
+        project_env = project_dir / ".gac.env"
+        project_env.write_text("GAC_MODEL=project-model\n", encoding="utf-8")
+
+        user_env = tmp_path / "home" / ".gac.env"
+        user_env.parent.mkdir(parents=True, exist_ok=True)
+        user_env.write_text("GAC_MODEL=home-model\n", encoding="utf-8")
+
+        with patch("gac.config_cli.GAC_ENV_PATH", user_env):
+            monkeypatch.chdir(project_dir)
+            result = runner.invoke(config, ["show"])
+
+        assert result.exit_code == 0
+        assert f"User config ({user_env}):" in result.output
+        assert "GAC_MODEL=home-model" in result.output
+        assert "Project config (./.gac.env):" in result.output
+        assert "GAC_MODEL=project-model" in result.output
+        assert "overrides $HOME/.gac.env" in result.output
+
+
 def test_config_unset_no_file():
     """Test unset command when .gac.env doesn't exist."""
     runner = CliRunner()
