@@ -9,29 +9,7 @@ import logging
 from gac.ai_utils import generate_with_retries
 from gac.constants import EnvDefaults
 from gac.errors import AIError
-from gac.providers import (
-    call_anthropic_api,
-    call_cerebras_api,
-    call_chutes_api,
-    call_claude_code_api,
-    call_custom_anthropic_api,
-    call_custom_openai_api,
-    call_deepseek_api,
-    call_fireworks_api,
-    call_gemini_api,
-    call_groq_api,
-    call_lmstudio_api,
-    call_minimax_api,
-    call_mistral_api,
-    call_ollama_api,
-    call_openai_api,
-    call_openrouter_api,
-    call_streamlake_api,
-    call_synthetic_api,
-    call_together_api,
-    call_zai_api,
-    call_zai_coding_api,
-)
+from gac.providers import PROVIDER_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -85,35 +63,10 @@ def generate_commit_message(
             {"role": "user", "content": user_prompt},
         ]
 
-    # Provider functions mapping
-    provider_funcs = {
-        "anthropic": call_anthropic_api,
-        "cerebras": call_cerebras_api,
-        "claude-code": call_claude_code_api,
-        "chutes": call_chutes_api,
-        "custom-anthropic": call_custom_anthropic_api,
-        "custom-openai": call_custom_openai_api,
-        "deepseek": call_deepseek_api,
-        "fireworks": call_fireworks_api,
-        "gemini": call_gemini_api,
-        "groq": call_groq_api,
-        "lm-studio": call_lmstudio_api,
-        "minimax": call_minimax_api,
-        "mistral": call_mistral_api,
-        "ollama": call_ollama_api,
-        "openai": call_openai_api,
-        "openrouter": call_openrouter_api,
-        "streamlake": call_streamlake_api,
-        "synthetic": call_synthetic_api,
-        "together": call_together_api,
-        "zai": call_zai_api,
-        "zai-coding": call_zai_coding_api,
-    }
-
     # Generate the commit message using centralized retry logic
     try:
         return generate_with_retries(
-            provider_funcs=provider_funcs,
+            provider_funcs=PROVIDER_REGISTRY,
             model=model,
             messages=messages,
             temperature=temperature,

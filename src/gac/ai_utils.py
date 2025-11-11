@@ -14,6 +14,7 @@ from halo import Halo
 
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
+from gac.providers import SUPPORTED_PROVIDERS
 
 logger = logging.getLogger(__name__)
 
@@ -114,31 +115,8 @@ def generate_with_retries(
     provider, model_name = model.split(":", 1)
 
     # Validate provider
-    supported_providers = [
-        "anthropic",
-        "cerebras",
-        "chutes",
-        "claude-code",
-        "deepseek",
-        "fireworks",
-        "gemini",
-        "groq",
-        "lm-studio",
-        "minimax",
-        "mistral",
-        "ollama",
-        "openai",
-        "openrouter",
-        "streamlake",
-        "synthetic",
-        "together",
-        "zai",
-        "zai-coding",
-        "custom-anthropic",
-        "custom-openai",
-    ]
-    if provider not in supported_providers:
-        raise AIError.model_error(f"Unsupported provider: {provider}. Supported providers: {supported_providers}")
+    if provider not in SUPPORTED_PROVIDERS:
+        raise AIError.model_error(f"Unsupported provider: {provider}. Supported providers: {SUPPORTED_PROVIDERS}")
 
     if not messages:
         raise AIError.model_error("No messages provided for AI generation")
