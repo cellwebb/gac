@@ -96,6 +96,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-4.1-mini"),
         ("OpenRouter", "openrouter/auto"),
+        ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.6"),
         ("Together AI", "openai/gpt-oss-20B"),

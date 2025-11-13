@@ -68,7 +68,7 @@ uv tool upgrade gac
 - **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **LM Studio**
 - **MiniMax** • **Mistral** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Streamlake** • **Synthetic.new** • **Together AI**
+- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
 - **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Phân Tích LLM Thông Minh**

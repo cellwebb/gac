@@ -104,6 +104,7 @@ def create_provider_test_cases() -> list[ProviderTestCase]:
     from gac.providers.ollama import call_ollama_api
     from gac.providers.openai import call_openai_api
     from gac.providers.openrouter import call_openrouter_api
+    from gac.providers.replicate import call_replicate_api
     from gac.providers.streamlake import call_streamlake_api
     from gac.providers.zai import call_zai_api, call_zai_coding_api
 
@@ -152,6 +153,15 @@ def create_provider_test_cases() -> list[ProviderTestCase]:
             test_model="mistralai/mistral-7b-instruct",
             import_function=call_openrouter_api,
             api_function=call_openrouter_api,
+        ),
+        ProviderTestCase(
+            name="replicate",
+            module_name="replicate",
+            env_var="REPLICATE_API_TOKEN",
+            function_name="call_replicate_api",
+            test_model="openai/gpt-oss-20b",
+            import_function=call_replicate_api,
+            api_function=call_replicate_api,
         ),
         ProviderTestCase(
             name="streamlake",
