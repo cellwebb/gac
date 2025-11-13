@@ -94,7 +94,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("MiniMax.io", "MiniMax-M2"),
         ("Mistral", "mistral-small-latest"),
         ("Ollama", "gemma3"),
-        ("OpenAI", "gpt-4.1-mini"),
+        ("OpenAI", "gpt-5-mini"),
         ("OpenRouter", "openrouter/auto"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
