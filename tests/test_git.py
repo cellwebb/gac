@@ -5,6 +5,7 @@ import pytest
 
 from gac.errors import GitError
 from gac.git import (
+    detect_rename_mappings,
     get_commit_hash,
     get_current_branch,
     get_diff,
@@ -498,6 +499,68 @@ def test_run_lefthook_hooks_multiple_config_files():
 
         result = run_lefthook_hooks()
         assert result is True
+
+
+class TestDetectRenameMappings:
+    """Test the detect_rename_mappings function."""
+
+    def test_detect_simple_rename(self):
+        """Test detecting a simple rename operation."""
+        diff = """diff --git a/old_file.txt b/new_file.txt
+similarity index 100%
+rename from old_file.txt
+rename to new_file.txt"""
+
+        mappings = detect_rename_mappings(diff)
+        assert mappings == {"new_file.txt": "old_file.txt"}
+
+    def test_detect_multiple_renames(self):
+        """Test detecting multiple rename operations."""
+        diff = """diff --git a/component1.py b/new_component1.py
+similarity index 95%
+rename from component1.py
+rename to new_component1.py
+diff --git a/component2.py b/new_component2.py
+similarity index 100%
+rename from component2.py
+rename to new_component2.py"""
+
+        mappings = detect_rename_mappings(diff)
+        assert mappings == {"new_component1.py": "component1.py", "new_component2.py": "component2.py"}
+
+    def test_detect_mixed_diff(self):
+        """Test detecting renames in a diff with regular changes."""
+        diff = """diff --git a/docs/USAGE.md b/docs/ADVANCED_USAGE.md
+similarity index 100%
+rename from docs/USAGE.md
+rename to docs/ADVANCED_USAGE.md
+diff --git a/src/main.py b/src/main.py
+index abc123..def456 100644
+--- a/src/main.py
++++ b/src/main.py
+@@ -1,3 +1,4 @@
+ # Main file
++Added new function"""
+
+        mappings = detect_rename_mappings(diff)
+        assert mappings == {"docs/ADVANCED_USAGE.md": "docs/USAGE.md"}
+
+    def test_detect_no_renames(self):
+        """Test that regular file changes are not detected as renames."""
+        diff = """diff --git a/test.txt b/test.txt
+index e69de29..4b825dc 100644
+--- a/test.txt
++++ b/test.txt
+@@ -0,0 +1 @@
++new content"""
+
+        mappings = detect_rename_mappings(diff)
+        assert mappings == {}
+
+    def test_detect_empty_diff(self):
+        """Test handling empty diff."""
+        mappings = detect_rename_mappings("")
+        assert mappings == {}
 
 
 # Note: Encoding fallback tests are complex to mock correctly due to the multi-layered

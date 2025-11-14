@@ -323,3 +323,50 @@ def push_changes() -> bool:
     except Exception as e:
         logger.error(f"Failed to push changes: {e}")
         return False
+
+
+def detect_rename_mappings(staged_diff: str) -> dict[str, str]:
+    """Detect file rename mappings from a staged diff.
+
+    Args:
+        staged_diff: The output of 'git diff --cached --binary'
+
+    Returns:
+        Dictionary mapping new_file_path -> old_file_path for rename operations
+    """
+    rename_mappings = {}
+    lines = staged_diff.split("\n")
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        if line.startswith("diff --git a/"):
+            # Extract old and new file paths from diff header
+            if " b/" in line:
+                parts = line.split(" a/")
+                if len(parts) >= 2:
+                    old_path_part = parts[1]
+                    old_path = old_path_part.split(" b/")[0] if " b/" in old_path_part else old_path_part
+
+                    new_path = line.split(" b/")[-1] if " b/" in line else None
+
+                    # Check if this diff represents a rename by looking at following lines
+                    j = i + 1
+                    is_rename = False
+
+                    while j < len(lines) and not lines[j].startswith("diff --git"):
+                        if lines[j].startswith("similarity index "):
+                            is_rename = True
+                            break
+                        elif lines[j].startswith("rename from "):
+                            is_rename = True
+                            break
+                        j += 1
+
+                    if is_rename and old_path and new_path and old_path != new_path:
+                        rename_mappings[new_path] = old_path
+
+        i += 1
+
+    return rename_mappings

@@ -16,6 +16,7 @@ from gac.config import load_config
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, GitError, handle_error
 from gac.git import (
+    detect_rename_mappings,
     get_staged_files,
     get_staged_status,
     push_changes,
@@ -69,53 +70,6 @@ def _validate_grouped_files_or_feedback(staged: set[str], grouped_result: dict) 
 
     feedback = f"{'; '.join(problems)}. Required files: {', '.join(sorted(staged))}. Respond with ONLY valid JSON."
     return False, feedback, "; ".join(problems)
-
-
-def _detect_rename_mappings(staged_diff: str) -> dict[str, str]:
-    """Detect file rename mappings from a staged diff.
-
-    Args:
-        staged_diff: The output of 'git diff --cached --binary'
-
-    Returns:
-        Dictionary mapping new_file_path -> old_file_path for rename operations
-    """
-    rename_mappings = {}
-    lines = staged_diff.split("\n")
-
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-
-        if line.startswith("diff --git a/"):
-            # Extract old and new file paths from diff header
-            if " b/" in line:
-                parts = line.split(" a/")
-                if len(parts) >= 2:
-                    old_path_part = parts[1]
-                    old_path = old_path_part.split(" b/")[0] if " b/" in old_path_part else old_path_part
-
-                    new_path = line.split(" b/")[-1] if " b/" in line else None
-
-                    # Check if this diff represents a rename by looking at following lines
-                    j = i + 1
-                    is_rename = False
-
-                    while j < len(lines) and not lines[j].startswith("diff --git"):
-                        if lines[j].startswith("similarity index "):
-                            is_rename = True
-                            break
-                        elif lines[j].startswith("rename from "):
-                            is_rename = True
-                            break
-                        j += 1
-
-                    if is_rename and old_path and new_path and old_path != new_path:
-                        rename_mappings[new_path] = old_path
-
-        i += 1
-
-    return rename_mappings
 
 
 def _parse_model_identifier(model: str) -> tuple[str, str]:
@@ -384,7 +338,7 @@ def execute_grouped_commits_workflow(
 
             try:
                 # Detect file renames to handle them properly
-                rename_mappings = _detect_rename_mappings(original_staged_diff)
+                rename_mappings = detect_rename_mappings(original_staged_diff)
 
                 for idx, commit in enumerate(grouped_result["commits"], 1):
                     try:
