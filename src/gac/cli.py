@@ -9,6 +9,7 @@ import logging
 import sys
 
 import click
+from rich.console import Console
 
 from gac import __version__
 from gac.auth_cli import auth as auth_cli
@@ -25,6 +26,7 @@ from gac.utils import setup_logging
 
 config = load_config()
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 @click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
@@ -33,6 +35,7 @@ logger = logging.getLogger(__name__)
 @click.option("--group", "-g", is_flag=True, help="Group changes into multiple logical commits")
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
+@click.option("--message-only", is_flag=True, help="Output only the generated commit message without committing")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
 # Commit message options
 @click.option("--one-liner", "-o", is_flag=True, help="Generate a single-line commit message")
@@ -92,6 +95,7 @@ def cli(
     language: str | None = None,
     version: bool = False,
     dry_run: bool = False,
+    message_only: bool = False,
     verbose: bool = False,
     no_verify: bool = False,
     skip_secret_scan: bool = False,
@@ -107,6 +111,13 @@ def cli(
             effective_log_level = "ERROR"
         setup_logging(effective_log_level)
         logger.info("Starting gac")
+
+        # Validate incompatible flag combinations
+        if message_only and group:
+            console.print("[red]Error: --message-only and --group options are mutually exclusive[/red]")
+            console.print("[yellow]--message-only is for generating a single commit message for external use[/yellow]")
+            console.print("[yellow]--group is for organizing multiple commits within the current workflow[/yellow]")
+            sys.exit(1)
 
         # Determine if we should infer scope based on -s flag or always_include_scope setting
         infer_scope = bool(scope or config.get("always_include_scope", False))
@@ -130,6 +141,7 @@ def cli(
                 push=push,
                 quiet=quiet,
                 dry_run=dry_run,
+                message_only=message_only,
                 verbose=use_verbose,
                 no_verify=no_verify,
                 skip_secret_scan=skip_secret_scan or bool(config.get("skip_secret_scan", False)),
@@ -157,6 +169,7 @@ def cli(
             "language": language,
             "version": version,
             "dry_run": dry_run,
+            "message_only": message_only,
             "verbose": verbose,
             "no_verify": no_verify,
             "skip_secret_scan": skip_secret_scan,

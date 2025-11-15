@@ -400,6 +400,7 @@ def execute_single_commit_workflow(
     quiet: bool,
     no_verify: bool,
     dry_run: bool,
+    message_only: bool = False,
     push: bool,
     show_prompt: bool,
     hook_timeout: int = 120,
@@ -432,12 +433,18 @@ def execute_single_commit_workflow(
             temperature=temperature,
             max_tokens=max_output_tokens,
             max_retries=max_retries,
-            quiet=quiet,
+            quiet=quiet or message_only,
         )
         commit_message = clean_commit_message(raw_commit_message)
         logger.info("Generated commit message:")
         logger.info(commit_message)
         conversation_messages.append({"role": "assistant", "content": commit_message})
+
+        if message_only:
+            # Output only the commit message without any formatting
+            print(commit_message)
+            sys.exit(0)
+
         display_commit_message(commit_message, prompt_tokens, model, quiet)
 
         if require_confirmation:
@@ -507,6 +514,7 @@ def main(
     push: bool = False,
     quiet: bool = False,
     dry_run: bool = False,
+    message_only: bool = False,
     verbose: bool = False,
     no_verify: bool = False,
     skip_secret_scan: bool = False,
@@ -721,6 +729,7 @@ def main(
                 quiet=quiet,
                 no_verify=no_verify,
                 dry_run=dry_run,
+                message_only=message_only,
                 push=push,
                 show_prompt=show_prompt,
                 hook_timeout=hook_timeout,
