@@ -15,6 +15,7 @@
   - [帮助和版本](#帮助和版本)
   - [示例工作流](#示例工作流)
   - [高级](#高级)
+    - [脚本集成和外部处理](#脚本集成和外部处理)
     - [跳过 Pre-commit 和 Lefthook 钩子](#跳过-pre-commit-和-lefthook-钩子)
     - [安全扫描](#安全扫描)
   - [配置说明](#配置说明)
@@ -50,12 +51,15 @@ gac
 | `--push`             | `-p` | 提交后推送更改到远程                   |
 | `--yes`              | `-y` | 自动确认提交而不提示                   |
 | `--dry-run`          |      | 显示会发生什么而不进行任何更改         |
+| `--message-only`     |      | 仅输出生成的提交信息，而不实际执行提交 |
 | `--no-verify`        |      | 提交时跳过 pre-commit 和 lefthook 钩子 |
 | `--skip-secret-scan` |      | 跳过暂存更改中的密钥安全扫描           |
 
 **注意：**组合 `-a` 和 `-g`（即 `-ag`）以先暂存所有更改，然后将它们分组为提交。
 
 **注意：**使用 `--group` 时，最大输出令牌限制会根据正在提交的文件数量自动缩放（1-9 个文件为 2 倍，10-19 个文件为 3 倍，20-29 个文件为 4 倍，30+ 个文件为 5 倍）。这确保 LLM 有足够的令牌来生成所有分组提交而不会被截断，即使对于大型变更集也是如此。
+
+**注意：**`--message-only` 和 `--group` 互斥。需要获取提交信息供外部处理时请使用 `--message-only`，而在当前 git 工作流中组织多个提交时请使用 `--group`。
 
 ## 信息定制
 
@@ -165,11 +169,73 @@ gac
   gac --dry-run
   ```
 
+- **仅获取提交信息（用于脚本集成）：**
+
+  ```sh
+  gac --message-only
+  # 输出示例：feat: add user authentication system
+  ```
+
+- **以单行格式获取提交信息：**
+
+  ```sh
+  gac --message-only --one-liner
+  # 输出示例：feat: add user authentication system
+  ```
+
 ## 高级
 
 - 组合标志以获得更强大的工作流（例如，`gac -ayp` 以暂存、自动确认和推送）
 - 使用 `--show-prompt` 调试或查看发送给 LLM 的提示
 - 使用 `--log-level` 或 `--quiet` 调整详细程度
+- 使用 `--message-only` 进行脚本集成和自动化工作流
+
+### 脚本集成和外部处理
+
+`--message-only` 标志专为脚本集成和外部工具工作流设计。它仅输出原始提交信息，不包含任何额外的格式、加载动画或 UI 元素。
+
+**适用场景：**
+
+- **Agent 集成：** 让 AI Agent 获取提交信息并自行处理提交
+- **替代版本控制系统：** 在其他版本控制系统（Mercurial、Jujutsu 等）中使用生成的消息
+- **自定义提交工作流：** 在执行提交前对消息进行处理或修改
+- **CI/CD 流水线：** 提取提交信息以用于自动化流程
+
+**脚本使用示例：**
+
+```sh
+#!/bin/bash
+# 获取提交信息并配合自定义提交函数使用
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
+```
+
+```python
+# Python 集成示例
+import subprocess
+
+
+def get_commit_message() -> str:
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
+
+
+message = get_commit_message()
+print(f"Generated message: {message}")
+```
+
+**适用于脚本的关键特性：**
+
+- 输出干净，不含 Rich 格式或加载动画
+- 自动跳过确认提示
+- 不会实际执行 git 提交
+- 可与 `--one-liner` 配合以获取简化输出
+- 可与 `--hint`、`--model` 等其他标志组合使用
 
 ### 跳过 Pre-commit 和 Lefthook 钩子
 
@@ -211,7 +277,7 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 
 - 设置 gac 的推荐方法是运行 `gac init` 并按照交互式提示操作。
 - 已经配置好语言，只想切换提供商或模型？运行 `gac model`，它会跳过所有语言相关的问题。
-- **使用Claude Code？** 请参阅[Claude Code设置指南](CLAUDE_CODE.md)获取OAuth认证说明。
+- **使用 Claude Code？** 请参阅[Claude Code 设置指南](CLAUDE_CODE.md)获取 OAuth 认证说明。
 - gac 按以下优先级顺序加载配置：
   1. CLI 标志
   2. 环境变量

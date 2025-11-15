@@ -42,19 +42,22 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 
 ## Kärnarbetsflödesflaggor
 
-| Flagga / Alternativ  | Kort | Beskrivning                                                       |
-| -------------------- | ---- | ----------------------------------------------------------------- |
-| `--add-all`          | `-a` | Stagea alla ändringar innan commit                                |
-| `--group`            | `-g` | Gruppera stageade ändringar i flera logiska commits               |
-| `--push`             | `-p` | Pusha ändringar till remote efter commit                          |
-| `--yes`              | `-y` | Automatiskt bekräfta commit utan prompt                           |
-| `--dry-run`          |      | Visa vad som skulle hända utan att göra några ändringar           |
-| `--no-verify`        |      | Hoppa över pre-commit och lefthook hooks vid commit               |
-| `--skip-secret-scan` |      | Hoppa över säkerhetsskanning för hemligheter i stageade ändringar |
+| Flagga / Alternativ  | Kort | Beskrivning                                                                |
+| -------------------- | ---- | -------------------------------------------------------------------------- |
+| `--add-all`          | `-a` | Stagea alla ändringar innan commit                                         |
+| `--group`            | `-g` | Gruppera stageade ändringar i flera logiska commits                        |
+| `--push`             | `-p` | Pusha ändringar till remote efter commit                                   |
+| `--yes`              | `-y` | Automatiskt bekräfta commit utan prompt                                    |
+| `--dry-run`          |      | Visa vad som skulle hända utan att göra några ändringar                    |
+| `--message-only`     |      | Skriv bara ut det genererade commit-meddelandet utan att faktiskt committa |
+| `--no-verify`        |      | Hoppa över pre-commit och lefthook hooks vid commit                        |
+| `--skip-secret-scan` |      | Hoppa över säkerhetsskanning för hemligheter i stageade ändringar          |
 
 **Obs:** Kombinera `-a` och `-g` (dvs. `-ag`) för att stagea ALLA ändringar först, sedan gruppera dem i commits.
 
 **Obs:** När du använder `--group`, skalas max output tokens-gränsen automatiskt baserat på antalet filer som committas (2x för 1-9 filer, 3x för 10-19 filer, 4x för 20-29 filer, 5x för 30+ filer). Detta säkerställer att LLM:n har tillräckligt med tokens för att generera alla grupperade commits utan trunkering, även för stora ändringsuppsättningar.
+
+**Obs:** `--message-only` och `--group` är ömsesidigt uteslutande. Använd `--message-only` när du vill hämta commit-meddelandet för extern bearbetning, och `--group` när du vill organisera flera commits inom det aktuella git‑arbetsflödet.
 
 ## Meddelandeanpassning
 
@@ -162,6 +165,20 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 
   ```sh
   gac --dry-run
+  ```
+
+- **Hämta endast commit-meddelandet (för skriptintegration):**
+
+  ```sh
+  gac --message-only
+  # Exempelutdata: feat: add user authentication system
+  ```
+
+- **Hämta commit-meddelandet i enradsformat:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Exempelutdata: feat: add user authentication system
   ```
 
 ## Avancerat

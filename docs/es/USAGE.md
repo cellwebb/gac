@@ -15,6 +15,7 @@ Este documento describe todas las banderas y opciones disponibles para la herram
   - [Ayuda y Versión](#ayuda-y-versión)
   - [Flujos de Trabajo de Ejemplo](#flujos-de-trabajo-de-ejemplo)
   - [Avanzado](#avanzado)
+    - [Integración con scripts y procesamiento externo](#integración-con-scripts-y-procesamiento-externo)
     - [Omitir Hooks Pre-commit y Lefthook](#omitir-hooks-pre-commit-y-lefthook)
     - [Escaneo de Seguridad](#escaneo-de-seguridad)
   - [Notas de Configuración](#notas-de-configuración)
@@ -43,19 +44,22 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 
 ## Banderas del Flujo de Trabajo Principal
 
-| Bandera / Opción     | Corta | Descripción                                               |
-| -------------------- | ----- | --------------------------------------------------------- |
-| `--add-all`          | `-a`  | Staging de todos los cambios antes de hacer commit        |
-| `--group`            | `-g`  | Agrupar cambios staged en múltiples commits lógicos       |
-| `--push`             | `-p`  | Hacer push de cambios al remoto después del commit        |
-| `--yes`              | `-y`  | Confirmar automáticamente el commit sin preguntar         |
-| `--dry-run`          |       | Mostrar qué pasaría sin hacer cambios                     |
-| `--no-verify`        |       | Omitir hooks pre-commit y lefthook al hacer commit        |
-| `--skip-secret-scan` |       | Omitir escaneo de seguridad de secretos en cambios staged |
+| Bandera / Opción     | Corta | Descripción                                                       |
+| -------------------- | ----- | ----------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Staging de todos los cambios antes de hacer commit                |
+| `--group`            | `-g`  | Agrupar cambios staged en múltiples commits lógicos               |
+| `--push`             | `-p`  | Hacer push de cambios al remoto después del commit                |
+| `--yes`              | `-y`  | Confirmar automáticamente el commit sin preguntar                 |
+| `--dry-run`          |       | Mostrar qué pasaría sin hacer cambios                             |
+| `--message-only`     |       | Mostrar solo el mensaje de commit generado sin realizar el commit |
+| `--no-verify`        |       | Omitir hooks pre-commit y lefthook al hacer commit                |
+| `--skip-secret-scan` |       | Omitir escaneo de seguridad de secretos en cambios staged         |
 
 **Nota:** Combina `-a` y `-g` (ej., `-ag`) para hacer staging de TODOS los cambios primero, luego agruparlos en commits.
 
 **Nota:** Cuando usas `--group`, el límite máximo de tokens de salida se escala automáticamente basado en el número de archivos siendo commiteados (2x para 1-9 archivos, 3x para 10-19 archivos, 4x para 20-29 archivos, 5x para 30+ archivos). Esto asegura que el LLM tenga suficientes tokens para generar todos los commits agrupados sin truncamiento, incluso para cambios grandes.
+
+**Nota:** `--message-only` y `--group` son mutuamente excluyentes. Usa `--message-only` cuando quieras obtener el mensaje de commit para procesamiento externo, y `--group` cuando quieras organizar múltiples commits dentro del flujo de trabajo git actual.
 
 ## Personalización de Mensajes
 
@@ -165,11 +169,73 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
   gac --dry-run
   ```
 
+- **Obtener solo el mensaje de commit (para integración con scripts):**
+
+  ```sh
+  gac --message-only
+  # Salida: feat: add user authentication system
+  ```
+
+- **Obtener el mensaje de commit en formato de una sola línea:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Salida: feat: add user authentication system
+  ```
+
 ## Avanzado
 
 - Combina banderas para flujos de trabajo más potentes (ej., `gac -ayp` para staging, auto-confirmar y hacer push)
 - Usa `--show-prompt` para depurar o revisar el prompt enviado al LLM
 - Ajusta la verbosidad con `--log-level` o `--quiet`
+- Usa `--message-only` para integración con scripts y flujos de trabajo automatizados
+
+### Integración con scripts y procesamiento externo
+
+La bandera `--message-only` está diseñada para integración con scripts y flujos de trabajo de herramientas externas. Produce solo el mensaje de commit en bruto sin ningún formato adicional, spinners o elementos de UI.
+
+**Casos de uso:**
+
+- **Integración con agentes:** Permite que agentes de IA obtengan mensajes de commit y gestionen los commits por su cuenta
+- **VCS alternativos:** Usar mensajes generados con otros sistemas de control de versiones (Mercurial, Jujutsu, etc.)
+- **Workflows de commit personalizados:** Procesar o modificar el mensaje antes de hacer commit
+- **Pipelines de CI/CD:** Extraer mensajes de commit para procesos automatizados
+
+**Ejemplo de uso en script:**
+
+```sh
+#!/bin/bash
+# Obtener el mensaje de commit y usarlo con una función de commit personalizada
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
+```
+
+```python
+# Ejemplo de integración en Python
+import subprocess
+
+
+def get_commit_message() -> str:
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
+
+
+message = get_commit_message()
+print(f"Generated message: {message}")
+```
+
+**Características clave para uso en scripts:**
+
+- Salida limpia sin formato Rich ni spinners
+- Omite automáticamente los prompts de confirmación
+- No se realiza ningún commit real en git
+- Funciona con `--one-liner` para una salida simplificada
+- Se puede combinar con otras banderas como `--hint`, `--model`, etc.
 
 ### Omitir Hooks Pre-commit y Lefthook
 

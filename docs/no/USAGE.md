@@ -42,19 +42,22 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
 ## Core Workflow Flags
 
-| Flag / Option        | Short | Description                                        |
-| -------------------- | ----- | -------------------------------------------------- |
-| `--add-all`          | `-a`  | Stage all changes before committing                |
-| `--group`            | `-g`  | Group staged changes into multiple logical commits |
-| `--push`             | `-p`  | Push changes to remote after committing            |
-| `--yes`              | `-y`  | Automatically confirm commit without prompting     |
-| `--dry-run`          |       | Show what would happen without making any changes  |
-| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing |
-| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes   |
+| Flag / Option        | Short | Description                                                 |
+| -------------------- | ----- | ----------------------------------------------------------- |
+| `--add-all`          | `-a`  | Stage all changes before committing                         |
+| `--group`            | `-g`  | Group staged changes into multiple logical commits          |
+| `--push`             | `-p`  | Push changes to remote after committing                     |
+| `--yes`              | `-y`  | Automatically confirm commit without prompting              |
+| `--dry-run`          |       | Show what would happen without making any changes           |
+| `--message-only`     |       | Output only the generated commit message without committing |
+| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing          |
+| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes            |
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
 **Note:** When using `--group`, the max output tokens limit is automatically scaled based on the number of files being committed (2x for 1-9 files, 3x for 10-19 files, 4x for 20-29 files, 5x for 30+ files). This ensures the LLM has enough tokens to generate all grouped commits without truncation, even for large changesets.
+
+**Note:** `--message-only` and `--group` are mutually exclusive. Use `--message-only` when you want to get the commit message for external processing, and `--group` when you want to organize multiple commits within the current git workflow.
 
 ## Message Customization
 
@@ -162,6 +165,20 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
   ```sh
   gac --dry-run
+  ```
+
+- **Get only the commit message (for script integration):**
+
+  ```sh
+  gac --message-only
+  # Outputs: feat: add user authentication system
+  ```
+
+- **Get commit message in one-liner format:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Outputs: feat: add user authentication system
   ```
 
 ## Advanced

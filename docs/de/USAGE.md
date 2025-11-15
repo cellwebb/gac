@@ -15,6 +15,7 @@ Dieses Dokument beschreibt alle verfügbaren Flags und Optionen für das `gac` C
   - [Hilfe und Version](#hilfe-und-version)
   - [Beispiel-Workflows](#beispiel-workflows)
   - [Erweitert](#erweitert)
+    - [Skript-Integration und externe Verarbeitung](#skript-integration-und-externe-verarbeitung)
     - [Pre-commit und Lefthook Hooks überspringen](#pre-commit-und-lefthook-hooks-überspringen)
   - [Konfigurationshinweise](#konfigurationshinweise)
     - [Erweiterte Konfigurationsoptionen](#erweiterte-konfigurationsoptionen)
@@ -49,12 +50,15 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 | `--push`             | `-p` | Änderungen nach dem Committen auf das Remote pushen                    |
 | `--yes`              | `-y` | Automatisch den Commit bestätigen ohne Aufforderung                    |
 | `--dry-run`          |      | Zeigen, was passieren würde, ohne Änderungen vorzunehmen               |
+| `--message-only`     |      | Nur die generierte Commit-Nachricht ohne eigentlichen Commit ausgeben  |
 | `--no-verify`        |      | Pre-commit und lefthook Hooks beim Committen überspringen              |
 | `--skip-secret-scan` |      | Sicherheits-Scan für Geheimnisse in gestageten Änderungen überspringen |
 
 **Hinweis:** Kombinieren Sie `-a` und `-g` (d.h. `-ag`) um ALLE Änderungen zuerst zu staggen, dann sie in Commits zu gruppieren.
 
 **Hinweis:** Bei Verwendung von `--group` wird das maximale Ausgabe-Token-Limit automatisch basierend auf der Anzahl der Dateien, die committet werden, skaliert (2x für 1-9 Dateien, 3x für 10-19 Dateien, 4x für 20-29 Dateien, 5x für 30+ Dateien). Dies stellt sicher, dass die KI genügend Tokens hat, um alle gruppierten Commits ohne Abschneidung zu generieren, selbst bei großen Änderungssätzen.
+
+**Hinweis:** `--message-only` und `--group` schließen sich gegenseitig aus. Verwenden Sie `--message-only`, wenn Sie die Commit-Nachricht für externe Verarbeitung benötigen, und `--group`, wenn Sie mehrere Commits im aktuellen Git-Workflow organisieren möchten.
 
 ## Nachrichten-Anpassung
 
@@ -164,11 +168,73 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
   gac --dry-run
   ```
 
+- **Nur die Commit-Nachricht erhalten (für Skript-Integration):**
+
+  ```sh
+  gac --message-only
+  # Ausgabe: feat: add user authentication system
+  ```
+
+- **Commit-Nachricht im Einzeilenformat erhalten:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Ausgabe: feat: add user authentication system
+  ```
+
 ## Erweitert
 
 - Kombinieren Sie Flags für leistungsfähigere Workflows (z.B. `gac -ayp` zum stagen, automatischen Bestätigen und pushen)
 - Verwenden Sie `--show-prompt` zum Debuggen oder Überprüfen des an die KI gesendeten Prompts
 - Passen Sie die Ausführlichkeit mit `--log-level` oder `--quiet` an
+- Verwenden Sie `--message-only` für Skript-Integration und automatisierte Workflows
+
+### Skript-Integration und externe Verarbeitung
+
+Das Flag `--message-only` ist für Skript-Integration und externe Tool-Workflows gedacht. Es gibt nur die rohe Commit-Nachricht ohne zusätzliche Formatierung, Spinner oder UI-Elemente aus.
+
+**Anwendungsfälle:**
+
+- **Agent-Integration:** KI-Agenten können Commit-Nachrichten abrufen und Commits selbst ausführen
+- **Alternative VCS:** Generierte Nachrichten mit anderen Versionskontrollsystemen verwenden (Mercurial, Jujutsu usw.)
+- **Benutzerdefinierte Commit-Workflows:** Nachricht vor dem Commit weiterverarbeiten oder anpassen
+- **CI/CD-Pipelines:** Commit-Nachrichten für automatisierte Prozesse extrahieren
+
+**Beispiel-Skriptverwendung:**
+
+```sh
+#!/bin/bash
+# Commit-Nachricht abrufen und mit benutzerdefinierter Commit-Funktion verwenden
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
+```
+
+```python
+# Python-Integrationsbeispiel
+import subprocess
+
+
+def get_commit_message() -> str:
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
+
+
+message = get_commit_message()
+print(f"Generated message: {message}")
+```
+
+**Wichtige Eigenschaften für Skripte:**
+
+- Saubere Ausgabe ohne Rich-Formatierung oder Spinner
+- Umgeht Bestätigungs-Prompts automatisch
+- Es wird kein tatsächlicher Git-Commit ausgeführt
+- Funktioniert mit `--one-liner` für vereinfachte Ausgabe
+- Kann mit anderen Flags wie `--hint`, `--model` usw. kombiniert werden
 
 ### Pre-commit und Lefthook Hooks überspringen
 

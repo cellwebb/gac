@@ -15,6 +15,7 @@ Este documento descreve todas as flags e opções disponíveis para a ferramenta
   - [Ajuda e Versão](#ajuda-e-versão)
   - [Exemplos de Fluxos de Trabalho](#exemplos-de-fluxos-de-trabalho)
   - [Avançado](#avançado)
+    - [Integração com scripts e processamento externo](#integração-com-scripts-e-processamento-externo)
     - [Ignorando Hooks Pre-commit e Lefthook](#ignorando-hooks-pre-commit-e-lefthook)
   - [Notas de Configuração](#notas-de-configuração)
     - [Opções Avançadas de Configuração](#opções-avançadas-de-configuração)
@@ -49,12 +50,15 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 | `--push`             | `-p`  | Push das alterações para o remoto após o commit                      |
 | `--yes`              | `-y`  | Confirmar commit automaticamente sem prompting                       |
 | `--dry-run`          |       | Mostrar o que aconteceria sem fazer nenhuma alteração                |
+| `--message-only`     |       | Exibir apenas a mensagem de commit gerada sem realizar o commit      |
 | `--no-verify`        |       | Ignorar hooks pre-commit e lefthook ao fazer commit                  |
 | `--skip-secret-scan` |       | Ignorar varredura de segurança para segredos nas alterações em stage |
 
 **Nota:** Combine `-a` e `-g` (ou seja, `-ag`) para fazer stage de TODAS as alterações primeiro, depois agrupá-las em commits.
 
 **Nota:** Ao usar `--group`, o limite máximo de tokens de saída é escalado automaticamente com base no número de arquivos sendo commitados (2x para 1-9 arquivos, 3x para 10-19 arquivos, 4x para 20-29 arquivos, 5x para 30+ arquivos). Isso garante que o LLM tenha tokens suficientes para gerar todos os commits agrupados sem truncamento, mesmo para grandes conjuntos de alterações.
+
+**Nota:** `--message-only` e `--group` são mutuamente excludentes. Use `--message-only` quando quiser obter a mensagem de commit para processamento externo, e `--group` quando quiser organizar múltiplos commits dentro do fluxo de trabalho git atual.
 
 ## Personalização de Mensagens
 
@@ -164,11 +168,73 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
   gac --dry-run
   ```
 
+- **Obter apenas a mensagem de commit (para integração com scripts):**
+
+  ```sh
+  gac --message-only
+  # Saída: feat: add user authentication system
+  ```
+
+- **Obter a mensagem de commit em formato de linha única:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Saída: feat: add user authentication system
+  ```
+
 ## Avançado
 
 - Combine flags para fluxos de trabalho mais poderosos (ex: `gac -ayp` para fazer stage, auto-confirmar e push)
 - Use `--show-prompt` para debugar ou revisar o prompt enviado ao LLM
 - Ajuste a verbosity com `--log-level` ou `--quiet`
+- Use `--message-only` para integração com scripts e workflows automatizados
+
+### Integração com scripts e processamento externo
+
+A flag `--message-only` foi projetada para integração com scripts e workflows de ferramentas externas. Ela exibe apenas a mensagem de commit bruta, sem formatação adicional, spinners ou elementos extras de UI.
+
+**Casos de uso:**
+
+- **Integração com agentes:** Permitir que agentes de IA obtenham mensagens de commit e gerenciem os commits por conta própria
+- **VCS alternativos:** Usar mensagens geradas com outros sistemas de controle de versão (Mercurial, Jujutsu, etc.)
+- **Workflows de commit personalizados:** Processar ou modificar a mensagem antes de fazer o commit
+- **Pipelines de CI/CD:** Extrair mensagens de commit para processos automatizados
+
+**Exemplo de uso em script:**
+
+```sh
+#!/bin/bash
+# Obter a mensagem de commit e usá-la com uma função de commit personalizada
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
+```
+
+```python
+# Exemplo de integração em Python
+import subprocess
+
+
+def get_commit_message() -> str:
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
+
+
+message = get_commit_message()
+print(f"Generated message: {message}")
+```
+
+**Principais características para uso em scripts:**
+
+- Saída limpa, sem formatação Rich ou spinners
+- Ignora automaticamente os prompts de confirmação
+- Nenhum commit real é feito no git
+- Funciona com `--one-liner` para saída simplificada
+- Pode ser combinada com outras flags como `--hint`, `--model`, etc.
 
 ### Ignorando Hooks Pre-commit e Lefthook
 

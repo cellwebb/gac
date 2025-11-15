@@ -42,19 +42,22 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 
 ## Kern Workflow Vlaggen
 
-| Vlag / Optie         | Kort | Beschrijving                                               |
-| -------------------- | ---- | ---------------------------------------------------------- |
-| `--add-all`          | `-a` | Stage alle wijzigingen voordat u commit                    |
-| `--group`            | `-g` | Groepeer staged wijzigingen in meerdere logische commits   |
-| `--push`             | `-p` | Push wijzigingen naar remote na commit                     |
-| `--yes`              | `-y` | Bevestig commit automatisch zonder prompting               |
-| `--dry-run`          |      | Toon wat er zou gebeuren zonder wijzigingen te maken       |
-| `--no-verify`        |      | Sla pre-commit en lefthook hooks over bij commit           |
-| `--skip-secret-scan` |      | Sla security scan over voor geheimen in staged wijzigingen |
+| Vlag / Optie         | Kort | Beschrijving                                                                 |
+| -------------------- | ---- | ---------------------------------------------------------------------------- |
+| `--add-all`          | `-a` | Stage alle wijzigingen voordat u commit                                      |
+| `--group`            | `-g` | Groepeer staged wijzigingen in meerdere logische commits                     |
+| `--push`             | `-p` | Push wijzigingen naar remote na commit                                       |
+| `--yes`              | `-y` | Bevestig commit automatisch zonder prompting                                 |
+| `--dry-run`          |      | Toon wat er zou gebeuren zonder wijzigingen te maken                         |
+| `--message-only`     |      | Toon alleen het gegenereerde commitbericht zonder daadwerkelijk te committen |
+| `--no-verify`        |      | Sla pre-commit en lefthook hooks over bij commit                             |
+| `--skip-secret-scan` |      | Sla security scan over voor geheimen in staged wijzigingen                   |
 
 **Let op:** Combineer `-a` en `-g` (d.w.z. `-ag`) om eerst ALLE wijzigingen te stage, en ze daarna te groeperen in commits.
 
 **Let op:** Bij gebruik van `--group`, wordt het maximale output tokens limiet automatisch geschaald op basis van het aantal bestanden dat wordt gecommit (2x voor 1-9 bestanden, 3x voor 10-19 bestanden, 4x voor 20-29 bestanden, 5x voor 30+ bestanden). Dit zorgt ervoor dat de LLM genoeg tokens heeft om alle gegroepeerde commits te genereren zonder truncatie, zelfs voor grote changesets.
+
+**Let op:** `--message-only` en `--group` sluiten elkaar uit. Gebruik `--message-only` wanneer u het commitbericht voor externe verwerking nodig heeft, en `--group` wanneer u meerdere commits binnen de huidige git-workflow wilt organiseren.
 
 ## Bericht Aanpassing
 
@@ -162,6 +165,20 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 
   ```sh
   gac --dry-run
+  ```
+
+- **Alleen het commitbericht ophalen (voor script-integratie):**
+
+  ```sh
+  gac --message-only
+  # Voorbeeldoutput: feat: add user authentication system
+  ```
+
+- **Commitbericht in eenregel-formaat ophalen:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Voorbeeldoutput: feat: add user authentication system
   ```
 
 ## Geavanceerd

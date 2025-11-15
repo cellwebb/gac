@@ -42,19 +42,22 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
 
 ## Flag Quy Trình Chính
 
-| Flag / Tùy chọn      | Ngắn | Mô tả                                                           |
-| -------------------- | ---- | --------------------------------------------------------------- |
-| `--add-all`          | `-a` | Stage tất cả các thay đổi trước khi committing                  |
-| `--group`            | `-g` | Nhóm các thay đổi đã staged thành nhiều commit logic            |
-| `--push`             | `-p` | Push thay đổi đến remote sau khi committing                     |
-| `--yes`              | `-y` | Tự động xác nhận commit mà không cần gợi ý                      |
-| `--dry-run`          |      | Hiển thị những gì sẽ xảy ra mà không thực hiện thay đổi nào     |
-| `--no-verify`        |      | Bỏ qua các hook pre-commit và lefthook khi committing           |
-| `--skip-secret-scan` |      | Bỏ qua quét bảo mật cho các bí mật trong các thay đổi đã staged |
+| Flag / Tùy chọn      | Ngắn | Mô tả                                                                    |
+| -------------------- | ---- | ------------------------------------------------------------------------ |
+| `--add-all`          | `-a` | Stage tất cả các thay đổi trước khi committing                           |
+| `--group`            | `-g` | Nhóm các thay đổi đã staged thành nhiều commit logic                     |
+| `--push`             | `-p` | Push thay đổi đến remote sau khi committing                              |
+| `--yes`              | `-y` | Tự động xác nhận commit mà không cần gợi ý                               |
+| `--dry-run`          |      | Hiển thị những gì sẽ xảy ra mà không thực hiện thay đổi nào              |
+| `--message-only`     |      | Chỉ in ra thông điệp commit được sinh ra, không thực hiện commit vào git |
+| `--no-verify`        |      | Bỏ qua các hook pre-commit và lefthook khi committing                    |
+| `--skip-secret-scan` |      | Bỏ qua quét bảo mật cho các bí mật trong các thay đổi đã staged          |
 
 **Lưu ý:** Kết hợp `-a` và `-g` (tức là `-ag`) để stage TẤT CẢ các thay đổi trước, sau đó nhóm chúng vào các commit.
 
 **Lưu ý:** Khi sử dụng `--group`, giới hạn token đầu ra tối đa được tự động scale dựa trên số lượng tệp đang được commit (2x cho 1-9 tệp, 3x cho 10-19 tệp, 4x cho 20-29 tệp, 5x cho 30+ tệp). Điều này đảm bảo LLM có đủ token để tạo tất cả các commit được nhóm mà không bị cắt ngắn, ngay cả với các thay đổi lớn.
+
+**Lưu ý:** `--message-only` và `--group` loại trừ lẫn nhau. Hãy dùng `--message-only` khi bạn muốn lấy thông điệp commit để xử lý bên ngoài, và dùng `--group` khi bạn muốn tổ chức nhiều commit trong cùng quy trình git hiện tại.
 
 ## Tùy Chỉnh Thông Điệp
 
@@ -162,6 +165,20 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
 
   ```sh
   gac --dry-run
+  ```
+
+- **Chỉ lấy thông điệp commit (cho tích hợp script):**
+
+  ```sh
+  gac --message-only
+  # Ví dụ đầu ra: feat: add user authentication system
+  ```
+
+- **Lấy thông điệp commit ở dạng một dòng:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Ví dụ đầu ra: feat: add user authentication system
   ```
 
 ## Nâng Cao

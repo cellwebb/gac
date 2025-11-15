@@ -15,6 +15,7 @@ Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `g
   - [Aide et version](#aide-et-version)
   - [Exemples de workflows](#exemples-de-workflows)
   - [Avancé](#avancé)
+    - [Intégration par script et traitement externe](#intégration-par-script-et-traitement-externe)
     - [Sauter les hooks Pre-commit et Lefthook](#sauter-les-hooks-pre-commit-et-lefthook)
   - [Notes de configuration](#notes-de-configuration)
     - [Options de configuration avancées](#options-de-configuration-avancées)
@@ -49,12 +50,15 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--push`             | `-p`  | Pousser les changements vers le distant après le commit                    |
 | `--yes`              | `-y`  | Confirmer automatiquement le commit sans demande                           |
 | `--dry-run`          |       | Montrer ce qui se passerait sans faire de changements                      |
+| `--message-only`     |       | Afficher uniquement le message de commit généré sans effectuer le commit   |
 | `--no-verify`        |       | Sauter les hooks pre-commit et lefthook lors du commit                     |
 | `--skip-secret-scan` |       | Sauter l'analyse de sécurité pour les secrets dans les changements indexés |
 
 **Note :** Combinez `-a` et `-g` (c'est-à-dire `-ag`) pour indexer TOUS les changements d'abord, puis les grouper en commits.
 
 **Note :** Lors de l'utilisation de `--group`, la limite de tokens de sortie maximale est automatiquement mise à l'échelle en fonction du nombre de fichiers commités (2x pour 1-9 fichiers, 3x pour 10-19 fichiers, 4x pour 20-29 fichiers, 5x pour 30+ fichiers). Cela assure que l'IA a assez de tokens pour générer tous les commits groupés sans troncation, même pour les ensembles de changements volumineux.
+
+**Note :** `--message-only` et `--group` sont mutuellement exclusifs. Utilisez `--message-only` lorsque vous souhaitez récupérer le message de commit pour un traitement externe, et `--group` lorsque vous souhaitez organiser plusieurs commits dans le workflow git actuel.
 
 ## Personnalisation des messages
 
@@ -164,11 +168,73 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
   gac --dry-run
   ```
 
+- **Récupérer uniquement le message de commit (pour intégration par script) :**
+
+  ```sh
+  gac --message-only
+  # Sortie : feat: add user authentication system
+  ```
+
+- **Récupérer le message de commit au format une seule ligne :**
+
+  ```sh
+  gac --message-only --one-liner
+  # Sortie : feat: add user authentication system
+  ```
+
 ## Avancé
 
 - Combinez les drapeaux pour des workflows plus puissants (ex: `gac -ayp` pour indexer, confirmer automatiquement et pousser)
 - Utilisez `--show-prompt` pour déboguer ou revoir le prompt envoyé à l'IA
 - Ajustez la verbosité avec `--log-level` ou `--quiet`
+- Utilisez `--message-only` pour l'intégration par script et les workflows automatisés
+
+### Intégration par script et traitement externe
+
+Le drapeau `--message-only` est conçu pour l'intégration par script et les workflows d'outils externes. Il affiche uniquement le message de commit brut, sans mise en forme, spinners ou éléments d'interface supplémentaires.
+
+**Cas d'utilisation :**
+
+- **Intégration avec des agents :** Permettre aux agents IA de récupérer les messages de commit et de gérer eux-mêmes les commits
+- **VCS alternatifs :** Utiliser les messages générés avec d'autres systèmes de contrôle de version (Mercurial, Jujutsu, etc.)
+- **Workflows de commit personnalisés :** Traiter ou modifier le message avant de commiter
+- **Pipelines CI/CD :** Extraire les messages de commit pour des processus automatisés
+
+**Exemple de script :**
+
+```sh
+#!/bin/bash
+# Récupérer le message de commit et l'utiliser avec une fonction de commit personnalisée
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
+```
+
+```python
+# Exemple d'intégration Python
+import subprocess
+
+
+def get_commit_message() -> str:
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
+
+
+message = get_commit_message()
+print(f"Generated message: {message}")
+```
+
+**Caractéristiques clés pour l'utilisation dans des scripts :**
+
+- Sortie propre sans mise en forme Rich ni spinners
+- Contourne automatiquement les invites de confirmation
+- Aucun commit git réel n'est effectué
+- Fonctionne avec `--one-liner` pour une sortie simplifiée
+- Peut être combiné avec d'autres drapeaux comme `--hint`, `--model`, etc.
 
 ### Sauter les hooks Pre-commit et Lefthook
 

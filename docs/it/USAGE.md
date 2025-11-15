@@ -294,6 +294,16 @@ Raggruppa modifiche correlate in commit multipli.
 gac --group
 ```
 
+#### `--message-only`
+
+Restituisce solo il messaggio di commit generato senza eseguire alcun `git commit`.
+
+```bash
+# Usa il messaggio in uno script personalizzato
+MESSAGE=$(gac --message-only --yes)
+git commit -m "$MESSAGE"
+```
+
 ### Opzioni di Debug
 
 #### `--show-prompt`
