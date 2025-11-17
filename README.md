@@ -103,6 +103,14 @@ uv tool upgrade gac
 - **Interactive protection**: Prompts before committing potentially sensitive data with clear remediation options
 - **Smart filtering**: Ignores example files, template files, and placeholder text to reduce false positives
 
+### 🤖 **MCP Server Support**
+
+- **AI agent integration**: Use gac with Claude Desktop, Cline, and other MCP clients
+- **Full workflow automation**: AI agents can stage files, generate messages, commit, and push
+- **Security scanning**: Exposed secret detection tools for AI agents
+- **Read-only resources**: AI agents can inspect git status, diffs, and branches
+- **[Learn more about MCP support →](MCP_SERVER.md)**
+
 ---
 
 ## Usage Examples
