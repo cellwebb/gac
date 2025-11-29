@@ -82,7 +82,7 @@ bump:
 	echo "Version bumped from $$OLD_VERSION to $$NEW_VERSION" && \
 	python scripts/prep_changelog_for_release.py CHANGELOG.md $$NEW_VERSION && \
 	git add -A && \
-	git commit -m "chore: bump version to $$NEW_VERSION" && \
+	git commit -m "chore(version): bump version to $$NEW_VERSION" && \
 	git tag -a "v$$NEW_VERSION" -m "Release version $$NEW_VERSION" && \
 	echo "✅ Created tag v$$NEW_VERSION" && \
 	echo "📦 To publish: git push && git push --tags"
