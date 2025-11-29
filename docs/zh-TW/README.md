@@ -65,11 +65,11 @@ uv tool upgrade gac
 
 ### 🌐 **支援的提供者**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code**
-- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **LM Studio**
-- **MiniMax** • **Mistral** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
-- **Z.AI** • **Z.AI Coding** • **自訂端點（Anthropic/OpenAI）**
+- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code OAuth**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding**
+- **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama**
+- **OpenAI** • **OpenRouter** • **Replicate** • **Streamlake** • **Synthetic.new**
+- **Together AI** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **智慧 LLM 分析**
 
