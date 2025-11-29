@@ -90,9 +90,11 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Fireworks", "accounts/fireworks/models/gpt-oss-20b"),
         ("Gemini", "gemini-2.5-flash"),
         ("Groq", "meta-llama/llama-4-maverick-17b-128e-instruct"),
+        ("Kimi for Coding", "kimi-for-coding"),
         ("LM Studio", "gemma3"),
         ("MiniMax.io", "MiniMax-M2"),
         ("Mistral", "mistral-small-latest"),
+        ("Moonshot AI", "kimi-k2-thinking-turbo"),
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-5-mini"),
         ("OpenRouter", "openrouter/auto"),
@@ -112,18 +114,22 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         return False
     provider_key = provider.lower().replace(".", "").replace(" ", "-").replace("(", "").replace(")", "")
 
-    is_ollama = provider_key == "ollama"
-    is_lmstudio = provider_key == "lm-studio"
-    is_streamlake = provider_key == "streamlake"
-    is_zai = provider_key in ("zai", "zai-coding")
     is_claude_code = provider_key == "claude-code"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
+    is_lmstudio = provider_key == "lm-studio"
+    is_ollama = provider_key == "ollama"
+    is_streamlake = provider_key == "streamlake"
+    is_zai = provider_key in ("zai", "zai-coding")
 
     if provider_key == "minimaxio":
         provider_key = "minimax"
     elif provider_key == "syntheticnew":
         provider_key = "synthetic"
+    elif provider_key == "moonshot-ai":
+        provider_key = "moonshot"
+    elif provider_key == "kimi-for-coding":
+        provider_key = "kimi_coding"
 
     if is_streamlake:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")

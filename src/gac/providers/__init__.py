@@ -10,9 +10,11 @@ from .deepseek import call_deepseek_api
 from .fireworks import call_fireworks_api
 from .gemini import call_gemini_api
 from .groq import call_groq_api
+from .kimi_coding import call_kimi_coding_api
 from .lmstudio import call_lmstudio_api
 from .minimax import call_minimax_api
 from .mistral import call_mistral_api
+from .moonshot import call_moonshot_api
 from .ollama import call_ollama_api
 from .openai import call_openai_api
 from .openrouter import call_openrouter_api
@@ -34,9 +36,11 @@ PROVIDER_REGISTRY = {
     "fireworks": call_fireworks_api,
     "gemini": call_gemini_api,
     "groq": call_groq_api,
+    "kimi-for-coding": call_kimi_coding_api,
     "lm-studio": call_lmstudio_api,
     "minimax": call_minimax_api,
     "mistral": call_mistral_api,
+    "moonshot": call_moonshot_api,
     "ollama": call_ollama_api,
     "openai": call_openai_api,
     "openrouter": call_openrouter_api,
@@ -62,9 +66,11 @@ __all__ = [
     "call_fireworks_api",
     "call_gemini_api",
     "call_groq_api",
+    "call_kimi_coding_api",
     "call_lmstudio_api",
     "call_minimax_api",
     "call_mistral_api",
+    "call_moonshot_api",
     "call_ollama_api",
     "call_openai_api",
     "call_openrouter_api",
