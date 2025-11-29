@@ -140,37 +140,35 @@ Beim Hinzufügen eines neuen KI-Anbieters müssen Sie mehrere Dateien im gesamte
 - [ ] **2. Anbieter im Paket registrieren** (`src/gac/providers/__init__.py`)
 
   - Import hinzufügen: `from .<provider> import call_<provider>_api`
+  - Zum Dictionary `PROVIDER_REGISTRY` hinzufügen: `"provider-name": call_<provider>_api`
   - Zur `__all__`-Liste hinzufügen: `"call_<provider>_api"`
 
-- [ ] **3. Anbieter in AI-Modul registrieren** (`src/gac/ai.py`)
-
-  - Import im Abschnitt `from gac.providers import (...)` hinzufügen
-  - Zum `provider_funcs`-Dictionary hinzufügen: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Zur Liste der unterstützten Anbieter hinzufügen** (`src/gac/ai_utils.py`)
-
-  - `"provider-name"` zur `supported_providers`-Liste in `generate_with_retries()` hinzufügen
-  - Die Liste alphabetisch sortiert halten
-
-- [ ] **5. Zur interaktiven Einrichtung hinzufügen** (`src/gac/init_cli.py`)
-
-  - Tupel zur `providers`-Liste hinzufügen: `("Provider Name", "default-model-name")`
-  - Die Liste alphabetisch sortiert halten
-  - Spezielle Behandlung hinzufügen, falls erforderlich (wie Ollama/LM Studio für lokale Anbieter)
-
-- [ ] **6. Beispiel-Konfiguration aktualisieren** (`.gac.env.example`)
+- [ ] **3. Beispiel-Konfiguration aktualisieren** (`.gac.env.example`)
 
   - Beispiel-Modellkonfiguration im Format hinzufügen: `# GAC_MODEL=provider:model-name`
   - API-Schlüssel-Eintrag hinzufügen: `# <PROVIDER>_API_KEY=your_key_here`
   - Einträge alphabetisch sortiert halten
   - Kommentare für optionale Schlüssel hinzufügen, falls zutreffend
 
-- [ ] **7. Dokumentation aktualisieren** (`README.md` und `docs/zh-CN/README.md`)
+- [ ] **4. Dokumentation aktualisieren** (`README.md` und alle `README.md`-Übersetzungen in `docs/`)
 
-  - Anbietername zum Abschnitt "Supported Providers" in beiden englischen und chinesischen READMEs hinzufügen
+  - Anbieternamen zum Abschnitt „Supported Providers“ in allen README-Übersetzungen hinzufügen
   - Die Liste innerhalb ihrer Aufzählungspunkte alphabetisch sortiert halten
 
-- [ ] **8. Umfassende Tests erstellen** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Zur interaktiven Einrichtung hinzufügen** (`src/gac/init_cli.py`)
+
+  - Tupel zur `providers`-Liste hinzufügen: `("Provider Name", "default-model-name")`
+  - Die Liste alphabetisch sortiert halten
+  - **Wichtig**: Wenn Ihr Anbieter einen nicht standardmäßigen API-Schlüssel-Namen verwendet (nicht der automatisch generierte `{PROVIDER_UPPERCASE}_API_KEY`), fügen Sie eine spezielle Behandlung hinzu:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Beispiele: `kimi-for-coding` verwendet `KIMI_CODING_API_KEY`, `moonshot-ai` verwendet `MOONSHOT_API_KEY`
+
+- [ ] **6. Umfassende Tests erstellen** (`tests/providers/test_<provider>.py`)
 
   - Testdatei nach Namenskonvention erstellen
   - Diese Testklassen einschließen:
@@ -188,7 +186,7 @@ Beim Hinzufügen eines neuen KI-Anbieters müssen Sie mehrere Dateien im gesamte
     - `success_response` - Mock-erfolgreiche API-Antwort
     - `empty_content_response` - Mock-Antwort mit leerem Inhalt
 
-- [ ] **9. Version erhöhen** (`src/gac/__version__.py`)
+- [ ] **7. Version erhöhen** (`src/gac/__version__.py`)
   - Die **Minor**-Version erhöhen (z.B. 1.10.2 → 1.11.0)
   - Das Hinzufügen eines Anbieters ist eine neue Funktion und erfordert eine Minor-Versionserhöhung
 
@@ -206,8 +204,9 @@ Siehe die MiniMax-Anbieter-Implementierung als Referenz:
 3. **Testing**: Die `BaseProviderTest`-Klasse bietet 9 Standardtests, die jeder Anbieter erben sollte
 4. **Alphabetische Reihenfolge**: Anbieterlisten alphabetisch sortiert halten für Wartbarkeit
 5. **API-Schlüssel-Benennung**: Format `<PROVIDER>_API_KEY` verwenden (alles großgeschrieben, Unterstriche für Leerzeichen)
-6. **Anbietername-Format**: Kleinbuchstaben mit Bindestrichen für mehrwortige Namen (z.B. "lm-studio")
-7. **Versionserhöhung**: Hinzufügen eines Anbieters erfordert eine **Minor**-Versionserhöhung (neue Funktion)
+6. **Anbieterregistrierung**: Nur `src/gac/providers/__init__.py` und `src/gac/init_cli.py` anpassen – `ai.py` und `ai_utils.py` lesen automatisch aus dem Registry
+7. **Anbietername-Format**: Kleinbuchstaben mit Bindestrichen für mehrwortige Namen (z.B. "lm-studio")
+8. **Versionserhöhung**: Hinzufügen eines Anbieters erfordert eine **Minor**-Versionserhöhung (neue Funktion)
 
 ## Codierungsstandards
 

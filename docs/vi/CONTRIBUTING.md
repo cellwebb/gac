@@ -141,37 +141,35 @@ Khi thêm nhà cung cấp AI mới, bạn cần cập nhật nhiều tệp trên
 - [ ] **2. Đăng Ký Nhà Cung Cấp trong Gói** (`src/gac/providers/__init__.py`)
 
   - Thêm import: `from .<provider> import call_<provider>_api`
+  - Thêm vào từ điển `PROVIDER_REGISTRY`: `"provider-name": call_<provider>_api`
   - Thêm vào danh sách `__all__`: `"call_<provider>_api"`
 
-- [ ] **3. Đăng Ký Nhà Cung Cấp trong Module AI** (`src/gac/ai.py`)
-
-  - Thêm import trong phần `from gac.providers import (...)`
-  - Thêm vào từ điển `provider_funcs`: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Thêm vào Danh Sách Nhà Cung Cấp Hỗ Trợ** (`src/gac/ai_utils.py`)
-
-  - Thêm `"provider-name"` vào danh sách `supported_providers` trong `generate_with_retries()`
-  - Giữ danh sách được sắp xếp theo bảng chữ cái
-
-- [ ] **5. Thêm vào Thiết Lập Tương Tác** (`src/gac/init_cli.py`)
-
-  - Thêm tuple vào danh sách `providers`: `("Provider Name", "default-model-name")`
-  - Giữ danh sách được sắp xếp theo bảng chữ cái
-  - Thêm bất kỳ xử lý đặc biệt nào nếu cần (như Ollama/LM Studio cho các nhà cung cấp địa phương)
-
-- [ ] **6. Cập Nhật Cấu Hình Ví Dụ** (`.gac.env.example`)
+- [ ] **3. Cập Nhật Cấu Hình Ví Dụ** (`.gac.env.example`)
 
   - Thêm cấu hình mô hình ví dụ trong định dạng: `# GAC_MODEL=provider:model-name`
   - Thêm mục nhập khóa API: `# <PROVIDER>_API_KEY=your_key_here`
   - Giữ các mục nhập được sắp xếp theo bảng chữ cái
   - Thêm bình luận cho các khóa tùy chọn nếu áp dụng
 
-- [ ] **7. Cập Nhật Tài Liệu** (`README.md` và `docs/zh-CN/README.md`)
+- [ ] **4. Cập Nhật Tài Liệu** (`README.md` và tất cả các bản dịch `README.md` trong `docs/`)
 
-  - Thêm tên nhà cung cấp vào phần "Nhà Cung Cấp Hỗ Trợ" trong cả README tiếng Anh và tiếng Trung
+  - Thêm tên nhà cung cấp vào phần "Nhà Cung Cấp Hỗ Trợ" trong tất cả các README dịch
   - Giữ danh sách được sắp xếp theo bảng chữ cái trong các dấu đầu dòng của nó
 
-- [ ] **8. Tạo Kiểm Thử Toàn Diện** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Thêm vào Thiết Lập Tương Tác** (`src/gac/init_cli.py`)
+
+  - Thêm tuple vào danh sách `providers`: `("Provider Name", "default-model-name")`
+  - Giữ danh sách được sắp xếp theo bảng chữ cái
+  - **Quan trọng**: Nếu nhà cung cấp của bạn sử dụng tên khóa API không tiêu chuẩn (không phải `{PROVIDER_UPPERCASE}_API_KEY` được tạo tự động), hãy thêm xử lý đặc biệt:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Ví dụ: `kimi-for-coding` sử dụng `KIMI_CODING_API_KEY`, `moonshot-ai` sử dụng `MOONSHOT_API_KEY`
+
+- [ ] **6. Tạo Kiểm Thử Toàn Diện** (`tests/providers/test_<provider>.py`)
 
   - Tạo tệp kiểm thử làm theo quy ước đặt tên
   - Bao gồm các lớp kiểm thử này:
@@ -189,7 +187,7 @@ Khi thêm nhà cung cấp AI mới, bạn cần cập nhật nhiều tệp trên
     - `success_response` - Phản hồi API thành công mock
     - `empty_content_response` - Phản hồi nội dung rỗng mock
 
-- [ ] **9. Tăng Phiên Bản** (`src/gac/__version__.py`)
+- [ ] **7. Tăng Phiên Bản** (`src/gac/__version__.py`)
   - Tăng phiên bản **thứ** (ví dụ, 1.10.2 → 1.11.0)
   - Thêm nhà cung cấp là một tính năng mới và yêu cầu tăng phiên bản thứ
 
@@ -207,8 +205,9 @@ Xem triển khai nhà cung cấp MiniMax làm tài liệu tham khảo:
 3. **Kiểm Thử**: Lớp `BaseProviderTest` cung cấp 9 kiểm thử tiêu chuẩn mà mọi nhà cung cấp nên kế thừa
 4. **Thứ Tự Bảng Chữ Cái**: Giữ danh sách nhà cung cấp được sắp xếp theo bảng chữ cái để dễ bảo trì
 5. **Đặt Tên Khóa API**: Sử dụng định dạng `<PROVIDER>_API_KEY` (toàn bộ chữ hoa, gạch dưới cho khoảng trắng)
-6. **Định Dạng Tên Nhà Cung Cấp**: Sử dụng chữ thường với dấu gạch ngang cho các tên nhiều từ (ví dụ, "lm-studio")
-7. **Tăng Phiên Bản**: Thêm nhà cung cấp yêu cầu tăng phiên bản **thứ** (tính năng mới)
+6. **Đăng Ký Nhà Cung Cấp**: Chỉ thay đổi `src/gac/providers/__init__.py` và `src/gac/init_cli.py` – `ai.py` và `ai_utils.py` tự động đọc từ registry
+7. **Định Dạng Tên Nhà Cung Cấp**: Sử dụng chữ thường với dấu gạch ngang cho các tên nhiều từ (ví dụ, "lm-studio")
+8. **Tăng Phiên Bản**: Thêm nhà cung cấp yêu cầu tăng phiên bản **thứ** (tính năng mới)
 
 ## Tiêu Chuẩn Lập Trình
 

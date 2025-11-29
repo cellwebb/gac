@@ -140,37 +140,35 @@ bump-my-version bump major
 - [ ] **2. 패키지에 프로바이더 등록** (`src/gac/providers/__init__.py`)
 
   - 임포트 추가: `from .<provider> import call_<provider>_api`
+  - `PROVIDER_REGISTRY` 딕셔너리에 추가: `"provider-name": call_<provider>_api`
   - `__all__` 리스트에 추가: `"call_<provider>_api"`
 
-- [ ] **3. AI 모듈에 프로바이더 등록** (`src/gac/ai.py`)
-
-  - `from gac.providers import (...)` 섹션에 임포트 추가
-  - `provider_funcs` 딕셔너리에 추가: `"provider-name": call_<provider>_api`
-
-- [ ] **4. 지원되는 프로바이더 리스트에 추가** (`src/gac/ai_utils.py`)
-
-  - `generate_with_retries()`의 `supported_providers` 리스트에 `"provider-name"` 추가
-  - 리스트를 알파벳순으로 정렬된 상태로 유지
-
-- [ ] **5. 대화형 설정에 추가** (`src/gac/init_cli.py`)
-
-  - `providers` 리스트에 튜플 추가: `("Provider Name", "default-model-name")`
-  - 리스트를 알파벳순으로 정렬된 상태로 유지
-  - 필요한 경우 특별 처리 추가 (Ollama/LM Studio와 같은 로컬 프로바이더용)
-
-- [ ] **6. 예제 구성 업데이트** (`.gac.env.example`)
+- [ ] **3. 예제 구성 업데이트** (`.gac.env.example`)
 
   - 형식으로 예제 모델 구성 추가: `# GAC_MODEL=provider:model-name`
   - API 키 항목 추가: `# <PROVIDER>_API_KEY=your_key_here`
   - 항목을 알파벳순으로 정렬된 상태로 유지
   - 해당하는 경우 선택적 키에 대한 주석 추가
 
-- [ ] **7. 문서 업데이트** (`README.md` 및 `docs/zh-CN/README.md`)
+- [ ] **4. 문서 업데이트** (`README.md` 및 `docs/`의 모든 `README.md` 번역)
 
-  - 영어 및 중국어 README 모두의 "Supported Providers" 섹션에 프로바이더 이름 추가
+  - 모든 README 번역의 "Supported Providers" 섹션에 프로바이더 이름 추가
   - 글 머리 기호 내에서 알파벳순으로 정렬된 상태로 유지
 
-- [ ] **8. 포괄적인 테스트 생성** (`tests/providers/test_<provider>.py`)
+- [ ] **5. 대화형 설정에 추가** (`src/gac/init_cli.py`)
+
+  - `providers` 리스트에 튜플 추가: `("Provider Name", "default-model-name")`
+  - 리스트를 알파벳순으로 정렬된 상태로 유지
+  - **중요**: 프로바이더가 비표준 API 키 이름(자동 생성되는 `{PROVIDER_UPPERCASE}_API_KEY`가 아닌)을 사용하는 경우, 특별 처리를 추가:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    예: `kimi-for-coding`은 `KIMI_CODING_API_KEY`를 사용하고, `moonshot-ai`는 `MOONSHOT_API_KEY`를 사용
+
+- [ ] **6. 포괄적인 테스트 생성** (`tests/providers/test_<provider>.py`)
 
   - 명명 규칙을 따르는 테스트 파일 생성
   - 다음 테스트 클래스 포함:
@@ -188,7 +186,7 @@ bump-my-version bump major
     - `success_response` - 모의 성공적인 API 응답
     - `empty_content_response` - 모의 비어있는 컨텐츠 응답
 
-- [ ] **9. 버전 업그레이드** (`src/gac/__version__.py`)
+- [ ] **7. 버전 업그레이드** (`src/gac/__version__.py`)
   - **마이너** 버전을 증가시키세요 (예: 1.10.2 → 1.11.0)
   - 프로바이더 추가는 새로운 기능이며 마이너 버전 업그레이드가 필요합니다
 
@@ -206,8 +204,9 @@ bump-my-version bump major
 3. **테스팅**: `BaseProviderTest` 클래스는 모든 프로바이더가 상속해야 하는 9개 표준 테스트 제공
 4. **알파벳순**: 유지보수성을 위해 프로바이더 리스트를 알파벳순으로 정렬된 상태로 유지
 5. **API 키 명명**: `<PROVIDER>_API_KEY` 형식 사용 (모두 대문자, 공백은 밑줄)
-6. **프로바이더 이름 형식**: 여러 단어 이름에는 소문자와 하이픈 사용 (예: "lm-studio")
-7. **버전 업그레이드**: 프로바이더 추가는 **마이너** 버전 업그레이드 필요 (새로운 기능)
+6. **프로바이더 등록**: `src/gac/providers/__init__.py`와 `src/gac/init_cli.py`만 수정하고, `ai.py`와 `ai_utils.py`는 레지스트리에서 자동으로 읽어옴
+7. **프로바이더 이름 형식**: 여러 단어 이름에는 소문자와 하이픈 사용 (예: "lm-studio")
+8. **버전 업그레이드**: 프로바이더 추가는 **마이너** 버전 업그레이드 필요 (새로운 기능)
 
 ## 코딩 표준
 

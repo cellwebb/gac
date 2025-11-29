@@ -140,37 +140,35 @@ bump-my-version bump major
 - [ ] **2. 在包中注册提供商**（`src/gac/providers/__init__.py`）
 
   - 添加导入：`from .<provider> import call_<provider>_api`
+  - 添加到 `PROVIDER_REGISTRY` 字典：`"provider-name": call_<provider>_api`
   - 添加到 `__all__` 列表：`"call_<provider>_api"`
 
-- [ ] **3. 在 AI 模块中注册提供商**（`src/gac/ai.py`）
-
-  - 在 `from gac.providers import (...)` 部分添加导入
-  - 添加到 `provider_funcs` 字典：`"provider-name": call_<provider>_api`
-
-- [ ] **4. 添加到支持的提供商列表**（`src/gac/ai_utils.py`）
-
-  - 将 `"provider-name"` 添加到 `generate_with_retries()` 中的 `supported_providers` 列表
-  - 保持列表按字母顺序排序
-
-- [ ] **5. 添加到交互式设置**（`src/gac/init_cli.py`）
-
-  - 将元组添加到 `providers` 列表：`("Provider Name", "default-model-name")`
-  - 保持列表按字母顺序排序
-  - 如果需要，添加任何特殊处理（如 Ollama/LM Studio 的本地提供商）
-
-- [ ] **6. 更新示例配置**（`.gac.env.example`）
+- [ ] **3. 更新示例配置**（`.gac.env.example`）
 
   - 以格式添加示例模型配置：`# GAC_MODEL=provider:model-name`
   - 添加 API 密钥条目：`# <PROVIDER>_API_KEY=your_key_here`
   - 保持条目按字母顺序排序
   - 如果适用，为可选密钥添加注释
 
-- [ ] **7. 更新文档**（`README.md` 和 `docs/zh-CN/README.md`）
+- [ ] **4. 更新文档**（`README.md` 和 `docs/` 中所有 `README.md` 翻译）
 
-  - 在英文和中文 README 的"支持的提供商"部分添加提供商名称
+  - 在所有 README 翻译的"支持的提供商"部分添加提供商名称
   - 在其要点中保持列表按字母顺序排序
 
-- [ ] **8. 创建全面的测试**（`tests/providers/test_<provider>.py`）
+- [ ] **5. 添加到交互式设置**（`src/gac/init_cli.py`）
+
+  - 将元组添加到 `providers` 列表：`("Provider Name", "default-model-name")`
+  - 保持列表按字母顺序排序
+  - **重要**：如果你的提供商使用非标准的 API 密钥名称（不是自动生成的 `{PROVIDER_UPPERCASE}_API_KEY`），请添加特殊处理：
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    示例：`kimi-for-coding` 使用 `KIMI_CODING_API_KEY`，`moonshot-ai` 使用 `MOONSHOT_API_KEY`
+
+- [ ] **6. 创建全面的测试**（`tests/providers/test_<provider>.py`）
 
   - 按照命名约定创建测试文件
   - 包括这些测试类：
@@ -188,7 +186,7 @@ bump-my-version bump major
     - `success_response` - 模拟成功的 API 响应
     - `empty_content_response` - 模拟空内容响应
 
-- [ ] **9. 升级版本**（`src/gac/__version__.py`）
+- [ ] **7. 升级版本**（`src/gac/__version__.py`）
   - 增加**次要**版本（例如，1.10.2 → 1.11.0）
   - 添加提供商是一个新功能，需要次要版本升级
 
@@ -206,8 +204,9 @@ bump-my-version bump major
 3. **测试**：`BaseProviderTest` 类提供每个提供商应该继承的 9 个标准测试
 4. **字母顺序**：保持提供商列表按字母顺序排序以便于维护
 5. **API 密钥命名**：使用格式 `<PROVIDER>_API_KEY`（全大写，空格用下划线）
-6. **提供商名称格式**：对多词名称使用带连字符的小写（例如，"lm-studio"）
-7. **版本升级**：添加提供商需要**次要**版本升级（新功能）
+6. **提供商注册**：仅修改 `src/gac/providers/__init__.py` 和 `src/gac/init_cli.py`——`ai.py` 和 `ai_utils.py` 会自动从注册表中读取
+7. **提供商名称格式**：对多词名称使用带连字符的小写（例如，"lm-studio"）
+8. **版本升级**：添加提供商需要**次要**版本升级（新功能）
 
 ## 编码标准
 

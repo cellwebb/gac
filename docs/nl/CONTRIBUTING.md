@@ -140,37 +140,35 @@ Bij het toevoegen van een nieuwe AI provider moet u meerdere bestanden in de cod
 - [ ] **2. Registreer Provider in Package** (`src/gac/providers/__init__.py`)
 
   - Voeg import toe: `from .<provider> import call_<provider>_api`
+  - Voeg toe aan het `PROVIDER_REGISTRY` dictionary: `"provider-name": call_<provider>_api`
   - Voeg toe aan `__all__` lijst: `"call_<provider>_api"`
 
-- [ ] **3. Registreer Provider in AI Module** (`src/gac/ai.py`)
-
-  - Voeg import toe in het `from gac.providers import (...)` gedeelte
-  - Voeg toe aan `provider_funcs` dictionary: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Voeg toe aan Ondersteunde Providers Lijst** (`src/gac/ai_utils.py`)
-
-  - Voeg `"provider-name"` toe aan de `supported_providers` lijst in `generate_with_retries()`
-  - Houd de lijst alfabetisch gesorteerd
-
-- [ ] **5. Voeg toe aan Interactieve Setup** (`src/gac/init_cli.py`)
-
-  - Voeg tuple toe aan `providers` lijst: `("Provider Name", "default-model-name")`
-  - Houd de lijst alfabetisch gesorteerd
-  - Voeg speciale handling toe indien nodig (zoals Ollama/LM Studio voor lokale providers)
-
-- [ ] **6. Update Voorbeeldconfiguratie** (`.gac.env.example`)
+- [ ] **3. Update Voorbeeldconfiguratie** (`.gac.env.example`)
 
   - Voeg voorbeeld modelconfiguratie toe in het formaat: `# GAC_MODEL=provider:model-name`
   - Voeg API sleutel entry toe: `# <PROVIDER>_API_KEY=your_key_here`
   - Houd entries alfabetisch gesorteerd
   - Voeg commentaren toe voor optionele sleutels indien van toepassing
 
-- [ ] **7. Update Documentatie** (`README.md` en `docs/zh-CN/README.md`)
+- [ ] **4. Update Documentatie** (`README.md` en alle `README.md` vertalingen in `docs/`)
 
-  - Voeg providernaam toe aan de "Supported Providers" sectie in zowel Engelse als Chinese README's
+  - Voeg providernaam toe aan de "Supported Providers" sectie in alle README vertalingen
   - Houd de lijst alfabetisch gesorteerd binnen de bullet points
 
-- [ ] **8. Creëer Uitgebreide Tests** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Voeg toe aan Interactieve Setup** (`src/gac/init_cli.py`)
+
+  - Voeg tuple toe aan `providers` lijst: `("Provider Name", "default-model-name")`
+  - Houd de lijst alfabetisch gesorteerd
+  - **Belangrijk**: Als uw provider een niet-standaard API sleutelnaam gebruikt (niet de automatisch gegenereerde `{PROVIDER_UPPERCASE}_API_KEY`), voeg speciale handling toe:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Voorbeelden: `kimi-for-coding` gebruikt `KIMI_CODING_API_KEY`, `moonshot-ai` gebruikt `MOONSHOT_API_KEY`
+
+- [ ] **6. Creëer Uitgebreide Tests** (`tests/providers/test_<provider>.py`)
 
   - Creëer testbestand volgens de naamconventie
   - Inclusief deze testklassen:
@@ -188,7 +186,7 @@ Bij het toevoegen van een nieuwe AI provider moet u meerdere bestanden in de cod
     - `success_response` - Mock succesvolle API response
     - `empty_content_response` - Mock lege content response
 
-- [ ] **9. Bump Versie** (`src/gac/__version__.py`)
+- [ ] **7. Bump Versie** (`src/gac/__version__.py`)
   - Verhoog de **minor** versie (bv., 1.10.2 → 1.11.0)
   - Een provider toevoegen is een nieuw feature en vereist een minor versie bump
 
@@ -206,8 +204,9 @@ Zie de MiniMax provider implementatie als referentie:
 3. **Testing**: De `BaseProviderTest` klasse biedt 9 standaard tests die elke provider moet erven
 4. **Alfabetische Volgorde**: Houd providerlijsten alfabetisch gesorteerd voor onderhoudbaarheid
 5. **API Sleutel Naamgeving**: Gebruik het formaat `<PROVIDER>_API_KEY` (allemaal hoofdletters, underscores voor spaties)
-6. **Provider Naam Formaat**: Gebruik kleine letters met streepjes voor meerwoordnamen (bv., "lm-studio")
-7. **Versie Bump**: Een provider toevoegen vereist een **minor** versie bump (nieuw feature)
+6. **Provider Registratie**: Wijzig alleen `src/gac/providers/__init__.py` en `src/gac/init_cli.py` – `ai.py` en `ai_utils.py` lezen automatisch uit het register
+7. **Provider Naam Formaat**: Gebruik kleine letters met streepjes voor meerwoordnamen (bv., "lm-studio")
+8. **Versie Bump**: Een provider toevoegen vereist een **minor** versie bump (nieuw feature)
 
 ## Coderingsstandaarden
 

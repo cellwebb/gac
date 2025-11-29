@@ -141,37 +141,35 @@ Al añadir un nuevo proveedor de IA, necesitas actualizar múltiples archivos en
 - [ ] **2. Registrar Proveedor en el Paquete** (`src/gac/providers/__init__.py`)
 
   - Añade import: `from .<provider> import call_<provider>_api`
+  - Añade al diccionario `PROVIDER_REGISTRY`: `"provider-name": call_<provider>_api`
   - Añade a la lista `__all__`: `"call_<provider>_api"`
 
-- [ ] **3. Registrar Proveedor en el Módulo de IA** (`src/gac/ai.py`)
-
-  - Añade import en la sección `from gac.providers import (...)`
-  - Añade al diccionario `provider_funcs`: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Añadir a la Lista de Proveedores Soportados** (`src/gac/ai_utils.py`)
-
-  - Añade `"provider-name"` a la lista `supported_providers` en `generate_with_retries()`
-  - Mantén la lista ordenada alfabéticamente
-
-- [ ] **5. Añadir a la Configuración Interactiva** (`src/gac/init_cli.py`)
-
-  - Añade tupla a la lista `providers`: `("Provider Name", "default-model-name")`
-  - Mantén la lista ordenada alfabéticamente
-  - Añade cualquier manejo especial si es necesario (como Ollama/LM Studio para proveedores locales)
-
-- [ ] **6. Actualizar Configuración de Ejemplo** (`.gac.env.example`)
+- [ ] **3. Actualizar Configuración de Ejemplo** (`.gac.env.example`)
 
   - Añade configuración de modelo de ejemplo en el formato: `# GAC_MODEL=provider:model-name`
   - Añade entrada de clave de API: `# <PROVIDER>_API_KEY=your_key_here`
   - Mantén las entradas ordenadas alfabéticamente
   - Añade comentarios para claves opcionales si aplica
 
-- [ ] **7. Actualizar Documentación** (`README.md` y `docs/zh-CN/README.md`)
+- [ ] **4. Actualizar Documentación** (`README.md` y todas las traducciones de `README.md` en `docs/`)
 
-  - Añade nombre del proveedor a la sección "Proveedores Soportados" en ambos README, inglés y chino
+  - Añade el nombre del proveedor a la sección "Proveedores Soportados" en todas las traducciones de README
   - Mantén la lista ordenada alfabéticamente dentro de sus puntos
 
-- [ ] **8. Crear Pruebas Comprensivas** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Añadir a la Configuración Interactiva** (`src/gac/init_cli.py`)
+
+  - Añade tupla a la lista `providers`: `("Provider Name", "default-model-name")`
+  - Mantén la lista ordenada alfabéticamente
+  - **Importante**: Si tu proveedor usa un nombre de clave de API no estándar (no el `{PROVIDER_UPPERCASE}_API_KEY` generado automáticamente), añade manejo especial:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Ejemplos: `kimi-for-coding` usa `KIMI_CODING_API_KEY`, `moonshot-ai` usa `MOONSHOT_API_KEY`
+
+- [ ] **6. Crear Pruebas Comprensivas** (`tests/providers/test_<provider>.py`)
 
   - Crea archivo de prueba siguiendo la convención de nomenclatura
   - Incluye estas clases de prueba:
@@ -189,7 +187,7 @@ Al añadir un nuevo proveedor de IA, necesitas actualizar múltiples archivos en
     - `success_response` - Respuesta exitosa de API mock
     - `empty_content_response` - Respuesta de contenido vacío mock
 
-- [ ] **9. Actualizar Versión** (`src/gac/__version__.py`)
+- [ ] **7. Actualizar Versión** (`src/gac/__version__.py`)
   - Incrementa la versión **minor** (ej. 1.10.2 → 1.11.0)
   - Añadir un proveedor es una nueva característica y requiere una actualización de versión minor
 
@@ -207,8 +205,9 @@ Ver la implementación del proveedor MiniMax como referencia:
 3. **Pruebas**: La clase `BaseProviderTest` proporciona 9 pruebas estándar que cada proveedor debe heredar
 4. **Orden Alfabético**: Mantén las listas de proveedores ordenadas alfabéticamente para mantenibilidad
 5. **Nomenclatura de Clave API**: Usa el formato `<PROVIDER>_API_KEY` (todo mayúsculas, guiones bajos para espacios)
-6. **Formato de Nombre de Proveedor**: Usa minúsculas con guiones para nombres de múltiples palabras (ej. "lm-studio")
-7. **Actualización de Versión**: Añadir un proveedor requiere una actualización de versión **minor** (nueva característica)
+6. **Registro de Proveedor**: Solo modifica `src/gac/providers/__init__.py` y `src/gac/init_cli.py` – `ai.py` y `ai_utils.py` leen automáticamente desde el registro
+7. **Formato de Nombre de Proveedor**: Usa minúsculas con guiones para nombres de múltiples palabras (ej. "lm-studio")
+8. **Actualización de Versión**: Añadir un proveedor requiere una actualización de versión **minor** (nueva característica)
 
 ## Estándares de Codificación
 

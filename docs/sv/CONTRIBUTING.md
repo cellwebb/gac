@@ -140,37 +140,35 @@ När du lägger till en ny AI-leverantör behöver du uppdatera flera filer i ko
 - [ ] **2. Registrera leverantör i paketet** (`src/gac/providers/__init__.py`)
 
   - Lägg till import: `from .<provider> import call_<provider>_api`
+  - Lägg till i `PROVIDER_REGISTRY` ordboken: `"provider-name": call_<provider>_api`
   - Lägg till i `__all__` listan: `"call_<provider>_api"`
 
-- [ ] **3. Registrera leverantör i AI-modulen** (`src/gac/ai.py`)
-
-  - Lägg till import i sektionen `from gac.providers import (...)`
-  - Lägg till i `provider_funcs` ordbok: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Lägg till i listan med stödda leverantörer** (`src/gac/ai_utils.py`)
-
-  - Lägg till `"provider-name"` till listan `supported_providers` i `generate_with_retries()`
-  - Håll listan sorterad alfabetiskt
-
-- [ ] **5. Lägg till interaktiv installation** (`src/gac/init_cli.py`)
-
-  - Lägg till tuple till listan `providers`: `("Provider Name", "standard-modell-namn")`
-  - Håll listan sorterad alfabetiskt
-  - Lägg till specialhantering om nödvändigt (som Ollama/LM Studio för lokala leverantörer)
-
-- [ ] **6. Uppdatera exempelkonfiguration** (`.gac.env.example`)
+- [ ] **3. Uppdatera exempelkonfiguration** (`.gac.env.example`)
 
   - Lägg till exempelmodellkonfiguration i formatet: `# GAC_MODEL=provider:modell-namn`
   - Lägg till API-nyckel: `# <PROVIDER>_API_KEY=din_nyckel_här`
   - Håll poster sorterade alfabetiskt
   - Lägg till kommentarer för valfria nycklar om tillämpligt
 
-- [ ] **7. Uppdatera dokumentation** (`README.md` och `docs/sv/README.md`)
+- [ ] **4. Uppdatera dokumentation** (`README.md` och alla `README.md`-översättningar i `docs/`)
 
-  - Lägg till leverantörens namn till "Supported Providers" i både engelska och svenska READMEs
+  - Lägg till leverantörens namn till "Supported Providers" i alla README-översättningar
   - Håll listan sorterade alfabetiskt i sina punkter
 
-- [ ] **8. Skapa omfattande tester** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Lägg till interaktiv installation** (`src/gac/init_cli.py`)
+
+  - Lägg till tuple till listan `providers`: `("Provider Name", "standard-modell-namn")`
+  - Håll listan sorterad alfabetiskt
+  - **Viktigt**: Om din leverantör använder ett icke-standard API-nyckelnamn (inte det automatiskt genererade `{PROVIDER_UPPERCASE}_API_KEY`), lägg till specialhantering:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Exempel: `kimi-for-coding` använder `KIMI_CODING_API_KEY`, `moonshot-ai` använder `MOONSHOT_API_KEY`
+
+- [ ] **6. Skapa omfattande tester** (`tests/providers/test_<provider>.py`)
 
   - Skapa testfil med namnkonventionen
   - Inkludera dessa testklasser:
@@ -188,7 +186,7 @@ När du lägger till en ny AI-leverantör behöver du uppdatera flera filer i ko
     - `success_response` - Mocka lyckat API-svar
     - `empty_content_response` - Mocka tomt innehåll svar
 
-- [ ] **9. Uppdatera version** (`src/gac/__version__.py`)
+- [ ] **7. Uppdatera version** (`src/gac/__version__.py`)
   - Öka **minor** versionen (t.ex. 1.10.2 → 1.11.0)
   - Att lägga till en leverantör kräver en mindre versionsuppdatering (ny funktion)
 
@@ -206,8 +204,9 @@ Se MiniMax leverantörsimplementation som referens:
 3. **Testning**: `BaseProviderTest` klassen tillhandahåller 9 standardtester som varje leverantör bör ärva
 4. **Alfabetisk ordning**: Håll listan med leverantörer sorterad alfabetiskt för underhållbarhet
 5. **API-nyckel namngivning**: Använd formatet `<PROVIDER>_API_KEY` (alla versaler, understreck för mellanslag)
-6. **Leverantörens namnformat**: Använd gemener med bindestreck för flerord namn (t.ex. "lm-studio")
-7. **Versionsuppdatering**: Att lägga till en leverantör kräver en **mindre** versionsuppdatering (ny funktion)
+6. **Leverantörsregistrering**: Ändra endast `src/gac/providers/__init__.py` och `src/gac/init_cli.py` – `ai.py` och `ai_utils.py` läser automatiskt från registret
+7. **Leverantörens namnformat**: Använd gemener med bindestreck för flerord namn (t.ex. "lm-studio")
+8. **Versionsuppdatering**: Att lägga till en leverantör kräver en **mindre** versionsuppdatering (ny funktion)
 
 ## Kodstandarder
 

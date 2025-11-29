@@ -141,37 +141,36 @@ When adding a new AI provider, you need to update multiple files across the code
 - [ ] **2. Register Provider in Package** (`src/gac/providers/__init__.py`)
 
   - Add import: `from .<provider> import call_<provider>_api`
+  - Add to `PROVIDER_REGISTRY` dictionary: `"provider-name": call_<provider>_api`
   - Add to `__all__` list: `"call_<provider>_api"`
 
-- [ ] **3. Register Provider in AI Module** (`src/gac/ai.py`)
-
-  - Add import in the `from gac.providers import (...)` section
-  - Add to `provider_funcs` dictionary: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Add to Supported Providers List** (`src/gac/ai_utils.py`)
-
-  - Add `"provider-name"` to the `supported_providers` list in `generate_with_retries()`
-  - Keep the list alphabetically sorted
-
-- [ ] **5. Add to Interactive Setup** (`src/gac/init_cli.py`)
-
-  - Add tuple to `providers` list: `("Provider Name", "default-model-name")`
-  - Keep the list alphabetically sorted
-  - Add any special handling if needed (like Ollama/LM Studio for local providers)
-
-- [ ] **6. Update Example Configuration** (`.gac.env.example`)
+- [ ] **3. Update Example Configuration** (`.gac.env.example`)
 
   - Add example model configuration in the format: `# GAC_MODEL=provider:model-name`
   - Add API key entry: `# <PROVIDER>_API_KEY=your_key_here`
   - Keep entries alphabetically sorted
   - Add comments for optional keys if applicable
 
-- [ ] **7. Update Documentation** (`README.md` and `docs/zh-CN/README.md`)
+- [ ] **4. Update Documentation** (`README.md` and all `README.md` translations in `docs/`)
 
-  - Add provider name to the "Supported Providers" section in both English and Chinese READMEs
+  - Add provider name to the "Supported Providers" section in all `README.md` translations
   - Keep the list alphabetically sorted within its bullet points
 
-- [ ] **8. Create Comprehensive Tests** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Add to Interactive Setup** (`src/gac/init_cli.py`)
+
+  - Add tuple to `providers` list: `("Provider Name", "default-model-name")`
+  - Keep the list alphabetically sorted
+  - Add any special handling if needed (like Ollama/LM Studio for local providers)
+  - **Important**: If your provider uses a non-standard API key name (not the auto-generated `{PROVIDER_UPPERCASE}_API_KEY`), add special handling:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Examples: `kimi-for-coding` uses `KIMI_CODING_API_KEY`, `moonshot-ai` uses `MOONSHOT_API_KEY`
+
+- [ ] **6. Create Comprehensive Tests** (`tests/providers/test_<provider>.py`)
 
   - Create test file following the naming convention
   - Include these test classes:
@@ -189,7 +188,7 @@ When adding a new AI provider, you need to update multiple files across the code
     - `success_response` - Mock successful API response
     - `empty_content_response` - Mock empty content response
 
-- [ ] **9. Bump Version** (`src/gac/__version__.py`)
+- [ ] **7. Bump Version** (`src/gac/__version__.py`)
   - Increment the **minor** version (e.g., 1.10.2 → 1.11.0)
   - Adding a provider is a new feature and requires a minor version bump
 
@@ -206,9 +205,10 @@ See the MiniMax provider implementation as a reference:
 2. **Null/Empty Content**: Always check for both `None` and empty string content in responses
 3. **Testing**: The `BaseProviderTest` class provides 9 standard tests that every provider should inherit
 4. **Alphabetical Order**: Keep provider lists sorted alphabetically for maintainability
-5. **API Key Naming**: Use the format `<PROVIDER>_API_KEY` (all uppercase, underscores for spaces)
-6. **Provider Name Format**: Use lowercase with hyphens for multi-word names (e.g., "lm-studio")
-7. **Version Bump**: Adding a provider requires a **minor** version bump (new feature)
+5. **API Key Naming**: Use the format `<PROVIDER>_API_KEY` (all uppercase, underscores for spaces), but note that some providers use custom names
+6. **Provider Registration**: Only modify `src/gac/providers/__init__.py` and `src/gac/init_cli.py` - ai.py and ai_utils.py automatically read from the registry
+7. **Provider Name Format**: Use lowercase with hyphens for multi-word names (e.g., "lm-studio")
+8. **Version Bump**: Adding a provider requires a **minor** version bump (new feature)
 
 ## Coding Standards
 

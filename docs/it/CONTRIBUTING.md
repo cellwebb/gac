@@ -140,37 +140,35 @@ Quando aggiungi un nuovo provider AI, devi aggiornare più file nel codebase. Se
 - [ ] **2. Registra Provider nel Pacchetto** (`src/gac/providers/__init__.py`)
 
   - Aggiungi import: `from .<provider> import call_<provider>_api`
+  - Aggiungi al dizionario `PROVIDER_REGISTRY`: `"provider-name": call_<provider>_api`
   - Aggiungi alla lista `__all__`: `"call_<provider>_api"`
 
-- [ ] **3. Registra Provider nel Modulo AI** (`src/gac/ai.py`)
-
-  - Aggiungi import nella sezione `from gac.providers import (...)`
-  - Aggiungi al dizionario `provider_funcs`: `"provider-name": call_<provider>_api`
-
-- [ ] **4. Aggiungi alla Lista Provider Supportati** (`src/gac/ai_utils.py`)
-
-  - Aggiungi `"provider-name"` alla lista `supported_providers` in `generate_with_retries()`
-  - Mantieni la lista ordinata alfabeticamente
-
-- [ ] **5. Aggiungi al Setup Interattivo** (`src/gac/init_cli.py`)
-
-  - Aggiungi tupla alla lista `providers`: `("Provider Name", "default-model-name")`
-  - Mantieni la lista ordinata alfabeticamente
-  - Aggiungi gestione speciale se necessaria (come Ollama/LM Studio per provider locali)
-
-- [ ] **6. Aggiorna Configurazione Esempio** (`.gac.env.example`)
+- [ ] **3. Aggiorna Configurazione Esempio** (`.gac.env.example`)
 
   - Aggiungi configurazione modello esempio nel formato: `# GAC_MODEL=provider:model-name`
   - Aggiungi voce chiave API: `# <PROVIDER>_API_KEY=your_key_here`
   - Mantieni voci ordinate alfabeticamente
   - Aggiungi commenti per chiavi opzionali se applicabile
 
-- [ ] **7. Aggiorna Documentazione** (`README.md` e `docs/zh-CN/README.md`)
+- [ ] **4. Aggiorna Documentazione** (`README.md` e tutte le traduzioni di `README.md` in `docs/`)
 
-  - Aggiungi nome provider alla sezione "Provider Supportati" in entrambi i README inglese e cinese
+  - Aggiungi nome provider alla sezione "Provider Supportati" in tutte le traduzioni dei README
   - Mantieni la lista ordinata alfabeticamente nei suoi punti elenco
 
-- [ ] **8. Crea Test Completi** (`tests/providers/test_<provider>.py`)
+- [ ] **5. Aggiungi al Setup Interattivo** (`src/gac/init_cli.py`)
+
+  - Aggiungi tupla alla lista `providers`: `("Provider Name", "default-model-name")`
+  - Mantieni la lista ordinata alfabeticamente
+  - **Importante**: Se il tuo provider usa un nome di chiave API non standard (non quello generato automaticamente `{PROVIDER_UPPERCASE}_API_KEY`), aggiungi gestione speciale:
+
+    ```python
+    elif provider_key == "your-provider-key":
+        api_key_name = "YOUR_CUSTOM_API_KEY_NAME"
+    ```
+
+    Esempi: `kimi-for-coding` usa `KIMI_CODING_API_KEY`, `moonshot-ai` usa `MOONSHOT_API_KEY`
+
+- [ ] **6. Crea Test Completi** (`tests/providers/test_<provider>.py`)
 
   - Crea file test seguendo la convenzione di nomenclatura
   - Includi queste classi di test:
@@ -188,7 +186,7 @@ Quando aggiungi un nuovo provider AI, devi aggiornare più file nel codebase. Se
     - `success_response` - Risposta API mock di successo
     - `empty_content_response` - Risposta mock contenuto vuoto
 
-- [ ] **9. Incrementa Versione** (`src/gac/__version__.py`)
+- [ ] **7. Incrementa Versione** (`src/gac/__version__.py`)
   - Incrementa la versione **minor** (es: 1.10.2 → 1.11.0)
   - Aggiungere un provider è una nuova funzionalità e richiede un incremento di versione minor
 
@@ -206,8 +204,9 @@ Vedi l'implementazione del provider MiniMax come riferimento:
 3. **Testing**: La classe `BaseProviderTest` fornisce 9 test standard che ogni provider dovrebbe ereditare
 4. **Ordine Alfabetico**: Mantieni le liste provider ordinate alfabeticamente per manutenibilità
 5. **Nomenclatura Chiavi API**: Usa il formato `<PROVIDER>_API_KEY` (tutto maiuscolo, underscore per spazi)
-6. **Formato Nome Provider**: Usa minuscolo con trattini per nomi multi-parola (es: "lm-studio")
-7. **Incremento Versione**: Aggiungere un provider richiede un incremento di versione **minor** (nuova funzionalità)
+6. **Registrazione Provider**: Modifica solo `src/gac/providers/__init__.py` e `src/gac/init_cli.py` – `ai.py` e `ai_utils.py` leggono automaticamente dal registro
+7. **Formato Nome Provider**: Usa minuscolo con trattini per nomi multi-parola (es: "lm-studio")
+8. **Incremento Versione**: Aggiungere un provider richiede un incremento di versione **minor** (nuova funzionalità)
 
 ## Standard di Codifica
 
