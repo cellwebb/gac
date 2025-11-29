@@ -81,7 +81,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     """Run the provider/model/API key configuration flow."""
     providers = [
         ("Anthropic", "claude-haiku-4-5"),
-        ("Azure OpenAI", "gpt-5.1-codex-mini"),
+        ("Azure OpenAI", "gpt-5-mini"),
         ("Cerebras", "zai-glm-4.6"),
         ("Chutes", "zai-org/GLM-4.6-FP8"),
         ("Claude Code", "claude-sonnet-4-5"),
@@ -97,7 +97,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Mistral", "mistral-small-latest"),
         ("Moonshot AI", "kimi-k2-thinking-turbo"),
         ("Ollama", "gemma3"),
-        ("OpenAI", "gpt-5.1-codex-mini"),
+        ("OpenAI", "gpt-5-mini"),
         ("OpenRouter", "openrouter/auto"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
