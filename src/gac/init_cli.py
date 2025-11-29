@@ -81,6 +81,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     """Run the provider/model/API key configuration flow."""
     providers = [
         ("Anthropic", "claude-haiku-4-5"),
+        ("Azure OpenAI", "gpt-5.1-codex-mini"),
         ("Cerebras", "zai-glm-4.6"),
         ("Chutes", "zai-org/GLM-4.6-FP8"),
         ("Claude Code", "claude-sonnet-4-5"),
@@ -96,7 +97,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Mistral", "mistral-small-latest"),
         ("Moonshot AI", "kimi-k2-thinking-turbo"),
         ("Ollama", "gemma3"),
-        ("OpenAI", "gpt-5-mini"),
+        ("OpenAI", "gpt-5.1-codex-mini"),
         ("OpenRouter", "openrouter/auto"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
@@ -114,6 +115,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         return False
     provider_key = provider.lower().replace(".", "").replace(" ", "-").replace("(", "").replace(")", "")
 
+    is_azure_openai = provider_key == "azure-openai"
     is_claude_code = provider_key == "claude-code"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
@@ -166,6 +168,79 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         if api_version and api_version != "2023-06-01":
             set_key(str(GAC_ENV_PATH), "CUSTOM_ANTHROPIC_VERSION", api_version)
             click.echo(f"Set CUSTOM_ANTHROPIC_VERSION={api_version}")
+    elif is_azure_openai:
+        # Check for existing endpoint
+        existing_endpoint = existing_env.get("AZURE_OPENAI_ENDPOINT")
+        if existing_endpoint:
+            click.echo(f"\nAZURE_OPENAI_ENDPOINT is already configured: {existing_endpoint}")
+            endpoint_action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing endpoint",
+                    "Enter new endpoint",
+                ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
+            ).ask()
+
+            if endpoint_action == "Enter new endpoint":
+                endpoint = _prompt_required_text("Enter the Azure OpenAI endpoint (required):")
+                if endpoint is None:
+                    click.echo("Azure OpenAI endpoint entry cancelled. Exiting.")
+                    return False
+                set_key(str(GAC_ENV_PATH), "AZURE_OPENAI_ENDPOINT", endpoint)
+                click.echo(f"Set AZURE_OPENAI_ENDPOINT={endpoint}")
+            else:
+                endpoint = existing_endpoint
+                click.echo(f"Keeping existing AZURE_OPENAI_ENDPOINT={endpoint}")
+        else:
+            endpoint = _prompt_required_text("Enter the Azure OpenAI endpoint (required):")
+            if endpoint is None:
+                click.echo("Azure OpenAI endpoint entry cancelled. Exiting.")
+                return False
+            set_key(str(GAC_ENV_PATH), "AZURE_OPENAI_ENDPOINT", endpoint)
+            click.echo(f"Set AZURE_OPENAI_ENDPOINT={endpoint}")
+
+        # Check for existing API version
+        existing_api_version = existing_env.get("AZURE_OPENAI_API_VERSION")
+        if existing_api_version:
+            click.echo(f"\nAZURE_OPENAI_API_VERSION is already configured: {existing_api_version}")
+            version_action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing version",
+                    "Enter new version",
+                ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
+            ).ask()
+
+            if version_action == "Enter new version":
+                api_version = questionary.text(
+                    "Enter the Azure OpenAI API version (required, e.g., 2025-01-01-preview):",
+                    default="2025-01-01-preview",
+                ).ask()
+                if api_version is None or not api_version.strip():
+                    click.echo("Azure OpenAI API version entry cancelled. Exiting.")
+                    return False
+                api_version = api_version.strip()
+                set_key(str(GAC_ENV_PATH), "AZURE_OPENAI_API_VERSION", api_version)
+                click.echo(f"Set AZURE_OPENAI_API_VERSION={api_version}")
+            else:
+                api_version = existing_api_version
+                click.echo(f"Keeping existing AZURE_OPENAI_API_VERSION={api_version}")
+        else:
+            api_version = questionary.text(
+                "Enter the Azure OpenAI API version (required, e.g., 2025-01-01-preview):", default="2025-01-01-preview"
+            ).ask()
+            if api_version is None or not api_version.strip():
+                click.echo("Azure OpenAI API version entry cancelled. Exiting.")
+                return False
+            api_version = api_version.strip()
+            set_key(str(GAC_ENV_PATH), "AZURE_OPENAI_API_VERSION", api_version)
+            click.echo(f"Set AZURE_OPENAI_API_VERSION={api_version}")
     elif is_custom_openai:
         base_url = _prompt_required_text("Enter the custom OpenAI-compatible base URL (required):")
         if base_url is None:
@@ -231,7 +306,9 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
             return True
 
     # Determine API key name based on provider
-    if is_lmstudio:
+    if is_azure_openai:
+        api_key_name = "AZURE_OPENAI_API_KEY"
+    elif is_lmstudio:
         api_key_name = "LMSTUDIO_API_KEY"
     elif is_zai:
         api_key_name = "ZAI_API_KEY"

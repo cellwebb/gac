@@ -1,6 +1,7 @@
 """AI provider implementations for commit message generation."""
 
 from .anthropic import call_anthropic_api
+from .azure_openai import call_azure_openai_api
 from .cerebras import call_cerebras_api
 from .chutes import call_chutes_api
 from .claude_code import call_claude_code_api
@@ -27,6 +28,7 @@ from .zai import call_zai_api, call_zai_coding_api
 # Provider registry - single source of truth for all providers
 PROVIDER_REGISTRY = {
     "anthropic": call_anthropic_api,
+    "azure-openai": call_azure_openai_api,
     "cerebras": call_cerebras_api,
     "claude-code": call_claude_code_api,
     "chutes": call_chutes_api,
@@ -57,6 +59,7 @@ SUPPORTED_PROVIDERS = sorted(PROVIDER_REGISTRY.keys())
 
 __all__ = [
     "call_anthropic_api",
+    "call_azure_openai_api",
     "call_cerebras_api",
     "call_chutes_api",
     "call_claude_code_api",

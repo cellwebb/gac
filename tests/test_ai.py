@@ -446,6 +446,7 @@ class TestProviderRegistry:
         """Test that PROVIDER_REGISTRY contains all expected providers."""
         expected_providers = {
             "anthropic",
+            "azure-openai",
             "cerebras",
             "claude-code",
             "chutes",
