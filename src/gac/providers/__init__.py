@@ -38,7 +38,7 @@ PROVIDER_REGISTRY = {
     "fireworks": call_fireworks_api,
     "gemini": call_gemini_api,
     "groq": call_groq_api,
-    "kimi-for-coding": call_kimi_coding_api,
+    "kimi-coding": call_kimi_coding_api,
     "lm-studio": call_lmstudio_api,
     "minimax": call_minimax_api,
     "mistral": call_mistral_api,

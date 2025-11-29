@@ -131,7 +131,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     elif provider_key == "moonshot-ai":
         provider_key = "moonshot"
     elif provider_key == "kimi-for-coding":
-        provider_key = "kimi_coding"
+        provider_key = "kimi-coding"
 
     if is_streamlake:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")
