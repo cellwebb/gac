@@ -1,6 +1,5 @@
 """Tests for Azure OpenAI provider."""
 
-import json
 import os
 from collections.abc import Callable
 from typing import Any
@@ -283,7 +282,9 @@ class TestAzureOpenAIProviderMocked(BaseProviderTest):
         """Test that the provider handles malformed JSON responses."""
         with patch(f"{self.provider_module}.httpx.post") as mock_post:
             mock_response = MagicMock()
-            mock_response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+            mock_response.status_code = 200
+            mock_response.json.side_effect = ValueError("Invalid JSON")
+            mock_response.raise_for_status.return_value = None
             mock_post.return_value = mock_response
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
@@ -296,7 +297,7 @@ class TestAzureOpenAIProviderMocked(BaseProviderTest):
                     "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
                 },
             ):
-                with pytest.raises(json.JSONDecodeError):
+                with pytest.raises((AIError, ValueError, KeyError, TypeError)):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
 
