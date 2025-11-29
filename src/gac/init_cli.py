@@ -306,18 +306,12 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
             return True
 
     # Determine API key name based on provider
-    if is_azure_openai:
-        api_key_name = "AZURE_OPENAI_API_KEY"
-    elif is_lmstudio:
+    if is_lmstudio:
         api_key_name = "LMSTUDIO_API_KEY"
     elif is_zai:
         api_key_name = "ZAI_API_KEY"
-    elif is_custom_anthropic:
-        api_key_name = "CUSTOM_ANTHROPIC_API_KEY"
-    elif is_custom_openai:
-        api_key_name = "CUSTOM_OPENAI_API_KEY"
     else:
-        api_key_name = f"{provider_key.upper()}_API_KEY"
+        api_key_name = f"{provider_key.upper().replace('-', '_')}_API_KEY"
 
     # Check if API key already exists
     existing_key = existing_env.get(api_key_name)
