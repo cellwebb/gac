@@ -340,7 +340,7 @@ class TestCustomAnthropicEdgeCases:
                 headers = call_args.kwargs["headers"]
                 assert headers["anthropic-version"] == "2024-01-01"
 
-    def test_custom_anthropic_default_version_header(self):
+    def test_custom_anthropic_default_version_header(self, clean_env_state):
         """Test that default API version header is used when not specified."""
         with patch.dict(
             "os.environ",
