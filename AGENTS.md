@@ -1,213 +1,176 @@
 # Repository Guidelines
 
-This file provides guidance to AI coding agents when working with code in this repository.
+This provides essential guidance for AI coding agents working on this repository.
 
-## Project Structure & Module Organization
+## ⚠️ UV REQUIRED - NO VANILLA PYTHON
+
+**NEVER use vanilla `python`/`pip` in this repository. UV IS MANDATORY for all development.**
+
+This project has ZERO tolerance for vanilla Python usage. The UV requirement exists because:
+
+- **Project consistency**: 24+ AI providers have complex interdependencies that only UV handles reliably
+- **Dependency management**: The multi-provider ecosystem (OpenAI, Anthropic, Google, etc.) requires precise dependency resolution
+- **Reproducible builds**: All testing, CI/CD, and development workflows depend on UV's exact dependency locking
+- **Team standardization**: Every contributor (human or AI) must use the same toolchain to avoid environment drift
+- **Speed and reliability**: UV's 10-100x faster installs and caching are essential for rapid iteration
+
+**NEVER DO THIS:**
+
+```bash
+# ❌ FORBIDDEN - will break reproducible builds
+python -m pytest
+pip install -e .
+pip install requests
+python -m pip list
+```
+
+**ALWAYS DO THIS:**
+
+```bash
+# ✅ MANDATORY - only acceptable way
+uv run -- pytest
+uv pip install -e ".[dev]"
+uv add requests
+uv pip list
+```
+
+**No exceptions.** Using vanilla Python introduces environment inconsistency, dependency conflicts, and breaks the reproducible build chain that this project depends on.
+
+## Project Structure
 
 ```text
 gac/
-├── src/gac/              # Main package
-│   ├── cli.py            # CLI entrypoint
-│   ├── main.py           # Commit workflow orchestration
-│   ├── ai.py             # AI provider integration
-│   ├── prompt.py         # Prompt building and formatting
-│   ├── git.py            # Git operations
-│   ├── config.py         # Configuration management
-│   ├── preprocess.py     # Diff preprocessing
-│   ├── security.py       # Secret detection
-│   ├── errors.py         # Custom exceptions
-│   ├── utils.py          # Utility functions
-│   └── providers/        # AI provider implementations (~10 providers)
-│       ├── openai.py
-│       ├── anthropic.py
-│       ├── gemini.py
-│       └── ...
-├── tests/                # Test suite (mirrors src/gac structure)
-│   ├── conftest.py       # Shared test fixtures
-│   ├── test_*.py         # Core module tests
-│   └── providers/        # Provider tests (one file per provider)
-│       ├── conftest.py   # BaseProviderTest framework
-│       ├── test_openai.py
-│       └── ...
-├── docs/                 # Documentation
-├── scripts/              # Automation helpers (release prep, changelog)
-└── assets/               # UI screenshots and assets
+├── src/gac/                    # Main package
+│   ├── cli.py                  # CLI entrypoint
+│   ├── main.py                 # Commit workflow orchestration
+│   ├── ai.py                   # AI provider integration
+│   ├── prompt.py               # Prompt building
+│   ├── git.py                  # Git operations
+│   ├── security.py             # Secret detection
+│   ├── providers/              # 24 AI provider implementations
+│   └── oauth/                  # OAuth authentication
+├── tests/                      # Test suite (mirrors src/)
+│   └── providers/              # Provider tests
+├── docs/                       # Documentation
+├── scripts/                    # Automation helpers
+└── assets/                     # Screenshots and assets
 ```
 
 **Key Points:**
 
-- Python package lives in `src/gac`
-- Tests mirror source structure in `tests/`
-- Each provider has its own implementation file in `src/gac/providers/`
-- Each provider has its own test file in `tests/providers/`
-- Build artifacts (`dist/`, `htmlcov/`) are disposable - regenerate, don't commit
+- Package lives in `src/gac`
+- Tests mirror source structure
+- Each provider has dedicated implementation and test files
+- Build artifacts (`dist/`, `htmlcov/`) are disposable
 
-## Build, Test, and Development Commands
+## Essential Commands
 
 ### Environment Setup
 
 ```bash
-# Create development environment
-make setup                          # Creates venv and installs dev dependencies
-# OR manually:
 uv venv && uv pip install -e ".[dev]"
 ```
 
-### Daily Development
+### Testing
 
 ```bash
-make install-dev                    # Refresh dependencies
-make test                           # Run all tests (excludes integration)
-make test-cov                       # Run tests with coverage (outputs to htmlcov/)
-```
-
-### Running Tests
-
-```bash
-# Default: All tests excluding integration
-make test                           # Fast, for local development
-
-# Integration tests only (requires API keys)
-make test-integration               # Tests that make real API calls
-
-# All tests including integration
-make test-all                       # Complete test suite
-
-# Targeted test runs
-uv run -- pytest tests/test_cli.py                    # Single file
-uv run -- pytest tests/test_cli.py::test_basic_flow   # Single test
-uv run -- pytest tests/providers/test_openai.py       # Provider-specific
+uv run -- pytest                 # All tests (excludes integration)
+uv run -- pytest tests/test_cli.py  # Single file
+make test-integration             # Integration tests only (requires API keys)
 ```
 
 ### Code Quality
 
 ```bash
-make lint                           # Check with ruff, prettier, markdownlint
-make format                         # Auto-fix with ruff, prettier, markdownlint
-make clean                          # Remove build artifacts and caches
+make lint                         # Check code quality
+make format                       # Auto-fix formatting
+make clean                        # Remove artifacts
 ```
 
-## Testing Guidelines
+## Development Guidelines
 
-### Test Organization
+**Requirements:**
 
-Tests mirror the source structure. Name files as `test_<module>.py` and individual tests as `test_<behavior>`.
+- Python 3.10+
+- uv (REQUIRED - no exceptions)
+- Git
+- Node.js (for markdownlint)
 
-### Provider Test Structure
-
-Each provider has its own test file in `tests/providers/` containing three types of tests:
-
-**1. Unit Tests** - No external dependencies
-
-```python
-class TestOpenAIImports:
-    """Test imports and basic validation."""
-    def test_import_provider(self): ...
-    def test_import_api_function(self): ...
-
-class TestOpenAIAPIKeyValidation:
-    """Test API key error handling."""
-    def test_missing_api_key_error(self): ...
-```
-
-**2. Mocked Tests** - HTTP calls mocked, using BaseProviderTest
-
-```python
-class TestOpenAIProviderMocked(BaseProviderTest):
-    """Mocked HTTP tests inheriting standard test suite."""
-
-    @property
-    def provider_name(self) -> str:
-        return "openai"
-
-    # Inherits 9 standard tests:
-    # - test_successful_api_call
-    # - test_empty_content_handling
-    # - test_http_401_authentication_error
-    # - test_http_429_rate_limit_error
-    # - test_http_500_server_error
-    # - test_http_503_service_unavailable
-    # - test_connection_error
-    # - test_timeout_error
-    # - test_malformed_json_response
-```
-
-**3. Integration Tests** - Real API calls, marked with `@pytest.mark.integration`
-
-```python
-@pytest.mark.integration
-class TestOpenAIIntegration:
-    """Integration tests with real API."""
-    def test_real_api_call(self):
-        """Test actual OpenAI API call with valid credentials."""
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            pytest.skip("OPENAI_API_KEY not set")
-        # Make real API call...
-```
-
-**Integration Test Behavior:**
-
-- Skipped by default (don't consume API credits during development)
-- Run explicitly with `make test-integration` or `make test-all`
-- Skip gracefully when API keys not configured
-- Use pytest marker: `@pytest.mark.integration`
-
-### Coverage
+**CLI Features:**
 
 ```bash
-make test-cov                       # Generates terminal + HTML report
-open htmlcov/index.html             # View detailed coverage
+gac -i                            # Interactive mode
+gac --add-all                     # Stage all changes
+gac --group                       # Group changes into multiple commits
+gac --dry-run                     # Preview without committing
+gac --message-only                # Output message only
 ```
 
-Aim to maintain coverage parity. When shell-based tests are needed, add scripts under `scripts/` rather than mixing shell logic into pytest.
+**Coding Standards:**
 
-## Coding Style & Naming Conventions
+- Type annotations required
+- Ruff formatter, 120-char lines
+- snake_case for modules/functions, CapWords for classes
+- Keep files under 600 lines (refactor when exceeded)
 
-**Python Version:** 3.10+
+## Testing Structure
 
-**Formatting:** Ruff with 120-character lines, double quotes, space indentation
+**Provider Tests:**
+Each provider has three test types:
 
-**Naming Conventions:**
+1. **Unit Tests** - No external dependencies
+2. **Mocked Tests** - HTTP calls mocked, inherit from `BaseProviderTest`
+3. **Integration Tests** - Real API calls (marked `@pytest.mark.integration`)
 
-- `snake_case`: modules, functions, variables
-- `CapWords`: classes
-- `UPPER_CASE`: constants (in `constants.py`)
-
-**Best Practices:**
-
-- Full type annotations on all modules
-- Use structured logging, not `print`
-- Define CLI options through Click decorators
-- Keep user-facing strings near command implementations
-
-## Commit & Pull Request Guidelines
-
-**Commit Format:** Conventional Commits with optional scopes
+**Coverage:**
 
 ```bash
-feat(ai): implement streaming support
-fix(providers): handle rate limit retries
-docs: update testing guidelines
+make test-cov                     # Generate HTML coverage report
+open htmlcov/index.html           # View details
 ```
 
-**Commit Message Rules:**
+## Commit & PR Guidelines
 
-- Summary line: imperative mood, under 72 characters
-- Describe notable side effects in body
-- Use `gac` to create commits (dogfooding): `gac -s <scope> -y`
+**Format:** Conventional Commits with optional scopes
 
-**Pull Request Checklist:**
+```bash
+feat(ai): implement streaming
+fix(providers): handle rate limits
+docs: update examples
+```
 
-- [ ] Version bumped in `src/gac/__version__.py` (if releasable)
-- [ ] `CHANGELOG.md` updated with changes
-- [ ] Tests added/updated for changes
-- [ ] `make lint` and `make test` passing
-- [ ] Related issues linked
-- [ ] Screenshots/recordings included for CLI UX changes
+**PR Checklist:**
 
-**Release Process:**
+- [ ] Version bumped in `__version__.py` (if releasable)
+- [ ] CHANGELOG.md updated
+- [ ] Tests added/updated
+- [ ] `make format`, `make lint`, `make type-check`, and `make test` passing
+- [ ] No files exceed 600-line limit
 
-1. Merge PR with version bump to main
-2. Create and push tag: `git tag v1.2.3 && git push origin v1.2.3`
-3. GitHub Actions automatically publishes to PyPI
+**Use `gac` for commits:** `gac -sy`
+
+## Critical Dependencies
+
+- `tiktoken>=0.12.0` - OpenAI's tokenizer (for token counting)
+- `httpx>=0.28.0` - HTTP client with async support and proper connection pooling
+- `pydantic>=2.12.0` - Data validation and serialization for provider configs
+- `click>=8.3.0` - CLI framework with rich formatting integration
+- `rich>=14.1.0` - Terminal formatting for beautiful CLI output
+
+**UV HARD REQUIREMENT:**
+
+This project's multi-provider architecture (25+ AI integrations) creates complex dependency trees that only UV can resolve consistently. The dependency lockfile (`uv.lock`) ensures reproducible builds across all environments - development, testing, CI/CD, and production.
+
+**NEVER use vanilla Python tools.** They will:
+
+- Break dependency resolution with the provider ecosystem
+- Create environment inconsistencies between contributors
+- Fail to reproduce the exact dependency versions tested in CI
+- Introduce subtle bugs from version mismatches
+
+**ALWAYS use UV.** It provides:
+
+- Exact dependency locking via `uv.lock`
+- 10-100x faster installation and caching
+- Consistent behavior across all environments
+- Proper handling of the complex provider dependency matrix
