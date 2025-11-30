@@ -162,8 +162,8 @@ def test_model_cli_zai_coding_provider(tmp_path):
             result = runner.invoke(model)
             assert result.exit_code == 0
             env_text = env_path.read_text()
-            assert "GAC_MODEL='zai-for-coding:glm-4.6'" in env_text
-            assert "ZAI_FOR_CODING_API_KEY='zai-api-key'" in env_text
+            assert "GAC_MODEL='zai-coding:glm-4.6'" in env_text
+            assert "ZAI_API_KEY='zai-api-key'" in env_text
 
 
 def test_model_cli_streamlake_requires_endpoint(tmp_path):
