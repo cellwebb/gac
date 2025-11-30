@@ -12,7 +12,7 @@ class TestMainCommand:
             pass
 
         monkeypatch.setattr("gac.init_cli.init.callback", dummy_command)
-        monkeypatch.setattr("gac.init_cli.model.callback", dummy_command)
+        monkeypatch.setattr("gac.model_cli.model.callback", dummy_command)
         yield
 
     def test_init_success(self, monkeypatch, mock_init_commands):
