@@ -19,9 +19,9 @@ from gac.constants import Languages, Logging
 from gac.diff_cli import diff as diff_cli
 from gac.errors import handle_error
 from gac.init_cli import init as init_cli
-from gac.init_cli import model as model_cli
 from gac.language_cli import language as language_cli
 from gac.main import main
+from gac.model_cli import model as model_cli
 from gac.utils import setup_logging
 
 config = load_config()
