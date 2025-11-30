@@ -456,7 +456,7 @@ class TestProviderRegistry:
             "fireworks",
             "gemini",
             "groq",
-            "kimi-for-coding",
+            "kimi-coding",
             "lm-studio",
             "minimax",
             "mistral",

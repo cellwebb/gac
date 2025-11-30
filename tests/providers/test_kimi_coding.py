@@ -31,7 +31,7 @@ class TestKimiAPIKeyValidation:
         """Test that Kimi for Coding raises error when API key is missing."""
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(AIError) as exc_info:
-                call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
             assert exc_info.value.error_type == "authentication"
             assert "KIMI_CODING_API_KEY" in str(exc_info.value)
@@ -82,7 +82,7 @@ class TestKimiEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                    call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
                 # Should raise a model error for missing choices
                 assert exc_info.value.error_type == "model"
@@ -97,7 +97,7 @@ class TestKimiEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                    call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
                 # Should raise an error for empty choices array
                 assert exc_info.value.error_type == "model"
@@ -112,7 +112,7 @@ class TestKimiEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                    call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
                 # Should raise an error for missing message field
                 assert exc_info.value.error_type == "model"
@@ -127,7 +127,7 @@ class TestKimiEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                    call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
                 # Should raise an error for missing content field
                 assert exc_info.value.error_type == "model"
@@ -142,7 +142,7 @@ class TestKimiEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_kimi_coding_api("kimi-coding", [], 0.7, 1000)
+                    call_kimi_coding_api("kimi-for-coding", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -160,7 +160,7 @@ class TestKimiEdgeCases:
                     {"role": "user", "content": "User message"},
                 ]
 
-                result = call_kimi_coding_api("kimi-coding", messages, 0.7, 1000)
+                result = call_kimi_coding_api("kimi-for-coding", messages, 0.7, 1000)
 
                 # Verify the payload structure - OpenAI format passes system messages as-is
                 call_args = mock_post.call_args
@@ -184,7 +184,7 @@ class TestKimiEdgeCases:
 
                 messages = [{"role": "user", "content": "User message"}]
 
-                result = call_kimi_coding_api("kimi-coding", messages, 0.7, 1000)
+                result = call_kimi_coding_api("kimi-for-coding", messages, 0.7, 1000)
 
                 # Verify the payload structure
                 call_args = mock_post.call_args
@@ -207,7 +207,7 @@ class TestKimiIntegration:
             pytest.skip("KIMI_CODING_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_kimi_coding_api(model="kimi-coding", messages=messages, temperature=1.0, max_tokens=50)
+        response = call_kimi_coding_api(model="kimi-for-coding", messages=messages, temperature=1.0, max_tokens=50)
 
         assert response is not None
         assert isinstance(response, str)
