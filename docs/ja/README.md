@@ -63,13 +63,13 @@ uv tool upgrade gac
 
 ## 主な機能
 
-### 🌐 **対応プロバイダー**
+### 🌐 **25+ 対応プロバイダー**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code OAuth**
-- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding**
-- **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama**
-- **OpenAI** • **OpenRouter** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
+- **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
+- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
+- **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **スマートな LLM 分析**
 

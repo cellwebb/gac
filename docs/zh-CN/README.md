@@ -63,13 +63,13 @@ uv tool upgrade gac
 
 ## 核心特性
 
-### 🌐 **支持的提供商**
+### 🌐 **支持的 25+ 提供商**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code OAuth**
-- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding**
-- **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama**
-- **OpenAI** • **OpenRouter** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
+- **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
+- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
+- **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **智能 LLM 分析**
 

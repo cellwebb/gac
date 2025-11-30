@@ -63,13 +63,13 @@ uv tool upgrade gac
 
 ## Recursos Principais
 
-### 🌐 **Provedores Suportados**
+### 🌐 **25+ Provedores Suportados**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code OAuth**
-- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding**
-- **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama**
-- **OpenAI** • **OpenRouter** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
+- **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
+- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
+- **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Análise Inteligente de LLM**
 

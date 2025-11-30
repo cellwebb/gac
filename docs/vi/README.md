@@ -63,13 +63,13 @@ uv tool upgrade gac
 
 ## Tính Năng Chính
 
-### 🌐 **Nhà Cung Cấp Hỗ Trợ**
+### 🌐 **Hơn 25 Nhà Cung Cấp Hỗ Trợ**
 
-- **Anthropic** • **Cerebras** • **Chutes.ai** • **Claude Code OAuth**
-- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding**
-- **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama**
-- **OpenAI** • **OpenRouter** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
+- **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
+- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
+- **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Phân Tích LLM Thông Minh**
 
