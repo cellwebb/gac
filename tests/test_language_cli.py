@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from gac.language_cli import language
 
 
-def test_language_select_predefined_with_prefix_translation():
+def test_language_select_predefined_with_prefix_translation(clean_env_state):
     """Test selecting a predefined language with prefix translation enabled."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -36,7 +36,7 @@ def test_language_select_predefined_with_prefix_translation():
                 assert "GAC_TRANSLATE_PREFIXES=" in content and "true" in content
 
 
-def test_language_select_predefined_without_prefix_translation():
+def test_language_select_predefined_without_prefix_translation(clean_env_state):
     """Test selecting a predefined language without prefix translation."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -61,7 +61,7 @@ def test_language_select_predefined_without_prefix_translation():
                 assert "GAC_TRANSLATE_PREFIXES=" in content and "false" in content
 
 
-def test_language_select_english_sets_explicitly():
+def test_language_select_english_sets_explicitly(clean_env_state):
     """Test selecting English sets the language explicitly."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -87,7 +87,7 @@ def test_language_select_english_sets_explicitly():
                 assert "GAC_TRANSLATE_PREFIXES='false'" in content
 
 
-def test_language_select_english_file_not_exists():
+def test_language_select_english_file_not_exists(clean_env_state):
     """Test selecting English when .gac.env doesn't exist yet."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -110,7 +110,7 @@ def test_language_select_english_file_not_exists():
                 assert "GAC_TRANSLATE_PREFIXES='false'" in content
 
 
-def test_language_select_custom_language():
+def test_language_select_custom_language(clean_env_state):
     """Test selecting a custom language."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -126,7 +126,7 @@ def test_language_select_custom_language():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "✓ Set language to Custom" in result.output
+                assert "✓ Set language to Esperanto" in result.output
                 assert "GAC_LANGUAGE=Esperanto" in result.output
                 assert fake_path.exists()
 
@@ -134,7 +134,7 @@ def test_language_select_custom_language():
                 assert "GAC_LANGUAGE=" in content and "Esperanto" in content
 
 
-def test_language_select_custom_with_whitespace():
+def test_language_select_custom_with_whitespace(clean_env_state):
     """Test selecting a custom language with leading/trailing whitespace."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -154,7 +154,7 @@ def test_language_select_custom_with_whitespace():
                 assert "GAC_LANGUAGE=Klingon" in result.output
 
 
-def test_language_custom_cancelled_empty_input():
+def test_language_custom_cancelled_empty_input(clean_env_state):
     """Test cancelling custom language with empty input."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -167,14 +167,14 @@ def test_language_custom_cancelled_empty_input():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "No language entered. Cancelled." in result.output
+                assert "Language selection cancelled." in result.output
                 # File might be created but shouldn't have language set
                 if fake_path.exists():
                     content = fake_path.read_text()
                     assert "GAC_LANGUAGE" not in content
 
 
-def test_language_custom_cancelled_whitespace_only():
+def test_language_custom_cancelled_whitespace_only(clean_env_state):
     """Test cancelling custom language with whitespace-only input."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -187,10 +187,10 @@ def test_language_custom_cancelled_whitespace_only():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "No language entered. Cancelled." in result.output
+                assert "Language selection cancelled." in result.output
 
 
-def test_language_custom_cancelled_none():
+def test_language_custom_cancelled_none(clean_env_state):
     """Test cancelling custom language with None (Ctrl+C)."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -203,10 +203,10 @@ def test_language_custom_cancelled_none():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "No language entered. Cancelled." in result.output
+                assert "Language selection cancelled." in result.output
 
 
-def test_language_selection_cancelled():
+def test_language_selection_cancelled(clean_env_state):
     """Test cancelling at the language selection step."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -221,7 +221,7 @@ def test_language_selection_cancelled():
                 assert "Language selection cancelled." in result.output
 
 
-def test_language_prefix_selection_cancelled():
+def test_language_prefix_selection_cancelled(clean_env_state):
     """Test cancelling at the prefix translation selection step."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -236,11 +236,11 @@ def test_language_prefix_selection_cancelled():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                assert "Prefix translation selection cancelled." in result.output
+                assert "Language selection cancelled." in result.output
                 # File might be created but language should not be saved if prefix selection was cancelled
 
 
-def test_language_creates_file_if_not_exists():
+def test_language_creates_file_if_not_exists(clean_env_state):
     """Test that .gac.env is created if it doesn't exist."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -263,7 +263,7 @@ def test_language_creates_file_if_not_exists():
                 assert fake_path.exists()
 
 
-def test_language_all_predefined_languages():
+def test_language_all_predefined_languages(clean_env_state):
     """Test that all predefined languages can be selected and stored correctly."""
     runner = CliRunner()
 
@@ -296,7 +296,7 @@ def test_language_all_predefined_languages():
                     assert "GAC_LANGUAGE=" in content and english_name in content
 
 
-def test_language_display_shows_instructions():
+def test_language_display_shows_instructions(clean_env_state):
     """Test that the command displays initial instructions."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -310,7 +310,7 @@ def test_language_display_shows_instructions():
                 assert "Select a language for your commit messages:" in result.output
 
 
-def test_language_existing_file_is_updated():
+def test_language_existing_file_is_updated(clean_env_state):
     """Test that selecting a new language updates existing .gac.env file."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -339,7 +339,7 @@ def test_language_existing_file_is_updated():
                 assert "GAC_TRANSLATE_PREFIXES=" in content and "true" in content
 
 
-def test_language_prefix_translation_message_shows_language_name():
+def test_language_prefix_translation_message_shows_language_name(clean_env_state):
     """Test that prefix translation message shows the selected language name."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -360,7 +360,7 @@ def test_language_prefix_translation_message_shows_language_name():
                 )
 
 
-def test_rtl_detection_function():
+def test_rtl_detection_function(clean_env_state):
     """Test the RTL text detection function."""
     from gac.language_cli import is_rtl_text
 
@@ -382,7 +382,7 @@ def test_rtl_detection_function():
     assert not is_rtl_text("中文")
 
 
-def test_language_select_rtl_predefined_arabic():
+def test_language_select_rtl_predefined_arabic(clean_env_state):
     """Test selecting Arabic (RTL) shows warning and allows proceeding."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -403,12 +403,16 @@ def test_language_select_rtl_predefined_arabic():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                mock_rtl_warning.assert_called_once_with("Arabic")
+                # Check that RTL warning was called with language and path
+                mock_rtl_warning.assert_called_once()
+                args, kwargs = mock_rtl_warning.call_args
+                assert args[0] == "Arabic"
+                assert isinstance(args[1], Path)
                 assert "✓ Set language to العربية" in result.output
                 assert "GAC_LANGUAGE=Arabic" in result.output
 
 
-def test_language_select_rtl_predefined_hebrew():
+def test_language_select_rtl_predefined_hebrew(clean_env_state):
     """Test selecting Hebrew (RTL) shows warning and allows cancelling."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -426,13 +430,17 @@ def test_language_select_rtl_predefined_hebrew():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                mock_rtl_warning.assert_called_once_with("Hebrew")
+                # Check that RTL warning was called with language and path
+                mock_rtl_warning.assert_called_once()
+                args, kwargs = mock_rtl_warning.call_args
+                assert args[0] == "Hebrew"
+                assert isinstance(args[1], Path)
                 assert "Language selection cancelled." in result.output
                 # File should not be modified when RTL is cancelled
                 assert not fake_path.exists() or "GAC_LANGUAGE" not in fake_path.read_text()
 
 
-def test_language_select_custom_rtl_proceed():
+def test_language_select_custom_rtl_proceed(clean_env_state):
     """Test selecting a custom RTL language shows warning and allows proceeding."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -455,12 +463,16 @@ def test_language_select_custom_rtl_proceed():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                mock_rtl_warning.assert_called_once_with("Persian")
-                assert "✓ Set language to Custom" in result.output
+                # Check that RTL warning was called with language and path
+                mock_rtl_warning.assert_called_once()
+                args, kwargs = mock_rtl_warning.call_args
+                assert args[0] == "Persian"
+                assert isinstance(args[1], Path)
+                assert "✓ Set language to Persian" in result.output
                 assert "GAC_LANGUAGE=Persian" in result.output
 
 
-def test_language_select_custom_rtl_cancel():
+def test_language_select_custom_rtl_cancel(clean_env_state):
     """Test selecting a custom RTL language shows warning and allows cancelling."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -480,11 +492,15 @@ def test_language_select_custom_rtl_cancel():
                 result = runner.invoke(language)
 
                 assert result.exit_code == 0
-                mock_rtl_warning.assert_called_once_with("Urdu")
+                # Check that RTL warning was called with language and path
+                mock_rtl_warning.assert_called_once()
+                args, kwargs = mock_rtl_warning.call_args
+                assert args[0] == "Urdu"
+                assert isinstance(args[1], Path)
                 assert "Language selection cancelled." in result.output
 
 
-def test_language_select_non_rtl_no_warning():
+def test_language_select_non_rtl_no_warning(clean_env_state):
     """Test selecting non-RTL languages doesn't show warning."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:

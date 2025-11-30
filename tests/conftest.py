@@ -96,6 +96,43 @@ def mock_build_prompt():
 
 
 @pytest.fixture
+def clean_env_state():
+    """Clean environment state to avoid cross-test contamination."""
+    import os
+
+    # Clear all environment variables that could be set by tests
+    patterns_to_clear = [
+        "GAC_",  # GAC configuration
+        "OPENAI_",  # OpenAI keys and settings
+        "ANTHROPIC_",  # Anthropic keys and settings
+        "CUSTOM_",  # Custom provider settings (includes CUSTOM_ANTHROPIC_*)
+        "AZURE_",  # Azure OpenAI settings
+        "GROQ_",  # Groq settings
+        "GEMINI_",  # Gemini settings
+        "CLAUDE_CODE_",  # Claude Code auth
+    ]
+
+    env_keys_to_clear = []
+    for key in os.environ.keys():
+        if any(key.startswith(pattern) for pattern in patterns_to_clear):
+            env_keys_to_clear.append(key)
+
+    original_values = {}
+    for key in env_keys_to_clear:
+        original_values[key] = os.environ.get(key)
+        if key in os.environ:
+            del os.environ[key]
+    yield
+    # Restore original values
+    for key, value in original_values.items():
+        if value is None:
+            if key in os.environ:
+                del os.environ[key]
+        else:
+            os.environ[key] = value
+
+
+@pytest.fixture
 def mock_stage_files():
     """Mock for gac.git.stage_files."""
     with patch("gac.git.stage_files") as mock:
