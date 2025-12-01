@@ -141,6 +141,92 @@ class TestGenerateContextualQuestions:
         assert "Are there any breaking changes?" == questions[1]
         assert "How does this affect performance?" == questions[2]
 
+    def test_generate_questions_adaptive_for_small_change(
+        self, mock_build_question_generation_prompt, mock_generate_commit_message
+    ):
+        """Test that small changes generate fewer questions."""
+        # Mock small change: single file, minimal modifications
+        small_inputs = {
+            "model": "anthropic:claude-3-haiku",
+            "status": "M utils.py",
+            "processed_diff": "diff --git a/utils.py b/utils.py\n@@ -1,3 +1,4 @@\n def helper():\n+    new_line = True\n     return True",
+            "diff_stat": "1 file changed, 1 insertion(+)",
+            "hint": "",
+        }
+
+        # Mock LLM response with fewer questions for small change
+        mock_response = """1. What is the purpose of adding this new line?
+2. How does this affect the helper function's behavior?"""
+        mock_generate_commit_message.return_value = mock_response
+
+        questions = generate_contextual_questions(**small_inputs)
+
+        # Verify fewer questions were generated for small change
+        assert len(questions) == 2
+        assert "What is the purpose of adding this new line?" in questions
+        assert "How does this affect the helper function's behavior?" in questions
+
+        # Verify the prompt was built with small change context
+        mock_build_question_generation_prompt.assert_called_once_with(
+            status=small_inputs["status"],
+            processed_diff=small_inputs["processed_diff"],
+            diff_stat=small_inputs["diff_stat"],
+            hint=small_inputs["hint"],
+        )
+
+    def test_generate_questions_adaptive_for_large_change(
+        self, mock_build_question_generation_prompt, mock_generate_commit_message
+    ):
+        """Test that large changes generate more questions."""
+        # Mock large change: multiple files, substantial modifications
+        large_inputs = {
+            "model": "anthropic:claude-3-haiku",
+            "status": "M auth.py\nM api.py\nA middleware.py\nD old_handler.py",
+            "processed_diff": """diff --git a/auth.py b/auth.py\n@@ -10,7 +10,15 @@ class Auth:
++    def new_auth_method(self, token):
++        return self.validate_token(token)
+
+ diff --git a/api.py b/api.py\n@@ -5,6 +5,12 @@ class API:
+     def get(self):
++        if self.auth.check():
++            return self.process_request()
+
+ diff --git a/middleware.py b/middleware.py\nnew file mode 100644\n@@ -0,0 +1,25 @@\n+class Middleware:
++    def process_request(self, request):
++        return self.validate(request)
+
+ diff --git a/old_handler.py b/old_handler.py\ndeleted file mode 100644\n@@ -1,15 +0,0 @@\n-def old_handler():
+-    pass""",
+            "diff_stat": "4 files changed, 42 insertions(+), 15 deletions(-)",
+            "hint": "implement new authentication system",
+        }
+
+        # Mock LLM response with more questions for large change
+        mock_response = """1. What problem does the new authentication system solve?
+2. Why was the old handler completely removed instead of deprecated?
+3. How does the new middleware integrate with existing API endpoints?
+4. What security considerations were taken into account for token validation?
+5. How will existing users migrate to the new authentication method?"""
+        mock_generate_commit_message.return_value = mock_response
+
+        questions = generate_contextual_questions(**large_inputs)
+
+        # Verify more questions were generated for large change
+        assert len(questions) == 5
+        assert "What problem does the new authentication system solve?" in questions
+        assert "Why was the old handler completely removed instead of deprecated?" in questions
+        assert "How does the new middleware integrate with existing API endpoints?" in questions
+        assert "What security considerations were taken into account for token validation?" in questions
+        assert "How will existing users migrate to the new authentication method?" in questions
+
+        # Verify the prompt was built with large change context
+        mock_build_question_generation_prompt.assert_called_once_with(
+            status=large_inputs["status"],
+            processed_diff=large_inputs["processed_diff"],
+            diff_stat=large_inputs["diff_stat"],
+            hint=large_inputs["hint"],
+        )
+
 
 class TestParseQuestionsFromResponse:
     """Test the _parse_questions_from_response function."""
