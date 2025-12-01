@@ -94,6 +94,7 @@ uv tool upgrade gac
 ### 💻 **Utvikleropplevelse**
 
 - **Interaktiv tilbakemelding**: Skriv `r` for å kjøre på nytt, `e` for å redigere på stedet med vi/emacs-tastebindinger, eller skriv direkte tilbakemeldingen din som `gjør den kortere` eller `fokuser på bug-fiksen`
+- **Interaktiv spørsmålsstilling**: Bruk `--interactive` (`-i`) for å svare på målrettede spørsmål om endringene dine for mer kontekstuelle commit-meldinger
 - **Én-kommandos arbeidsflyter**: Komplette arbeidsflyter med flagg som `gac -ayp` (stage alle, auto-bekreft, push)
 - **Git-integrasjon**: Respekterer pre-commit og lefthook hooks, og kjører dem før dyre LLM-operasjoner
 
@@ -130,6 +131,7 @@ gac
 | `gac -v`        | Utførlig format med Motivasjon, Teknisk Tilnærming og Påvirkningsanalyse |
 | `gac -h "hint"` | Legg til kontekst for LLM (f.eks., `gac -h "bug fix"`)                   |
 | `gac -s`        | Inkluder scope (f.eks., feat(auth):)                                     |
+| `gac -i`        | Stil spørsmål om endringer for bedre kontekst                            |
 | `gac -p`        | Commit og push                                                           |
 
 ### Eksempler for Avanserte Brukere
@@ -146,6 +148,9 @@ gac -o
 
 # Grupper endringer i logisk relaterte commits
 gac -ag
+
+# Interaktiv modus med utførlig output for detaljerte forklaringer
+gac -iv
 
 # Debug hva LLM ser
 gac --show-prompt

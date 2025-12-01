@@ -94,6 +94,7 @@ uv tool upgrade gac
 ### 💻 **Expérience développeur**
 
 - **Feedback interactif** : Tapez `r` pour relancer, `e` pour éditer sur place avec les bindings vi/emacs, ou tapez directement votre feedback comme "rends-le plus court" ou "concentre-toi sur la correction du bug"
+- **Interrogation interactive** : Utilisez `--interactive` (`-i`) pour répondre à des questions ciblées sur vos changements pour des messages de commit plus contextuels
 - **Workflows en une commande** : Workflows complets avec des drapeaux comme `gac -ayp` (indexer tout, confirmer automatiquement, pousser)
 - **Intégration Git** : Respecte les hooks pre-commit et lefthook, en les exécutant avant les opérations coûteuses de l'IA
 
@@ -130,6 +131,7 @@ gac
 | `gac -v`          | Format détaillé avec Motivation, Approche technique et Analyse d'impact |
 | `gac -h "indice"` | Ajouter du contexte pour l'IA (ex: `gac -h "correction de bug"`)        |
 | `gac -s`          | Inclure une portée (ex: feat(auth):)                                    |
+| `gac -i`          | Poser des questions sur les changements pour un meilleur contexte       |
 | `gac -p`          | Commiter et pousser                                                     |
 
 ### Exemples pour utilisateurs avancés
@@ -146,6 +148,9 @@ gac -o
 
 # Grouper les changements en commits logiquement liés
 gac -ag
+
+# Mode interactif avec sortie détaillée pour des explications détaillées
+gac -iv
 
 # Déboguer ce que voit l'IA
 gac --show-prompt

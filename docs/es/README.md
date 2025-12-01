@@ -94,6 +94,7 @@ uv tool upgrade gac
 ### 💻 **Experiencia del desarrollador**
 
 - **Retroalimentación interactiva**: Escribe `r` para volver a generar, `e` para editar en el lugar con atajos de teclado vi/emacs, o escribe directamente tu retroalimentación como "hazlo más corto" o "enfócate en la corrección del error"
+- **Interrogación interactiva**: Usa `--interactive` (`-i`) para responder preguntas específicas sobre tus cambios para mensajes de commit más contextuales
 - **Flujos de trabajo de un comando**: Flujos de trabajo completos con banderas como `gac -ayp` (stage todo, auto-confirmar, push)
 - **Integración con Git**: Respeta los hooks de pre-commit y lefthook, ejecutándolos antes de operaciones costosas de LLM
 
@@ -130,6 +131,7 @@ gac
 | `gac -v`        | Formato detallado con Motivación, Enfoque Técnico y Análisis de Impacto |
 | `gac -h "hint"` | Añadir contexto para LLM (ej., `gac -h "corrección de error"`)          |
 | `gac -s`        | Incluir alcance (ej., feat(auth):)                                      |
+| `gac -i`        | Hacer preguntas sobre los cambios para mejor contexto                   |
 | `gac -p`        | Hacer commit y push                                                     |
 
 ### Ejemplos para usuarios avanzados
@@ -146,6 +148,9 @@ gac -o
 
 # Agrupar cambios en commits lógicamente relacionados
 gac -ag
+
+# Modo interactivo con salida detallada para explicaciones detalladas
+gac -iv
 
 # Depurar lo que el LLM ve
 gac --show-prompt

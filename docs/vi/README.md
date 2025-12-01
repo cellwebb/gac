@@ -94,6 +94,7 @@ uv tool upgrade gac
 ### 💻 **Trải Nghiệm Nhà Phát Triển**
 
 - **Phản hồi tương tác**: Gõ `r` để reroll, `e` để chỉnh sửa tại chỗ với phím tắt vi/emacs, hoặc gõ trực tiếp phản hồi của bạn như `làm nó ngắn hơn` hoặc `tập trung vào sửa lỗi`
+- **Hỏi đáp tương tác**: Sử dụng `--interactive` (`-i`) để trả lời các câu hỏi nhắm mục tiêu về các thay đổi của bạn để có thông điệp commit có nhiều ngữ cảnh hơn
 - **Quy trình làm việc một lệnh**: Quy trình làm việc hoàn chỉnh với các flag như `gac -ayp` (stage tất cả, tự động xác nhận, push)
 - **Tích hợp Git**: Tôn các hook pre-commit và lefthook, chạy chúng trước các thao tác LLM tốn kém
 
@@ -130,6 +131,7 @@ gac
 | `gac -v`         | Định dạng chi tiết với Động cơ, Cách tiếp cận Kỹ thuật, và Phân tích Tác động |
 | `gac -h "gợi ý"` | Thêm ngữ cảnh cho LLM (ví dụ, `gac -h "sửa lỗi"`)                             |
 | `gac -s`         | Bao gồm phạm vi (ví dụ, feat(auth):)                                          |
+| `gac -i`         | Hỏi về các thay đổi để có ngữ cảnh tốt hơn                                    |
 | `gac -p`         | Commit và push                                                                |
 
 ### Ví Dụ Người Dùng Nâng Cao
@@ -146,6 +148,9 @@ gac -o
 
 # Nhóm các thay đổi thành các commit logic liên quan
 gac -ag
+
+# Chế độ tương tác với đầu ra chi tiết cho giải thích chi tiết
+gac -iv
 
 # Gỡ lỗi xem LLM thấy gì
 gac --show-prompt

@@ -93,7 +93,8 @@ uv tool upgrade gac
 
 ### 💻 **Ontwikkelervaring**
 
-- **Interactieve feedback**: Typ `r` om opnieuw te rollen, `e` om ter plaats te bewerken met vi/emacs-keybindings, of typ direct uw feedback zoals `maak het korter` of `focus op de bugfix`
+- **Interactieve feedback**: Typ `r` om opnieuw te rollen, `e` om ter plaat te bewerken met vi/emacs-keybindings, of typ direct uw feedback zoals `maak het korter` of `focus op de bugfix`
+- **Interactieve ondervraging**: Gebruik `--interactive` (`-i`) om gerichte vragen over uw wijzigingen te beantwoorden voor meer contextuele commitberichten
 - **Één-commando workflows**: Volledige workflows met vlaggen zoals `gac -ayp` (stage alles, auto-bevestig, push)
 - **Git-integratie**: Respecteert pre-commit en lefthook hooks en voert ze uit vóór dure LLM-operaties
 
@@ -130,6 +131,7 @@ gac
 | `gac -v`        | Uitgebreid formaat met Motivatie, Technische Aanpak en Impactanalyse |
 | `gac -h "hint"` | Voeg context toe voor LLM (bv., `gac -h "bug fix"`)                  |
 | `gac -s`        | Inclusief scope (bv., feat(auth):)                                   |
+| `gac -i`        | Stel vragen over wijzigingen voor betere context                     |
 | `gac -p`        | Commit en push                                                       |
 
 ### Power User Voorbeelden
@@ -146,6 +148,9 @@ gac -o
 
 # Groepeer wijzigingen in logisch gerelateerde commits
 gac -ag
+
+# Interactieve modus met gedetailleerde output voor gedetailleerde uitleg
+gac -iv
 
 # Debug wat de LLM ziet
 gac --show-prompt
