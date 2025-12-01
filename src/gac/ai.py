@@ -23,6 +23,7 @@ def generate_commit_message(
     quiet: bool = False,
     is_group: bool = False,
     skip_success_message: bool = False,
+    task_description: str = "commit message",
 ) -> str:
     """Generate a commit message using direct API calls to AI providers.
 
@@ -75,6 +76,7 @@ def generate_commit_message(
             quiet=quiet,
             is_group=is_group,
             skip_success_message=skip_success_message,
+            task_description=task_description,
         )
     except AIError:
         # Re-raise AIError exceptions as-is to preserve error classification
@@ -103,4 +105,5 @@ def generate_grouped_commits(
         quiet=quiet,
         is_group=True,
         skip_success_message=skip_success_message,
+        task_description="commit message",
     )

@@ -10,13 +10,15 @@ from functools import lru_cache
 from typing import Any
 
 import tiktoken
-from halo import Halo
+from rich.console import Console
+from rich.status import Status
 
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
 from gac.providers import SUPPORTED_PROVIDERS
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 @lru_cache(maxsize=1)
@@ -106,6 +108,7 @@ def generate_with_retries(
     quiet: bool = False,
     is_group: bool = False,
     skip_success_message: bool = False,
+    task_description: str = "commit message",
 ) -> str:
     """Generate content with retry logic using direct API calls."""
     # Parse model string to determine provider and actual model
@@ -122,11 +125,15 @@ def generate_with_retries(
         raise AIError.model_error("No messages provided for AI generation")
 
     # Set up spinner
-    message_type = "commit messages" if is_group else "commit message"
+    if is_group:
+        message_type = f"grouped {task_description}s"
+    else:
+        message_type = task_description
+
     if quiet:
         spinner = None
     else:
-        spinner = Halo(text=f"Generating {message_type} with {provider} {model_name}...", spinner="dots")
+        spinner = Status(f"Generating {message_type} with {provider} {model_name}...")
         spinner.start()
 
     last_exception = None
@@ -136,7 +143,7 @@ def generate_with_retries(
         try:
             if not quiet and not skip_success_message and attempt > 0:
                 if spinner:
-                    spinner.text = f"Retry {attempt + 1}/{max_retries} with {provider} {model_name}..."
+                    spinner.update(f"Retry {attempt + 1}/{max_retries} with {provider} {model_name}...")
                 logger.info(f"Retry attempt {attempt + 1}/{max_retries}")
 
             # Call the appropriate provider function
@@ -150,7 +157,8 @@ def generate_with_retries(
                 if skip_success_message:
                     spinner.stop()  # Stop spinner without showing success/failure
                 else:
-                    spinner.succeed(f"Generated {message_type} with {provider} {model_name}")
+                    spinner.stop()
+                    console.print(f"✓ Generated {message_type} with {provider} {model_name}")
 
             if content is not None and content.strip():
                 return content.strip()  # type: ignore[no-any-return]
@@ -166,7 +174,8 @@ def generate_with_retries(
             # For authentication and model errors, don't retry
             if error_type in ["authentication", "model"]:
                 if spinner and not skip_success_message:
-                    spinner.fail(f"Failed to generate {message_type} with {provider} {model_name}")
+                    spinner.stop()
+                    console.print(f"✗ Failed to generate {message_type} with {provider} {model_name}")
 
                 # Create the appropriate error type based on classification
                 if error_type == "authentication":
@@ -187,7 +196,7 @@ def generate_with_retries(
 
                 if spinner and not skip_success_message:
                     for i in range(wait_time, 0, -1):
-                        spinner.text = f"Retry {attempt + 1}/{max_retries} in {i}s..."
+                        spinner.update(f"Retry {attempt + 1}/{max_retries} in {i}s...")
                         time.sleep(1)
                 else:
                     time.sleep(wait_time)
@@ -197,7 +206,8 @@ def generate_with_retries(
                 logger.error(f"AI generation failed after {num_retries} {retry_word}: {str(e)}")
 
     if spinner and not skip_success_message:
-        spinner.fail(f"Failed to generate {message_type} with {provider} {model_name}")
+        spinner.stop()
+        console.print(f"✗ Failed to generate {message_type} with {provider} {model_name}")
 
     # If we get here, all retries failed - use the last classified error type
     num_retries = max_retries
