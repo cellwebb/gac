@@ -442,6 +442,462 @@ def test_model_cli_azure_openai_configuration(tmp_path):
             assert "AZURE_OPENAI_API_KEY='azure-openai-key'" in env_text
 
 
+def test_model_cli_azure_openai_existing_endpoint_keep_new_version(tmp_path):
+    """Test Azure OpenAI with existing endpoint but new API version."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+    # Pre-populate with existing endpoint
+    env_path.write_text("AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'\n")
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("questionary.password") as mpass,
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Keep existing endpoint",  # Keep existing endpoint
+                "Enter new version",  # Enter new API version
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4o",
+                "2025-02-01-preview",  # New API version
+            ]
+            mpass.return_value.ask.side_effect = ["azure-openai-key"]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='azure-openai:gpt-4o'" in env_text
+            assert "AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'" in env_text
+            assert "AZURE_OPENAI_API_VERSION='2025-02-01-preview'" in env_text
+            assert "AZURE_OPENAI_API_KEY='azure-openai-key'" in env_text
+
+
+def test_model_cli_azure_openai_existing_version_keep_new_endpoint(tmp_path):
+    """Test Azure OpenAI with existing API version but new endpoint."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+    # Pre-populate with existing API version
+    env_path.write_text("AZURE_OPENAI_API_VERSION='2024-12-01-preview'\n")
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("questionary.password") as mpass,
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Enter new endpoint",  # Enter new endpoint
+                "Keep existing version",  # Keep existing API version
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4o",
+                "https://new-resource.openai.azure.com",  # New endpoint
+            ]
+            mpass.return_value.ask.side_effect = ["azure-openai-key"]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='azure-openai:gpt-4o'" in env_text
+            assert "AZURE_OPENAI_ENDPOINT='https://new-resource.openai.azure.com'" in env_text
+            assert "AZURE_OPENAI_API_VERSION='2024-12-01-preview'" in env_text
+            assert "AZURE_OPENAI_API_KEY='azure-openai-key'" in env_text
+
+
+def test_model_cli_azure_openai_existing_keep_both_cancel_endpoint(tmp_path):
+    """Test Azure OpenAI cancellation when entering new endpoint."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+    # Pre-populate with existing configuration
+    env_path.write_text(
+        "AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'\nAZURE_OPENAI_API_VERSION='2024-12-01-preview'\n"
+    )
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Enter new endpoint",  # Try to enter new endpoint
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4",  # Provide model first
+                None,  # Cancel endpoint entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Azure OpenAI endpoint entry cancelled. Exiting." in result.output
+
+
+def test_model_cli_azure_openai_existing_keep_both_cancel_version(tmp_path):
+    """Test Azure OpenAI cancellation when entering new API version."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+    # Pre-populate with existing configuration
+    env_path.write_text(
+        "AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'\nAZURE_OPENAI_API_VERSION='2024-12-01-preview'\n"
+    )
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Keep existing endpoint",  # Keep existing endpoint
+                "Enter new version",  # Try to enter new version
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4",  # Provide model first
+                None,  # Cancel version entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Azure OpenAI API version entry cancelled. Exiting." in result.output
+
+
+def test_model_cli_azure_openai_no_existing_cancel_endpoint(tmp_path):
+    """Test Azure OpenAI cancellation when no existing endpoint."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["Azure OpenAI"]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4",  # Provide model first
+                None,  # Cancel endpoint entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Azure OpenAI endpoint entry cancelled. Exiting." in result.output
+
+
+def test_model_cli_azure_openai_no_existing_cancel_version(tmp_path):
+    """Test Azure OpenAI cancellation when no existing API version."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["Azure OpenAI"]
+            mtext.return_value.ask.side_effect = [
+                "gpt-4o",
+                "https://test-resource.openai.azure.com",
+                None,  # Cancel API version entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Azure OpenAI API version entry cancelled" in result.output
+
+
+def test_model_cli_azure_openai_existing_both_keep_existing(tmp_path):
+    """Test Azure OpenAI keeping both existing endpoint and API version."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+    # Pre-populate with existing configuration
+    env_path.write_text(
+        "AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'\nAZURE_OPENAI_API_VERSION='2024-12-01-preview'\n"
+    )
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("questionary.password") as mpass,
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Keep existing endpoint",  # Keep existing endpoint
+                "Keep existing version",  # Keep existing API version
+            ]
+            mtext.return_value.ask.side_effect = ["gpt-4o"]
+            mpass.return_value.ask.side_effect = ["azure-openai-key"]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='azure-openai:gpt-4o'" in env_text
+            assert "AZURE_OPENAI_ENDPOINT='https://existing.openai.azure.com'" in env_text
+            assert "AZURE_OPENAI_API_VERSION='2024-12-01-preview'" in env_text
+            assert "AZURE_OPENAI_API_KEY='azure-openai-key'" in env_text
+            assert "Keeping existing AZURE_OPENAI_ENDPOINT" in result.output
+            assert "Keeping existing AZURE_OPENAI_API_VERSION" in result.output
+
+
+def test_model_cli_claude_code_existing_token_keep_existing(tmp_path):
+    """Test Claude Code with existing token - keep existing."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = "existing-token"  # Existing token found
+            mselect.return_value.ask.side_effect = [
+                "Claude Code",
+                "Keep existing token",  # Keep existing token
+            ]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+            assert "Keeping existing Claude Code token" in result.output
+            # authenticate_and_save should not be called
+            mauth.assert_not_called()
+
+
+def test_model_cli_claude_code_existing_token_reauthenticate(tmp_path):
+    """Test Claude Code with existing token - reauthenticate."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = "existing-token"  # Existing token found
+            mselect.return_value.ask.side_effect = [
+                "Claude Code",
+                "Re-authenticate (get new token)",  # Re-authenticate
+            ]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+            mauth.return_value = True  # Authentication succeeds
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+            assert "Starting Claude Code OAuth authentication" in result.output
+            mauth.assert_called_once_with(quiet=False)
+
+
+def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
+    """Test Claude Code reauthentication failure."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = "existing-token"  # Existing token found
+            mselect.return_value.ask.side_effect = [
+                "Claude Code",
+                "Re-authenticate (get new token)",  # Re-authenticate
+            ]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+            mauth.return_value = False  # Authentication fails
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+            assert "Claude Code authentication failed. Keeping existing token." in result.output
+
+
+def test_model_cli_claude_code_no_existing_token_success(tmp_path):
+    """Test Claude Code with no existing token - successful authentication."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = None  # No existing token
+            mselect.return_value.ask.side_effect = ["Claude Code"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+            mauth.return_value = True  # Authentication succeeds
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            env_text = env_path.read_text()
+            assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
+            assert "Starting Claude Code OAuth authentication" in result.output
+            mauth.assert_called_once_with(quiet=False)
+
+
+def test_model_cli_claude_code_no_existing_token_failure(tmp_path):
+    """Test Claude Code with no existing token - authentication fails."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = None  # No existing token
+            mselect.return_value.ask.side_effect = ["Claude Code"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+            mauth.return_value = False  # Authentication fails
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Claude Code authentication failed. Exiting." in result.output
+
+
+def test_model_cli_claude_code_existing_token_cancel_action(tmp_path):
+    """Test Claude Code cancellation when choosing action."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
+        ):
+            mload_token.return_value = "existing-token"  # Existing token found
+            mselect.return_value.ask.side_effect = [
+                "Claude Code",
+                None,  # Cancel action selection
+            ]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Claude Code configuration cancelled. Keeping existing token." in result.output
+            mauth.assert_not_called()
+
+
+def test_model_cli_custom_anthropic_cancel_base_url(tmp_path):
+    """Test Custom Anthropic cancellation when entering base URL."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["Custom (Anthropic)"]
+            mtext.return_value.ask.side_effect = [
+                "claude-3-5-sonnet",
+                None,  # Cancel base URL entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Custom Anthropic base URL entry cancelled" in result.output
+
+
+def test_model_cli_custom_openai_cancel_base_url(tmp_path):
+    """Test Custom OpenAI cancellation when entering base URL."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["Custom (OpenAI)"]
+            mtext.return_value.ask.side_effect = [
+                "my-custom-model",
+                None,  # Cancel base URL entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Custom OpenAI base URL entry cancelled" in result.output
+
+
+def test_model_cli_ollama_cancel_url(tmp_path):
+    """Test Ollama cancellation when entering URL."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["Ollama"]
+            mtext.return_value.ask.side_effect = [
+                "gemma3",
+                None,  # Cancel URL entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Ollama URL entry cancelled" in result.output
+
+
+def test_model_cli_lmstudio_cancel_url(tmp_path):
+    """Test LM Studio cancellation when entering URL."""
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with _patch_env_paths(env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+        ):
+            mselect.return_value.ask.side_effect = ["LM Studio"]
+            mtext.return_value.ask.side_effect = [
+                "gemma3",
+                None,  # Cancel URL entry
+            ]
+
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "LM Studio URL entry cancelled" in result.output
+
+
 def test_model_cli_empty_model_suggestion(tmp_path):
     """Test providers with empty model suggestions (require explicit model entry)."""
     env_path = tmp_path / ".gac.env"
