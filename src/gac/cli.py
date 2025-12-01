@@ -33,6 +33,9 @@ console = Console()
 # Git workflow options
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
 @click.option("--group", "-g", is_flag=True, help="Group changes into multiple logical commits")
+@click.option(
+    "--interactive", "-i", is_flag=True, help="Ask interactive questions to gather more context for the commit message"
+)
 @click.option("--push", "-p", is_flag=True, help="Push changes to remote after committing")
 @click.option("--dry-run", is_flag=True, help="Dry run the commit workflow")
 @click.option("--message-only", is_flag=True, help="Output only the generated commit message without committing")
@@ -83,6 +86,7 @@ def cli(
     ctx: click.Context,
     add_all: bool = False,
     group: bool = False,
+    interactive: bool = False,
     log_level: str = str(config["log_level"]),
     one_liner: bool = False,
     push: bool = False,
@@ -132,6 +136,7 @@ def cli(
             main(
                 stage_all=add_all,
                 group=group,
+                interactive=interactive,
                 model=model,
                 hint=hint,
                 one_liner=one_liner,
@@ -157,6 +162,7 @@ def cli(
         ctx.obj = {
             "add_all": add_all,
             "group": group,
+            "interactive": interactive,
             "log_level": log_level,
             "one_liner": one_liner,
             "push": push,
