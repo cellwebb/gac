@@ -38,7 +38,6 @@ dependencies = [
 
     # CLI and formatting
     "click>=8.3.0",
-    "halo",
     "questionary",
     "rich>=14.1.0",
     "prompt_toolkit>=3.0.36",
@@ -217,10 +216,6 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = "gac.providers.*"
 warn_return_any = false
-
-[[tool.mypy.overrides]]
-module = "halo"
-ignore_missing_imports = true
 
 [template.plugins.default]
 tests = true
