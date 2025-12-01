@@ -76,11 +76,13 @@ def check_token_warning(
     require_confirmation: bool,
 ) -> bool:
     if warning_limit and prompt_tokens > warning_limit:
-        console.print(f"[yellow]⚠️  WARNING: Prompt has {prompt_tokens} tokens (limit: {warning_limit})[/yellow]")
+        console.print(
+            f"[yellow]⚠️  WARNING: Prompt has {prompt_tokens} tokens (warning threshold: {warning_limit})[/yellow]"
+        )
         if require_confirmation:
             proceed = click.confirm("Do you want to continue anyway?", default=True)
             if not proceed:
-                console.print("[yellow]Aborted due to token limit.[/yellow]")
+                console.print("[yellow]Aborted due to large token count.[/yellow]")
                 return False
     return True
 
