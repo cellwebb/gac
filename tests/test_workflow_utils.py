@@ -139,7 +139,7 @@ class TestCollectInteractiveAnswers:
     """Test the collect_interactive_answers function."""
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_success(self, mock_prompt, mock_print):
         """Test successful collection of answers."""
         questions = [
@@ -166,7 +166,7 @@ class TestCollectInteractiveAnswers:
         # Verify all questions were prompted
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_with_empty_questions(self, mock_prompt, mock_print):
         """Test collection with empty questions list."""
         answers = collect_interactive_answers([])
@@ -175,7 +175,7 @@ class TestCollectInteractiveAnswers:
         mock_prompt.assert_not_called()
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_with_none_questions(self, mock_prompt, mock_print):
         """Test collection with None questions."""
         answers = collect_interactive_answers(None)
@@ -184,7 +184,7 @@ class TestCollectInteractiveAnswers:
         mock_prompt.assert_not_called()
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_skip_command(self, mock_prompt, mock_print):
         """Test skip command to skip remaining questions."""
         questions = [
@@ -209,7 +209,7 @@ class TestCollectInteractiveAnswers:
         # Verify prompt was called only twice (first question + skip)
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_quit_command(self, mock_prompt, mock_print):
         """Test quit command to abort interactive mode."""
         questions = [
@@ -228,7 +228,7 @@ class TestCollectInteractiveAnswers:
         mock_print.assert_any_call("\n[yellow]⚠️  Interactive mode aborted by user[/yellow]")
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_empty_input(self, mock_prompt, mock_print):
         """Test empty input to skip individual questions."""
         questions = [
@@ -253,7 +253,7 @@ class TestCollectInteractiveAnswers:
         }
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_none_input(self, mock_prompt, mock_print):
         """Test 'none' input to skip individual questions."""
         questions = [
@@ -273,7 +273,7 @@ class TestCollectInteractiveAnswers:
         }
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_case_insensitive_commands(self, mock_prompt, mock_print):
         """Test that commands are case insensitive."""
         questions = [
@@ -294,7 +294,7 @@ class TestCollectInteractiveAnswers:
         }
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_whitespace_handling(self, mock_prompt, mock_print):
         """Test proper handling of whitespace in inputs."""
         questions = [
@@ -312,7 +312,7 @@ class TestCollectInteractiveAnswers:
         }
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_keyboard_interrupt(self, mock_prompt, mock_print):
         """Test handling of keyboard interrupt (Ctrl+C)."""
         questions = [
@@ -320,10 +320,8 @@ class TestCollectInteractiveAnswers:
             "Are there any security considerations?",
         ]
 
-        # Mock Ctrl+C (click.Abort exception)
-        from click import Abort
-
-        mock_prompt.side_effect = Abort()
+        # Mock Ctrl+C (KeyboardInterrupt)
+        mock_prompt.side_effect = KeyboardInterrupt()
 
         answers = collect_interactive_answers(questions)
 
@@ -478,7 +476,7 @@ class TestInteractiveModeEdgeCases:
     """Test edge cases and error conditions for interactive mode."""
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_mixed_valid_invalid_inputs(self, mock_prompt, mock_print):
         """Test mixing valid answers, skips, and commands."""
         questions = [
@@ -505,7 +503,7 @@ class TestInteractiveModeEdgeCases:
         }
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_commands_like_normal_text(self, mock_prompt, mock_print):
         """Test that ' quit' ' skip ' with spaces are treated as normal text, not commands."""
         questions = ["What's the change?"]
@@ -518,7 +516,7 @@ class TestInteractiveModeEdgeCases:
         assert answers is None
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_all_questions_skipped(self, mock_prompt, mock_print):
         """Test when all questions are skipped."""
         questions = ["Q1?", "Q2?", "Q3?"]
@@ -530,7 +528,7 @@ class TestInteractiveModeEdgeCases:
         assert answers == {}
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_quit_then_continue(self, mock_prompt, mock_print):
         """Test that after quit, the function returns None immediately."""
         questions = ["Q1?", "Q2?", "Q3?"]
@@ -557,7 +555,7 @@ class TestInteractiveModeEdgeCases:
         assert "https://example.com/api/v1.0/endpoint" in result
 
     @patch("gac.workflow_utils.console.print")
-    @patch("gac.workflow_utils.click.prompt")
+    @patch("gac.workflow_utils.prompt")
     def test_collect_answers_very_long_questions_and_answers(self, mock_prompt, mock_print):
         """Test handling of very long questions and answers."""
         long_question = "What is the purpose of implementing this " + "very " * 50 + "long change?"

@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 
 import click
+from prompt_toolkit import prompt
 from rich.console import Console
 from rich.panel import Panel
 
@@ -157,13 +158,7 @@ def collect_interactive_answers(questions: list[str]) -> dict[str, str] | None:
         console.print(f"[bold blue]Question {i}:[/bold blue] {question}")
 
         try:
-            answer = click.prompt(
-                "Your answer",
-                type=str,
-                default="",  # Allow empty input to skip
-                show_default=False,
-                prompt_suffix=": ",
-            ).strip()
+            answer = prompt("Your answer: ").strip()
 
             # Handle special commands
             answer_lower = answer.lower()
@@ -183,7 +178,7 @@ def collect_interactive_answers(questions: list[str]) -> dict[str, str] | None:
                 answers[question] = answer
                 console.print("[dim]↳ Got it![/dim]")
 
-        except click.Abort:
+        except KeyboardInterrupt:
             # User pressed Ctrl+C
             console.print("\n[yellow]⚠️  Interactive mode aborted by user[/yellow]")
             return None
