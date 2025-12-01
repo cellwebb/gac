@@ -9,7 +9,7 @@ Dieses Dokument beschreibt alle verfügbaren Flags und Optionen für das `gac` C
 - [gac Kommandozeilen-Nutzung](#gac-kommandozeilen-nutzung)
   - [Inhaltsverzeichnis](#inhaltsverzeichnis)
   - [Grundlegende Nutzung](#grundlegende-nutzung)
-  - [Core Workflow Flags](#core-workflow-flags)
+  - [Kern-Workflow-Flags](#kern-workflow-flags)
   - [Nachrichten-Anpassung](#nachrichten-anpassung)
   - [Ausgabe und Ausführlichkeit](#ausgabe-und-ausführlichkeit)
   - [Hilfe und Version](#hilfe-und-version)
@@ -17,9 +17,17 @@ Dieses Dokument beschreibt alle verfügbaren Flags und Optionen für das `gac` C
   - [Erweitert](#erweitert)
     - [Skript-Integration und externe Verarbeitung](#skript-integration-und-externe-verarbeitung)
     - [Pre-commit und Lefthook Hooks überspringen](#pre-commit-und-lefthook-hooks-überspringen)
+    - [Sicherheits-Scanning](#sicherheits-scanning)
   - [Konfigurationshinweise](#konfigurationshinweise)
     - [Erweiterte Konfigurationsoptionen](#erweiterte-konfigurationsoptionen)
     - [Konfigurations-Unterbefehle](#konfigurations-unterbefehle)
+  - [Interaktiver Modus](#interaktiver-modus)
+    - [Wie es funktioniert](#wie-es-funktioniert)
+    - [Wann man den interaktiven Modus verwenden sollte](#wann-man-den-interaktiven-modus-verwenden-sollte)
+    - [Nutzungsbeispiele](#nutzungsbeispiele)
+    - [Frage-Antwort-Workflow](#frage-antwort-workflow)
+    - [Kombination mit anderen Flags](#kombination-mit-anderen-flags)
+    - [Bewährte Praktiken](#bewährte-praktiken)
   - [Hilfe erhalten](#hilfe-erhalten)
 
 ## Grundlegende Nutzung
@@ -41,7 +49,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 
 ---
 
-## Core Workflow Flags
+## Kern-Workflow-Flags
 
 | Flag / Option        | Kurz | Beschreibung                                                           |
 | -------------------- | ---- | ---------------------------------------------------------------------- |
@@ -53,12 +61,15 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 | `--message-only`     |      | Nur die generierte Commit-Nachricht ohne eigentlichen Commit ausgeben  |
 | `--no-verify`        |      | Pre-commit und lefthook Hooks beim Committen überspringen              |
 | `--skip-secret-scan` |      | Sicherheits-Scan für Geheimnisse in gestageten Änderungen überspringen |
+| `--interactive`      | `-i` | Fragen zu Änderungen stellen für bessere Commits                       |
 
 **Hinweis:** Kombinieren Sie `-a` und `-g` (d.h. `-ag`) um ALLE Änderungen zuerst zu staggen, dann sie in Commits zu gruppieren.
 
 **Hinweis:** Bei Verwendung von `--group` wird das maximale Ausgabe-Token-Limit automatisch basierend auf der Anzahl der Dateien, die committet werden, skaliert (2x für 1-9 Dateien, 3x für 10-19 Dateien, 4x für 20-29 Dateien, 5x für 30+ Dateien). Dies stellt sicher, dass die KI genügend Tokens hat, um alle gruppierten Commits ohne Abschneidung zu generieren, selbst bei großen Änderungssätzen.
 
 **Hinweis:** `--message-only` und `--group` schließen sich gegenseitig aus. Verwenden Sie `--message-only`, wenn Sie die Commit-Nachricht für externe Verarbeitung benötigen, und `--group`, wenn Sie mehrere Commits im aktuellen Git-Workflow organisieren möchten.
+
+**Hinweis:** Das `--interactive`-Flag liefert zusätzlichen Kontext an die KI, indem es Fragen zu Ihren Änderungen stellt, was zu genaueren und detaillierteren Commit-Nachrichten führt. Dies ist besonders nützlich für komplexe Änderungen oder wenn Sie sicherstellen möchten, dass die Commit-Nachricht den vollen Kontext Ihrer Arbeit erfasst.
 
 ## Nachrichten-Anpassung
 
@@ -180,6 +191,22 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
   ```sh
   gac --message-only --one-liner
   # Ausgabe: feat: add user authentication system
+  ```
+
+- **Interaktiven Modus für Kontext verwenden:**
+
+  ```sh
+  gac -i
+  # Was ist das Hauptziel dieser Änderungen?
+  # Welches Problem lösen Sie?
+  # Gibt es Implementierungsdetails, die erwähnt werden sollten?
+  ```
+
+- **Interaktiver Modus mit detaillierter Ausgabe:**
+
+  ```sh
+  gac -i -v
+  # Fragen stellen und detaillierte Commit-Nachrichten generieren
   ```
 
 ## Erweitert
@@ -315,6 +342,112 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac config unset KEY` — Konfigurationsschlüssel aus `$HOME/.gac.env` entfernen
 - `gac language` (oder `gac lang`) — Interaktiver Sprachselektor für Commit-Nachrichten (setzt GAC_LANGUAGE)
 - `gac diff` — Gefiltertes git diff mit Optionen für gestufte/ungestufte Änderungen, Farbe und Kürzung anzeigen
+
+## Interaktiver Modus
+
+Das `--interactive` (`-i`) Flag verbessert die Commit-Nachrichtengenerierung von gac, indem es gezielte Fragen zu Ihren Änderungen stellt. Dieser zusätzliche Kontext hilft der KI, genauere, detailliertere und kontextbezogene Commit-Nachrichten zu erstellen.
+
+### Wie es funktioniert
+
+Wenn Sie `--interactive` verwenden, stellt gac Fragen wie:
+
+- **Was ist das Hauptziel dieser Änderungen?** - Hilft, das übergeordnete Ziel zu verstehen
+- **Welches Problem lösen Sie?** - Liefert Kontext über die Motivation
+- **Gibt es Implementierungsdetails, die erwähnt werden sollten?** - Erfasst technische Spezifikationen
+- **Gibt es Breaking Changes?** - Identifiziert potenzielle Auswirkungsprobleme
+- **Ist dies mit einem Issue oder Ticket verbunden?** - Verbindet mit dem Projektmanagement
+
+### Wann man den interaktiven Modus verwenden sollte
+
+Der interaktive Modus ist besonders nützlich für:
+
+- **Komplexe Änderungen**, bei denen der Kontext nicht allein aus dem diff ersichtlich ist
+- **Refactoring-Arbeiten**, die sich über mehrere Dateien und Konzepte erstrecken
+- **Neue Funktionen**, die eine Erklärung des übergeordneten Zwecks erfordern
+- **Bug-Fixes**, bei denen die Ursache nicht sofort sichtbar ist
+- **Performance-Optimierungen**, bei denen die Logik nicht offensichtlich ist
+- **Code Review-Vorbereitung** - Fragen helfen Ihnen, über Ihre Änderungen nachzudenken
+
+### Nutzungsbeispiele
+
+**Grundlegender interaktiver Modus:**
+
+```sh
+gac -i
+```
+
+Dies wird:
+
+1. Eine Zusammenfassung der gestageten Änderungen anzeigen
+2. Fragen zu den Änderungen stellen
+3. Eine Commit-Nachricht mit Ihren Antworten generieren
+4. Um Bestätigung bitten (oder automatisch bestätigen, wenn mit `-y` kombiniert)
+
+**Interaktiver Modus mit gestageten Änderungen:**
+
+```sh
+gac -ai
+# Alle Änderungen stagen, dann Fragen für besseren Kontext stellen
+```
+
+**Interaktiver Modus mit spezifischen Hinweisen:**
+
+```sh
+gac -i -h "Datenbankmigration für Benutzerprofile"
+# Fragen stellen, während ein spezifischer Hinweis zur Fokussierung der KI bereitgestellt wird
+```
+
+**Interaktiver Modus mit detaillierter Ausgabe:**
+
+```sh
+gac -i -v
+# Fragen stellen und eine detaillierte, strukturierte Commit-Nachricht generieren
+```
+
+**Automatisch bestätigter interaktiver Modus:**
+
+```sh
+gac -i -y
+# Fragen stellen, aber den resultierenden Commit automatisch bestätigen
+```
+
+### Frage-Antwort-Workflow
+
+Der interaktive Workflow folgt diesem Muster:
+
+1. **Änderungsüberprüfung** - gac zeigt eine Zusammenfassung dessen, was Sie committen
+2. **Auf Fragen antworten** - Beantworten Sie jede Aufforderung mit relevanten Details
+3. **Kontextverbesserung** - Ihre Antworten werden zum KI-Prompt hinzugefügt
+4. **Nachrichtengenerierung** - Die KI erstellt eine Commit-Nachricht mit vollem Kontext
+5. **Bestätigung** - Überprüfen und bestätigen Sie den Commit (oder automatisch mit `-y`)
+
+**Tipps für nützliche Antworten:**
+
+- **Kurz aber vollständig** - Wichtige Details liefern, ohne übermäßig ausführlich zu sein
+- **Auf "warum" konzentrieren** - Die Begründung hinter Ihren Änderungen erklären
+- **Einschränkungen erwähnen** - Einschränkungen oder besondere Überlegungen notieren
+- **Mit externem Kontext verlinken** - Auf Issues, Dokumentation oder Designdokumente verweisen
+- **Leere Antworten sind in Ordnung** - Wenn eine Frage nicht zutrifft, einfach Enter drücken
+
+### Kombination mit anderen Flags
+
+Der interaktive Modus funktioniert gut mit den meisten anderen Flags:
+
+```sh
+# Alle Änderungen stagen und Fragen stellen
+gac -ai
+
+# Fragen mit detaillierter Ausgabe stellen
+gac -i -v
+```
+
+### Bewährte Praktiken
+
+- **Für komplexe PRs verwenden** - Besonders nützlich für Pull Requests, die detaillierte Erklärungen benötigen
+- **Team-Zusammenarbeit** - Fragen helfen Ihnen, über Änderungen nachzudenken, die andere überprüfen werden
+- **Dokumentationsvorbereitung** - Ihre Antworten können die Grundlage für Release Notes bilden
+- **Lernwerkzeug** - Fragen stärken gute Praktiken für Commit-Nachrichten
+- **Bei einfachen Änderungen überspringen** - Für trivial Fixes kann der grundlegende Modus schneller sein
 
 ## Hilfe erhalten
 

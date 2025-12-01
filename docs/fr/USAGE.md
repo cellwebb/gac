@@ -1,6 +1,6 @@
 # Utilisation en ligne de commande de gac
 
-[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Tiếng Việt](../vi/USAGE.md) | **Français** | [Рус../](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Norsk](../no/USAGE.md) | [Svenska](../sv/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md) | [Italiano](../it/USAGE.md)
+[English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Tiếng Việt](../vi/USAGE.md) | **Français** | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Norsk](../no/USAGE.md) | [Svenska](../sv/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md) | [Italiano](../it/USAGE.md)
 
 Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `gac`.
 
@@ -17,9 +17,17 @@ Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `g
   - [Avancé](#avancé)
     - [Intégration par script et traitement externe](#intégration-par-script-et-traitement-externe)
     - [Sauter les hooks Pre-commit et Lefthook](#sauter-les-hooks-pre-commit-et-lefthook)
+    - [Analyse de sécurité](#analyse-de-sécurité)
   - [Notes de configuration](#notes-de-configuration)
     - [Options de configuration avancées](#options-de-configuration-avancées)
     - [Sous-commandes de configuration](#sous-commandes-de-configuration)
+  - [Mode Interactif](#mode-interactif)
+    - [Comment ça fonctionne](#comment-ça-fonctionne)
+    - [Quand utiliser le mode interactif](#quand-utiliser-le-mode-interactif)
+    - [Exemples d'utilisation](#exemples-dutilisation)
+    - [Workflow Questions-Réponses](#workflow-questions-réponses)
+    - [Combinaison avec d'autres drapeaux](#combinaison-avec-dautres-drapeaux)
+    - [Meilleures pratiques](#meilleures-pratiques)
   - [Obtenir de l'aide](#obtenir-de-laide)
 
 ## Utilisation de base
@@ -53,12 +61,15 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--message-only`     |       | Afficher uniquement le message de commit généré sans effectuer le commit   |
 | `--no-verify`        |       | Sauter les hooks pre-commit et lefthook lors du commit                     |
 | `--skip-secret-scan` |       | Sauter l'analyse de sécurité pour les secrets dans les changements indexés |
+| `--interactive`      | `-i`  | Poser des questions sur les changements pour générer de meilleurs commits  |
 
 **Note :** Combinez `-a` et `-g` (c'est-à-dire `-ag`) pour indexer TOUS les changements d'abord, puis les grouper en commits.
 
 **Note :** Lors de l'utilisation de `--group`, la limite de tokens de sortie maximale est automatiquement mise à l'échelle en fonction du nombre de fichiers commités (2x pour 1-9 fichiers, 3x pour 10-19 fichiers, 4x pour 20-29 fichiers, 5x pour 30+ fichiers). Cela assure que l'IA a assez de tokens pour générer tous les commits groupés sans troncation, même pour les ensembles de changements volumineux.
 
 **Note :** `--message-only` et `--group` sont mutuellement exclusifs. Utilisez `--message-only` lorsque vous souhaitez récupérer le message de commit pour un traitement externe, et `--group` lorsque vous souhaitez organiser plusieurs commits dans le workflow git actuel.
+
+**Note :** Le drapeau `--interactive` vous pose des questions sur vos changements pour fournir un contexte additionnel à l'IA, résultant en des messages de commit plus précis et détaillés. Ceci est particulièrement utile pour les changements complexes ou quand vous voulez vous assurer que le message de commit capture le contexte complet de votre travail.
 
 ## Personnalisation des messages
 
@@ -172,14 +183,30 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 
   ```sh
   gac --message-only
-  # Sortie : feat: add user authentication system
+  # Sortie : feat : ajouter un système d'authentification utilisateur
   ```
 
 - **Récupérer le message de commit au format une seule ligne :**
 
   ```sh
   gac --message-only --one-liner
-  # Sortie : feat: add user authentication system
+  # Sortie : feat : ajouter un système d'authentification utilisateur
+  ```
+
+- **Utiliser le mode interactif pour fournir du contexte :**
+
+  ```sh
+  gac -i
+  # Quel est le but principal de ces changements ?
+  # Quel problème résolvez-vous ?
+  # Y a-t-il des détails d'implémentation dignes d'être mentionnés ?
+  ```
+
+- **Mode interactif avec sortie détaillée :**
+
+  ```sh
+  gac -i -v
+  # Poser des questions et générer un message de commit détaillé
   ```
 
 ## Avancé
@@ -315,6 +342,112 @@ Les sous-commandes suivantes sont disponibles :
 - `gac config unset KEY` — Supprimer une clé de configuration de `$HOME/.gac.env`
 - `gac language` (ou `gac lang`) — Sélecteur de langue interactif pour les messages de commit (définit GAC_LANGUAGE)
 - `gac diff` — Afficher le git diff filtré avec des options pour les changements indexés/non indexés, la couleur et la troncature
+
+## Mode Interactif
+
+Le drapeau `--interactive` (`-i`) améliore la génération de messages de commit de gac en vous posant des questions ciblées sur vos changements. Ce contexte additionnel aide l'IA à créer des messages de commit plus précis, détaillés et contextuellement appropriés.
+
+### Comment ça fonctionne
+
+Quand vous utilisez `--interactive`, gac vous posera des questions telles que :
+
+- **Quel est le but principal de ces changements ?** - Aide à comprendre l'objectif de haut niveau
+- **Quel problème résolvez-vous ?** - Fournit le contexte sur la motivation
+- **Y a-t-il des détails d'implémentation dignes d'être mentionnés ?** - Capture les spécificités techniques
+- **Y a-t-il des changements cassants ?** - Identifie les problèmes d'impact potentiel
+- **Ceci est-il lié à un problème ou ticket ?** - Lie à la gestion de projet
+
+### Quand utiliser le mode interactif
+
+Le mode interactif est particulièrement utile pour :
+
+- **Changements complexes** où le contexte n'est pas évident depuis le diff seul
+- **Travail de refactoring** qui s'étend sur plusieurs fichiers et concepts
+- **Nouvelles fonctionnalités** qui requièrent l'explication du but global
+- **Corrections de bugs** où la cause racine n'est pas immédiatement visible
+- **Optimisations de performance** où le raisonnement n'est pas évident
+- **Préparation de code review** - les questions vous aident à réfléchir à vos changements
+
+### Exemples d'utilisation
+
+**Mode interactif de base :**
+
+```sh
+gac -i
+```
+
+Ceci fera :
+
+1. Vous montrer un résumé des changements indexés
+2. Vous poser des questions sur les changements
+3. Générer un message de commit incorporant vos réponses
+4. Demander une confirmation (ou confirmer automatiquement si combiné avec `-y`)
+
+**Mode interactif avec changements indexés :**
+
+```sh
+gac -ai
+# Indexe tous les changements, puis pose des questions pour un meilleur contexte
+```
+
+**Mode interactif avec indices spécifiques :**
+
+```sh
+gac -i -h "Migration de base de données pour les profils utilisateur"
+# Poser des questions tout en fournissant un indice spécifique pour focaliser l'IA
+```
+
+**Mode interactif avec sortie détaillée :**
+
+```sh
+gac -i -v
+# Poser des questions et générer un message de commit détaillé et structuré
+```
+
+**Mode interactif auto-confirmé :**
+
+```sh
+gac -i -y
+# Poser des questions mais confirmer automatiquement le commit résultant
+```
+
+### Workflow Questions-Réponses
+
+Le workflow interactif suit ce modèle :
+
+1. **Revoir les changements** - gac montre un résumé de ce que vous commitez
+2. **Répondre aux questions** - répondez à chaque invite avec des détails pertinents
+3. **Amélioration du contexte** - vos réponses sont ajoutées au prompt de l'IA
+4. **Génération de message** - l'IA crée un message de commit avec le contexte complet
+5. **Confirmation** - révisez et confirmez le commit (ou confirmez automatiquement avec `-y`)
+
+**Conseils pour fournir des réponses utiles :**
+
+- **Soyez concis mais complet** - fournissez les détails clés sans être trop verbeux
+- **Focalisez-vous sur le "pourquoi"** - expliquez le raisonnement derrière vos changements
+- **Mentionnez les contraintes** - notez les limitations ou considérations spéciales
+- **Liez au contexte externe** - référencez les issues, documentation ou documents de conception
+- **Les réponses vides sont acceptables** - si une question ne s'applique pas, appuyez juste sur Entrée
+
+### Combinaison avec d'autres drapeaux
+
+Le mode interactif fonctionne bien avec la plupart des autres drapeaux :
+
+```sh
+# Indexer tous les changements et poser des questions
+gac -ai
+
+# Poser des questions avec sortie détaillée
+gac -i -v
+```
+
+### Meilleures pratiques
+
+- **Utiliser pour les PRs complexes** - particulièrement utile pour les demandes de pull qui ont besoin de descriptions détaillées
+- **Collaboration d'équipe** - les questions vous aident à réfléchir aux changements que d'autres réviseront
+- **Préparation de documentation** - vos réponses peuvent aider à former la base des notes de version
+- **Outil d'apprentissage** - les questions renforcent les bonnes pratiques de messages de commit
+- **Sauter pour les changements simples** - pour les corrections triviales, le mode de base peut être plus rapide
 
 ## Obtenir de l'aide
 

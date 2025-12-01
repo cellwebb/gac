@@ -1,685 +1,454 @@
-# Guida all'Uso di gac
+# Utilizzo della Linea di Comando di gac
 
 [English](../en/USAGE.md) | [简体中文](../zh-CN/USAGE.md) | [繁體中文](../zh-TW/USAGE.md) | [日本語](../ja/USAGE.md) | [한국어](../ko/USAGE.md) | [हिन्दी](../hi/USAGE.md) | [Tiếng Việt](../vi/USAGE.md) | [Français](../fr/USAGE.md) | [Русский](../ru/USAGE.md) | [Español](../es/USAGE.md) | [Português](../pt/USAGE.md) | [Norsk](../no/USAGE.md) | [Svenska](../sv/USAGE.md) | [Deutsch](../de/USAGE.md) | [Nederlands](../nl/USAGE.md) | **Italiano**
 
-Guida completa all'uso della command line interface di `gac`.
+Questo documento descrive tutte le flag e opzioni disponibili per lo strumento CLI `gac`.
 
-## Sommario
+## Indice
 
-- [Guida all'Uso di gac](#guida-alluso-di-gac)
-  - [Sommario](#sommario)
-  - [Installazione](#installazione)
-    - [Con uvx (consigliato)](#con-uvx-consigliato)
-    - [Con pip](#con-pip)
-    - [Con strumenti del sistema operativo](#con-strumenti-del-sistema-operativo)
-  - [Configurazione Iniziale](#configurazione-iniziale)
-    - [Setup Interattivo](#setup-interattivo)
-    - [Configurazione Manuale](#configurazione-manuale)
-    - [Verifica Configurazione](#verifica-configurazione)
-  - [Comandi Base](#comandi-base)
-    - [gac](#gac)
-    - [gac init](#gac-init)
-    - [gac model](#gac-model)
-    - [gac language](#gac-language)
-  - [Opzioni della Linea di Comando](#opzioni-della-linea-di-comando)
-    - [Opzioni di Staging](#opzioni-di-staging)
-    - [Opzioni di Formato](#opzioni-di-formato)
-    - [Opzioni di Contesto](#opzioni-di-contesto)
-    - [Opzioni di Commit](#opzioni-di-commit)
-    - [Opzioni di Debug](#opzioni-di-debug)
-  - [Workflow Comuni](#workflow-comuni)
-    - [Workflow Base](#workflow-base)
-    - [Workflow Rapido](#workflow-rapido)
-    - [Workflow Dettagliato](#workflow-dettagliato)
-    - [Workflow di Gruppo](#workflow-di-gruppo)
-  - [Provider AI Supportati](#provider-ai-supportati)
-    - [Provider Cloud](#provider-cloud)
-    - [Provider Locali](#provider-locali)
-    - [Endpoint Personalizzati](#endpoint-personalizzati)
-  - [Configurazione Avanzata](#configurazione-avanzata)
-    - [Variabili d'Ambiente](#variabili-dambiente)
-    - [File di Configurazione](#file-di-configurazione)
-    - [Prompt Personalizzati](#prompt-personalizzati)
-  - [Integrazione Git](#integrazione-git)
-    - [Hook Pre-commit](#hook-pre-commit)
-    - [Lefthook](#lefthook)
-    - [Configurazione Git](#configurazione-git)
-  - [Esempi Pratici](#esempi-pratici)
-    - [Sviluppo Frontend](#sviluppo-frontend)
-    - [Sviluppo Backend](#sviluppo-backend)
-    - [Sviluppo Python](#sviluppo-python)
-    - [Correzioni di Bug](#correzioni-di-bug)
-  - [Risoluzione Problemi](#risoluzione-problemi)
-    - [Problemi Comuni](#problemi-comuni)
-    - [Debug](#debug)
-  - [Riferimento Comandi](#riferimento-comandi)
+- [Utilizzo della Linea di Comando di gac](#utilizzo-della-linea-di-comando-di-gac)
+  - [Indice](#indice)
+  - [Utilizzo Base](#utilizzo-base)
+  - [Flag del Workflow Principale](#flag-del-workflow-principale)
+  - [Personalizzazione Messaggio](#personalizzazione-messaggio)
+  - [Output e Verbosità](#output-e-verbosità)
+  - [Aiuto e Versione](#aiuto-e-versione)
+  - [Workflow di Esempio](#workflow-di-esempio)
+  - [Avanzate](#avanzate)
+    - [Integrazione Script e Elaborazione Esterna](#integrazione-script-e-elaborazione-esterna)
+    - [Saltare Hook Pre-commit e Lefthook](#saltare-hook-pre-commit-e-lefthook)
+    - [Scansione Sicurezza](#scansione-sicurezza)
+  - [Note di Configurazione](#note-di-configurazione)
+    - [Opzioni di Configurazione Avanzate](#opzioni-di-configurazione-avanzate)
+    - [Sottocomandi di Configurazione](#sottocomandi-di-configurazione)
+  - [Modalità Interattiva](#modalità-interattiva)
+    - [Come Funziona](#come-funziona)
+    - [Quando Usare la Modalità Interattiva](#quando-usare-la-modalità-interattiva)
+    - [Esempi di Utilizzo](#esempi-di-utilizzo)
+    - [Workflow Domanda-Risposta](#workflow-domanda-risposta)
+    - [Combinazione con Altre Flag](#combinazione-con-altre-flag)
+    - [Best Practice](#best-practice)
+  - [Ottenere Aiuto](#ottenere-aiuto)
 
-## Installazione
+## Utilizzo Base
 
-### Con uvx (consigliato)
-
-```bash
-# Usa gac senza installazione permanente
-uvx gac
-
-# Oppure installa come tool
-uv tool install gac
-```
-
-### Con pip
-
-```bash
-pip install gac
-```
-
-### Con strumenti del sistema operativo
-
-```bash
-# macOS con Homebrew
-brew install gac
-
-# Altre piattaforme
-pipx install gac
-```
-
-## Configurazione Iniziale
-
-### Setup Interattivo
-
-```bash
-# Configura provider, modello e lingua
+```sh
 gac init
-
-# Solo provider e modello (salta configurazione lingua)
-gac model
-```
-
-Il setup interattivo ti guiderà attraverso:
-
-1. Scelta del provider AI
-2. Selezione del modello
-3. Configurazione della lingua di output
-4. Impostazione delle chiavi API
-
-### Configurazione Manuale
-
-```bash
-# Imposta provider e modello
-export GAC_MODEL="openai:gpt-4"
-
-# Imposta chiave API
-export OPENAI_API_KEY="tua-chiave-api"
-
-# Imposta lingua
-export GAC_LANGUAGE="it"
-```
-
-### Verifica Configurazione
-
-```bash
-# Mostra configurazione corrente
-gac --show-config
-
-# Verifica connessione API
-gac --test-api
-```
-
-## Comandi Base
-
-### gac
-
-Genera un messaggio di commit per le modifiche staged.
-
-```bash
-# Uso base
+# Segui le istruzioni per configurare il tuo provider, modello e chiavi API in modo interattivo
 gac
-
-# Con opzioni
-gac -y -a -s
 ```
 
-### gac init
-
-Configura gac interattivamente.
-
-```bash
-# Setup completo
-gac init
-
-# Reconfigura solo provider/modello
-gac model
-
-# Autentica o ri-autentica il token OAuth Claude Code
-gac auth
-```
-
-### gac model
-
-Cambia rapidamente provider e modello.
-
-```bash
-# Cambia provider/modello
-gac model
-
-# Elenca provider disponibili
-gac --list-providers
-```
-
-### gac language
-
-Configura la lingua dei messaggi di commit.
-
-```bash
-# Configura lingua
-gac language
-
-# Elenca lingue disponibili
-gac --list-languages
-```
-
-## Opzioni della Linea di Comando
-
-### Opzioni di Staging
-
-#### `-a, --all`
-
-Fai lo staging di tutte le modifiche prima di generare il commit.
-
-```bash
-# Equivalente a: git add . && gac
-gac -a
-```
-
-#### `--interactive`
-
-Seleziona interattivamente quali file fare lo staging.
-
-```bash
-# Mostra menu di selezione file
-gac --interactive
-```
-
-### Opzioni di Formato
-
-#### `-o, --one-liner`
-
-Genera un messaggio di commit su una sola riga.
-
-```bash
-# Output: feat(auth): aggiungi OAuth2
-gac -o
-```
-
-#### `-v, --verbose`
-
-Genera un messaggio dettagliato con sezioni multiple.
-
-```bash
-# Output con motivazione, approccio tecnico, impatto
-gac -v
-```
-
-#### `-s, --scope`
-
-Includi automaticamente lo scope nel commit.
-
-```bash
-# Output: feat(api): aggiungi endpoint utenti
-gac -s
-```
-
-### Opzioni di Contesto
-
-#### `-h, --hint <TEXT>`
-
-Aggiungi contesto o hint per l'AI.
-
-```bash
-# Fornisci contesto specifico
-gac -h "correggi bug di autenticazione"
-gac -h "implementa OAuth2 per Google"
-gac -h "ottimizza query database"
-```
-
-#### `-l, --language <LANG>`
-
-Sovrascrivi la lingua di output per questo commit.
-
-```bash
-# Genera commit in inglese
-gac -l en
-
-# Genera commit in italiano
-gac -l it
-```
-
-#### `--context-lines <N>`
-
-Controlla quante linee di contesto includere nel diff.
-
-```bash
-# Più contesto (default: 200)
-gac --context-lines 500
-
-# Meno contesto per modifiche mirate
-gac --context-lines 50
-```
-
-### Opzioni di Commit
-
-#### `-y, --yes`
-
-Conferma automaticamente il commit senza revisione.
-
-```bash
-# Salta revisione interattiva
-gac -y
-```
-
-#### `-p, --push`
-
-Fai il push del commit dopo averlo creato.
-
-```bash
-# Commit e push in un comando
-gac -p
-```
-
-#### `--group`
-
-Raggruppa modifiche correlate in commit multipli.
-
-```bash
-# Analizza e crea commit logici multipli
-gac --group
-```
-
-#### `--message-only`
-
-Restituisce solo il messaggio di commit generato senza eseguire alcun `git commit`.
-
-```bash
-# Usa il messaggio in uno script personalizzato
-MESSAGE=$(gac --message-only --yes)
-git commit -m "$MESSAGE"
-```
-
-### Opzioni di Debug
-
-#### `--show-prompt`
-
-Mostra il prompt inviato all'AI senza eseguire il commit.
-
-```bash
-# Debug del prompt generato
-gac --show-prompt
-```
-
-#### `--dry-run`
-
-Mostra cosa sarebbe fatto senza eseguire.
-
-```bash
-# Simula senza commit
-gac --dry-run
-```
-
-#### `--skip-secret-scan`
-
-Salta la scansione di sicurezza per segreti.
-
-```bash
-# Usa con cautela
-gac --skip-secret-scan
-```
-
-## Workflow Comuni
-
-### Workflow Base
-
-```bash
-# 1. Fai modifiche ai file
-# 2. Fai lo staging
-git add .
-
-# 3. Genera commit con AI
-gac
-
-# 4. Rivedi e conferma
-# y (commit) | n (annulla) | r (rilancia) | e (modifica)
-```
-
-### Workflow Rapido
-
-```bash
-# Staging tutto, auto-conferma, push
-gac -ayp
-
-# One-liner rapido
-gac -ao
-
-# Con contesto specifico
-gac -ay -h "correggi critico"
-```
-
-### Workflow Dettagliato
-
-```bash
-# Messaggio dettagliato con scope
-gac -vs
-
-# Con hint specifico
-gac -v -h "implementa nuova funzionalità"
-
-# Revisione manuale dopo generazione
-gac -v  # poi 'e' per modificare se necessario
-```
-
-### Workflow di Gruppo
-
-```bash
-# Raggruppa modifiche correlate
-gac -ag
-
-# Con revisione
-gac -ag --interactive
-
-# Push automatico dopo grouping
-gac -agp
-```
-
-## Provider AI Supportati
-
-### Provider Cloud
-
-| Provider      | Modelli Comuni                  | Variabile Ambiente   |
-| ------------- | ------------------------------- | -------------------- |
-| OpenAI        | gpt-4, gpt-3.5-turbo            | `OPENAI_API_KEY`     |
-| Anthropic     | claude-3-sonnet, claude-3-haiku | `ANTHROPIC_API_KEY`  |
-| Google Gemini | gemini-pro                      | `GEMINI_API_KEY`     |
-| Groq          | llama3-70b, mixtral             | `GROQ_API_KEY`       |
-| Cerebras      | llama3.1-70b                    | `CEREBRAS_API_KEY`   |
-| DeepSeek      | deepseek-chat                   | `DEEPSEEK_API_KEY`   |
-| Fireworks     | llama-v3p1-70b                  | `FIREWORKS_API_KEY`  |
-| MiniMax       | abab6.5-chat                    | `MINIMAX_API_KEY`    |
-| Mistral       | mistral-large                   | `MISTRAL_API_KEY`    |
-| OpenRouter    | vari modelli                    | `OPENROUTER_API_KEY` |
-| Streamlake    | various                         | `STREAMLAKE_API_KEY` |
-| Together AI   | vari                            | `TOGETHER_API_KEY`   |
-| Z.AI          | zai-lite                        | `ZAI_API_KEY`        |
-
-### Provider Locali
-
-| Provider  | Configurazione                  | Note                             |
-| --------- | ------------------------------- | -------------------------------- |
-| Ollama    | `GAC_MODEL="ollama:modello"`    | Richiede Ollama in esecuzione    |
-| LM Studio | `GAC_MODEL="lm-studio:modello"` | Richiede LM Studio in esecuzione |
-
-### Endpoint Personalizzati
-
-```bash
-# Endpoint OpenAI compatibile
-export GAC_MODEL="custom:http://localhost:8080:modello"
-
-# Endpoint Anthropic compatibile
-export GAC_MODEL="anthropic-custom:http://api.company.com:modello"
-```
-
-## Configurazione Avanzata
-
-- **Stai usando Claude Code?** Consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per le istruzioni di autenticazione OAuth.
-
-### Variabili d'Ambiente
-
-```bash
-# Configurazione base
-GAC_MODEL="provider:modello"
-GAC_LANGUAGE="it"
-
-# Chiavi API (provider-specifiche)
-OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
-GEMINI_API_KEY="..."
-
-# Opzioni avanzate
-GAC_TIMEOUT=120          # Timeout in secondi
-GAC_MAX_TOKENS=1000      # Token massimi per response
-GAC_TEMPERATURE=0.3      # Creatività (0.0-1.0)
-GAC_NO_TIKTOKEN=true     # Rimani completamente offline bypassando il download di tiktoken e usando il stimatore di token approssimato integrato
-```
-
-### File di Configurazione
-
-Crea `.gac.env` nella root del progetto:
-
-```bash
-# .gac.env
-GAC_MODEL="anthropic:claude-3-sonnet-20240229"
-GAC_LANGUAGE="it"
-OPENAI_API_KEY="sk-..."
-```
-
-### Prompt Personalizzati
-
-```bash
-# File di prompt personalizzato
-export GAC_CUSTOM_PROMPT="~/.gac-prompt.txt"
-
-# Vedi CUSTOM_SYSTEM_PROMPTS.md per esempi
-```
-
-## Integrazione Git
-
-### Hook Pre-commit
-
-gac rispetta automaticamente gli hook pre-commit:
-
-```bash
-# Gli hook vengono eseguiti prima del commit
-gac -y  # esegue hook pre-commit
-```
-
-### Lefthook
-
-Integrazione completa con Lefthook:
-
-```bash
-# Configurazione lefthook.yml
-pre-commit:
-  commands:
-    - run: gac --dry-run
-      glob: "*.{py,js,ts}"
-```
-
-### Configurazione Git
-
-```bash
-# Alias git per gac
-git config --global alias.gac '!gac'
-
-# Configura editor predefinito
-git config --global core.editor "code --wait"
-```
-
-## Esempi Pratici
-
-### Sviluppo Frontend
-
-```bash
-# Componente React
-git add src/components/NewComponent.jsx
-gac -h "nuovo componente React con TypeScript"
-
-# Stili CSS
-git add src/styles/button.css
-gac -h "aggiungi stili per pulsante primario"
-
-# Fix di bug UI
-git add src/components/Header.jsx
-gac -h "correggi bug menu mobile"
-```
-
-### Sviluppo Backend
-
-```bash
-# Nuovo endpoint API
-git add api/routes/users.py
-gac -s -h "nuovo endpoint GET /api/users"
-
-# Migrazione database
-git add migrations/001_add_users_table.sql
-gac -h "migrazione per tabella utenti"
-
-# Fix di sicurezza
-git add auth/middleware.py
-gac -h "correggi vulnerabilità XSS"
-```
-
-### Sviluppo Python
-
-```bash
-# Nuovo modulo
-git add src/utils/helpers.py
-gac -h "aggiungi funzioni utility comuni"
-
-# Test unitari
-git add tests/test_helpers.py
-gac -h "test per modulo helpers"
-
-# Refactoring
-git add src/models/user.py
-git add tests/test_user.py
-gac -v -h "refactoring modello user"
-```
-
-### Correzioni di Bug
-
-```bash
-# Bug critico
-git add src/payment/processor.py
-gac -h "correggi bug elaborazione pagamenti"
-
-# Bug minor
-git add src/ui/validation.js
-gac -o -h "fix validazione form"
-
-# Debug
-git add src/debug/logger.py
-gac -h "aggiungi logging per debug"
-```
-
-## Risoluzione Problemi
-
-### Problemi Comuni
-
-```bash
-# Nessuna modifica staged
-git add .
-gac
-
-# Errore autenticazione
-export OPENAI_API_KEY="chiave-corretta"
-gac
-
-# Timeout
-gac -h "sii conciso"  # riduci complessità
-```
-
-### Debug
-
-```bash
-# Mostra prompt
-gac --show-prompt
-
-# Modalità verbose
-gac -v
-
-# Test configurazione
-gac --show-config
-```
-
-## Riferimento Comandi
-
-### Comandi Principali
-
-| Comando        | Descrizione                |
-| -------------- | -------------------------- |
-| `gac`          | Genera messaggio di commit |
-| `gac init`     | Configurazione iniziale    |
-| `gac model`    | Cambia provider/modello    |
-| `gac language` | Configura lingua           |
-
-### Opzioni Comuni
-
-| Opzione           | Descrizione                   |
-| ----------------- | ----------------------------- |
-| `-a, --all`       | Staging di tutte le modifiche |
-| `-y, --yes`       | Auto-conferma commit          |
-| `-o, --one-liner` | Messaggio su una riga         |
-| `-v, --verbose`   | Messaggio dettagliato         |
-| `-s, --scope`     | Includi scope                 |
-| `-p, --push`      | Push dopo commit              |
-| `-h, --hint`      | Aggiungi contesto             |
-| `-l, --language`  | Sovrascrivi lingua            |
-
-### Opzioni Avanzate
-
-| Opzione              | Descrizione                   |
-| -------------------- | ----------------------------- |
-| `--group`            | Raggruppa modifiche correlate |
-| `--show-prompt`      | Mostra prompt generato        |
-| `--dry-run`          | Simula senza commit           |
-| `--skip-secret-scan` | Salta scansione sicurezza     |
-| `--context-lines`    | Linee di contesto nel diff    |
+Genera un messaggio di commit basato su LLM per le modifiche in staging e richiede conferma. Il prompt di conferma accetta:
+
+- `y` o `yes` - Procedi con il commit
+- `n` o `no` - Annulla il commit
+- `r` o `reroll` - Rigenera il messaggio di commit con lo stesso contesto
+- `e` o `edit` - Modifica il messaggio di commit sul posto con editing ricco del terminale (binding vi/emacs)
+- Qualsiasi altro testo - Rigenera con quel testo come feedback (es. `rendilo più breve`, `concentrati sulle performance`)
+- Input vuoto (solo Enter) - Mostra di nuovo il prompt
 
 ---
 
-## Tips Pro
+## Flag del Workflow Principale
 
-### 1. Alias Personalizzati
+| Flag / Opzione       | Breve | Descrizione                                               |
+| -------------------- | ----- | --------------------------------------------------------- |
+| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit      |
+| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici    |
+| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit             |
+| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere       |
+| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche               |
+| `--message-only`     |       | Output solo del messaggio di commit generato senza commit |
+| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit        |
+| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche     |
+| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori  |
 
-```bash
-# Aggiungi al tuo .bashrc/.zshrc
-alias gc='gac -y'
-alias gcv='gac -v'
-alias gco='gac -o'
-alias gcp='gac -p'
-```
+**Nota:** Combina `-a` e `-g` (cioè `-ag`) per mettere in staging TUTTE le modifiche prima, poi raggrupparle in commit.
 
-### 2. Workflow di Team
+**Nota:** Quando usi `--group`, il limite massimo di token di output viene scalato automaticamente in base al numero di file in commit (2x per 1-9 file, 3x per 10-19 file, 4x per 20-29 file, 5x per 30+ file). Questo assicura che l'LLM abbia abbastanza token per generare tutti i commit raggruppati senza troncamento, anche per changeset grandi.
 
-```bash
-# Standard di team
-gac -vs -h "implementa user story #123"
+**Nota:** `--message-only` e `--group` si escludono a vicenda. Usa `--message-only` quando vuoi ottenere il messaggio di commit per elaborazione esterna, e `--group` quando vuoi organizzare più commit nel workflow git corrente.
 
-# Convenzioni di commit
-gac -s -h "segue conventional commits"
-```
+**Nota:** La flag `--interactive` fa domande sulle tue modifiche per fornire contesto aggiuntivo all'LLM, risultando in messaggi di commit più accurati e dettagliati. Questo è particolarmente utile per modifiche complesse o quando vuoi assicurarti che il messaggio di commit catturi il contesto completo del tuo lavoro.
 
-### 3. Integrazione IDE
+## Personalizzazione Messaggio
 
-```bash
-# VS Code tasks.json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Git Auto Commit",
-      "type": "shell",
-      "command": "gac",
-      "group": "build"
-    }
-  ]
-}
-```
+| Flag / Opzione      | Breve | Descrizione                                                                   |
+| ------------------- | ----- | ----------------------------------------------------------------------------- |
+| `--one-liner`       | `-o`  | Genera un messaggio di commit su una riga                                     |
+| `--verbose`         | `-v`  | Genera messaggi di commit dettagliati con motivazione, architettura e impatto |
+| `--hint <text>`     | `-h`  | Aggiungi un suggerimento per guidare l'LLM                                    |
+| `--model <model>`   | `-m`  | Specifica il modello da usare per questo commit                               |
+| `--language <lang>` | `-l`  | Sovrascrivi la lingua (nome o codice: 'Italian', 'it', 'zh-CN', 'ja')         |
+| `--scope`           | `-s`  | Deduci uno scope appropriato per il commit                                    |
 
-### 4. Automazione
+**Nota:** Puoi fornire feedback in modo interattivo digitandolo semplicemente al prompt di conferma - non è necessario prefissare con 'r'. Digita `r` per un semplice reroll, `e` per modificare sul posto con binding vi/emacs, o digita il tuo feedback direttamente come `rendilo più breve`.
 
-```bash
-# Script per commit automatici
+## Output e Verbosità
+
+| Flag / Opzione        | Breve | Descrizione                                                 |
+| --------------------- | ----- | ----------------------------------------------------------- |
+| `--quiet`             | `-q`  | Sopprimi tutto l'output tranne gli errori                   |
+| `--log-level <level>` |       | Imposta livello di log (debug, info, warning, error)        |
+| `--show-prompt`       |       | Stampa il prompt LLM usato per la generazione del messaggio |
+
+## Aiuto e Versione
+
+| Flag / Opzione | Breve | Descrizione                       |
+| -------------- | ----- | --------------------------------- |
+| `--version`    |       | Mostra versione gac ed esce       |
+| `--help`       |       | Mostra messaggio di aiuto ed esce |
+
+---
+
+## Workflow di Esempio
+
+- **Metti in staging tutte le modifiche e fai commit:**
+
+  ```sh
+  gac -a
+  ```
+
+- **Fai commit e push in un passo:**
+
+  ```sh
+  gac -ap
+  ```
+
+- **Genera un messaggio di commit su una riga:**
+
+  ```sh
+  gac -o
+  ```
+
+- **Genera un messaggio di commit dettagliato con sezioni strutturate:**
+
+  ```sh
+  gac -v
+  ```
+
+- **Aggiungi un suggerimento per l'LLM:**
+
+  ```sh
+  gac -h "Rifattorizza logica di autenticazione"
+  ```
+
+- **Deduci scope per il commit:**
+
+  ```sh
+  gac -s
+  ```
+
+- **Raggruppa modifiche in staging in commit logici:**
+
+  ```sh
+  gac -g
+  # Raggruppa solo i file che hai già messo in staging
+  ```
+
+- **Raggruppa tutte le modifiche (staging + non-staging) e conferma automaticamente:**
+
+  ```sh
+  gac -agy
+  # Mette in staging tutto, raggruppa e conferma automaticamente
+  ```
+
+- **Usa un modello specifico solo per questo commit:**
+
+  ```sh
+  gac -m anthropic:claude-haiku-4-5
+  ```
+
+- **Genera messaggio di commit in una lingua specifica:**
+
+  ```sh
+  # Usando codici lingua (più brevi)
+  gac -l zh-CN
+  gac -l ja
+  gac -l es
+
+  # Usando nomi completi
+  gac -l "Cinese Semplificato"
+  gac -l Giapponese
+  gac -l Spagnolo
+  ```
+
+- **Dry run (vedi cosa accadrebbe):**
+
+  ```sh
+  gac --dry-run
+  ```
+
+- **Ottieni solo il messaggio di commit (per integrazione script):**
+
+  ```sh
+  gac --message-only
+  # Output: feat: aggiungi sistema di autenticazione utente
+  ```
+
+- **Ottieni messaggio di commit in formato una riga:**
+
+  ```sh
+  gac --message-only --one-liner
+  # Output: feat: aggiungi sistema di autenticazione utente
+  ```
+
+- **Usa modalità interattiva per fornire contesto:**
+
+  ```sh
+  gac -i
+  # Qual è lo scopo principale di queste modifiche?
+  # Quale problema stai risolvendo?
+  # Ci sono dettagli implementativi da menzionare?
+  ```
+
+- **Modalità interattiva con output dettagliato:**
+
+  ```sh
+  gac -i -v
+  # Fai domande e genera messaggio di commit dettagliato
+  ```
+
+## Avanzate
+
+- Combina flag per workflow più potenti (es. `gac -ayp` per mettere in staging, confermare automaticamente e pushare)
+- Usa `--show-prompt` per debuggare o rivedere il prompt inviato all'LLM
+- Regola verbosità con `--log-level` o `--quiet`
+- Usa `--message-only` per integrazione script e workflow automatizzati
+
+### Integrazione Script e Elaborazione Esterna
+
+La flag `--message-only` è progettata per integrazione script e workflow strumenti esterni. Output solo il messaggio di commit grezzo senza formattazione, spinner o elementi UI aggiuntivi.
+
+**Casi d'uso:**
+
+- **Integrazione agenti:** Permetti agli agenti AI di ottenere messaggi di commit e gestire i commit stessi
+- **VCS alternativi:** Usa messaggi generati con altri sistemi di controllo versione (Mercurial, Jujutsu, ecc.)
+- **Workflow commit personalizzati:** Elabora o modifica il messaggio prima del commit
+- **Pipeline CI/CD:** Estrai messaggi di commit per processi automatizzati
+
+**Esempio uso script:**
+
+```sh
 #!/bin/bash
-git add .
-gac -y -h "auto-commit $(date +%Y-%m-%d)"
+# Ottieni messaggio di commit e usa con funzione commit personalizzata
+MESSAGE=$(gac --message-only --add-all --yes)
+git commit -m "$MESSAGE"
 ```
 
-Per più informazioni, controlla la [documentazione completa](https://github.com/cellwebb/gac) o crea un issue su GitHub.
+```python
+# Esempio integrazione Python
+import subprocess
+
+def get_commit_message():
+    result = subprocess.run(
+        ["gac", "--message-only", "--yes"],
+        capture_output=True, text=True
+    )
+    return result.stdout.strip()
+
+message = get_commit_message()
+print(f"Messaggio generato: {message}")
+```
+
+**Caratteristiche chiave per uso script:**
+
+- Output pulito senza formattazione Rich o spinner
+- Bypassa automaticamente i prompt di conferma
+- Nessun commit effettivo viene fatto su git
+- Funziona con `--one-liner` per output semplificato
+- Può essere combinato con altre flag come `--hint`, `--model`, ecc.
+
+### Saltare Hook Pre-commit e Lefthook
+
+La flag `--no-verify` ti permette di saltare qualsiasi hook pre-commit o lefthook configurato nel tuo progetto:
+
+```sh
+gac --no-verify  # Salta tutti gli hook pre-commit e lefthook
+```
+
+**Usa `--no-verify` quando:**
+
+- Gli hook pre-commit o lefthook falliscono temporaneamente
+- Stai lavorando con hook che richiedono molto tempo
+- Stai facendo commit di codice work-in-progress che non passa ancora tutti i controlli
+
+**Nota:** Usa con cautela poiché questi hook mantengono standard di qualità del codice.
+
+### Scansione Sicurezza
+
+gac include scansione sicurezza integrata che rileva automaticamente potenziali segreti e chiavi API nelle tue modifiche in staging prima del commit. Questo aiuta a prevenire il commit accidentale di informazioni sensibili.
+
+**Saltare scansioni sicurezza:**
+
+```sh
+gac --skip-secret-scan  # Salta scansione sicurezza per questo commit
+```
+
+**Per disabilitare permanentemente:** Imposta `GAC_SKIP_SECRET_SCAN=true` nel tuo file `.gac.env`.
+
+**Quando saltare:**
+
+- Commit di codice esempio con chiavi segnaposto
+- Lavoro con test fixture che contengono credenziali fittizie
+- Quando hai verificato che le modifiche sono sicure
+
+**Nota:** Lo scanner usa pattern matching per rilevare formati segreti comuni. Rivedi sempre le tue modifiche in staging prima del commit.
+
+## Note di Configurazione
+
+- Il modo raccomandato per configurare gac è eseguire `gac init` e seguire i prompt interattivi.
+- Già configurata la lingua e devi solo cambiare provider o modelli? Esegui `gac model` per ripetere la configurazione senza domande sulla lingua.
+- **Usi Claude Code?** Vedi la [guida setup Claude Code](CLAUDE_CODE.md) per istruzioni autenticazione OAuth.
+- gac carica la configurazione nel seguente ordine di precedenza:
+  1. Flag CLI
+  2. Variabili ambiente
+  3. `.gac.env` a livello di progetto
+  4. `~/.gac.env` a livello utente
+
+### Opzioni di Configurazione Avanzate
+
+Puoi personalizzare il comportamento di gac con queste variabili ambiente opzionali:
+
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Deduci automaticamente e includi scope nei messaggi di commit (es. `feat(auth):` vs `feat:`)
+- `GAC_VERBOSE=true` - Genera messaggi di commit dettagliati con sezioni motivazione, architettura e impatto
+- `GAC_TEMPERATURE=0.7` - Controlla creatività LLM (0.0-1.0, più basso = più focalizzato)
+- `GAC_MAX_OUTPUT_TOKENS=4096` - Token massimi per messaggi generati (scalato automaticamente 2-5x quando usi `--group` in base al numero di file; sovrascrivi per andare più alto o più basso)
+- `GAC_WARNING_LIMIT_TOKENS=4096` - Avvisa quando i prompt superano questo numero di token
+- `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Usa un prompt di sistema personalizzato per la generazione messaggi di commit
+- `GAC_LANGUAGE=Italian` - Genera messaggi di commit in una lingua specifica (es. Italian, French, Japanese, German). Supporta nomi completi o codici ISO (it, fr, ja, de, zh-CN). Usa `gac language` per selezione interattiva
+- `GAC_TRANSLATE_PREFIXES=true` - Traduci prefissi commit convenzionali (feat, fix, ecc.) nella lingua target (default: false, mantiene prefissi in inglese)
+- `GAC_SKIP_SECRET_SCAN=true` - Disabilita scansione sicurezza automatica per segreti nelle modifiche in staging (usa con cautela)
+- `GAC_NO_TIKTOKEN=true` - Rimani completamente offline bypassando il passo download `tiktoken` e usando lo stimatore token approssimato integrato
+
+Vedi `.gac.env.example` per un template di configurazione completo.
+
+Per guida dettagliata sulla creazione di prompt di sistema personalizzati, vedi [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md).
+
+### Sottocomandi di Configurazione
+
+I seguenti sottocomandi sono disponibili:
+
+- `gac init` — Setup guidato interattivo per configurazione provider, modello e lingua
+- `gac model` — Setup provider/modello/chiave API senza prompt lingua (ideale per cambi rapidi)
+- `gac auth` — Autentica o ri-autentica token OAuth Claude Code (utile quando il token scade)
+- `gac config show` — Mostra configurazione corrente
+- `gac config set KEY VALUE` — Imposta una chiave di configurazione in `$HOME/.gac.env`
+- `gac config get KEY` — Ottieni un valore di configurazione
+- `gac config unset KEY` — Rimuovi una chiave di configurazione da `$HOME/.gac.env`
+- `gac language` (o `gac lang`) — Selettore lingua interattivo per messaggi di commit (imposta GAC_LANGUAGE)
+- `gac diff` — Mostra git diff filtrato con opzioni per modifiche staging/non-staging, colore e troncamento
+
+## Modalità Interattiva
+
+La flag `--interactive` (`-i`) migliora la generazione messaggi di commit di gac facendoti domande mirate sulle tue modifiche. Questo contesto aggiuntivo aiuta l'LLM a creare messaggi di commit più accurati, dettagliati e contestualmente appropriati.
+
+### Come Funziona
+
+Quando usi `--interactive`, gac ti farà domande come:
+
+- **Qual è lo scopo principale di queste modifiche?** - Aiuta a capire l'obiettivo di alto livello
+- **Quale problema stai risolvendo?** - Fornisce contesto sulla motivazione
+- **Ci sono dettagli implementativi da menzionare?** - Cattura specifiche tecniche
+- **Ci sono breaking changes?** - Identifica potenziali problemi di impatto
+- **Questo è correlato a qualche issue o ticket?** - Collega al project management
+
+### Quando Usare la Modalità Interattiva
+
+La modalità interattiva è particolarmente utile per:
+
+- **Modifiche complesse** dove il contesto non è ovvio solo dal diff
+- **Lavoro di refactoring** che si estende su più file e concetti
+- **Nuove funzionalità** che richiedono spiegazione dello scopo generale
+- **Bug fix** dove la causa radice non è immediatamente visibile
+- **Ottimizzazioni performance** dove il ragionamento non è ovvio
+- **Preparazione code review** - le domande aiutano a pensare alle tue modifiche
+
+### Esempi di Utilizzo
+
+**Modalità interattiva base:**
+
+```sh
+gac -i
+```
+
+Questo:
+
+1. Mostra un riepilogo delle modifiche in staging
+2. Fa domande sulle modifiche
+3. Genera un messaggio di commit incorporando le tue risposte
+4. Richiede conferma (o conferma automatica se combinato con `-y`)
+
+**Modalità interattiva con modifiche in staging:**
+
+```sh
+gac -ai
+# Metti in staging tutte le modifiche, poi fai domande per migliore contesto
+```
+
+**Modalità interattiva con suggerimenti specifici:**
+
+```sh
+gac -i -h "Migrazione database per profili utente"
+# Fai domande fornendo un suggerimento specifico per focalizzare l'LLM
+```
+
+**Modalità interattiva con output dettagliato:**
+
+```sh
+gac -i -v
+# Fai domande e genera un messaggio di commit dettagliato e strutturato
+```
+
+**Modalità interattiva con conferma automatica:**
+
+```sh
+gac -i -y
+# Fai domande ma conferma automaticamente il commit risultante
+```
+
+### Workflow Domanda-Risposta
+
+Il workflow interattivo segue questo schema:
+
+1. **Rivedi modifiche** - gac mostra un riepilogo di ciò che stai committando
+2. **Rispondi alle domande** - rispondi a ogni prompt con dettagli rilevanti
+3. **Miglioramento contesto** - le tue risposte vengono aggiunte al prompt LLM
+4. **Generazione messaggio** - l'LLM crea un messaggio di commit con contesto completo
+5. **Conferma** - rivedi e conferma il commit (o conferma automatica con `-y`)
+
+**Suggerimenti per fornire risposte utili:**
+
+- **Sii conciso ma completo** - fornisci dettagli chiave senza essere eccessivamente verboso
+- **Concentrati sul "perché"** - spiega il ragionamento dietro le tue modifiche
+- **Menziona vincoli** - nota limitazioni o considerazioni speciali
+- **Collega a contesto esterno** - riferisci a issues, documentazione o documenti di design
+- **Risposte vuote vanno bene** - se una domanda non si applica, premi solo Enter
+
+### Combinazione con Altre Flag
+
+La modalità interattiva funziona bene con la maggior parte delle altre flag:
+
+```sh
+# Metti in staging tutte le modifiche e fai domande
+gac -ai
+
+# Fai domande con output dettagliato
+gac -i -v
+```
+
+### Best Practice
+
+- **Usa per PR complessi** - particolarmente utile per pull request che necessitano descrizioni dettagliate
+- **Collaborazione team** - le domande aiutano a pensare a modifiche che altri revisioneranno
+- **Preparazione documentazione** - le tue risposte possono aiutare a formare la base per le release notes
+- **Strumento di apprendimento** - le domande rafforzano buone pratiche di messaggi di commit
+- **Salta per modifiche semplici** - per fix banali, la modalità base potrebbe essere più veloce
+
+## Ottenere Aiuto
+
+- Per prompt di sistema personalizzati, vedi [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- Per troubleshooting e suggerimenti avanzati, vedi [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- Per installazione e configurazione, vedi [README.md#installation-and-configuration](README.md#installation-and-configuration)
+- Per contribuire, vedi [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- Informazioni licenza: [LICENSE](LICENSE)

@@ -19,6 +19,13 @@ Dit document beschrijft alle beschikbare vlaggen en opties voor de `gac` CLI too
   - [Configuratie Notities](#configuratie-notities)
     - [Geavanceerde Configuratie Opties](#geavanceerde-configuratie-opties)
     - [Configuratie Subcommando's](#configuratie-subcommandos)
+  - [Interactieve Modus](#interactieve-modus)
+    - [Hoe het werkt](#hoe-het-werkt)
+    - [Wanneer interactieve modus te gebruiken](#wanneer-interactieve-modus-te-gebruiken)
+    - [Gebruiksvoorbeelden](#gebruiksvoorbeelden)
+    - [Vraag-Antwoord Workflow](#vraag-antwoord-workflow)
+    - [Combinatie met andere vlaggen](#combinatie-met-andere-vlaggen)
+    - [Beste Praktijken](#beste-praktijken)
   - [Hulp Krijgen](#hulp-krijgen)
 
 ## Basisgebruik
@@ -52,12 +59,15 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--message-only`     |      | Toon alleen het gegenereerde commitbericht zonder daadwerkelijk te committen |
 | `--no-verify`        |      | Sla pre-commit en lefthook hooks over bij commit                             |
 | `--skip-secret-scan` |      | Sla security scan over voor geheimen in staged wijzigingen                   |
+| `--interactive`      | `-i` | Stel vragen over wijzigingen voor betere commits                             |
 
 **Let op:** Combineer `-a` en `-g` (d.w.z. `-ag`) om eerst ALLE wijzigingen te stage, en ze daarna te groeperen in commits.
 
 **Let op:** Bij gebruik van `--group`, wordt het maximale output tokens limiet automatisch geschaald op basis van het aantal bestanden dat wordt gecommit (2x voor 1-9 bestanden, 3x voor 10-19 bestanden, 4x voor 20-29 bestanden, 5x voor 30+ bestanden). Dit zorgt ervoor dat de LLM genoeg tokens heeft om alle gegroepeerde commits te genereren zonder truncatie, zelfs voor grote changesets.
 
 **Let op:** `--message-only` en `--group` sluiten elkaar uit. Gebruik `--message-only` wanneer u het commitbericht voor externe verwerking nodig heeft, en `--group` wanneer u meerdere commits binnen de huidige git-workflow wilt organiseren.
+
+**Let op:** De `--interactive` vlag verstrekt extra context aan de LLM door vragen te stellen over uw wijzigingen, wat leidt tot nauwkeurigere en gedetailleerdere commitberichten. Dit is vooral handig voor complexe wijzigingen of wanneer u ervoor wilt zorgen dat het commitbericht de volledige context van uw werk vastlegt.
 
 ## Bericht Aanpassing
 
@@ -70,7 +80,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--language <taal>` | `-l` | Overschrijf de taal (naam of code: 'Spanish', 'es', 'zh-CN', 'ja')            |
 | `--scope`           | `-s` | Stel een passende scope voor de commit vast                                   |
 
-**Let op:** U kunt interactief feedback geven door het gewoon op de bevestigingsprompt te typen - geen prefix met 'r' nodig. Typ `r` voor een simple reroll, `e` om ter plaatse te bewerken met vi/emacs keybindings, of typ uw feedback direct zoals `maak het korter`.
+**Let op:** U kunt interactief feedback geven door het gewoon op de bevestigingsprompt te typen - geen prefix met 'r' nodig. Typ `r` voor een eenvoudige reroll, `e` om ter plaatse te bewerken met vi/emacs keybindings, of typ uw feedback direct zoals `maak het korter`.
 
 ## Output en Verbose
 
@@ -181,6 +191,22 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
   # Voorbeeldoutput: feat: add user authentication system
   ```
 
+- **Gebruik interactieve modus voor context:**
+
+  ```sh
+  gac -i
+  # Wat is het hoofddoel van deze wijzigingen?
+  # Welk probleem lost u op?
+  # Zijn er implementatiedetails om te vermelden?
+  ```
+
+- **Interactieve modus met gedetailleerde output:**
+
+  ```sh
+  gac -i -v
+  # Stel vragen en genereer gedetailleerde commitberichten
+  ```
+
 ## Geavanceerd
 
 - Combineer vlaggen voor krachtigere workflows (bv., `gac -ayp` om te stage, auto-bevestigen en pushen)
@@ -266,6 +292,112 @@ De volgende subcommando's zijn beschikbaar:
 - `gac config unset KEY` — Configuratiesleutel verwijderen uit `$HOME/.gac.env`
 - `gac language` (of `gac lang`) — Interactieve taalselector voor commitberichten (stelt GAC_LANGUAGE in)
 - `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
+
+## Interactieve Modus
+
+De `--interactive` (`-i`) vlag verbetert de commitberichtgeneratie van gac door gerichte vragen te stellen over uw wijzigingen. Deze extra context helpt de LLM om nauwkeurigere, gedetailleerdere en context-gepaste commitberichten te maken.
+
+### Hoe het werkt
+
+Wanneer u `--interactive` gebruikt, zal gac vragen stellen zoals:
+
+- **Wat is het hoofddoel van deze wijzigingen?** - Helpt bij het begrijpen van het hoog-niveau doel
+- **Welk probleem lost u op?** - Biedt context over de motivatie
+- **Zijn er implementatiedetails om te vermelden?** - Vangt technische specificaties
+- **Zijn er breaking changes?** - Identificeert potentiële impactproblemen
+- **Is dit gerelateerd aan een issue of ticket?** - Koppelt aan projectmanagement
+
+### Wanneer interactieve modus te gebruiken
+
+Interactieve modus is vooral handig voor:
+
+- **Complexe wijzigingen** waar de context niet duidelijk is uit de diff alleen
+- **Refactoring werk** dat zich uitstrekt over meerdere bestanden en concepten
+- **Nieuwe functies** die uitleg van het overall doel vereisen
+- **Bug fixes** waar de oorzaak niet direct zichtbaar is
+- **Prestatieoptimalisatie** waar de logica niet voor de hand ligt
+- **Code review voorbereiding** - vragen helpen u om na te denken over uw wijzigingen
+
+### Gebruiksvoorbeelden
+
+**Basis interactieve modus:**
+
+```sh
+gac -i
+```
+
+Dit zal:
+
+1. Een samenvatting tonen van gestagede wijzigingen
+2. Vragen stellen over de wijzigingen
+3. Een commitbericht genereren met uw antwoorden
+4. Om bevestiging vragen (of automatisch bevestigen wanneer gecombineerd met `-y`)
+
+**Interactieve modus met gestagede wijzigingen:**
+
+```sh
+gac -ai
+# Stage alle wijzigingen, stel dan vragen voor betere context
+```
+
+**Interactieve modus met specifieke hints:**
+
+```sh
+gac -i -h "Databasemigratie voor gebruikersprofielen"
+# Stel vragen terwijl u een specifieke hint geeft om de LLM te focussen
+```
+
+**Interactieve modus met gedetailleerde output:**
+
+```sh
+gac -i -v
+# Stel vragen en genereer een gedetailleerd, gestructureerd commitbericht
+```
+
+**Automatisch bevestigde interactieve modus:**
+
+```sh
+gac -i -y
+# Stel vragen maar bevestig de resulterende commit automatisch
+```
+
+### Vraag-Antwoord Workflow
+
+De interactieve workflow volgt dit patroon:
+
+1. **Wijzigingen review** - gac toont een samenvatting van wat u commit
+2. **Beantwoord vragen** - geef antwoord op elke prompt met relevante details
+3. **Context verbetering** - uw antwoorden worden toegevoegd aan de LLM prompt
+4. **Berichtgeneratie** - de LLM maakt een commitbericht met volledige context
+5. **Bevestiging** - review en bevestig de commit (of automatisch met `-y`)
+
+**Tips voor nuttige antwoorden:**
+
+- **Beknopt maar compleet** - geef belangrijke details zonder overdreven verbose te zijn
+- **Focus op "waarom"** - leg de redenering achter uw wijzigingen uit
+- **Vermeld beperkingen** - noteer beperkingen of speciale overwegingen
+- **Link naar externe context** - verwijs naar issues, documentatie, of ontwerpdocumenten
+- **Lege antwoorden zijn ok** - als een vraag niet van toepassing is, druk gewoon op Enter
+
+### Combinatie met andere vlaggen
+
+Interactieve modus werkt goed met de meeste andere vlaggen:
+
+```sh
+# Stage alle wijzigingen en stel vragen
+gac -ai
+
+# Stel vragen met gedetailleerde output
+gac -i -v
+```
+
+### Beste Praktijken
+
+- **Gebruik voor complexe PR's** - vooral handig voor pull requests die gedetailleerde uitleg nodig hebben
+- **Team samenwerking** - vragen helpen u om na te denken over wijzigingen die anderen zullen reviewen
+- **Documentatie voorbereiding** - uw antwoorden kunnen helpen bij het vormen van de basis voor release notes
+- **Leerhulpmiddel** - vragen versterken goede praktijken voor commitberichten
+- **Overslaan voor simpele wijzigingen** - voor triviale fixes kan de basismodus sneller zijn
 
 ## Hulp Krijgen
 

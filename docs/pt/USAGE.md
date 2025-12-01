@@ -20,6 +20,13 @@ Este documento descreve todas as flags e opções disponíveis para a ferramenta
   - [Notas de Configuração](#notas-de-configuração)
     - [Opções Avançadas de Configuração](#opções-avançadas-de-configuração)
     - [Subcomandos de Configuração](#subcomandos-de-configuração)
+  - [Modo Interativo](#modo-interativo)
+    - [Como Funciona](#como-funciona)
+    - [Quando Usar o Modo Interativo](#quando-usar-o-modo-interativo)
+    - [Exemplos de Uso](#exemplos-de-uso)
+    - [Fluxo de Perguntas e Respostas](#fluxo-de-perguntas-e-respostas)
+    - [Combinação com Outras Flags](#combinação-com-outras-flags)
+    - [Melhores Práticas](#melhores-práticas)
   - [Obtendo Ajuda](#obtendo-ajuda)
 
 ## Uso Básico
@@ -53,12 +60,15 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 | `--message-only`     |       | Exibir apenas a mensagem de commit gerada sem realizar o commit      |
 | `--no-verify`        |       | Ignorar hooks pre-commit e lefthook ao fazer commit                  |
 | `--skip-secret-scan` |       | Ignorar varredura de segurança para segredos nas alterações em stage |
+| `--interactive`      | `-i`  | Fazer perguntas sobre as alterações para melhores commits            |
 
 **Nota:** Combine `-a` e `-g` (ou seja, `-ag`) para fazer stage de TODAS as alterações primeiro, depois agrupá-las em commits.
 
 **Nota:** Ao usar `--group`, o limite máximo de tokens de saída é escalado automaticamente com base no número de arquivos sendo commitados (2x para 1-9 arquivos, 3x para 10-19 arquivos, 4x para 20-29 arquivos, 5x para 30+ arquivos). Isso garante que o LLM tenha tokens suficientes para gerar todos os commits agrupados sem truncamento, mesmo para grandes conjuntos de alterações.
 
 **Nota:** `--message-only` e `--group` são mutuamente excludentes. Use `--message-only` quando quiser obter a mensagem de commit para processamento externo, e `--group` quando quiser organizar múltiplos commits dentro do fluxo de trabalho git atual.
+
+**Nota:** A flag `--interactive` fornece contexto adicional ao LLM ao fazer perguntas sobre suas alterações, resultando em mensagens de commit mais precisas e detalhadas. Isso é especialmente útil para alterações complexas ou quando você quer garantir que a mensagem de commit capture o contexto completo do seu trabalho.
 
 ## Personalização de Mensagens
 
@@ -71,7 +81,7 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 | `--language <lang>` | `-l`  | Sobrescrever o idioma (nome ou código: 'Spanish', 'es', 'zh-CN', 'ja')    |
 | `--scope`           | `-s`  | Inferir um escopo apropriado para o commit                                |
 
-**Nota:** Você pode fornecer feedback interativamente simplesmente digitando-o no prompt de confirmação - não há necessidade de prefixar com 'r'. Digite `r` para um reroll simples, `e` para editar in-place com keybindings vi/emacs, ou digite seu feedback diretamente como `make it shorter`.
+**Nota:** Você pode fornecer feedback interativamente simplesmente digitando-o no prompt de confirmação - não há necessidade de prefixar com 'r'. Digite `r` para um reroll simples, `e` para editar in-place com keybindings vi/emacs, ou digite seu feedback diretamente como `torne mais curto`.
 
 ## Saída e Verbosity
 
@@ -180,6 +190,22 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
   ```sh
   gac --message-only --one-liner
   # Saída: feat: add user authentication system
+  ```
+
+- **Usar modo interativo para fornecer contexto:**
+
+  ```sh
+  gac -i
+  # Qual é o propósito principal dessas alterações?
+  # Qual problema você está resolvendo?
+  # Há detalhes de implementação para mencionar?
+  ```
+
+- **Modo interativo com saída detalhada:**
+
+  ```sh
+  gac -i -v
+  # Fazer perguntas e gerar mensagens de commit detalhadas
   ```
 
 ## Avançado
@@ -315,6 +341,112 @@ Os seguintes subcomandos estão disponíveis:
 - `gac config unset KEY` — Remover chave de configuração de `$HOME/.gac.env`
 - `gac language` (ou `gac lang`) — Seletor de idioma interativo para mensagens de commit (define GAC_LANGUAGE)
 - `gac diff` — Mostrar git diff filtrado com opções para mudanças preparadas/não preparadas, cor e truncamento
+
+## Modo Interativo
+
+A flag `--interactive` (`-i`) melhora a geração de mensagens de commit do gac ao fazer perguntas direcionadas sobre suas alterações. Este contexto adicional ajuda o LLM a criar mensagens de commit mais precisas, detalhadas e contextualmente apropriadas.
+
+### Como Funciona
+
+Quando você usa `--interactive`, o gac fará perguntas como:
+
+- **Qual é o propósito principal dessas alterações?** - Ajuda a entender o objetivo de alto nível
+- **Qual problema você está resolvendo?** - Fornece contexto sobre a motivação
+- **Há detalhes de implementação para mencionar?** - Captura especificações técnicas
+- **Há breaking changes?** - Identifica potenciais problemas de impacto
+- **Isso está relacionado a alguma issue ou ticket?** - Conecta ao gerenciamento de projetos
+
+### Quando Usar o Modo Interativo
+
+O modo interativo é especialmente útil para:
+
+- **Alterações complexas** onde o contexto não é claro apenas pelo diff
+- **Trabalho de refactoring** que se estende por múltiplos arquivos e conceitos
+- **Novas funcionalidades** que exigem explicação do propósito geral
+- **Correções de bugs** onde a causa raiz não é imediatamente visível
+- **Otimização de performance** onde a lógica não é óbvia
+- **Preparação para code review** - as perguntas ajudam você a pensar sobre suas alterações
+
+### Exemplos de Uso
+
+**Modo interativo básico:**
+
+```sh
+gac -i
+```
+
+Isso fará:
+
+1. Mostrar um resumo das alterações em stage
+2. Fazer perguntas sobre as alterações
+3. Gerar uma mensagem de commit com suas respostas
+4. Pedir confirmação (ou confirmar automaticamente quando combinado com `-y`)
+
+**Modo interativo com alterações em stage:**
+
+```sh
+gac -ai
+# Fazer stage de todas as alterações, depois fazer perguntas para melhor contexto
+```
+
+**Modo interativo com hints específicos:**
+
+```sh
+gac -i -h "Migração de banco de dados para perfis de usuário"
+# Fazer perguntas enquanto fornece um hint específico para focar o LLM
+```
+
+**Modo interativo com saída detalhada:**
+
+```sh
+gac -i -v
+# Fazer perguntas e gerar uma mensagem de commit detalhada e estruturada
+```
+
+**Modo interativo com confirmação automática:**
+
+```sh
+gac -i -y
+# Fazer perguntas mas confirmar o commit resultante automaticamente
+```
+
+### Fluxo de Perguntas e Respostas
+
+O workflow interativo segue este padrão:
+
+1. **Revisão das alterações** - gac mostra um resumo do que você está cometendo
+2. **Responder perguntas** - responda a cada prompt com detalhes relevantes
+3. **Melhoria do contexto** - suas respostas são adicionadas ao prompt do LLM
+4. **Geração da mensagem** - o LLM cria uma mensagem de commit com contexto completo
+5. **Confirmação** - revise e confirme o commit (ou automaticamente com `-y`)
+
+**Dicas para respostas úteis:**
+
+- **Conciso mas completo** - forneça detalhes importantes sem ser excessivamente verboso
+- **Foque no "porquê"** - explique o raciocínio por trás de suas alterações
+- **Mencione limitações** - note limitações ou considerações especiais
+- **Conecte ao contexto externo** - referencie issues, documentação ou documentos de design
+- **Respostas vazias são ok** - se uma pergunta não se aplica, apenas pressione Enter
+
+### Combinação com Outras Flags
+
+O modo interativo funciona bem com a maioria das outras flags:
+
+```sh
+# Fazer stage de todas as alterações e fazer perguntas
+gac -ai
+
+# Fazer perguntas com saída detalhada
+gac -i -v
+```
+
+### Melhores Práticas
+
+- **Use para PRs complexos** - especialmente útil para pull requests que precisam de explicações detalhadas
+- **Colaboração em equipe** - as perguntas ajudam você a pensar sobre alterações que outros revisarão
+- **Preparação de documentação** - suas respostas podem ajudar a formar a base para release notes
+- **Ferramenta de aprendizado** - as perguntas reforçam boas práticas de mensagens de commit
+- **Pule para alterações simples** - para correções triviais, o modo básico pode ser mais rápido
 
 ## Obtendo Ajuda
 

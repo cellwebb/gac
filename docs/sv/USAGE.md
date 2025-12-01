@@ -19,6 +19,13 @@ Det här dokumentet beskriver alla tillgängliga flaggor och alternativ för `ga
   - [Konfigurationsanteckningar](#konfigurationsanteckningar)
     - [Avancerade konfigurationsalternativ](#avancerade-konfigurationsalternativ)
     - [Konfigurationsunderkommandon](#konfigurationsunderkommandon)
+  - [Interaktivt Läge](#interaktivt-läge)
+    - [Hur det fungerar](#hur-det-fungerar)
+    - [När man ska använda interaktivt läge](#när-man-ska-använda-interaktivt-läge)
+    - [Användningsexempel](#användningsexempel)
+    - [Fråga-Svar Workflow](#fråga-svar-workflow)
+    - [Kombination med andra flaggor](#kombination-med-andra-flaggor)
+    - [Bästa Praxis](#bästa-praxis)
   - [Få hjälp](#få-hjälp)
 
 ## Grundläggande användning
@@ -52,12 +59,15 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | `--message-only`     |      | Skriv bara ut det genererade commit-meddelandet utan att faktiskt committa |
 | `--no-verify`        |      | Hoppa över pre-commit och lefthook hooks vid commit                        |
 | `--skip-secret-scan` |      | Hoppa över säkerhetsskanning för hemligheter i stageade ändringar          |
+| `--interactive`      | `-i` | Ställ frågor om ändringar för bättre commits                               |
 
 **Obs:** Kombinera `-a` och `-g` (dvs. `-ag`) för att stagea ALLA ändringar först, sedan gruppera dem i commits.
 
 **Obs:** När du använder `--group`, skalas max output tokens-gränsen automatiskt baserat på antalet filer som committas (2x för 1-9 filer, 3x för 10-19 filer, 4x för 20-29 filer, 5x för 30+ filer). Detta säkerställer att LLM:n har tillräckligt med tokens för att generera alla grupperade commits utan trunkering, även för stora ändringsuppsättningar.
 
 **Obs:** `--message-only` och `--group` är ömsesidigt uteslutande. Använd `--message-only` när du vill hämta commit-meddelandet för extern bearbetning, och `--group` när du vill organisera flera commits inom det aktuella git‑arbetsflödet.
+
+**Obs:** `--interactive`-flagget ger extra kontext till LLM genom att ställa frågor om dina ändringar, vilket leder till mer exakta och detaljerade commit-meddelanden. Detta är särskilt användbart för komplexa ändringar eller när du vill säkerställa att commit-meddelandet fångar hela kontexten av ditt arbete.
 
 ## Meddelandeanpassning
 
@@ -181,6 +191,22 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
   # Exempelutdata: feat: add user authentication system
   ```
 
+- **Använd interaktivt läge för att ge kontext:**
+
+  ```sh
+  gac -i
+  # Vad är huvudsyftet med dessa ändringar?
+  # Vilket problem löser du?
+  # Finns det implementeringsdetaljer att nämna?
+  ```
+
+- **Interaktivt läge med detaljerad output:**
+
+  ```sh
+  gac -i -v
+  # Ställ frågor och generera detaljerade commit-meddelanden
+  ```
+
 ## Avancerat
 
 - Kombinera flaggor för mer kraftfulla arbetsflöden (t.ex. `gac -ayp` för att stagea, auto-bekräfta och pusha)
@@ -266,6 +292,112 @@ Följande underkommandon är tillgängliga:
 - `gac config unset KEY` — Ta bort konfigurationsnyckel från `$HOME/.gac.env`
 - `gac language` (eller `gac lang`) — Interaktiv språkväljare för commit-meddelanden (ställer in GAC_LANGUAGE)
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
+
+## Interaktivt Läge
+
+`--interactive` (`-i`) flagget förbättrar gac's commit-meddelandegenerering genom att ställa riktade frågor om dina ändringar. Denna extra kontext hjälper LLM att skapa mer exakta, detaljerade och kontextanpassade commit-meddelanden.
+
+### Hur det fungerar
+
+När du använder `--interactive` kommer gac att ställa frågor som:
+
+- **Vad är huvudsyftet med dessa ändringar?** - Hjälper till att förstå övergripande mål
+- **Vilket problem löser du?** - Ger kontext om motivationen
+- **Finns det implementeringsdetaljer att nämna?** - Fångar tekniska specifikationer
+- **Finns det breaking changes?** - Identifierar potentiella påverkningsproblem
+- **Är detta relaterat till en issue eller ticket?** - Kopplar till projekthantering
+
+### När man ska använda interaktivt läge
+
+Interaktivt läge är särskilt användbart för:
+
+- **Komplexa ändringar** där kontexten inte är klar från diff-en ensam
+- **Refactoring-arbete** som sträcker sig över flera filer och koncept
+- **Nya funktioner** som kräver förklaring av övergripande syfte
+- **Bug fixes** där rotorsaken inte är omedelbart synlig
+- **Prestandaoptimering** där logiken inte är uppenbar
+- **Code review-förberedelse** - frågor hjälper dig att tänka på dina ändringar
+
+### Användningsexempel
+
+**Grundläggande interaktivt läge:**
+
+```sh
+gac -i
+```
+
+Detta kommer att:
+
+1. Visa en sammanfattning av stageade ändringar
+2. Ställa frågor om ändringarna
+3. Generera ett commit-meddelande med dina svar
+4. Be om bekräftelse (eller automatiskt bekräfta när kombinerat med `-y`)
+
+**Interaktivt läge med stageade ändringar:**
+
+```sh
+gac -ai
+# Stage alla ändringar, ställ sedan frågor för bättre kontext
+```
+
+**Interaktivt läge med specifika hints:**
+
+```sh
+gac -i -h "Databasmigrering för användarprofiler"
+# Ställ frågor medan du ger ett specifikt hint för att fokusera LLM
+```
+
+**Interaktivt läge med detaljerad output:**
+
+```sh
+gac -i -v
+# Ställ frågor och generera ett detaljerat, strukturerat commit-meddelande
+```
+
+**Automatiskt bekräftat interaktivt läge:**
+
+```sh
+gac -i -y
+# Ställ frågor men bekräfta det resulterande committet automatiskt
+```
+
+### Fråga-Svar Workflow
+
+Den interaktiva workflown följer detta mönster:
+
+1. **Ändringsgranskning** - gac visar en sammanfattning av vad du committar
+2. **Svara på frågor** - svara på varje prompt med relevanta detaljer
+3. **Kontextförbättring** - dina svar läggs till i LLM-prompten
+4. **Meddelandegenerering** - LLM skapar ett commit-meddelande med full kontext
+5. **Bekräftelse** - granska och bekräfta committet (eller automatiskt med `-y`)
+
+**Tips för användbara svar:**
+
+- **Kortfattat men komplett** - ge viktiga detaljer utan att vara överdrivet verbose
+- **Fokusera på "varför"** - förklara resonemanget bakom dina ändringar
+- **Nämna begränsningar** - notera begränsningar eller särskilda överväganden
+- **Länka till extern kontext** - referera till issues, dokumentation eller designdokument
+- **Tomma svar är ok** - om en fråga inte är tillämplig, tryck bara på Enter
+
+### Kombination med andra flaggor
+
+Interaktivt läge fungerar bra med de flesta andra flaggor:
+
+```sh
+# Stage alla ändringar och ställ frågor
+gac -ai
+
+# Ställ frågor med detaljerad output
+gac -i -v
+```
+
+### Bästa Praxis
+
+- **Använd för komplexa PR:er** - särskilt användbart för pull requests som behöver detaljerade förklaringar
+- **Team-samarbete** - frågor hjälper dig att tänka på ändringar som andra kommer att granska
+- **Dokumentationsförberedelse** - dina svar kan hjälpa till att bilda grunden för release notes
+- **Lärverktyg** - frågor förstärker bra praxis för commit-meddelanden
+- **Hoppa över för enkla ändringar** - för triviala fixes kan grundläggande läge vara snabbare
 
 ## Få hjälp
 

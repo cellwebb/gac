@@ -17,9 +17,17 @@ This document describes all available flags and options for the `gac` CLI tool.
   - [Advanced](#advanced)
     - [Script Integration and External Processing](#script-integration-and-external-processing)
     - [Skipping Pre-commit and Lefthook Hooks](#skipping-pre-commit-and-lefthook-hooks)
+    - [Security Scanning](#security-scanning)
   - [Configuration Notes](#configuration-notes)
     - [Advanced Configuration Options](#advanced-configuration-options)
     - [Configuration Subcommands](#configuration-subcommands)
+  - [Interactive Mode](#interactive-mode)
+    - [How It Works](#how-it-works)
+    - [When to Use Interactive Mode](#when-to-use-interactive-mode)
+    - [Usage Examples](#usage-examples)
+    - [Question-Answering Workflow](#question-answering-workflow)
+    - [Combining with Other Flags](#combining-with-other-flags)
+    - [Best Practices](#best-practices)
   - [Getting Help](#getting-help)
 
 ## Basic Usage
@@ -53,12 +61,15 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | `--message-only`     |       | Output only the generated commit message without committing |
 | `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing          |
 | `--skip-secret-scan` |       | Skip security scan for secrets in staged changes            |
+| `--interactive`      | `-i`  | Ask questions about the changes to generate better commits  |
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
 **Note:** When using `--group`, the max output tokens limit is automatically scaled based on the number of files being committed (2x for 1-9 files, 3x for 10-19 files, 4x for 20-29 files, 5x for 30+ files). This ensures the LLM has enough tokens to generate all grouped commits without truncation, even for large changesets.
 
 **Note:** `--message-only` and `--group` are mutually exclusive. Use `--message-only` when you want to get the commit message for external processing, and `--group` when you want to organize multiple commits within the current git workflow.
+
+**Note:** The `--interactive` flag asks you questions about your changes to provide additional context to the LLM, resulting in more accurate and detailed commit messages. This is particularly helpful for complex changes or when you want to ensure the commit message captures the full context of your work.
 
 ## Message Customization
 
@@ -180,6 +191,22 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
   ```sh
   gac --message-only --one-liner
   # Outputs: feat: add user authentication system
+  ```
+
+- **Use interactive mode to provide context:**
+
+  ```sh
+  gac -i
+  # What is the main purpose of these changes?
+  # What problem are you solving?
+  # Are there any implementation details worth mentioning?
+  ```
+
+- **Interactive mode with verbose output:**
+
+  ```sh
+  gac -i -v
+  # Ask questions and generate detailed commit message
   ```
 
 ## Advanced
@@ -311,6 +338,112 @@ The following subcommands are available:
 - `gac config unset KEY` — Remove a config key from `$HOME/.gac.env`
 - `gac language` (or `gac lang`) — Interactive language selector for commit messages (sets GAC_LANGUAGE)
 - `gac diff` — Show filtered git diff with options for staged/unstaged changes, color, and truncation
+
+## Interactive Mode
+
+The `--interactive` (`-i`) flag enhances gac's commit message generation by asking you targeted questions about your changes. This additional context helps the LLM create more accurate, detailed, and contextually appropriate commit messages.
+
+### How It Works
+
+When you use `--interactive`, gac will prompt you with questions such as:
+
+- **What is the main purpose of these changes?** - Helps understand the high-level goal
+- **What problem are you solving?** - Provides context about the motivation
+- **Are there any implementation details worth mentioning?** - Captures technical specifics
+- **Are there any breaking changes?** - Identifies potential impact issues
+- **Is this related to any issue or ticket?** - Links to project management
+
+### When to Use Interactive Mode
+
+Interactive mode is particularly useful for:
+
+- **Complex changes** where the context isn't obvious from the diff alone
+- **Refactoring work** that spans multiple files and concepts
+- **New features** that require explanation of the overall purpose
+- **Bug fixes** where the root cause isn't immediately visible
+- **Performance optimizations** where the reasoning isn't obvious
+- **Code review preparation** - the questions help you think through your changes
+
+### Usage Examples
+
+**Basic interactive mode:**
+
+```sh
+gac -i
+```
+
+This will:
+
+1. Show you a summary of staged changes
+2. Ask you questions about the changes
+3. Generate a commit message incorporating your answers
+4. Prompt for confirmation (or auto-confirm if combined with `-y`)
+
+**Interactive mode with staged changes:**
+
+```sh
+gac -ai
+# Stage all changes, then ask questions for better context
+```
+
+**Interactive mode with specific hints:**
+
+```sh
+gac -i -h "Database migration for user profiles"
+# Ask questions while providing a specific hint to focus the LLM
+```
+
+**Interactive mode with verbose output:**
+
+```sh
+gac -i -v
+# Ask questions and generate a detailed, structured commit message
+```
+
+**Auto-confirmed interactive mode:**
+
+```sh
+gac -i -y
+# Ask questions but auto-confirm the resulting commit
+```
+
+### Question-Answering Workflow
+
+The interactive workflow follows this pattern:
+
+1. **Review changes** - gac shows a summary of what you're committing
+2. **Answer questions** - respond to each prompt with relevant details
+3. **Context enhancement** - your answers are added to the LLM prompt
+4. **Message generation** - the LLM creates a commit message with full context
+5. **Confirmation** - review and confirm the commit (or auto-confirm with `-y`)
+
+**Tips for providing helpful answers:**
+
+- **Be concise but thorough** - provide the key details without being overly verbose
+- **Focus on the "why"** - explain the reasoning behind your changes
+- **Mention constraints** - note any limitations or special considerations
+- **Link to external context** - reference issues, documentation, or design docs
+- **Empty answers are fine** - if a question doesn't apply, just press Enter
+
+### Combining with Other Flags
+
+Interactive mode works well with most other flags:
+
+```sh
+# Stage all changes and ask questions
+gac -ai
+
+# Ask questions with verbose output
+gac -i -v
+```
+
+### Best Practices
+
+- **Use for complex PRs** - especially helpful for pull requests that need detailed descriptions
+- **Team collaboration** - the questions help you think through changes that others will review
+- **Documentation preparation** - your answers can help form the basis for release notes
+- **Learning tool** - the questions reinforce good commit message practices
+- **Skip when making simple changes** - for trivial fixes, basic mode may be faster
 
 ## Getting Help
 

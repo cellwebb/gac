@@ -19,6 +19,13 @@ Tài liệu này mô tả tất cả các flag và tùy chọn có sẵn cho cô
   - [Ghi Chú Cấu Hình](#ghi-chú-cấu-hình)
     - [Tùy Chọn Cấu Hình Nâng Cao](#tùy-chọn-cấu-hình-nâng-cao)
     - [Lệnh Con Cấu Hình](#lệnh-con-cấu-hình)
+  - [Chế Độ Tương Tác](#chế-độ-tương-tác)
+    - [Cách Hoạt Động](#cách-hoạt-động)
+    - [Khi Nào Sử Dụng Chế Độ Tương Tác](#khi-nào-sử-dụng-chế-độ-tương-tác)
+    - [Ví Dụ Sử Dụng](#ví-dụ-sử-dụng)
+    - [Quy Trình Hỏi-Đáp](#quy-trình-hỏi-đáp)
+    - [Kết Hợp Với Các Flag Khác](#kết-hợp-với-các-flag-khác)
+    - [Thực T hành Tốt Nhất](#thực-t-hành-tốt-nhất)
   - [Nhận Trợ Giúp](#nhận-trợ-giúp)
 
 ## Sử Dụng Cơ Bản
@@ -52,12 +59,15 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
 | `--message-only`     |      | Chỉ in ra thông điệp commit được sinh ra, không thực hiện commit vào git |
 | `--no-verify`        |      | Bỏ qua các hook pre-commit và lefthook khi committing                    |
 | `--skip-secret-scan` |      | Bỏ qua quét bảo mật cho các bí mật trong các thay đổi đã staged          |
+| `--interactive`      | `-i` | Đặt câu hỏi về các thay đổi để có commit tốt hơn                         |
 
 **Lưu ý:** Kết hợp `-a` và `-g` (tức là `-ag`) để stage TẤT CẢ các thay đổi trước, sau đó nhóm chúng vào các commit.
 
 **Lưu ý:** Khi sử dụng `--group`, giới hạn token đầu ra tối đa được tự động scale dựa trên số lượng tệp đang được commit (2x cho 1-9 tệp, 3x cho 10-19 tệp, 4x cho 20-29 tệp, 5x cho 30+ tệp). Điều này đảm bảo LLM có đủ token để tạo tất cả các commit được nhóm mà không bị cắt ngắn, ngay cả với các thay đổi lớn.
 
 **Lưu ý:** `--message-only` và `--group` loại trừ lẫn nhau. Hãy dùng `--message-only` khi bạn muốn lấy thông điệp commit để xử lý bên ngoài, và dùng `--group` khi bạn muốn tổ chức nhiều commit trong cùng quy trình git hiện tại.
+
+**Lưu ý:** Flag `--interactive` cung cấp ngữ cảnh bổ sung cho LLM bằng cách đặt câu hỏi về các thay đổi của bạn, dẫn đến các thông điệp commit chính xác và chi tiết hơn. Điều này đặc biệt hữu ích cho các thay đổi phức tạp hoặc khi bạn muốn đảm bảo thông điệp commit nắm bắt toàn bộ ngữ cảnh công việc của mình.
 
 ## Tùy Chỉnh Thông Điệp
 
@@ -181,6 +191,22 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
   # Ví dụ đầu ra: feat: add user authentication system
   ```
 
+- **Sử dụng chế độ tương tác để cung cấp ngữ cảnh:**
+
+  ```sh
+  gac -i
+  # Mục đích chính của những thay đổi này là gì?
+  # Bạn đang giải quyết vấn đề gì?
+  # Có chi tiết triển khai nào đáng đề cập không?
+  ```
+
+- **Chế độ tương tác với đầu ra chi tiết:**
+
+  ```sh
+  gac -i -v
+  # Đặt câu hỏi và tạo thông điệp commit chi tiết
+  ```
+
 ## Nâng Cao
 
 - Kết hợp các flag để có các quy trình làm việc mạnh mẽ hơn (ví dụ, `gac -ayp` để stage, tự động xác nhận, và push)
@@ -266,6 +292,112 @@ Các lệnh con sau đây có sẵn:
 - `gac config unset KEY` — Xóa khóa cấu hình khỏi `$HOME/.gac.env`
 - `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho các thông điệp commit (đặt GAC_LANGUAGE)
 - `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
+
+## Chế Độ Tương Tác
+
+Flag `--interactive` (`-i`) cải thiện việc tạo thông điệp commit của gac bằng cách đặt các câu hỏi có mục tiêu về các thay đổi của bạn. Ngữ cảnh bổ sung này giúp LLM tạo ra các thông điệp commit chính xác, chi tiết và phù hợp với ngữ cảnh hơn.
+
+### Cách Hoạt Động
+
+Khi bạn sử dụng `--interactive`, gac sẽ đặt các câu hỏi như:
+
+- **Mục đích chính của những thay đổi này là gì?** - Giúp hiểu mục tiêu cấp cao
+- **Bạn đang giải quyết vấn đề gì?** - Cung cấp ngữ cảnh về động lực
+- **Có chi tiết triển khai nào đáng đề cập không?** - Nắm bắt các thông số kỹ thuật
+- **Có thay đổi phá vỡ nào không?** - Xác định các vấn đề tác động tiềm tàng
+- **Điều này liên quan đến issue hoặc ticket nào không?** - Kết nối với quản lý dự án
+
+### Khi Nào Sử Dụng Chế Độ Tương Tác
+
+Chế độ tương tác đặc biệt hữu ích cho:
+
+- **Các thay đổi phức tạp** nơi ngữ cảnh không rõ ràng chỉ từ diff
+- **Công việc refactoring** kéo dài qua nhiều tệp và khái niệm
+- **Tính năng mới** đòi hỏi giải thích mục tiêu tổng thể
+- **Sửa lỗi** nơi nguyên nhân gốc không ngay lập tức hiển thị
+- **Tối ưu hóa hiệu suất** nơi logic không rõ ràng
+- **Chuẩn bị code review** - các câu hỏi giúp bạn suy nghĩ về các thay đổi của mình
+
+### Ví Dụ Sử Dụng
+
+**Chế độ tương tác cơ bản:**
+
+```sh
+gac -i
+```
+
+Điều này sẽ:
+
+1. Hiển thị tóm tắt các thay đổi đã staged
+2. Đặt câu hỏi về các thay đổi
+3. Tạo thông điệp commit với câu trả lời của bạn
+4. Yêu cầu xác nhận (hoặc tự động xác nhận khi kết hợp với `-y`)
+
+**Chế độ tương tác với các thay đổi đã staged:**
+
+```sh
+gac -ai
+# Stage tất cả các thay đổi, sau đó đặt câu hỏi để có ngữ cảnh tốt hơn
+```
+
+**Chế độ tương tác với các gợi ý cụ thể:**
+
+```sh
+gac -i -h "Di chuyển cơ sở dữ liệu cho hồ sơ người dùng"
+# Đặt câu hỏi trong khi cung cấp gợi ý cụ thể để tập trung LLM
+```
+
+**Chế độ tương tác với đầu ra chi tiết:**
+
+```sh
+gac -i -v
+# Đặt câu hỏi và tạo thông điệp commit chi tiết, có cấu trúc
+```
+
+**Chế độ tương tác xác nhận tự động:**
+
+```sh
+gac -i -y
+# Đặt câu hỏi nhưng tự động xác nhận commit kết quả
+```
+
+### Quy Trình Hỏi-Đáp
+
+Quy trình tương tác theo mẫu này:
+
+1. **Xem xét thay đổi** - gac hiển thị tóm tắt những gì bạn đang commit
+2. **Trả lời câu hỏi** - trả lời mỗi prompt với các chi tiết liên quan
+3. **Cải thiện ngữ cảnh** - câu trả lời của bạn được thêm vào LLM prompt
+4. **Tạo thông điệp** - LLM tạo thông điệp commit với ngữ cảnh đầy đủ
+5. **Xác nhận** - xem xét và xác nhận commit (hoặc tự động với `-y`)
+
+**Mẹo cho câu trả lời hữu ích:**
+
+- **Ngắn gọn nhưng đầy đủ** - cung cấp các chi tiết quan trọng mà không quá dài dòng
+- **Tập trung vào "tại sao"** - giải thích lý do đằng sau các thay đổi của bạn
+- **Đề cập các giới hạn** - ghi chú các giới hạn hoặc cân nhắc đặc biệt
+- **Liên kết ngữ cảnh bên ngoài** - tham chiếu các issues, tài liệu hoặc tài liệu thiết kế
+- **Câu trả lời trống cũng được** - nếu câu hỏi không áp dụng, chỉ cần nhấn Enter
+
+### Kết Hợp Với Các Flag Khác
+
+Chế độ tương tác hoạt động tốt với hầu hết các flag khác:
+
+```sh
+# Stage tất cả các thay đổi và đặt câu hỏi
+gac -ai
+
+# Đặt câu hỏi với đầu ra chi tiết
+gac -i -v
+```
+
+### Thực T hành Tốt Nhất
+
+- **Sử dụng cho các PR phức tạp** - đặc biệt hữu ích cho các pull request cần giải thích chi tiết
+- **Hợp tác nhóm** - các câu hỏi giúp bạn suy nghĩ về các thay đổi mà người khác sẽ xem xét
+- **Chuẩn bị tài liệu** - câu trả lời của bạn có thể giúp hình thành cơ sở cho release notes
+- **Công cụ học tập** - các câu hỏi củng cố các thực hành tốt cho thông điệp commit
+- **Bỏ qua cho các thay đổi đơn giản** - cho các sửa đổi tầm thường, chế độ cơ bản có thể nhanh hơn
 
 ## Nhận Trợ Giúp
 

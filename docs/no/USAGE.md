@@ -4,273 +4,406 @@
 
 Dette dokumentet beskriver alle tilgjengelige flagg og alternativer for `gac` CLI-verktøyet.
 
-## Table of Contents
+## Innholdsfortegnelse
 
 - [gac kommandolinje bruk](#gac-kommandolinje-bruk)
-  - [Table of Contents](#table-of-contents)
-  - [Basic Usage](#basic-usage)
-  - [Core Workflow Flags](#core-workflow-flags)
-  - [Message Customization](#message-customization)
-  - [Output and Verbosity](#output-and-verbosity)
-  - [Help and Version](#help-and-version)
-  - [Example Workflows](#example-workflows)
-  - [Advanced](#advanced)
-    - [Skipping Pre-commit and Lefthook Hooks](#skipping-pre-commit-and-lefthook-hooks)
-  - [Configuration Notes](#configuration-notes)
-    - [Advanced Configuration Options](#advanced-configuration-options)
-    - [Configuration Subcommands](#configuration-subcommands)
-  - [Getting Help](#getting-help)
+  - [Innholdsfortegnelse](#innholdsfortegnelse)
+  - [Grunnleggende Bruk](#grunnleggende-bruk)
+  - [Kjerne-workflow-flagg](#kjerne-workflow-flagg)
+  - [Meldingstilpasning](#meldingstilpasning)
+  - [Output og detaljnivå](#output-og-detaljnivå)
+  - [Hjelp og versjon](#hjelp-og-versjon)
+  - [Eksempel-workflows](#eksempel-workflows)
+  - [Avansert](#avansert)
+    - [Hoppe over Pre-commit og Lefthook Hooks](#hoppe-over-pre-commit-og-lefthook-hooks)
+    - [Sikkerhetsskanning](#sikkerhetsskanning)
+  - [Konfigurasjonsnotater](#konfigurasjonsnotater)
+    - [Avanserte Konfigurasjonsalternativer](#avanserte-konfigurasjonsalternativer)
+    - [Konfigurasjons-underkommandoer](#konfigurasjons-underkommandoer)
+  - [Interaktiv Modus](#interaktiv-modus)
+    - [Hvordan det fungerer](#hvordan-det-fungerer)
+    - [Når du skal bruke interaktiv modus](#når-du-skal-bruke-interaktiv-modus)
+    - [Brukseksempler](#brukseksempler)
+    - [Spørsmål-Svar Workflow](#spørsmål-svar-workflow)
+    - [Kombinasjon med andre flagg](#kombinasjon-med-andre-flagg)
+    - [Beste Praksis](#beste-praksis)
+  - [Få Hjelp](#få-hjelp)
 
-## Basic Usage
+## Grunnleggende Bruk
 
 ```sh
 gac init
-# Then follow the prompts to configure your provider, model, and API keys interactively
+# Følg deretter instruksjonene for å konfigurere din provider, modell og API-nøkler interaktivt
 gac
 ```
 
-Generates an LLM-powered commit message for staged changes and prompts for confirmation. The confirmation prompt accepts:
+Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftelse. Bekreftelsesprompten aksepterer:
 
-- `y` or `yes` - Proceed with the commit
-- `n` or `no` - Cancel the commit
-- `r` or `reroll` - Regenerate the commit message with the same context
-- `e` or `edit` - Edit the commit message in-place with rich terminal editing (vi/emacs keybindings)
-- Any other text - Regenerate with that text as feedback (e.g., `make it shorter`, `focus on performance`)
-- Empty input (just Enter) - Show the prompt again
-
----
-
-## Core Workflow Flags
-
-| Flag / Option        | Short | Description                                                 |
-| -------------------- | ----- | ----------------------------------------------------------- |
-| `--add-all`          | `-a`  | Stage all changes before committing                         |
-| `--group`            | `-g`  | Group staged changes into multiple logical commits          |
-| `--push`             | `-p`  | Push changes to remote after committing                     |
-| `--yes`              | `-y`  | Automatically confirm commit without prompting              |
-| `--dry-run`          |       | Show what would happen without making any changes           |
-| `--message-only`     |       | Output only the generated commit message without committing |
-| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing          |
-| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes            |
-
-**Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
-
-**Note:** When using `--group`, the max output tokens limit is automatically scaled based on the number of files being committed (2x for 1-9 files, 3x for 10-19 files, 4x for 20-29 files, 5x for 30+ files). This ensures the LLM has enough tokens to generate all grouped commits without truncation, even for large changesets.
-
-**Note:** `--message-only` and `--group` are mutually exclusive. Use `--message-only` when you want to get the commit message for external processing, and `--group` when you want to organize multiple commits within the current git workflow.
-
-## Message Customization
-
-| Flag / Option       | Short | Description                                                               |
-| ------------------- | ----- | ------------------------------------------------------------------------- |
-| `--one-liner`       | `-o`  | Generate a single-line commit message                                     |
-| `--verbose`         | `-v`  | Generate detailed commit messages with motivation, architecture, & impact |
-| `--hint <text>`     | `-h`  | Add a hint to guide the LLM                                               |
-| `--model <model>`   | `-m`  | Specify the model to use for this commit                                  |
-| `--language <lang>` | `-l`  | Override the language (name or code: 'Spanish', 'es', 'zh-CN', 'ja')      |
-| `--scope`           | `-s`  | Infer an appropriate scope for the commit                                 |
-
-**Note:** You can provide feedback interactively by simply typing it at the confirmation prompt - no need to prefix with 'r'. Type `r` for a simple reroll, `e` to edit in-place with vi/emacs keybindings, or type your feedback directly like `make it shorter`.
-
-## Output and Verbosity
-
-| Flag / Option         | Short | Description                                             |
-| --------------------- | ----- | ------------------------------------------------------- |
-| `--quiet`             | `-q`  | Suppress all output except errors                       |
-| `--log-level <level>` |       | Set log level (debug, info, warning, error)             |
-| `--show-prompt`       |       | Print the LLM prompt used for commit message generation |
-
-## Help and Version
-
-| Flag / Option | Short | Description                |
-| ------------- | ----- | -------------------------- |
-| `--version`   |       | Show gac version and exit  |
-| `--help`      |       | Show help message and exit |
+- `y` eller `yes` - Fortsett med commit
+- `n` eller `no` - Avbryt commit
+- `r` eller `reroll` - Regenerer commit-meldingen med samme kontekst
+- `e` eller `edit` - Rediger commit-meldingen på stedet med rik terminal-redigering (vi/emacs keybindings)
+- Alt annen tekst - Regenerer med den teksten som feedback (f.eks. `gjør det kortere`, `fokuser på ytelse`)
+- Tom input (bare Enter) - Vis prompten igjen
 
 ---
 
-## Example Workflows
+## Kjerne-workflow-flagg
 
-- **Stage all changes and commit:**
+| Flagg / Alternativ   | Kort | Beskrivelse                                                       |
+| -------------------- | ---- | ----------------------------------------------------------------- |
+| `--add-all`          | `-a` | Stage alle endringer før committing                               |
+| `--group`            | `-g` | Grupperte staged endringer i flere logiske commits                |
+| `--push`             | `-p` | Push endringer til remote etter committing                        |
+| `--yes`              | `-y` | Bekreft commit automatisk uten prompting                          |
+| `--dry-run`          |      | Vis hva som ville skjedd uten å gjøre endringer                   |
+| `--message-only`     |      | Output kun den genererte commit-meldingen uten committing         |
+| `--no-verify`        |      | Hopp over pre-commit og lefthook hooks ved committing             |
+| `--skip-secret-scan` |      | Hopp over sikkerhetsskanning for hemmeligheter i staged endringer |
+| `--interactive`      | `-i` | Still spørsmål om endringer for bedre commits                     |
+
+**Merknad:** Kombiner `-a` og `-g` (dvs. `-ag`) for å stage ALLE endringer først, deretter gruppere dem i commits.
+
+**Merknad:** Når du bruker `--group`, blir maks output tokens grense automatisk skalert basert på antall filer som committes (2x for 1-9 filer, 3x for 10-19 filer, 4x for 20-29 filer, 5x for 30+ filer). Dette sikrer at LLM har nok tokens til å generere alle grupperte commits uten trunkering, selv for store endringssett.
+
+**Merknad:** `--message-only` og `--group` er gjensidig eksklusive. Bruk `--message-only` når du vil få commit-meldingen for ekstern behandling, og `--group` når du vil organisere flere commits i den nåværende git-workflowen.
+
+**Note:** `--interactive` flag gir LLM ekstra kontekst ved å stille spørsmål om endringene dine, noe som fører til mer nøyaktige og detaljerte commit-meldinger. Dette er spesielt nyttig for komplekse endringer eller når du vil sørge for at commit-meldingen fanger hele konteksten av arbeidet ditt.
+
+## Meldingstilpasning
+
+| Flagg / Alternativ   | Kort | Beskrivelse                                                                 |
+| -------------------- | ---- | --------------------------------------------------------------------------- |
+| `--one-liner`        | `-o` | Generer en enkeltlinjes commit-melding                                      |
+| `--verbose`          | `-v` | Generer detaljerte commit-meldinger med motivasjon, arkitektur & påvirkning |
+| `--hint <tekst>`     | `-h` | Legg til et hint for å guide LLM-en                                         |
+| `--model <modell>`   | `-m` | Spesifiser modellen som skal brukes for denne commit                        |
+| `--language <språk>` | `-l` | Overstyr språket (navn eller kode: 'Norsk', 'nb', 'sv', 'da')               |
+| `--scope`            | `-s` | Utled et passende scope for commiten                                        |
+
+**Merknad:** Du kan gi feedback interaktivt ved å skrive det direkte i bekreftelsesprompten - ingen 'r'-prefiks nødvendig. Skriv `r` for en enkel reroll, `e` for å redigere på stedet med vi/emacs-tastebindinger, eller skriv feedbacken din direkte som `gjør det kortere`.
+
+## Output og detaljnivå
+
+| Flagg / Alternativ    | Kort | Beskrivelse                                               |
+| --------------------- | ---- | --------------------------------------------------------- |
+| `--quiet`             | `-q` | Undertrykk all output unntatt feil                        |
+| `--log-level <level>` |      | Sett loggnivå (debug, info, warning, error)               |
+| `--show-prompt`       |      | Skriv ut LLM-prompten brukt for commit-meldingsgenerering |
+
+## Hjelp og versjon
+
+| Flagg / Alternativ | Kort | Beskrivelse                  |
+| ------------------ | ---- | ---------------------------- |
+| `--version`        |      | Vis gac-versjon og avslutt   |
+| `--help`           |      | Vis hjelpemelding og avslutt |
+
+---
+
+## Eksempel-workflows
+
+- **Stage alle endringer og commit:**
 
   ```sh
   gac -a
   ```
 
-- **Commit and push in one step:**
+- **Commit og push i ett steg:**
 
   ```sh
   gac -ap
   ```
 
-- **Generate a one-line commit message:**
+- **Generer en enkeltlinjes commit-melding:**
 
   ```sh
   gac -o
   ```
 
-- **Generate a detailed commit message with structured sections:**
+- **Generer en detaljert commit-melding med strukturerte seksjoner:**
 
   ```sh
   gac -v
   ```
 
-- **Add a hint for the LLM:**
+- **Legg til et hint for LLM-en:**
 
   ```sh
-  gac -h "Refactor authentication logic"
+  gac -h "Refaktorer autentiseringslogikk"
   ```
 
-- **Infer scope for the commit:**
+- **Utled scope for commitet:**
 
   ```sh
   gac -s
   ```
 
-- **Group staged changes into logical commits:**
+- **Grupperte staged endringer i logiske commits:**
 
   ```sh
   gac -g
-  # Groups only the files you've already staged
+  # Grupperer kun filene du allerede har staged
   ```
 
-- **Group all changes (staged + unstaged) and auto-confirm:**
+- **Grupper alle endringer (staged + unstaged) og auto-bekreft:**
 
   ```sh
   gac -agy
-  # Stages everything, groups it, and auto-confirms
+  # Stager alt, grupperer det og bekrefter automatisk
   ```
 
-- **Use a specific model just for this commit:**
+- **Bruk en spesifikk modell kun for denne commit:**
 
   ```sh
   gac -m anthropic:claude-haiku-4-5
   ```
 
-- **Generate commit message in a specific language:**
+- **Generer commit-melding på et spesifikt språk:**
 
   ```sh
-  # Using language codes (shorter)
+  # Bruker språkkoder (kortere)
   gac -l zh-CN
   gac -l ja
   gac -l es
 
-  # Using full names
-  gac -l "Simplified Chinese"
-  gac -l Japanese
-  gac -l Spanish
+  # Bruker fulle navn
+  gac -l "Forenklet Kinesisk"
+  gac -l Japansk
+  gac -l Spansk
   ```
 
-- **Dry run (see what would happen):**
+- **Tørrkjøring (se hva som ville skjedd):**
 
   ```sh
   gac --dry-run
   ```
 
-- **Get only the commit message (for script integration):**
+- **Få kun commit-meldingen (for skript-integrasjon):**
 
   ```sh
   gac --message-only
-  # Outputs: feat: add user authentication system
+  # Output: feat: legg til brukerautentiseringssystem
   ```
 
-- **Get commit message in one-liner format:**
+- **Få commit-melding i enkeltlinjeformat:**
 
   ```sh
   gac --message-only --one-liner
-  # Outputs: feat: add user authentication system
+  # Output: feat: legg til brukerautentiseringssystem
   ```
 
-## Advanced
+- **Bruk interaktiv modus for å gi kontekst:**
 
-- Combine flags for more powerful workflows (e.g., `gac -ayp` to stage, auto-confirm, and push)
-- Use `--show-prompt` to debug or review the prompt sent to the LLM
-- Adjust verbosity with `--log-level` or `--quiet`
+  ```sh
+  gac -i
+  # Hva er hovedformålet med disse endringene?
+  # Hvilket problem løser du?
+  # Er det implementeringsdetaljer verdt å nevne?
+  ```
 
-### Skipping Pre-commit and Lefthook Hooks
+- **Interaktiv modus med detaljert output:**
 
-The `--no-verify` flag allows you to skip any pre-commit or lefthook hooks configured in your project:
+  ```sh
+  gac -i -v
+  # Still spørsmål og generer detaljert commit-melding
+  ```
 
-```sh
-gac --no-verify  # Skip all pre-commit and lefthook hooks
-```
+## Avansert
 
-**Use `--no-verify` when:**
+- Kombiner flagg for mer kraftfulle workflows (f.eks. `gac -ayp` for å stage, auto-bekrefte og pushe)
+- Bruk `--show-prompt` for å debugge eller gjennomgå prompten sendt til LLM-en
+- Juster detaljnivå med `--log-level` eller `--quiet`
 
-- Pre-commit or lefthook hooks are failing temporarily
-- Working with time-consuming hooks
-- Committing work-in-progress code that doesn't pass all checks yet
+### Hoppe over Pre-commit og Lefthook Hooks
 
-**Note:** Use with caution as these hooks maintain code quality standards.
-
-### Security Scanning
-
-gac includes built-in security scanning that automatically detects potential secrets and API keys in your staged changes before committing. This helps prevent accidentally committing sensitive information.
-
-**Skipping security scans:**
+`--no-verify`-flagget lar deg hoppe over alle pre-commit eller lefthook hooks konfigurert i prosjektet ditt:
 
 ```sh
-gac --skip-secret-scan  # Skip security scan for this commit
+gac --no-verify  # Hopp over alle pre-commit og lefthook hooks
 ```
 
-**To disable permanently:** Set `GAC_SKIP_SECRET_SCAN=true` in your `.gac.env` file.
+**Bruk `--no-verify` når:**
 
-**When to skip:**
+- Pre-commit eller lefthook hooks feiler midlertidig
+- Du jobber med tidkrevende hooks
+- Du committer arbeid-på-gang-kode som ikke består alle sjekker ennå
 
-- Committing example code with placeholder keys
-- Working with test fixtures that contain dummy credentials
-- When you've verified the changes are safe
+**Merknad:** Bruk med forsiktighet da disse hooks vedlikeholder kodekvalitetsstandarder.
 
-**Note:** The scanner uses pattern matching to detect common secret formats. Always review your staged changes before committing.
+### Sikkerhetsskanning
 
-## Configuration Notes
+gac inkluderer innebygd sikkerhetsskanning som automatisk oppdager potensielle hemmeligheter og API-nøkler i dine staged endringer før commit. Dette hjelper med å forhindre utilsiktet commit av sensitiv informasjon.
 
-- The recommended way to set up gac is to run `gac init` and follow the interactive prompts.
-- Already configured language and just need to switch providers or models? Run `gac model` to repeat the setup without language questions.
+**Hoppe over sikkerhetsskanninger:**
+
+```sh
+gac --skip-secret-scan  # Hopp over sikkerhetsskanning for denne commit
+```
+
+**For å deaktivere permanent:** Sett `GAC_SKIP_SECRET_SCAN=true` i din `.gac.env`-fil.
+
+**Når du skal hoppe over:**
+
+- Committe av eksempelkode med plassholdernøkler
+- Arbeide med test fixtures som inneholder dummy-credentials
+- Når du har verifisert at endringene er trygge
+
+**Merknad:** Skanneren bruker pattern matching for å oppdage vanlige hemmelighetsformater. Gjennomgå alltid dine staged endringer før commit.
+
+## Konfigurasjonsnotater
+
+- Den anbefalte måten å sette opp gac er å kjøre `gac init` og følge de interaktive promptene.
+- Allerede konfigurert språk og trenger bare å bytte provider eller modeller? Kjør `gac model` for å gjenta oppsettet uten språkspørsmål.
 - **Bruker Claude Code?** Se [Claude Code oppsettguide](CLAUDE_CODE.md) for OAuth-autentiseringsinstruksjoner.
-- gac loads configuration in the following order of precedence:
-  1. CLI flags
-  2. Environment variables
-  3. Project-level `.gac.env`
-  4. User-level `~/.gac.env`
+- gac laster konfigurasjon i følgende prioriteringsrekkefølge:
+  1. CLI-flagg
+  2. Miljøvariabler
+  3. Prosjektnivå `.gac.env`
+  4. Brukernivå `~/.gac.env`
 
-### Advanced Configuration Options
+### Avanserte Konfigurasjonsalternativer
 
-You can customize gac's behavior with these optional environment variables:
+Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
-- `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
-- `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
-- `GAC_MAX_OUTPUT_TOKENS=4096` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count; override to go higher or lower)
-- `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
-- `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Use a custom system prompt for commit message generation
-- `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection
-- `GAC_TRANSLATE_PREFIXES=true` - Translate conventional commit prefixes (feat, fix, etc.) into the target language (default: false, keeps prefixes in English)
-- `GAC_SKIP_SECRET_SCAN=true` - Disable automatic security scanning for secrets in staged changes (use with caution)
-- `GAC_NO_TIKTOKEN=true` - Stay completely offline by bypassing the `tiktoken` download step and using the built-in rough token estimator
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Utled automatisk og inkluder scope i commit-meldinger (f.eks. `feat(auth):` vs `feat:`)
+- `GAC_VERBOSE=true` - Generer detaljerte commit-meldinger med motivasjon, arkitektur og påvirkningseksjoner
+- `GAC_TEMPERATURE=0.7` - Kontroller LLM-kreativitet (0.0-1.0, lavere = mer fokusert)
+- `GAC_MAX_OUTPUT_TOKENS=4096` - Maksimum tokens for genererte meldinger (automatisk skalert 2-5x når du bruker `--group` basert på filantall; overstyr for å gå høyere eller lavere)
+- `GAC_WARNING_LIMIT_TOKENS=4096` - Varsel når prompter overstiger dette tokenantallet
+- `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - Bruk et egendefinert systemprompt for commit-meldingsgenerering
+- `GAC_LANGUAGE=Norwegian` - Generer commit-meldinger på et spesifikt språk (f.eks. Norwegian, French, Japanese, German). Støtter fulle navn eller ISO-koder (nb, fr, ja, de, zh-CN). Bruk `gac language` for interaktivt valg
+- `GAC_TRANSLATE_PREFIXES=true` - Oversett konvensjonelle commit-prefikser (feat, fix, etc.) til målspråket (default: false, beholder prefikser på engelsk)
+- `GAC_SKIP_SECRET_SCAN=true` - Deaktiver automatisk sikkerhetsskanning for hemmeligheter i staged endringer (bruk med forsiktighet)
+- `GAC_NO_TIKTOKEN=true` - Hold deg helt offline ved å hoppe over `tiktoken` nedlastingssteg og bruke den innebygde grove token-estimatoren
 
-See `.gac.env.example` for a complete configuration template.
+Se `.gac.env.example` for en komplett konfigurasjonsmal.
 
-For detailed guidance on creating custom system prompts, see [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md).
+For detaljert veiledning for å lage egendefinerte systemprompts, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md).
 
-### Configuration Subcommands
+### Konfigurasjons-underkommandoer
 
-The following subcommands are available:
+Følgende underkommandoer er tilgjengelige:
 
-- `gac init` — Interactive setup wizard for provider, model, and language configuration
-- `gac model` — Provider/model/API key setup without language prompts (ideal for quick switches)
-- `gac auth` — Authenticate or re-authenticate Claude Code OAuth token (useful when token expires)
-- `gac config show` — Show current configuration
-- `gac config set KEY VALUE` — Set a config key in `$HOME/.gac.env`
-- `gac config get KEY` — Get a config value
-- `gac config unset KEY` — Remove a config key from `$HOME/.gac.env`
-- `gac language` (or `gac lang`) — Interactive language selector for commit messages (sets GAC_LANGUAGE)
-- `gac diff` — Show filtered git diff with options for staged/unstaged changes, color, and truncation
+- `gac init` — Interaktiv oppsettsguide for provider, modell og språkkonfigurasjon
+- `gac model` — Provider/modell/API-nøkkel oppsett uten språkprompts (ideelt for raske bytter)
+- `gac auth` — Autentiser eller re-autentiser Claude Code OAuth-token (nyttig når token utløper)
+- `gac config show` — Vis nåværende konfigurasjon
+- `gac config set KEY VALUE` — Sett en konfigurasjonsnøkkel i `$HOME/.gac.env`
+- `gac config get KEY` — Hent en konfigurasjonsverdi
+- `gac config unset KEY` — Fjern en konfigurasjonsnøkkel fra `$HOME/.gac.env`
+- `gac language` (eller `gac lang`) — Interaktivt språkvalg for commit-meldinger (setter GAC_LANGUAGE)
+- `gac diff` — Vis filtrert git diff med alternativer for staged/unstaged endringer, farge og trunkering
 
-## Getting Help
+## Interaktiv Modus
 
-- For custom system prompts, see [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
-- For troubleshooting and advanced tips, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- For installation and configuration, see [README.md#installation-and-configuration](README.md#installation-and-configuration)
-- To contribute, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
-- License information: [LICENSE](LICENSE)
+`--interactive` (`-i`) flagget forbedrer gac's commit-meldinggenerering ved å stille målrettede spørsmål om endringene dine. Denne ekstra konteksten hjelper LLM med å lage mer nøyaktige, detaljerte og kontekstilpassede commit-meldinger.
+
+### Hvordan det fungerer
+
+Når du bruker `--interactive`, vil gac stille spørsmål som:
+
+- **Hva er hovedformålet med disse endringene?** - Hjelper med å forstå høynivåmålet
+- **Hvilket problem løser du?** - Gir kontekst om motivasjonen
+- **Er det implementasjonsdetaljer å nevne?** - Fanger tekniske spesifikasjoner
+- **Er det breaking changes?** - Identifiserer potensielle impact-problemer
+- **Er dette relatert til en issue eller ticket?** - Kobler til prosjektstyring
+
+### Når du skal bruke interaktiv modus
+
+Interaktiv modus er spesielt nyttig for:
+
+- **Komplekse endringer** hvor konteksten ikke er klar fra diff-en alene
+- **Refactoring-arbeid** som spenner over flere filer og konsepter
+- **Nye funksjoner** som krever forklaring av overall formål
+- **Bug fixes** hvor rotårsaken ikke er umiddelbart synlig
+- **Ytelsesoptimalisering** hvor logikken ikke er åpenbar
+- **Code review-forberedelse** - spørsmål hjelper deg å tenke over endringene dine
+
+### Brukseksempler
+
+**Basis interaktiv modus:**
+
+```sh
+gac -i
+```
+
+Dette vil:
+
+1. Vise en oppsummering av staged endringer
+2. Stille spørsmål om endringene
+3. Generere en commit-melding med svarene dine
+4. Be om bekreftelse (eller automatisk bekrefte når kombinert med `-y`)
+
+**Interaktiv modus med staged endringer:**
+
+```sh
+gac -ai
+# Stage alle endringer, still spørsmål for bedre kontekst
+```
+
+**Interaktiv modus med spesifikke hints:**
+
+```sh
+gac -i -h "Databasemigrering for brukerprofiler"
+# Still spørsmål mens du gir et spesifikt hint for å fokusere LLM
+```
+
+**Interaktiv modus med detaljert output:**
+
+```sh
+gac -i -v
+# Still spørsmål og generer en detaljert, strukturert commit-melding
+```
+
+**Automatisk bekreftet interaktiv modus:**
+
+```sh
+gac -i -y
+# Still spørsmål men bekrefter resulterende commit automatisk
+```
+
+### Spørsmål-Svar Workflow
+
+Den interaktive workflown følger dette mønsteret:
+
+1. **Endringsgjennomgang** - gac viser en oppsummering av hva du committer
+2. **Svar på spørsmål** - svar på hver prompt med relevante detaljer
+3. **Kontekstforbedring** - svarene dine legges til LLM-prompten
+4. **Meldingsgenerering** - LLM lager en commit-melding med full kontekst
+5. **Bekreftelse** - gjennomgå og bekreft commit (eller automatisk med `-y`)
+
+**Tips for nyttige svar:**
+
+- **Konsis men komplett** - gi viktige detaljer uten å være overlydende verbose
+- **Fokuser på "hvorfor"** - forklar resonnementet bak endringene dine
+- **Nevn begrensninger** - noter begrensninger eller spesielle hensyn
+- **Lenk til ekstern kontekst** - referer til issues, dokumentasjon, eller designdokumenter
+- **Tomme svar er ok** - hvis et spørsmål ikke gjelder, bare trykk Enter
+
+### Kombinasjon med andre flagg
+
+Interaktiv modus fungerer godt med de fleste andre flagg:
+
+```sh
+# Stage alle endringer og still spørsmål
+gac -ai
+
+# Still spørsmål med detaljert output
+gac -i -v
+```
+
+### Beste Praksis
+
+- **Bruk for komplekse PR-er** - spesielt nyttig for pull requests som trenger detaljerte forklaringer
+- **Teamsamarbeid** - spørsmål hjelper deg å tenke over endringer andre skal gjennomgå
+- **Dokumentasjonsforberedelse** - svarene dine kan hjelpe med å danne grunnlag for release notes
+- **Læringsverktøy** - spørsmål forsterker gode praksiser for commit-meldinger
+- **Hopp over for enkle endringer** - for trivielle fixes kan basismodus være raskere
+
+## Få Hjelp
+
+- For egendefinerte systemprompts, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- For feilsøking og avanserte tips, se [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- For installasjon og konfigurasjon, se [README.md#installation-and-configuration](README.md#installation-and-configuration)
+- For å bidra, se [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- Lisensinformasjon: [LICENSE](LICENSE)
