@@ -40,7 +40,7 @@ Des messages intelligents et contextuels qui expliquent le **pourquoi** derrièr
 
 ```bash
 uvx gac init   # Configurez votre fournisseur, votre modèle et votre langue
-uvx gac  # Générez et commitez avec LLM
+uvx gac  # Générez et commitez avec l'IA
 ```
 
 C'est tout ! Vérifiez le message généré et confirmez avec `y`.

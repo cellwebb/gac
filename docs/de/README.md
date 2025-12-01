@@ -16,7 +16,7 @@
 
 [English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [हिन्दी](../hi/README.md) | [Tiếng Việt](../vi/README.md) | [Français](../fr/README.md) | [Русский](../ru/README.md) | [Español](../es/README.md) | [Português](../pt/README.md) | [Norsk](../no/README.md) | [Svenska](../sv/README.md) | **Deutsch** | [Nederlands](../nl/README.md) | [Italiano](../it/README.md)
 
-**LLM-gestützte Commit-Nachrichten, die Ihren Code verstehen!**
+**KI-gestützte Commit-Nachrichten, die Ihren Code verstehen!**
 
 **Automatisieren Sie Ihre Commits!** Ersetzen Sie `git commit -m "..."` durch `gac` für kontextbezogene, gut formatierte Commit-Nachrichten, die von großen Sprachmodellen generiert werden!
 
@@ -40,7 +40,7 @@ Intelligente, kontextbezogene Nachrichten, die das **Warum** hinter Ihren Änder
 
 ```bash
 uvx gac init   # Konfigurieren Sie Ihren Provider, Ihr Modell und Ihre Sprache
-uvx gac  # Generieren und committen mit LLM
+uvx gac  # Generieren und committen mit KI
 ```
 
 Das ist alles! Überprüfen Sie die generierte Nachricht und bestätigen Sie mit `y`.
@@ -71,7 +71,7 @@ uv tool upgrade gac
 - **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
 - **Custom Endpoints (Anthropic/OpenAI)**
 
-### 🧠 **Intelligente LLM-Analyse**
+### 🧠 **Intelligente KI-Analyse**
 
 - **Versteht die Absicht**: Analysiert Code-Struktur, Logik und Muster, um das "Warum" hinter Ihren Änderungen zu verstehen, nicht nur was sich geändert hat
 - **Semantisches Bewusstsein**: Erkennt Refactoring, Bug-Fixes, Features und Breaking Changes, um kontextbezogene Nachrichten zu generieren
@@ -95,13 +95,13 @@ uv tool upgrade gac
 
 - **Interaktives Feedback**: Geben Sie `r` ein zum erneuten Generieren, `e` zum direkten Bearbeiten mit vi/emacs Tastaturbelegungen oder geben Sie direkt Ihr Feedback ein wie `mache es kürzer` oder `konzentriere dich auf den Bug-Fix`
 - **Interaktive Befragung**: Verwenden Sie `--interactive` (`-i`) um gezielte Fragen zu Ihren Änderungen zu beantworten für mehr kontextbezogene Commit-Nachrichten
-- **Ein-Befehl-Workflows**: Vollständige Workflows mit Flags wie `gac -ayp` (alles hinzufügen, automatisch bestätigen, pushen)
-- **Git-Integration**: Respektiert pre-commit und lefthook Hooks, führt sie vor teuren LLM-Operationen aus
+- **Ein-Befehl-Workflows**: Vollständige Workflows mit Flags wie `gac -ayp` (alles hinzufügen, automatisch Bestätigen, pushen)
+- **Git-Integration**: Respektiert pre-commit und leftthook Hooks, führt sie vor teuren KI-Operationen aus
 
 ### 🛡️ **Eingebaute Sicherheit**
 
-- **Automatische Geheimsnis-Erkennung**: Scannt vor dem Commit nach API-Schlüsseln, Passwörtern und Tokens
-- **Interaktiver Schutz**: Fordert vor dem Commit potenziell sensibler Daten auf mit klaren Korrekturoptionen
+- **Automatische Geheimnis-Erkennung**: Scannt vor dem Commit nach API-Schlüsseln, Passwörtern und Tokens
+- **Interaktiver Schutz**: Fordert vor dem Commit potenziell sensible Daten auf mit klaren Korrekturoptionen
 - **Intelligentes Filtern**: Ignoriert Beispieldateien, Vorlagendateien und Platzhaltertext zur Reduzierung von Falschpositiven
 
 ---
@@ -114,7 +114,7 @@ uv tool upgrade gac
 # Ihre Änderungen hinzufügen
 git add .
 
-# Generieren und committen mit LLM
+# Generieren und committen mit KI
 gac
 
 # Überprüfen → y (commit) | n (abbrechen) | r (erneut generieren) | e (bearbeiten) | oder Feedback eingeben
@@ -129,7 +129,7 @@ gac
 | `gac -a`           | Alle Änderungen vor der Generierung der Commit-Nachricht hinzufügen                  |
 | `gac -o`           | Einzeilige Nachricht für triviale Änderungen                                         |
 | `gac -v`           | Ausführliches Format mit Motivation, technischer Herangehensweise und Impact-Analyse |
-| `gac -h "hinweis"` | Kontext für LLM hinzufügen (z.B. `gac -h "bug fix"`)                                 |
+| `gac -h "hinweis"` | Kontext für KI hinzufügen (z.B. `gac -h "bug fix"`)                                  |
 | `gac -s`           | Scope einschließen (z.B. feat(auth):)                                                |
 | `gac -i`           | Fragen zu Änderungen stellen für besseren Kontext                                    |
 | `gac -p`           | Commit und push                                                                      |
@@ -152,7 +152,7 @@ gac -ag
 # Interaktiver Modus mit ausführlicher Ausgabe für detaillierte Erklärungen
 gac -iv
 
-# Debuggen, was das LLM sieht
+# Debuggen, was die KI sieht
 gac --show-prompt
 
 # Sicherheits-Scan überspringen (vorsichtig verwenden)
@@ -171,7 +171,6 @@ r
 e
 # Verwendet prompt_toolkit für mehrzeiliges Editing mit vi/emacs Tastaturbelegungen
 # Esc+Enter oder Ctrl+S zum Absenden, Ctrl+C zum Abbrechen
-
 # Oder geben Sie Ihr Feedback direkt ein!
 mache es kürzer und konzentriere dich auf die Performance-Verbesserung
 verwende conventional commit Format mit Scope
@@ -184,7 +183,7 @@ Die Bearbeitungsfunktion (`e`) bietet erweitertes direktes Terminal-Editing, das
 
 - **Natürlich bearbeiten**: Mehrzeiliges Editing mit bekannten vi/emacs Tastaturbelegungen
 - **Schnelle Korrekturen**: Tippfehler korrigieren, Wortlaut anpassen oder Formatierung verfeinern
-- **Details hinzufügen**: Informationen einfügen, die das LLM möglicherweise übersehen hat
+- **Details hinzufügen**: Informationen einfügen, die die KI möglicherweise übersehen hat
 - **Umstrukturieren**: Stichpunkte neu anordnen oder Nachrichtenstruktur ändern
 
 ---
@@ -193,7 +192,7 @@ Die Bearbeitungsfunktion (`e`) bietet erweitertes direktes Terminal-Editing, das
 
 Führen Sie `gac init` aus, um Ihren Provider interaktiv zu konfigurieren, oder setzen Sie Umgebungsvariablen:
 
-Später Provider oder Modelle ändern, ohne Spracheinstellungen zu berühren? Verwenden Sie `gac model` für einen optimierten Ablauf, der die Spracheingabeaufforderungen überspringt.
+Später Provider oder Modelle ändern, ohne Spracheinstellungen zu berühren? Verwenden Sie `gac model` für einen Optimierten Ablauf, der die Spracheingabeaufforderungen überspringt.
 
 ```bash
 # Beispielkonfiguration
