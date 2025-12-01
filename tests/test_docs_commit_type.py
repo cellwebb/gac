@@ -155,7 +155,3 @@ index abc123..def456 100644
         assert "ONLY to documentation files" in prompt
         assert "*.md" in prompt
         assert "README.md" in processed_diff
-
-
-if __name__ == "__main__":
-    unittest.main()

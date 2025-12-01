@@ -2,7 +2,6 @@
 
 """Tests for the prompt module."""
 
-import unittest
 from unittest.mock import patch
 
 from gac.prompt import build_prompt, clean_commit_message
@@ -351,7 +350,3 @@ class TestPrompts:
         message = "功能: 新增深色模式支援"
         result = clean_commit_message(message)
         assert result == "功能: 新增深色模式支援"
-
-
-if __name__ == "__main__":
-    unittest.main()

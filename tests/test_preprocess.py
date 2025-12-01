@@ -1,6 +1,5 @@
 """Tests for the diff preprocessing functionality."""
 
-import unittest
 from unittest.mock import patch
 
 from gac.preprocess import (
@@ -389,7 +388,3 @@ diff --git a/README.md b/README.md
         assert "[Minified file change]" in filtered  # Should have the minified marker
         assert "def foo" in filtered  # main.py content present
         assert "a" * 1000 not in filtered  # minified content removed
-
-
-if __name__ == "__main__":
-    unittest.main()
