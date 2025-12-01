@@ -19,6 +19,8 @@ def _workflow_kwargs(**overrides):
         "dry_run": True,
         "push": False,
         "show_prompt": False,
+        "interactive": False,
+        "message_only": False,
     }
     base.update(overrides)
     return base

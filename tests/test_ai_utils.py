@@ -208,10 +208,10 @@ class TestGenerateWithRetries:
             ai_utils.generate_with_retries({}, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
         assert e.value.error_type == "model"
 
-    @patch("gac.ai_utils.Halo")
-    def test_skip_success_message(self, mock_halo):
+    @patch("gac.ai_utils.Status")
+    def test_skip_success_message(self, mock_status):
         mock_spinner = MagicMock()
-        mock_halo.return_value = mock_spinner
+        mock_status.return_value = mock_spinner
         funcs = {"openai": lambda **kw: "ok"}
         ai_utils.generate_with_retries(
             funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False, False, True
@@ -230,16 +230,18 @@ class TestGenerateWithRetries:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
         assert e.value.error_type == "model"
 
-    @patch("gac.ai_utils.Halo")
-    def test_auth_error_spinner_fail(self, mock_halo):
+    @patch("gac.ai_utils.Status")
+    @patch("gac.ai_utils.console")
+    def test_auth_error_spinner_fail(self, mock_console, mock_status):
         mock_spinner = MagicMock()
-        mock_halo.return_value = mock_spinner
+        mock_status.return_value = mock_spinner
         funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Invalid API key"))}
         with pytest.raises(AIError):
             ai_utils.generate_with_retries(
                 funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False
             )
-        mock_spinner.fail.assert_called_once()
+        mock_spinner.stop.assert_called()
+        mock_console.print.assert_called_once()
 
     @patch("gac.ai_utils.time.sleep")
     def test_retry_warning(self, mock_sleep):

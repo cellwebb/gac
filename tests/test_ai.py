@@ -167,13 +167,14 @@ class TestGenerateCommitMessage:
         assert call_args[1]["temperature"] == 0.5  # temperature
         assert call_args[1]["max_tokens"] == 100  # max_tokens
 
-    @patch("gac.ai_utils.Halo")
+    @patch("gac.ai_utils.Status")
+    @patch("gac.ai_utils.console")
     @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value="docs: Update README")})
-    def test_generate_commit_message_with_spinner(self, mock_halo_class):
+    def test_generate_commit_message_with_spinner(self, mock_console, mock_status_class):
         """Test generate_commit_message with spinner (non-quiet mode)."""
         # Setup mocks
         mock_spinner = MagicMock()
-        mock_halo_class.return_value = mock_spinner
+        mock_status_class.return_value = mock_spinner
 
         # Test with spinner enabled (quiet=False)
         result = generate_commit_message(model="openai:gpt-4", prompt="test", quiet=False)
@@ -181,9 +182,10 @@ class TestGenerateCommitMessage:
         assert result == "docs: Update README"
 
         # Verify spinner was used
-        mock_halo_class.assert_called_once()
+        mock_status_class.assert_called_once()
         mock_spinner.start.assert_called_once()
-        mock_spinner.succeed.assert_called_once_with("Generated commit message with openai gpt-4")
+        mock_spinner.stop.assert_called_once()
+        mock_console.print.assert_called_once_with("✓ Generated commit message with openai gpt-4")
 
     @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openrouter": MagicMock(return_value="chore: tidy config")})
     def test_generate_commit_message_openrouter_provider(self):
@@ -328,15 +330,16 @@ class TestGenerateCommitMessage:
         assert result == "Alternative response format"
 
     @patch("gac.ai_utils.time.sleep")
-    @patch("gac.ai_utils.Halo")
+    @patch("gac.ai_utils.Status")
+    @patch("gac.ai_utils.console")
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=[Exception("Temporary error"), "Success"])}
     )
-    def test_generate_commit_message_retry_with_spinner(self, mock_halo_class, mock_sleep):
+    def test_generate_commit_message_retry_with_spinner(self, mock_console, mock_status_class, mock_sleep):
         """Test retry logic with spinner animation."""
         # Setup mocks
         mock_spinner = MagicMock()
-        mock_halo_class.return_value = mock_spinner
+        mock_status_class.return_value = mock_spinner
 
         # Test with spinner and retry
         result = generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=2, quiet=False)
@@ -345,25 +348,28 @@ class TestGenerateCommitMessage:
 
         # Verify spinner was started and succeeded
         mock_spinner.start.assert_called_once()
-        mock_spinner.succeed.assert_called_once()
+        mock_spinner.stop.assert_called_once()
+        mock_console.print.assert_called()
 
         # Verify that sleep was called during retry (indicating retry countdown happened)
         assert mock_sleep.call_count > 0
 
-    @patch("gac.ai_utils.Halo")
+    @patch("gac.ai_utils.Status")
+    @patch("gac.ai_utils.console")
     @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Persistent error"))})
-    def test_generate_commit_message_failure_with_spinner(self, mock_halo_class):
+    def test_generate_commit_message_failure_with_spinner(self, mock_console, mock_status_class):
         """Test that spinner shows failure when all retries are exhausted."""
         # Setup mocks
         mock_spinner = MagicMock()
-        mock_halo_class.return_value = mock_spinner
+        mock_status_class.return_value = mock_spinner
 
         # Test failure with spinner
         with pytest.raises(AIError):
             generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=1, quiet=False)
 
         # Verify spinner showed failure
-        mock_spinner.fail.assert_called_once_with("Failed to generate commit message with openai gpt-4.1-mini")
+        mock_spinner.stop.assert_called()
+        mock_console.print.assert_called_with("✗ Failed to generate commit message with openai gpt-4.1-mini")
 
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value="feat: Add conversation support")}
