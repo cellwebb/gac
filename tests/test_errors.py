@@ -4,13 +4,16 @@ import unittest
 from unittest.mock import patch
 
 from gac.errors import (
+    AI_ERROR_CODES,
     AIError,
     ConfigError,
     FormattingError,
     GacError,
     GitError,
+    SecurityError,
     format_error_for_user,
     handle_error,
+    with_error_handling,
 )
 
 
@@ -25,6 +28,7 @@ class TestErrors(unittest.TestCase):
         self.assertTrue(issubclass(GitError, GacError))
         self.assertTrue(issubclass(AIError, GacError))
         self.assertTrue(issubclass(FormattingError, GacError))
+        self.assertTrue(issubclass(SecurityError, GacError))
 
     def test_error_exit_codes(self):
         """Test error classes provide appropriate exit codes."""
@@ -35,6 +39,7 @@ class TestErrors(unittest.TestCase):
             GitError: 3,
             AIError: 4,
             FormattingError: 5,
+            SecurityError: 6,
         }
 
         # Verify the behavior: error classes have the expected exit codes
@@ -216,6 +221,152 @@ class TestErrors(unittest.TestCase):
         self.assertEqual(error.error_type, "unknown")
         self.assertEqual(error.error_code, 500)
 
+    def test_ai_error_codes_mapping(self):
+        """Test AI_ERROR_CODES mapping is correct."""
+        expected_codes = {
+            "authentication": 401,
+            "connection": 503,
+            "rate_limit": 429,
+            "timeout": 408,
+            "model": 400,
+            "unknown": 500,
+        }
+        self.assertEqual(AI_ERROR_CODES, expected_codes)
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_ai_error_with_exit_code_override(self):
+        """Test AIError with exit code override."""
+        error = AIError("Test error", error_type="model", exit_code=10)
+        self.assertEqual(error.exit_code, 10)
+        self.assertEqual(error.error_type, "model")
+        self.assertEqual(error.error_code, 400)
+
+    def test_security_error_properties(self):
+        """Test SecurityError has correct properties."""
+        error = SecurityError("Security issue detected")
+        self.assertEqual(error.exit_code, 6)
+        self.assertEqual(error.message, "Security issue detected")
+        self.assertIsInstance(error, GacError)
+
+    @patch("gac.errors.logger")
+    def test_handle_error_quiet_mode(self, mock_logger):
+        """Test handle_error in quiet mode."""
+        error = AIError("AI error", error_type="authentication")
+        handle_error(error, exit_program=False, quiet=True)
+
+        # Should still log the error even in quiet mode
+        mock_logger.error.assert_called()
+
+    @patch("gac.errors.logger")
+    def test_handle_error_ai_error_specific_logging(self, mock_logger):
+        """Test handle_error logs specific messages for AI errors."""
+        error = AIError.connection_error("Cannot connect")
+        handle_error(error, exit_program=False, quiet=False)
+
+        # Should log AI-specific message
+        mock_logger.error.assert_any_call("AI operation failed. Please check your configuration and API keys.")
+
+    @patch("gac.errors.logger")
+    def test_handle_error_security_error_specific_logging(self, mock_logger):
+        """Test handle_error logs specific messages for Security errors."""
+        error = SecurityError("Secret detected")
+        handle_error(error, exit_program=False, quiet=False)
+
+        # Should log security-specific message
+        mock_logger.error.assert_any_call("Security scan detected potential secrets in staged changes.")
+
+    def test_format_error_for_user_security_error(self):
+        """Test format_error_for_user for SecurityError."""
+        error = SecurityError("Secret detected")
+        message = format_error_for_user(error)
+        self.assertIn("Secret detected", message)
+        self.assertIn("remove or secure any detected secrets", message)
+
+    def test_format_error_for_user_ai_generic_without_error_type(self):
+        """Test format_error_for_user for AI errors without error_type attribute."""
+        error = AIError("Generic AI error")
+        # Remove error_type to test generic case
+        if hasattr(error, "error_type"):
+            delattr(error, "error_type")
+
+        message = format_error_for_user(error)
+        self.assertIn("Generic AI error", message)
+        self.assertIn("check your API key, model name, and internet connection", message)
+
+    def test_with_error_handling_decorator_success(self):
+        """Test with_error_handling decorator on successful function."""
+
+        @with_error_handling(ConfigError, "Operation failed")
+        def successful_function():
+            return "success"
+
+        result = successful_function()
+        self.assertEqual(result, "success")
+
+    @patch("gac.errors.handle_error")
+    def test_with_error_handling_decorator_exception_no_exit(self, mock_handle):
+        """Test with_error_handling decorator with exception, no exit."""
+
+        @with_error_handling(ConfigError, "Operation failed", exit_on_error=False)
+        def failing_function():
+            raise ValueError("Original error")
+
+        result = failing_function()
+        self.assertIsNone(result)
+        mock_handle.assert_called_once()
+        error_arg = mock_handle.call_args[0][0]
+        self.assertIsInstance(error_arg, ConfigError)
+        self.assertIn("Operation failed: Original error", str(error_arg))
+
+    @patch("gac.errors.handle_error")
+    def test_with_error_handling_decorator_exception_with_exit(self, mock_handle):
+        """Test with_error_handling decorator with exception and exit."""
+
+        @with_error_handling(GitError, "Git operation failed", exit_on_error=True)
+        def failing_function():
+            raise RuntimeError("Git command failed")
+
+        failing_function()
+        mock_handle.assert_called_once()
+        error_arg = mock_handle.call_args[0][0]
+        self.assertIsInstance(error_arg, GitError)
+        self.assertIn("Git operation failed: Git command failed", str(error_arg))
+
+    @patch("gac.errors.handle_error")
+    def test_with_error_handling_decorator_quiet_mode(self, mock_handle):
+        """Test with_error_handling decorator in quiet mode."""
+
+        @with_error_handling(ConfigError, "Operation failed", quiet=True)
+        def failing_function():
+            raise ValueError("Original error")
+
+        failing_function()
+        mock_handle.assert_called_once()
+        # Check that quiet parameter was passed
+        call_kwargs = mock_handle.call_args[1]
+        self.assertTrue(call_kwargs["quiet"])
+
+    @patch("gac.errors.handle_error")
+    def test_with_error_handling_decorator_different_error_types(self, mock_handle):
+        """Test with_error_handling with different error types."""
+
+        @with_error_handling(SecurityError, "Security issue")
+        def security_failing_function():
+            raise Exception("Security violation")
+
+        security_failing_function()
+        error_arg = mock_handle.call_args[0][0]
+        self.assertIsInstance(error_arg, SecurityError)
+
+    def test_gac_error_with_full_constructor(self):
+        """Test GacError with all constructor parameters."""
+        error = GacError(
+            message="Test message",
+            details="Additional details",
+            suggestion="Try this instead",
+            exit_code=42,
+        )
+        self.assertEqual(error.message, "Test message")
+        self.assertEqual(error.details, "Additional details")
+        self.assertEqual(error.suggestion, "Try this instead")
+        self.assertEqual(error.exit_code, 42)
+        self.assertEqual(str(error), "Test message")
