@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 from rich.console import Console
+from rich.panel import Panel
 
 from gac.constants import EnvDefaults
 
@@ -17,8 +18,6 @@ def handle_confirmation_loop(
     quiet: bool,
     model: str,
 ) -> tuple[str, str, list[dict[str, str]]]:
-    from rich.panel import Panel
-
     from gac.utils import edit_commit_message_inplace
 
     while True:
@@ -87,8 +86,6 @@ def check_token_warning(
 
 
 def display_commit_message(commit_message: str, prompt_tokens: int, model: str, quiet: bool) -> None:
-    from rich.panel import Panel
-
     from gac.ai_utils import count_tokens
 
     console.print("[bold green]Generated commit message:[/bold green]")
@@ -132,3 +129,92 @@ def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> 
             run_git_command(["add", file_path])
         except Exception as e:
             logger.warning(f"Failed to restore staging for {file_path}: {e}")
+
+
+def collect_interactive_answers(questions: list[str]) -> dict[str, str] | None:
+    """Collect user answers to generated questions interactively.
+
+    Args:
+        questions: List of generated questions
+
+    Returns:
+        Dictionary mapping questions to answers, or None if user aborted
+    """
+    if not questions:
+        return {}
+
+    console.print("\n[bold cyan]🤝 Let's clarify your commit intent:[/bold cyan]")
+    console.print("[dim]Answer each question, press Enter to skip, or type:[/dim]")
+    console.print("[dim]  • 'skip' - skip remaining questions[/dim]")
+    console.print("[dim]  • 'quit' - abort interactive mode[/dim]\n")
+
+    answers = {}
+
+    for i, question in enumerate(questions, 1):
+        # Display the question with nice formatting
+        console.print(f"[bold blue]Question {i}:[/bold blue] {question}")
+
+        try:
+            answer = click.prompt(
+                "Your answer",
+                type=str,
+                default="",  # Allow empty input to skip
+                show_default=False,
+                prompt_suffix=": ",
+            ).strip()
+
+            # Handle special commands
+            answer_lower = answer.lower()
+
+            if answer_lower == "quit":
+                console.print("\n[yellow]⚠️  Interactive mode aborted by user[/yellow]")
+                return None
+            elif answer_lower == "skip":
+                console.print("[dim]Skipping remaining questions...[/dim]")
+                break
+            elif answer_lower == "" or answer_lower == "none":
+                # User explicitly skipped this question
+                console.print("[dim]↳ Skipped[/dim]")
+                continue
+            else:
+                # Valid answer provided
+                answers[question] = answer
+                console.print("[dim]↳ Got it![/dim]")
+
+        except click.Abort:
+            # User pressed Ctrl+C
+            console.print("\n[yellow]⚠️  Interactive mode aborted by user[/yellow]")
+            return None
+
+        console.print()  # Add spacing between questions
+
+    return answers
+
+
+def format_answers_for_prompt(answers: dict[str, str]) -> str:
+    """Format collected answers for inclusion in the commit message prompt.
+
+    Args:
+        answers: Dictionary mapping questions to answers
+
+    Returns:
+        Formatted string for inclusion in the prompt
+    """
+    if not answers:
+        return ""
+
+    formatted_lines = []
+    for question, answer in answers.items():
+        formatted_lines.append(f"Q: {question}")
+        formatted_lines.append(f"A: {answer}")
+        formatted_lines.append("")
+
+    answers_text = "\n".join(formatted_lines).rstrip()
+
+    return (
+        f"\n\n<user_answers>\n"
+        f"The user provided the following clarifying information:\n\n"
+        f"{answers_text}\n\n"
+        f"</user_answers>\n\n"
+        f"<context_request>Use the user's answers above to craft a more accurate and informative commit message that captures their specific intent and context.</context_request>"
+    )

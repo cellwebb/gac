@@ -271,6 +271,55 @@ DO NOT use markdown formatting, headers, or code blocks.
 The entire response will be passed directly to 'git commit -m'.
 </format_instructions>"""
 
+QUESTION_GENERATION_TEMPLATE = """<role>
+You are an expert code reviewer specializing in identifying missing context and intent in code changes. Your task is to analyze git diffs and generate focused questions that clarify the "why" behind the changes.
+</role>
+
+<focus>
+Analyze the git diff and identify missing "why" context. Generate 3-7 focused questions to clarify intent, motivation, and impact. Your questions should help the developer provide the essential context needed for a meaningful commit message.
+</focus>
+
+<guidelines>
+- Focus on WHY the changes were made, not just WHAT was changed
+- Ask about the intent, motivation, or business purpose behind the changes
+- Consider what future developers need to understand about this change
+- Ask about the broader impact or consequences of the changes
+- Target areas where technical implementation doesn't reveal the underlying purpose
+- Prioritize questions that would most help generate an informative commit message
+- Keep questions concise and specific
+- Format as a clean list for easy parsing
+</guidelines>
+
+<rules>
+NEVER write or rewrite the commit message; only ask questions.
+DO NOT suggest specific commit message formats or wording.
+DO NOT ask about implementation details that are already clear from the diff.
+DO NOT include any explanations or preamble with your response.
+</rules>
+
+<output_format>
+Respond with ONLY a numbered list of questions, one per line:
+1. First focused question?
+2. Second focused question?
+3. Third focused question?
+4. [etc...]
+</output_format>
+
+<examples>
+Good example questions:
+1. What problem or user need does this change address?
+2. Why was this particular approach chosen over alternatives?
+3. What impact will this have on existing functionality?
+4. What motivated the addition of these new error cases?
+5. Why are these validation rules being added now?
+
+Bad examples (violates rules):
+❌ feat: add user authentication - This is a commit message, not a question
+❌ Should I use "feat" or "fix" for this change? - This asks about formatting, not context
+❌ Why did you rename the variable from x to y? - Too implementation-specific
+❌ You should reformat this as "fix: resolve authentication issue" - This rewrites the message
+</examples>"""
+
 
 # ============================================================================
 # Template Loading
@@ -610,6 +659,55 @@ VALIDATION CHECKLIST - Before responding, verify:
     user_prompt = user_prompt + grouping_instructions
 
     return system_prompt, user_prompt
+
+
+def build_question_generation_prompt(
+    status: str,
+    processed_diff: str,
+    diff_stat: str = "",
+    hint: str = "",
+) -> tuple[str, str]:
+    """Build system and user prompts for question generation about staged changes.
+
+    Args:
+        status: Git status output
+        processed_diff: Git diff output, already preprocessed and ready to use
+        diff_stat: Git diff stat output showing file changes summary
+        hint: Optional hint to guide the question generation
+
+    Returns:
+        Tuple of (system_prompt, user_prompt) ready to be sent to an AI model
+    """
+    system_prompt = QUESTION_GENERATION_TEMPLATE
+
+    # Build user prompt with git context
+    user_prompt = f"""<git_diff>
+{processed_diff}
+</git_diff>
+
+<git_diff_stat>
+{diff_stat}
+</git_diff_stat>
+
+<git_status>
+{status}
+</git_status>"""
+
+    if hint:
+        user_prompt = f"""<hint>
+Additional context provided by the user: {hint}
+</hint>
+
+{user_prompt}"""
+
+    # Add instruction to ask questions in the appropriate language if specified
+    user_prompt += """
+
+<format_instructions>
+Analyze the changes above and generate 3-7 focused questions that clarify the intent, motivation, and impact of these changes. Respond with ONLY a numbered list of questions as specified in the system prompt.
+</format_instructions>"""
+
+    return system_prompt.strip(), user_prompt.strip()
 
 
 # ============================================================================

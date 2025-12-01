@@ -29,8 +29,10 @@ from gac.prompt import build_prompt, clean_commit_message
 from gac.security import get_affected_files, scan_staged_diff
 from gac.workflow_utils import (
     check_token_warning,
+    collect_interactive_answers,
     display_commit_message,
     execute_commit,
+    format_answers_for_prompt,
     handle_confirmation_loop,
     restore_staging,
 )
@@ -135,6 +137,8 @@ def execute_grouped_commits_workflow(
     dry_run: bool,
     push: bool,
     show_prompt: bool,
+    interactive: bool,
+    message_only: bool,
     hook_timeout: int = 120,
 ) -> None:
     """Execute the grouped commits workflow."""
@@ -154,6 +158,68 @@ def execute_grouped_commits_workflow(
     conversation_messages.append({"role": "user", "content": user_prompt})
 
     _parse_model_identifier(model)
+
+    # Generate interactive questions if enabled
+    if interactive and not message_only:
+        try:
+            # Extract git data from the user prompt for question generation
+            status_match = None
+            diff_match = None
+            diff_stat_match = None
+
+            import re
+
+            status_match = re.search(r"<git_status>\n(.*?)\n</git_status>", user_prompt, re.DOTALL)
+            diff_match = re.search(r"<git_diff>\n(.*?)\n</git_diff>", user_prompt, re.DOTALL)
+            diff_stat_match = re.search(r"<git_diff_stat>\n(.*?)\n</git_diff_stat>", user_prompt, re.DOTALL)
+
+            status = status_match.group(1) if status_match else ""
+            diff = diff_match.group(1) if diff_match else ""
+            diff_stat = diff_stat_match.group(1) if diff_stat_match else ""
+
+            # Extract hint text if present
+            hint_match = re.search(r"<hint_text>(.*?)</hint_text>", user_prompt, re.DOTALL)
+            hint = hint_match.group(1) if hint_match else ""
+
+            questions = generate_contextual_questions(
+                model=model,
+                status=status,
+                processed_diff=diff,
+                diff_stat=diff_stat,
+                hint=hint,
+                temperature=temperature,
+                max_tokens=max_output_tokens,
+                max_retries=max_retries,
+                quiet=quiet,
+            )
+
+            if questions:
+                # Collect answers interactively
+                answers = collect_interactive_answers(questions)
+
+                if answers is None:
+                    # User aborted interactive mode
+                    if not quiet:
+                        console.print("[yellow]Proceeding with commit without additional context[/yellow]\n")
+                elif answers:
+                    # User provided some answers, format them for the prompt
+                    answers_context = format_answers_for_prompt(answers)
+                    enhanced_user_prompt = user_prompt + answers_context
+
+                    # Update the conversation messages with the enhanced prompt
+                    if conversation_messages and conversation_messages[-1]["role"] == "user":
+                        conversation_messages[-1]["content"] = enhanced_user_prompt
+
+                    logger.info(f"Collected answers for {len(answers)} questions")
+                else:
+                    # User skipped all questions
+                    if not quiet:
+                        console.print("[dim]No answers provided, proceeding with original context[/dim]\n")
+
+        except Exception as e:
+            logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
+            if not quiet:
+                console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
 
     first_iteration = True
     content_retry_budget = max(3, int(max_retries))
@@ -404,6 +470,7 @@ def execute_single_commit_workflow(
     push: bool,
     show_prompt: bool,
     hook_timeout: int = 120,
+    interactive: bool = False,
 ) -> None:
     if show_prompt:
         full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
@@ -415,6 +482,68 @@ def execute_single_commit_workflow(
     conversation_messages.append({"role": "user", "content": user_prompt})
 
     _parse_model_identifier(model)
+
+    # Generate interactive questions if enabled
+    if interactive and not message_only:
+        try:
+            # Extract git data from the user prompt for question generation
+            status_match = None
+            diff_match = None
+            diff_stat_match = None
+
+            import re
+
+            status_match = re.search(r"<git_status>\n(.*?)\n</git_status>", user_prompt, re.DOTALL)
+            diff_match = re.search(r"<git_diff>\n(.*?)\n</git_diff>", user_prompt, re.DOTALL)
+            diff_stat_match = re.search(r"<git_diff_stat>\n(.*?)\n</git_diff_stat>", user_prompt, re.DOTALL)
+
+            status = status_match.group(1) if status_match else ""
+            diff = diff_match.group(1) if diff_match else ""
+            diff_stat = diff_stat_match.group(1) if diff_stat_match else ""
+
+            # Extract hint text if present
+            hint_match = re.search(r"<hint_text>(.*?)</hint_text>", user_prompt, re.DOTALL)
+            hint = hint_match.group(1) if hint_match else ""
+
+            questions = generate_contextual_questions(
+                model=model,
+                status=status,
+                processed_diff=diff,
+                diff_stat=diff_stat,
+                hint=hint,
+                temperature=temperature,
+                max_tokens=max_output_tokens,
+                max_retries=max_retries,
+                quiet=quiet,
+            )
+
+            if questions:
+                # Collect answers interactively
+                answers = collect_interactive_answers(questions)
+
+                if answers is None:
+                    # User aborted interactive mode
+                    if not quiet:
+                        console.print("[yellow]Proceeding with commit without additional context[/yellow]\n")
+                elif answers:
+                    # User provided some answers, format them for the prompt
+                    answers_context = format_answers_for_prompt(answers)
+                    enhanced_user_prompt = user_prompt + answers_context
+
+                    # Update the conversation messages with the enhanced prompt
+                    if conversation_messages and conversation_messages[-1]["role"] == "user":
+                        conversation_messages[-1]["content"] = enhanced_user_prompt
+
+                    logger.info(f"Collected answers for {len(answers)} questions")
+                else:
+                    # User skipped all questions
+                    if not quiet:
+                        console.print("[dim]No answers provided, proceeding with original context[/dim]\n")
+
+        except Exception as e:
+            logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
+            if not quiet:
+                console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
 
     first_iteration = True
     while True:
@@ -502,9 +631,111 @@ def execute_single_commit_workflow(
     sys.exit(0)
 
 
+def generate_contextual_questions(
+    model: str,
+    status: str,
+    processed_diff: str,
+    diff_stat: str = "",
+    hint: str = "",
+    temperature: float = EnvDefaults.TEMPERATURE,
+    max_tokens: int = EnvDefaults.MAX_OUTPUT_TOKENS,
+    max_retries: int = EnvDefaults.MAX_RETRIES,
+    quiet: bool = False,
+) -> list[str]:
+    """Generate contextual questions about staged changes when interactive mode is enabled.
+
+    Args:
+        model: The model to use in provider:model_name format
+        status: Git status output
+        processed_diff: Git diff output, already preprocessed
+        diff_stat: Git diff stat output showing file changes summary
+        hint: Optional hint to guide the question generation
+        temperature: Controls randomness for generation
+        max_tokens: Maximum tokens in the response
+        max_retries: Number of retry attempts if generation fails
+        quiet: If True, suppress progress indicators
+
+    Returns:
+        A list of contextual questions about the staged changes
+
+    Raises:
+        AIError: If question generation fails after max_retries attempts
+    """
+    from gac.prompt import build_question_generation_prompt
+
+    try:
+        # Build prompts for question generation
+        system_prompt, user_prompt = build_question_generation_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            hint=hint,
+        )
+
+        # Generate questions using existing infrastructure
+        logger.info("Generating contextual questions about staged changes...")
+        questions_text = generate_commit_message(
+            model=model,
+            prompt=(system_prompt, user_prompt),
+            temperature=temperature,
+            max_tokens=max_tokens,
+            max_retries=max_retries,
+            quiet=quiet,
+            skip_success_message=True,  # Don't show "Generated commit message" for questions
+            task_description="contextual questions",
+        )
+
+        # Parse the response to extract individual questions
+        questions = _parse_questions_from_response(questions_text)
+
+        logger.info(f"Generated {len(questions)} contextual questions")
+        return questions
+
+    except Exception as e:
+        logger.error(f"Failed to generate contextual questions: {e}")
+        raise AIError.model_error(f"Failed to generate contextual questions: {e}") from e
+
+
+def _parse_questions_from_response(response: str) -> list[str]:
+    """Parse the AI response to extract individual questions from a numbered list.
+
+    Args:
+        response: The raw response from the AI model
+
+    Returns:
+        A list of cleaned questions
+    """
+    import re
+
+    questions = []
+    lines = response.strip().split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        # Match numbered list format (e.g., "1. Question text?" or "1) Question text?")
+        match = re.match(r"^\d+\.\s+(.+)$", line)
+        if not match:
+            match = re.match(r"^\d+\)\s+(.+)$", line)
+
+        if match:
+            question = match.group(1).strip()
+            # Remove any leading symbols like •, -, *
+            question = re.sub(r"^[•\-*]\s+", "", question)
+            if question and question.endswith("?"):
+                questions.append(question)
+        elif line.endswith("?") and len(line) > 5:  # Fallback for non-numbered questions
+            questions.append(line)
+
+    return questions
+
+
 def main(
     stage_all: bool = False,
     group: bool = False,
+    interactive: bool = False,
     model: str | None = None,
     hint: str = "",
     one_liner: bool = False,
@@ -711,6 +942,8 @@ def main(
                 push=push,
                 show_prompt=show_prompt,
                 hook_timeout=hook_timeout,
+                interactive=interactive,
+                message_only=message_only,
             )
         except AIError as e:
             logger.error(str(e))
@@ -733,6 +966,7 @@ def main(
                 push=push,
                 show_prompt=show_prompt,
                 hook_timeout=hook_timeout,
+                interactive=interactive,
             )
         except AIError as e:
             # Check if this is a Claude Code OAuth token expiration
@@ -764,11 +998,12 @@ def main(
                             quiet=quiet,
                             no_verify=no_verify,
                             dry_run=dry_run,
+                            message_only=message_only,
                             push=push,
                             show_prompt=show_prompt,
                             hook_timeout=hook_timeout,
+                            interactive=interactive,
                         )
-                        return  # Success!
                     else:
                         console.print("[red]Re-authentication failed.[/red]")
                         console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
