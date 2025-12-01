@@ -7,7 +7,7 @@ from unittest import mock
 
 from click.testing import CliRunner
 
-from gac.init_cli import init
+from gac.init_cli import _configure_language, _load_existing_env, _prompt_required_text, init
 
 
 def _setup_env_file(tmpdir: str) -> Path:
@@ -25,6 +25,90 @@ def _patch_env_paths(env_path: Path):
         mock.patch("gac.language_cli.GAC_ENV_PATH", env_path),
     ):
         yield
+
+
+def test_init_cli_prompt_required_text_valid_input():
+    """Test _prompt_required_text with valid input."""
+    with mock.patch("questionary.text") as mtext:
+        mtext.return_value.ask.side_effect = ["valid input"]
+        result = _prompt_required_text("Enter something:")
+        assert result == "valid input"
+
+
+def test_init_cli_prompt_required_text_empty_then_valid():
+    """Test _prompt_required_text with empty input then valid input."""
+    with mock.patch("questionary.text") as mtext, mock.patch("click.echo") as mecho:
+        mtext.return_value.ask.side_effect = ["", "  ", "valid input"]
+        result = _prompt_required_text("Enter something:")
+        assert result == "valid input"
+        # Should have echoed error message twice for empty inputs
+        assert mecho.call_count == 2
+
+
+def test_init_cli_prompt_required_text_cancel():
+    """Test _prompt_required_text with cancellation."""
+    with mock.patch("questionary.text") as mtext:
+        mtext.return_value.ask.side_effect = [None]  # User cancels
+        result = _prompt_required_text("Enter something:")
+        assert result is None
+
+
+def test_init_cli_load_existing_env_new_file(tmp_path):
+    """Test _load_existing_env creates new file."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path), mock.patch("click.echo") as mecho:
+            result = _load_existing_env()
+            assert result == {}
+            assert env_path.exists()
+            assert "Created $HOME/.gac.env" in str(mecho.call_args)
+
+
+def test_init_cli_load_existing_env_existing_file(tmp_path):
+    """Test _load_existing_env loads existing file."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("EXISTING_KEY='existing_value'\nANOTHER_KEY='another_value'\n")
+        with mock.patch("gac.init_cli.GAC_ENV_PATH", env_path), mock.patch("click.echo") as mecho:
+            result = _load_existing_env()
+            assert result == {"EXISTING_KEY": "existing_value", "ANOTHER_KEY": "another_value"}
+            assert "already exists" in str(mecho.call_args)
+
+
+def test_init_cli_configure_language_success(tmp_path):
+    """Test _configure_language successful configuration."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with (
+            mock.patch("gac.init_cli.GAC_ENV_PATH", env_path),
+            mock.patch("gac.init_cli.configure_language_init_workflow") as mconfig,
+            mock.patch("click.echo") as mecho,
+        ):
+            mconfig.return_value = True
+            _configure_language({})
+            mconfig.assert_called_once_with(env_path)
+            # Check that the success message was printed
+            echo_calls = [str(call) for call in mecho.call_args_list]
+            assert any("Language configuration completed" in str(call) for call in echo_calls)
+
+
+def test_init_cli_configure_language_failure(tmp_path):
+    """Test _configure_language failed configuration."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with (
+            mock.patch("gac.init_cli.GAC_ENV_PATH", env_path),
+            mock.patch("gac.init_cli.configure_language_init_workflow") as mconfig,
+            mock.patch("click.echo") as mecho,
+        ):
+            mconfig.return_value = False
+            _configure_language({})
+            mconfig.assert_called_once_with(env_path)
+            # Check that the failure message was printed
+            echo_calls = [str(call) for call in mecho.call_args_list]
+            assert any("Language configuration cancelled or failed" in str(call) for call in echo_calls)
 
 
 def test_init_cli_complete_workflow_with_english_language(monkeypatch):
