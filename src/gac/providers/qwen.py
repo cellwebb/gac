@@ -1,0 +1,61 @@
+"""Qwen API provider for gac with OAuth support."""
+
+import os
+
+import httpx
+
+from gac.auth import QwenOAuthProvider, TokenStore
+from gac.errors import AIError
+
+QWEN_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
+
+
+def get_qwen_auth() -> tuple[str, str]:
+    """Get Qwen authentication (API key or OAuth token).
+
+    Returns:
+        Tuple of (token, api_url) for authentication.
+    """
+    api_key = os.getenv("QWEN_API_KEY")
+    if api_key:
+        return api_key, QWEN_API_URL
+
+    oauth_provider = QwenOAuthProvider(TokenStore())
+    token = oauth_provider.get_token()
+    if token:
+        api_url = token.get("resource_url") or QWEN_API_URL
+        return token["access_token"], api_url
+
+    raise AIError.authentication_error(
+        "Qwen authentication not found. Set QWEN_API_KEY or run 'gac auth qwen login' for OAuth."
+    )
+
+
+def call_qwen_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
+    """Call Qwen API with OAuth or API key authentication."""
+    auth_token, api_url = get_qwen_auth()
+
+    headers = {"Authorization": f"Bearer {auth_token}", "Content-Type": "application/json"}
+
+    data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+
+    try:
+        response = httpx.post(api_url, headers=headers, json=data, timeout=120)
+        response.raise_for_status()
+        response_data = response.json()
+        content = response_data["choices"][0]["message"]["content"]
+        if content is None:
+            raise AIError.model_error("Qwen API returned null content")
+        if content == "":
+            raise AIError.model_error("Qwen API returned empty content")
+        return content
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 401:
+            raise AIError.authentication_error(f"Qwen authentication failed: {e.response.text}") from e
+        if e.response.status_code == 429:
+            raise AIError.rate_limit_error(f"Qwen API rate limit exceeded: {e.response.text}") from e
+        raise AIError.model_error(f"Qwen API error: {e.response.status_code} - {e.response.text}") from e
+    except httpx.TimeoutException as e:
+        raise AIError.timeout_error(f"Qwen API request timed out: {str(e)}") from e
+    except Exception as e:
+        raise AIError.model_error(f"Error calling Qwen API: {str(e)}") from e
