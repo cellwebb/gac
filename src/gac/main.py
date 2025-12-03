@@ -343,7 +343,7 @@ def execute_grouped_commits_workflow(
                 files = commit["files"]
                 files_display = ", ".join(files)
                 console.print(f"[dim]{files_display}[/dim]")
-                commit_msg = commit["message"]
+                commit_msg = commit["message"].strip()
                 console.print(Panel(commit_msg, title=f"Commit Message {idx}/{num_commits}", border_style="cyan"))
                 console.print()
 
@@ -396,7 +396,7 @@ def execute_grouped_commits_workflow(
             for idx, commit in enumerate(grouped_result["commits"], 1):
                 console.print(f"\n[cyan]Commit {idx}/{num_commits}:[/cyan]")
                 console.print(f"  Files: {', '.join(commit['files'])}")
-                console.print(f"  Message: {commit['message'][:50]}...")
+                console.print(f"  Message: {commit['message'].strip()[:50]}...")
         else:
             original_staged_files = get_staged_files(existing_only=False)
             original_staged_diff = run_git_command(["diff", "--cached", "--binary"], silent=True)
@@ -418,7 +418,7 @@ def execute_grouped_commits_workflow(
                                 run_git_command(["add", "-A", file_path])
                             else:
                                 run_git_command(["add", "-A", file_path])
-                        execute_commit(commit["message"], no_verify, hook_timeout)
+                        execute_commit(commit["message"].strip(), no_verify, hook_timeout)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except Exception as e:
                         console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
