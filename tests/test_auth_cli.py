@@ -4,7 +4,7 @@ import unittest.mock as mock
 
 from click.testing import CliRunner
 
-from gac.auth_cli import auth, qwen
+from gac.auth_cli import auth, claude_code, qwen
 
 
 class TestAuthCli:
@@ -21,90 +21,6 @@ class TestAuthCli:
         assert "claude-code" in auth.commands
         assert "qwen" in auth.commands
 
-    @mock.patch("gac.auth_cli.authenticate_and_save")
-    @mock.patch("gac.auth_cli.load_stored_token")
-    @mock.patch("gac.auth_cli.click.echo")
-    @mock.patch("gac.auth_cli.setup_logging")
-    def test_auth_claude_code_success_with_existing_token(
-        self, mock_setup_logging, mock_echo, mock_load_token, mock_auth
-    ):
-        """Test successful Claude Code authentication when token already exists."""
-        mock_load_token.return_value = "existing_token"
-        mock_auth.return_value = True
-
-        runner = CliRunner()
-        result = runner.invoke(auth, ["claude-code"])
-
-        assert result.exit_code == 0
-        mock_load_token.assert_called_once()
-        mock_auth.assert_called_once_with(quiet=False)
-
-    @mock.patch("gac.auth_cli.authenticate_and_save")
-    @mock.patch("gac.auth_cli.load_stored_token")
-    @mock.patch("gac.auth_cli.click.echo")
-    @mock.patch("gac.auth_cli.setup_logging")
-    def test_auth_claude_code_success_no_existing_token(
-        self, mock_setup_logging, mock_echo, mock_load_token, mock_auth
-    ):
-        """Test successful Claude Code authentication when no token exists."""
-        mock_load_token.return_value = None
-        mock_auth.return_value = True
-
-        runner = CliRunner()
-        result = runner.invoke(auth, ["claude-code"])
-
-        assert result.exit_code == 0
-        mock_load_token.assert_called_once()
-        mock_auth.assert_called_once_with(quiet=False)
-
-    @mock.patch("gac.auth_cli.authenticate_and_save")
-    @mock.patch("gac.auth_cli.load_stored_token")
-    @mock.patch("gac.auth_cli.click.echo")
-    @mock.patch("gac.auth_cli.setup_logging")
-    def test_auth_claude_code_failure(self, mock_setup_logging, mock_echo, mock_load_token, mock_auth):
-        """Test failed Claude Code authentication."""
-        mock_load_token.return_value = "existing_token"
-        mock_auth.return_value = False
-
-        runner = CliRunner()
-        result = runner.invoke(auth, ["claude-code"])
-
-        assert result.exit_code != 0
-        mock_load_token.assert_called_once()
-        mock_auth.assert_called_once_with(quiet=False)
-
-    @mock.patch("gac.auth_cli.authenticate_and_save")
-    @mock.patch("gac.auth_cli.load_stored_token")
-    @mock.patch("gac.auth_cli.click.echo")
-    @mock.patch("gac.auth_cli.setup_logging")
-    def test_auth_claude_code_quiet_mode(self, mock_setup_logging, mock_echo, mock_load_token, mock_auth):
-        """Test Claude Code authentication in quiet mode."""
-        mock_load_token.return_value = "existing_token"
-        mock_auth.return_value = True
-
-        runner = CliRunner()
-        result = runner.invoke(auth, ["claude-code", "--quiet"])
-
-        assert result.exit_code == 0
-        mock_setup_logging.assert_called_once_with("ERROR")
-        mock_auth.assert_called_once_with(quiet=True)
-
-    @mock.patch("gac.auth_cli.authenticate_and_save")
-    @mock.patch("gac.auth_cli.load_stored_token")
-    @mock.patch("gac.auth_cli.click.echo")
-    @mock.patch("gac.auth_cli.setup_logging")
-    def test_auth_claude_code_custom_log_level(self, mock_setup_logging, mock_echo, mock_load_token, mock_auth):
-        """Test Claude Code authentication with custom log level."""
-        mock_load_token.return_value = None
-        mock_auth.return_value = True
-
-        runner = CliRunner()
-        result = runner.invoke(auth, ["claude-code", "--log-level", "DEBUG"])
-
-        assert result.exit_code == 0
-        mock_setup_logging.assert_called_once_with("DEBUG")
-        mock_auth.assert_called_once_with(quiet=False)
-
     @mock.patch("gac.auth_cli.TokenStore")
     @mock.patch("gac.auth_cli.load_stored_token")
     def test_auth_status_no_auth(self, mock_load_token, mock_token_store):
@@ -120,6 +36,141 @@ class TestAuthCli:
         assert result.exit_code == 0
         assert "Claude Code: ✗ Not authenticated" in result.output
         assert "Qwen:        ✗ Not authenticated" in result.output
+
+
+class TestClaudeCodeAuthCli:
+    """Test the Claude Code auth CLI commands."""
+
+    def test_claude_code_command_exists(self):
+        """Test that the claude-code command is properly defined."""
+        assert claude_code is not None
+        assert claude_code.name == "claude-code"
+
+    def test_claude_code_has_subcommands(self):
+        """Test that claude-code has expected subcommands."""
+        assert hasattr(claude_code, "commands")
+        assert "login" in claude_code.commands
+        assert "logout" in claude_code.commands
+        assert "status" in claude_code.commands
+
+    @mock.patch("gac.auth_cli.authenticate_and_save")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    @mock.patch("gac.auth_cli.setup_logging")
+    def test_claude_code_login_success_no_existing_token(self, mock_setup_logging, mock_load_token, mock_auth):
+        """Test successful Claude Code login when no token exists."""
+        mock_load_token.return_value = None
+        mock_auth.return_value = True
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "login"])
+
+        assert result.exit_code == 0
+        mock_load_token.assert_called_once()
+        mock_auth.assert_called_once_with(quiet=False)
+
+    @mock.patch("gac.auth_cli.authenticate_and_save")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    @mock.patch("gac.auth_cli.setup_logging")
+    def test_claude_code_login_already_authenticated(self, mock_setup_logging, mock_load_token, mock_auth):
+        """Test Claude Code login when already authenticated (declined re-auth)."""
+        mock_load_token.return_value = "existing_token"
+        mock_auth.return_value = True
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "login"], input="n\n")
+
+        assert result.exit_code == 0
+        assert "Already authenticated" in result.output
+        mock_auth.assert_not_called()
+
+    @mock.patch("gac.auth_cli.authenticate_and_save")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    @mock.patch("gac.auth_cli.setup_logging")
+    def test_claude_code_login_failure(self, mock_setup_logging, mock_load_token, mock_auth):
+        """Test failed Claude Code login."""
+        mock_load_token.return_value = None
+        mock_auth.return_value = False
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "login"])
+
+        assert result.exit_code != 0
+        mock_auth.assert_called_once_with(quiet=False)
+
+    @mock.patch("gac.auth_cli.authenticate_and_save")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_login_quiet_mode(self, mock_load_token, mock_auth):
+        """Test Claude Code login in quiet mode."""
+        mock_load_token.return_value = None
+        mock_auth.return_value = True
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "login", "--quiet"])
+
+        assert result.exit_code == 0
+        mock_auth.assert_called_once_with(quiet=True)
+
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_status_not_authenticated(self, mock_load_token):
+        """Test Claude Code status when not authenticated."""
+        mock_load_token.return_value = None
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "status"])
+
+        assert result.exit_code == 0
+        assert "Not authenticated" in result.output
+
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_status_authenticated(self, mock_load_token):
+        """Test Claude Code status when authenticated."""
+        mock_load_token.return_value = "test_token"
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "status"])
+
+        assert result.exit_code == 0
+        assert "Authenticated" in result.output
+
+    @mock.patch("gac.auth_cli.remove_token")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_logout_not_authenticated(self, mock_load_token, mock_remove):
+        """Test Claude Code logout when not authenticated."""
+        mock_load_token.return_value = None
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "logout"])
+
+        assert result.exit_code == 0
+        assert "Not currently authenticated" in result.output
+        mock_remove.assert_not_called()
+
+    @mock.patch("gac.auth_cli.remove_token")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_logout_success(self, mock_load_token, mock_remove):
+        """Test successful Claude Code logout."""
+        mock_load_token.return_value = "existing_token"
+        mock_remove.return_value = True
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "logout"])
+
+        assert result.exit_code == 0
+        assert "Successfully logged out" in result.output
+        mock_remove.assert_called_once()
+
+    @mock.patch("gac.auth_cli.remove_token")
+    @mock.patch("gac.auth_cli.load_stored_token")
+    def test_claude_code_logout_failure(self, mock_load_token, mock_remove):
+        """Test Claude Code logout failure."""
+        mock_load_token.return_value = "existing_token"
+        mock_remove.return_value = False
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["claude-code", "logout"])
+
+        assert result.exit_code != 0
+        assert "Failed to remove" in result.output
 
 
 class TestQwenAuthCli:
