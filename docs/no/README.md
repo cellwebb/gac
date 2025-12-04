@@ -221,6 +221,8 @@ Følg sanntids installasjonsmålinger og pakkenedlastningsstatistikk.
 ## Få Hjelp
 
 - **Full dokumentasjon**: [USAGE.md](USAGE.md) - Komplett CLI-referanse
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/no/CLAUDE_CODE.md) - Claude Code oppsett og autentisering
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/no/QWEN.md) - Qwen.ai oppsett og autentisering
 - **Egendefinerte prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tilpass commit-meldingsstil
 - **Feilsøking**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Vanlige problemer og løsninger
 - **Bidra**: [CONTRIBUTING.md](CONTRIBUTING.md) - Utviklingsoppsett og retningslinjer

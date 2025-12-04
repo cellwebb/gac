@@ -221,6 +221,8 @@ ANTHROPIC_API_KEY=your_key_here
 ## Получение помощи
 
 - **Полная документация**: [USAGE.md](docs/ru/USAGE.md) - Полное справочное руководство по CLI
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ru/CLAUDE_CODE.md) - Настройка и аутентификация Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/ru/QWEN.md) - Настройка и аутентификация Qwen.ai
 - **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов
 - **Устранение неполадок**: [TROUBLESHOOTING.md](docs/ru/TROUBLESHOOTING.md) - Распространённые проблемы и решения
 - **Вклад в проект**: [CONTRIBUTING.md](docs/ru/CONTRIBUTING.md) - Настройка среды разработки и руководства

@@ -221,6 +221,8 @@ Acompanhe métricas de instalação em tempo real e estatísticas de download de
 ## Obtendo Ajuda
 
 - **Documentação completa**: [USAGE.md](docs/pt/USAGE.md) - Referência completa da CLI
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/pt/CLAUDE_CODE.md) - Configuração e autenticação do Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/pt/QWEN.md) - Configuração e autenticação do Qwen.ai
 - **Prompts personalizados**: [CUSTOM_SYSTEM_PROMPTS.md](docs/pt/CUSTOM_SYSTEM_PROMPTS.md) - Personalize o estilo da mensagem de commit
 - **Solução de problemas**: [TROUBLESHOOTING.md](docs/pt/TROUBLESHOOTING.md) - Problemas comuns e soluções
 - **Contribuindo**: [CONTRIBUTING.md](docs/pt/CONTRIBUTING.md) - Configuração de desenvolvimento e diretrizes

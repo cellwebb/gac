@@ -221,6 +221,8 @@ ANTHROPIC_API_KEY=your_key_here
 ## ヘルプ
 
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/ja/QWEN.md) - Qwen.ai のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ
 - **トラブルシューティング**: [TROUBLESHOOTING.md](docs/ja/TROUBLESHOOTING.md) - 一般的な問題と解決策
 - **貢献**: [CONTRIBUTING.md](docs/ja/CONTRIBUTING.md) - 開発設定とガイドライン

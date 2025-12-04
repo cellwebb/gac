@@ -221,6 +221,8 @@ Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuốn
 ## Nhận Trợ Giúp
 
 - **Tài liệu đầy đủ**: [USAGE.md](USAGE.md) - Tham chiếu CLI hoàn chỉnh
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/vi/CLAUDE_CODE.md) - Cài đặt và xác thực Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/vi/QWEN.md) - Cài đặt và xác thực Qwen.ai
 - **Gợi ý tùy chỉnh**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tùy chỉnh kiểu thông điệp commit
 - **Xử lý sự cố**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Các vấn đề phổ biến và giải pháp
 - **Đóng góp**: [CONTRIBUTING.md](CONTRIBUTING.md) - Thiết lập phát triển và hướng dẫn

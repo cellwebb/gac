@@ -221,6 +221,8 @@ ANTHROPIC_API_KEY=your_key_here
 ## 获取帮助
 
 - **完整文档**：[USAGE.md](docs/zh-CN/USAGE.md) - 完整的 CLI 参考
+- **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-CN/CLAUDE_CODE.md) - Claude Code 设置与认证
+- **Qwen.ai OAuth**：[docs/QWEN.md](docs/zh-CN/QWEN.md) - Qwen.ai 设置与认证
 - **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格
 - **故障排除**：[TROUBLESHOOTING.md](docs/zh-CN/TROUBLESHOOTING.md) - 常见问题和解决方案
 - **贡献**：[CONTRIBUTING.md](docs/zh-CN/CONTRIBUTING.md) - 开发设置和指南

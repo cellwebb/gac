@@ -221,6 +221,8 @@ Följ realtids installationsmätningar och pakkenedladdningsstatistik.
 ## Få Hjälp
 
 - **Full dokumentation**: [USAGE.md](USAGE.md) - Komplett CLI-referens
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/sv/CLAUDE_CODE.md) - Claude Code konfiguration och autentisering
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/sv/QWEN.md) - Qwen.ai konfiguration och autentisering
 - **Anpassade prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Anpassa commit-meddelandestil
 - **Felsökning**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Vanliga problem och lösningar
 - **Bidra**: [CONTRIBUTING.md](CONTRIBUTING.md) - Utvecklings-setup och riktlinjer
