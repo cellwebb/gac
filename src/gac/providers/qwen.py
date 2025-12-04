@@ -4,8 +4,8 @@ import os
 
 import httpx
 
-from gac.auth import QwenOAuthProvider, TokenStore
 from gac.errors import AIError
+from gac.oauth import QwenOAuthProvider, TokenStore
 
 QWEN_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
 

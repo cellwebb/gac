@@ -313,7 +313,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
 
     # Handle Qwen OAuth separately
     if is_qwen:
-        from gac.auth import QwenOAuthProvider, TokenStore
+        from gac.oauth import QwenOAuthProvider, TokenStore
 
         token_store = TokenStore()
         qwen_token = token_store.get_token("qwen")

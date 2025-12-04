@@ -7,8 +7,7 @@ import logging
 
 import click
 
-from gac.auth import QwenOAuthProvider, TokenStore
-from gac.oauth.claude_code import authenticate_and_save, load_stored_token
+from gac.oauth import QwenOAuthProvider, TokenStore, authenticate_and_save, load_stored_token
 from gac.utils import setup_logging
 
 logger = logging.getLogger(__name__)
