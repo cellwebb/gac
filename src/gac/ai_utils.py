@@ -124,6 +124,19 @@ def generate_with_retries(
     if not messages:
         raise AIError.model_error("No messages provided for AI generation")
 
+    # Load Claude Code token from TokenStore if needed
+    if provider == "claude-code":
+        from gac.oauth.token_store import TokenStore
+
+        token_store = TokenStore()
+        token_data = token_store.get_token("claude-code")
+        if token_data and "access_token" in token_data:
+            os.environ["CLAUDE_CODE_ACCESS_TOKEN"] = token_data["access_token"]
+        else:
+            raise AIError.authentication_error(
+                "Claude Code token not found. Please authenticate with 'gac auth claude-code login'."
+            )
+
     # Set up spinner
     if is_group:
         message_type = f"grouped {task_description}s"
