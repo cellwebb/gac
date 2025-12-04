@@ -69,7 +69,7 @@ Claude Code gir tilgang til de samme modellene som Anthropic API-en. Nåværende
 
 - `claude-sonnet-4-5` - Nyeste og mest intelligente Sonnet-modell, best for koding
 - `claude-haiku-4-5` - Rask og effektiv
-- `claude-opus-4-1` - Mest kapable modell for kompleks resonnering
+- `claude-opus-4-5` - Mest kapable modell for kompleks resonnering
 
 Se [Claude-dokumentasjonen](https://docs.claude.com/en/docs/about-claude/models/overview) for fullstendig liste over tilgjengelige modeller.
 
@@ -80,10 +80,32 @@ Se [Claude-dokumentasjonen](https://docs.claude.com/en/docs/about-claude/models/
 Hvis du ser autentiseringsfeil, kan tokenet ditt ha utløpt. Autentiser på nytt ved å kjøre:
 
 ```bash
+gac auth claude-code login
+```
+
+Nettleseren din åpnes automatisk for ny OAuth-autentisering. Alternativt kan du kjøre `gac model`, velge "Claude Code (OAuth)" og velge "Autentiser på nytt (få ny token)".
+
+### Sjekk autentiseringsstatus
+
+For å sjekke om du er autentisert for øyeblikket:
+
+```bash
+gac auth claude-code status
+```
+
+Eller sjekk alle leverandører samtidig:
+
+```bash
 gac auth
 ```
 
-Nettleseren din åpnes automatisk for ny OAuth-autentisering. Alternativt kan du kjøre `gac model`, velge "Claude Code" og velge "Autentiser på nytt (få ny token)".
+### Logg ut
+
+For å fjerne lagret token:
+
+```bash
+gac auth claude-code logout
+```
 
 ### "CLAUDE_CODE_ACCESS_TOKEN ikke funnet"
 
@@ -126,5 +148,6 @@ Hvis OAuth-autentisering mislykkes:
 ## Se også
 
 - [Hoveddokumentasjon](USAGE.md)
+- [Qwen.ai-oppsett og autentisering](QWEN.md)
 - [Feilsøkingsguide](TROUBLESHOOTING.md)
 - [Claude Code-dokumentasjon](https://claude.ai/code)

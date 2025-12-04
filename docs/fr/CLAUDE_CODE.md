@@ -69,7 +69,7 @@ Claude Code fournit un accès aux mêmes modèles que l'API Anthropic. Les modè
 
 - `claude-sonnet-4-5` - Dernier modèle Sonnet le plus intelligent, meilleur pour le codage
 - `claude-haiku-4-5` - Rapide et efficace
-- `claude-opus-4-1` - Modèle le plus capable pour le raisonnement complexe
+- `claude-opus-4-5` - Modèle le plus capable pour le raisonnement complexe
 
 Consultez la [documentation Claude](https://docs.claude.com/en/docs/about-claude/models/overview) pour la liste complète des modèles disponibles.
 
@@ -80,10 +80,32 @@ Consultez la [documentation Claude](https://docs.claude.com/en/docs/about-claude
 Si vous voyez des erreurs d'authentification, votre jeton a peut-être expiré. Réauthentifiez-vous en exécutant :
 
 ```bash
+gac auth claude-code login
+```
+
+Votre navigateur s'ouvrira automatiquement pour une nouvelle authentification OAuth. Alternativement, vous pouvez exécuter `gac model`, sélectionner "Claude Code (OAuth)" et choisir "Se réauthentifier (obtenir un nouveau jeton)".
+
+### Vérifier l'état d'authentification
+
+Pour vérifier si vous êtes actuellement authentifié :
+
+```bash
+gac auth claude-code status
+```
+
+Ou vérifiez tous les fournisseurs à la fois :
+
+```bash
 gac auth
 ```
 
-Votre navigateur s'ouvrira automatiquement pour une nouvelle authentification OAuth. Alternativement, vous pouvez exécuter `gac model`, sélectionner "Claude Code" et choisir "Se réauthentifier (obtenir un nouveau jeton)".
+### Déconnexion
+
+Pour supprimer votre jeton stocké :
+
+```bash
+gac auth claude-code logout
+```
 
 ### "CLAUDE_CODE_ACCESS_TOKEN non trouvé"
 
@@ -126,5 +148,6 @@ Si l'authentification OAuth échoue :
 ## Voir aussi
 
 - [Documentation principale](USAGE.md)
+- [Guide de configuration de Qwen.ai](QWEN.md)
 - [Guide de dépannage](TROUBLESHOOTING.md)
 - [Documentation Claude Code](https://claude.ai/code)

@@ -69,7 +69,7 @@ Claude Code 提供與 Anthropic API 相同的模型存取權限。當前的 Clau
 
 - `claude-sonnet-4-5` - 最新且最智能的 Sonnet 模型，最適合編碼
 - `claude-haiku-4-5` - 快速高效
-- `claude-opus-4-1` - 最複雜推理的最強能力模型
+- `claude-opus-4-5` - 最複雜推理的最強能力模型
 
 查看 [Claude 文檔](https://docs.claude.com/en/docs/about-claude/models/overview) 獲取可用模型的完整列表。
 
@@ -80,10 +80,32 @@ Claude Code 提供與 Anthropic API 相同的模型存取權限。當前的 Clau
 如果您看到身份驗證錯誤，您的令牌可能已過期。透過執行重新身份驗證：
 
 ```bash
+gac auth claude-code login
+```
+
+您的瀏覽器將自動打開進行新的 OAuth 身份驗證。或者，您可以執行 `gac model`，選擇 "Claude Code (OAuth)"，然後選擇 "重新身份驗證（取得新令牌）"。
+
+### 檢查身份驗證狀態
+
+要檢查您當前是否已通過身份驗證：
+
+```bash
+gac auth claude-code status
+```
+
+或一次檢查所有提供者：
+
+```bash
 gac auth
 ```
 
-您的瀏覽器將自動打開進行新的 OAuth 身份驗證。或者，您可以執行 `gac model`，選擇 "Claude Code"，然後選擇 "重新身份驗證（取得新令牌）"。
+### 登出
+
+要刪除您儲存的令牌：
+
+```bash
+gac auth claude-code logout
+```
 
 ### "未找到 CLAUDE_CODE_ACCESS_TOKEN"
 
@@ -126,5 +148,6 @@ gac model
 ## 另請參閱
 
 - [主要文件](USAGE.md)
+- [Qwen.ai 設定和身份驗證](QWEN.md)
 - [故障排除指南](TROUBLESHOOTING.md)
 - [Claude Code 文件](https://claude.ai/code)

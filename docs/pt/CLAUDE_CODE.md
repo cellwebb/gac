@@ -69,7 +69,7 @@ Claude Code fornece acesso aos mesmos modelos que a API Anthropic. Os modelos at
 
 - `claude-sonnet-4-5` - Modelo Sonnet mais recente e inteligente, melhor para codificação
 - `claude-haiku-4-5` - Rápido e eficiente
-- `claude-opus-4-1` - Modelo mais capaz para raciocínio complexo
+- `claude-opus-4-5` - Modelo mais capaz para raciocínio complexo
 
 Consulte a [documentação do Claude](https://docs.claude.com/en/docs/about-claude/models/overview) para a lista completa de modelos disponíveis.
 
@@ -80,10 +80,32 @@ Consulte a [documentação do Claude](https://docs.claude.com/en/docs/about-clau
 Se você vir erros de autenticação, seu token pode ter expirado. Reautentique-se executando:
 
 ```bash
+gac auth claude-code login
+```
+
+Seu navegador abrirá automaticamente para uma nova autenticação OAuth. Alternativamente, você pode executar `gac model`, selecionar "Claude Code (OAuth)" e escolher "Reautenticar (obter novo token)".
+
+### Verificar status de autenticação
+
+Para verificar se você está autenticado:
+
+```bash
+gac auth claude-code status
+```
+
+Ou verifique todos os provedores de uma vez:
+
+```bash
 gac auth
 ```
 
-Seu navegador abrirá automaticamente para uma nova autenticação OAuth. Alternativamente, você pode executar `gac model`, selecionar "Claude Code" e escolher "Reautenticar (obter novo token)".
+### Logout
+
+Para remover seu token armazenado:
+
+```bash
+gac auth claude-code logout
+```
 
 ### "CLAUDE_CODE_ACCESS_TOKEN não encontrado"
 
@@ -126,5 +148,6 @@ Se a autenticação OAuth falhar:
 ## Veja Também
 
 - [Documentação Principal](USAGE.md)
+- [Guia de configuração do Qwen.ai](QWEN.md)
 - [Guia de Solução de Problemas](TROUBLESHOOTING.md)
 - [Documentação Claude Code](https://claude.ai/code)
