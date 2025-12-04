@@ -221,6 +221,8 @@ Track real-time installation metrics and package download statistics.
 ## Getting Help
 
 - **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/en/CLAUDE_CODE.md) - Claude Code setup and authentication
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/en/QWEN.md) - Qwen.ai setup and authentication
 - **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions
 - **Contributing**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Development setup and guidelines
