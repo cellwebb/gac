@@ -374,6 +374,25 @@ def save_token(access_token: str) -> bool:
         return False
 
 
+def remove_token() -> bool:
+    """Remove stored access token from .gac.env."""
+    import os
+
+    from dotenv import set_key
+
+    env_path = get_token_storage_path()
+    if not env_path.exists():
+        return True
+
+    try:
+        set_key(str(env_path), "CLAUDE_CODE_ACCESS_TOKEN", "")
+        os.environ.pop("CLAUDE_CODE_ACCESS_TOKEN", None)
+        return True
+    except Exception as exc:
+        logger.error("Failed to remove token: %s", exc)
+        return False
+
+
 def authenticate_and_save(quiet: bool = False) -> bool:
     """Perform OAuth flow and save token."""
     tokens = perform_oauth_flow(quiet=quiet)
