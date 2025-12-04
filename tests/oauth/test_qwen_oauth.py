@@ -5,7 +5,8 @@ from unittest import mock
 
 import pytest
 
-from gac.auth.qwen_oauth import (
+from gac.errors import AIError
+from gac.oauth.qwen_oauth import (
     QWEN_CLIENT_ID,
     QWEN_DEVICE_CODE_ENDPOINT,
     QWEN_TOKEN_ENDPOINT,
@@ -13,8 +14,7 @@ from gac.auth.qwen_oauth import (
     QwenDeviceFlow,
     QwenOAuthProvider,
 )
-from gac.auth.token_store import TokenStore
-from gac.errors import AIError
+from gac.oauth.token_store import TokenStore
 
 
 class TestQwenDeviceFlow:
@@ -38,7 +38,7 @@ class TestQwenDeviceFlow:
         assert len(challenge) > 32
         assert verifier != challenge
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_initiate_device_flow_success(self, mock_post):
         """Test successful device flow initiation."""
         mock_response = mock.Mock()
@@ -62,7 +62,7 @@ class TestQwenDeviceFlow:
         assert result.verification_uri == "https://chat.qwen.ai/activate"
         assert result.expires_in == 600
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_initiate_device_flow_error(self, mock_post):
         """Test device flow initiation failure."""
         mock_response = mock.Mock()
@@ -76,8 +76,8 @@ class TestQwenDeviceFlow:
 
         assert exc_info.value.error_type == "connection"
 
-    @mock.patch("gac.auth.qwen_oauth.time.sleep")
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.time.sleep")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_poll_for_token_success(self, mock_post, mock_sleep):
         """Test successful token polling."""
         flow = QwenDeviceFlow()
@@ -102,9 +102,9 @@ class TestQwenDeviceFlow:
         assert result["token_type"] == "Bearer"
         assert "expiry" in result
 
-    @mock.patch("gac.auth.qwen_oauth.time.sleep")
-    @mock.patch("gac.auth.qwen_oauth.time.time")
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.time.sleep")
+    @mock.patch("gac.oauth.qwen_oauth.time.time")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_poll_for_token_authorization_pending(self, mock_post, mock_time, mock_sleep):
         """Test token polling with authorization pending."""
         flow = QwenDeviceFlow()
@@ -131,7 +131,7 @@ class TestQwenDeviceFlow:
         assert result["access_token"] == "test_access_token"
         mock_sleep.assert_called()
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_poll_for_token_access_denied(self, mock_post):
         """Test token polling when access is denied."""
         flow = QwenDeviceFlow()
@@ -147,7 +147,7 @@ class TestQwenDeviceFlow:
 
         assert exc_info.value.error_type == "authentication"
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_refresh_token_success(self, mock_post):
         """Test successful token refresh."""
         flow = QwenDeviceFlow()
@@ -167,7 +167,7 @@ class TestQwenDeviceFlow:
         assert result["access_token"] == "new_access_token"
         assert result["refresh_token"] == "new_refresh_token"
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_refresh_token_keeps_old_refresh_token(self, mock_post):
         """Test that old refresh token is kept if new one not provided."""
         flow = QwenDeviceFlow()
@@ -186,7 +186,7 @@ class TestQwenDeviceFlow:
         assert result["access_token"] == "new_access_token"
         assert result["refresh_token"] == "old_refresh_token"
 
-    @mock.patch("gac.auth.qwen_oauth.httpx.post")
+    @mock.patch("gac.oauth.qwen_oauth.httpx.post")
     def test_refresh_token_failure(self, mock_post):
         """Test token refresh failure."""
         flow = QwenDeviceFlow()
@@ -214,7 +214,7 @@ class TestQwenOAuthProvider:
 
     def test_init_default_token_store(self):
         """Test initialization with default token store."""
-        with mock.patch("gac.auth.qwen_oauth.TokenStore") as mock_store:
+        with mock.patch("gac.oauth.qwen_oauth.TokenStore") as mock_store:
             QwenOAuthProvider()
             mock_store.assert_called_once()
 
@@ -309,7 +309,7 @@ class TestQwenOAuthProvider:
         captured = capsys.readouterr()
         assert "logged out" in captured.out.lower()
 
-    @mock.patch("gac.auth.qwen_oauth.webbrowser.open")
+    @mock.patch("gac.oauth.qwen_oauth.webbrowser.open")
     @mock.patch.object(QwenDeviceFlow, "poll_for_token")
     @mock.patch.object(QwenDeviceFlow, "initiate_device_flow")
     def test_initiate_auth_success(self, mock_initiate, mock_poll, mock_browser, tmp_path, capsys):

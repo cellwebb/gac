@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from gac.auth.token_store import OAuthToken, TokenStore
+from gac.oauth.token_store import OAuthToken, TokenStore
 
 
 class TestTokenStore:
