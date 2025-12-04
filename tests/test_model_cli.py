@@ -348,7 +348,7 @@ def test_model_cli_existing_api_key_edit_replace(tmp_path):
             assert "Updated OPENAI_API_KEY" in result.output
 
 
-# Note: Claude Code OAuth tests are complex and require special mocking
+# Note: Claude Code (OAuth) OAuth tests are complex and require special mocking
 # They can be added later if needed. The core provider functionality is tested above.
 
 
@@ -650,7 +650,7 @@ def test_model_cli_azure_openai_existing_both_keep_existing(tmp_path):
 
 
 def test_model_cli_claude_code_existing_token_keep_existing(tmp_path):
-    """Test Claude Code with existing token - keep existing."""
+    """Test Claude Code (OAuth) with existing token - keep existing."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -663,7 +663,7 @@ def test_model_cli_claude_code_existing_token_keep_existing(tmp_path):
         ):
             mload_token.return_value = "existing-token"  # Existing token found
             mselect.return_value.ask.side_effect = [
-                "Claude Code",
+                "Claude Code (OAuth)",
                 "Keep existing token",  # Keep existing token
             ]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
@@ -679,7 +679,7 @@ def test_model_cli_claude_code_existing_token_keep_existing(tmp_path):
 
 
 def test_model_cli_claude_code_existing_token_reauthenticate(tmp_path):
-    """Test Claude Code with existing token - reauthenticate."""
+    """Test Claude Code (OAuth) with existing token - reauthenticate."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -692,7 +692,7 @@ def test_model_cli_claude_code_existing_token_reauthenticate(tmp_path):
         ):
             mload_token.return_value = "existing-token"  # Existing token found
             mselect.return_value.ask.side_effect = [
-                "Claude Code",
+                "Claude Code (OAuth)",
                 "Re-authenticate (get new token)",  # Re-authenticate
             ]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
@@ -708,7 +708,7 @@ def test_model_cli_claude_code_existing_token_reauthenticate(tmp_path):
 
 
 def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
-    """Test Claude Code reauthentication failure."""
+    """Test Claude Code (OAuth) reauthentication failure."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -721,7 +721,7 @@ def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
         ):
             mload_token.return_value = "existing-token"  # Existing token found
             mselect.return_value.ask.side_effect = [
-                "Claude Code",
+                "Claude Code (OAuth)",
                 "Re-authenticate (get new token)",  # Re-authenticate
             ]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
@@ -736,7 +736,7 @@ def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
 
 
 def test_model_cli_claude_code_no_existing_token_success(tmp_path):
-    """Test Claude Code with no existing token - successful authentication."""
+    """Test Claude Code (OAuth) with no existing token - successful authentication."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -748,7 +748,7 @@ def test_model_cli_claude_code_no_existing_token_success(tmp_path):
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
             mload_token.return_value = None  # No existing token
-            mselect.return_value.ask.side_effect = ["Claude Code"]
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
             mauth.return_value = True  # Authentication succeeds
 
@@ -762,7 +762,7 @@ def test_model_cli_claude_code_no_existing_token_success(tmp_path):
 
 
 def test_model_cli_claude_code_no_existing_token_failure(tmp_path):
-    """Test Claude Code with no existing token - authentication fails."""
+    """Test Claude Code (OAuth) with no existing token - authentication fails."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -774,7 +774,7 @@ def test_model_cli_claude_code_no_existing_token_failure(tmp_path):
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
             mload_token.return_value = None  # No existing token
-            mselect.return_value.ask.side_effect = ["Claude Code"]
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
             mauth.return_value = False  # Authentication fails
 
@@ -785,7 +785,7 @@ def test_model_cli_claude_code_no_existing_token_failure(tmp_path):
 
 
 def test_model_cli_claude_code_existing_token_cancel_action(tmp_path):
-    """Test Claude Code cancellation when choosing action."""
+    """Test Claude Code (OAuth) cancellation when choosing action."""
     env_path = tmp_path / ".gac.env"
     env_path.touch()
 
@@ -798,7 +798,7 @@ def test_model_cli_claude_code_existing_token_cancel_action(tmp_path):
         ):
             mload_token.return_value = "existing-token"  # Existing token found
             mselect.return_value.ask.side_effect = [
-                "Claude Code",
+                "Claude Code (OAuth)",
                 None,  # Cancel action selection
             ]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]

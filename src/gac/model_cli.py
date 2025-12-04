@@ -84,7 +84,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Azure OpenAI", "gpt-5-mini"),
         ("Cerebras", "zai-glm-4.6"),
         ("Chutes", "zai-org/GLM-4.6-FP8"),
-        ("Claude Code", "claude-sonnet-4-5"),
+        ("Claude Code (OAuth)", "claude-sonnet-4-5"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
@@ -99,6 +99,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-5-mini"),
         ("OpenRouter", "openrouter/auto"),
+        ("Qwen.ai (OAuth)", "qwen3-coder-plus"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.6"),
@@ -116,22 +117,27 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     provider_key = provider.lower().replace(".", "").replace(" ", "-").replace("(", "").replace(")", "")
 
     is_azure_openai = provider_key == "azure-openai"
-    is_claude_code = provider_key == "claude-code"
+    is_claude_code = provider_key == "claude-code-oauth"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
     is_lmstudio = provider_key == "lm-studio"
     is_ollama = provider_key == "ollama"
+    is_qwen = provider_key == "qwenai-oauth"
     is_streamlake = provider_key == "streamlake"
     is_zai = provider_key in ("zai", "zai-coding")
 
-    if provider_key == "minimaxio":
-        provider_key = "minimax"
-    elif provider_key == "syntheticnew":
-        provider_key = "synthetic"
-    elif provider_key == "moonshot-ai":
-        provider_key = "moonshot"
+    if provider_key == "claude-code-oauth":
+        provider_key = "claude-code"
     elif provider_key == "kimi-for-coding":
         provider_key = "kimi-coding"
+    elif provider_key == "minimaxio":
+        provider_key = "minimax"
+    elif provider_key == "moonshot-ai":
+        provider_key = "moonshot"
+    elif provider_key == "qwenai-oauth":
+        provider_key = "qwen"
+    elif provider_key == "syntheticnew":
+        provider_key = "synthetic"
 
     if is_streamlake:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")
@@ -304,6 +310,53 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
                 click.echo("\n❌ Claude Code authentication failed. Exiting.")
                 return False
             return True
+
+    # Handle Qwen OAuth separately
+    if is_qwen:
+        from gac.auth import QwenOAuthProvider, TokenStore
+
+        token_store = TokenStore()
+        qwen_token = token_store.get_token("qwen")
+        if qwen_token:
+            click.echo("\n✓ Qwen access token already configured.")
+            action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing token",
+                    "Re-authenticate (get new token)",
+                ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
+            ).ask()
+
+            if action is None or action.startswith("Keep existing"):
+                if action is None:
+                    click.echo("Qwen configuration cancelled. Keeping existing token.")
+                else:
+                    click.echo("Keeping existing Qwen token")
+                return True
+            else:
+                click.echo("\n🔐 Starting Qwen OAuth authentication...")
+                provider = QwenOAuthProvider(token_store)
+                try:
+                    provider.initiate_auth(open_browser=True)
+                    click.echo("✅ Qwen authentication completed successfully!")
+                    return True
+                except Exception as e:
+                    click.echo(f"❌ Qwen authentication failed: {e}")
+                    return False
+        else:
+            click.echo("\n🔐 Starting Qwen OAuth authentication...")
+            click.echo("   (Your browser will open automatically)\n")
+            provider = QwenOAuthProvider(token_store)
+            try:
+                provider.initiate_auth(open_browser=True)
+                click.echo("\n✅ Qwen authentication completed successfully!")
+                return True
+            except Exception as e:
+                click.echo(f"\n❌ Qwen authentication failed: {e}")
+                return False
 
     # Determine API key name based on provider
     if is_lmstudio:
