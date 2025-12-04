@@ -51,6 +51,7 @@ def _show_auth_status() -> None:
         click.echo("Claude Code: ✓ Authenticated")
     else:
         click.echo("Claude Code: ✗ Not authenticated")
+        click.echo("             Run 'gac auth claude-code login' to login")
 
     token_store = TokenStore()
     qwen_token = token_store.get_token("qwen")
@@ -58,6 +59,7 @@ def _show_auth_status() -> None:
         click.echo("Qwen:        ✓ Authenticated")
     else:
         click.echo("Qwen:        ✗ Not authenticated")
+        click.echo("             Run 'gac auth qwen login' to login")
 
 
 # Claude Code commands
