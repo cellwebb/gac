@@ -26,13 +26,13 @@ class TestGetQwenAuth:
         mock_provider = mock.Mock()
         mock_provider.get_token.return_value = {
             "access_token": "oauth_token",
-            "resource_url": "https://api.qwen.ai/v1",
+            "resource_url": "portal.qwen.ai",
         }
         mock_provider_class.return_value = mock_provider
 
         token, url = get_qwen_auth()
         assert token == "oauth_token"
-        assert url == "https://api.qwen.ai/v1"
+        assert url == "https://portal.qwen.ai/v1/chat/completions"
 
     @mock.patch("gac.providers.qwen.QwenOAuthProvider")
     def test_error_when_no_auth(self, mock_provider_class, monkeypatch):
@@ -61,7 +61,7 @@ class TestCallQwenApi:
         mock_post.return_value = mock_response
 
         result = call_qwen_api(
-            model="qwen-turbo",
+            model="qwen3-coder-plus",
             messages=[{"role": "user", "content": "Hello"}],
             temperature=0.7,
             max_tokens=100,
@@ -81,7 +81,7 @@ class TestCallQwenApi:
 
         with pytest.raises(AIError) as exc_info:
             call_qwen_api(
-                model="qwen-turbo",
+                model="qwen3-coder-plus",
                 messages=[{"role": "user", "content": "Hello"}],
                 temperature=0.7,
                 max_tokens=100,
@@ -101,7 +101,7 @@ class TestCallQwenApi:
 
         with pytest.raises(AIError) as exc_info:
             call_qwen_api(
-                model="qwen-turbo",
+                model="qwen3-coder-plus",
                 messages=[{"role": "user", "content": "Hello"}],
                 temperature=0.7,
                 max_tokens=100,
@@ -126,7 +126,7 @@ class TestCallQwenApi:
 
         with pytest.raises(AIError) as exc_info:
             call_qwen_api(
-                model="qwen-turbo",
+                model="qwen3-coder-plus",
                 messages=[{"role": "user", "content": "Hello"}],
                 temperature=0.7,
                 max_tokens=100,
@@ -150,7 +150,7 @@ class TestCallQwenApi:
 
         with pytest.raises(AIError) as exc_info:
             call_qwen_api(
-                model="qwen-turbo",
+                model="qwen3-coder-plus",
                 messages=[{"role": "user", "content": "Hello"}],
                 temperature=0.7,
                 max_tokens=100,
@@ -167,7 +167,7 @@ class TestCallQwenApi:
 
         with pytest.raises(AIError) as exc_info:
             call_qwen_api(
-                model="qwen-turbo",
+                model="qwen3-coder-plus",
                 messages=[{"role": "user", "content": "Hello"}],
                 temperature=0.7,
                 max_tokens=100,

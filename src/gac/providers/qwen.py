@@ -23,7 +23,15 @@ def get_qwen_auth() -> tuple[str, str]:
     oauth_provider = QwenOAuthProvider(TokenStore())
     token = oauth_provider.get_token()
     if token:
-        api_url = token.get("resource_url") or QWEN_API_URL
+        resource_url = token.get("resource_url")
+        if resource_url:
+            if not resource_url.startswith(("http://", "https://")):
+                resource_url = f"https://{resource_url}"
+            if not resource_url.endswith("/chat/completions"):
+                resource_url = resource_url.rstrip("/") + "/v1/chat/completions"
+            api_url = resource_url
+        else:
+            api_url = QWEN_API_URL
         return token["access_token"], api_url
 
     raise AIError.authentication_error(
