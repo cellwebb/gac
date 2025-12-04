@@ -254,6 +254,7 @@ gac --skip-secret-scan  # Bỏ qua quét bảo mật cho commit này
 - Cách được đề xuất để thiết lập gac là chạy `gac init` và làm theo các gợi ý tương tác.
 - Đã cấu hình ngôn ngữ và chỉ cần chuyển đổi nhà cung cấp hoặc mô hình? Chạy `gac model` để lặp lại thiết lập mà không có câu hỏi ngôn ngữ.
 - **Đang sử dụng Claude Code?** Xem [hướng dẫn thiết lập Claude Code](CLAUDE_CODE.md) để biết hướng dẫn xác thực OAuth.
+- **Đang sử dụng Qwen.ai?** Xem [hướng dẫn cài đặt Qwen.ai](QWEN.md) để biết hướng dẫn xác thực OAuth.
 - gac tải cấu hình theo thứ tự ưu tiên sau:
   1. Các flag CLI
   2. Các biến môi trường
@@ -285,7 +286,13 @@ Các lệnh con sau đây có sẵn:
 
 - `gac init` — Trình hướng dẫn thiết lập tương tác cho nhà cung cấp, mô hình và cấu hình ngôn ngữ
 - `gac model` — Thiết lập nhà cung cấp/mô hình/khoá API không có lời nhắc ngôn ngữ (lý tưởng cho các thay đổi nhanh)
-- `gac auth` — Xác thực hoặc xác thực lại token OAuth Claude Code (hữu ích khi token hết hạn)
+- `gac auth` — Hiển thị trạng thái xác thực OAuth cho tất cả nhà cung cấp
+- `gac auth claude-code login` — Đăng nhập vào Claude Code sử dụng OAuth (mở trình duyệt)
+- `gac auth claude-code logout` — Đăng xuất khỏi Claude Code và xóa token đã lưu
+- `gac auth claude-code status` — Kiểm tra trạng thái xác thực Claude Code
+- `gac auth qwen login` — Đăng nhập vào Qwen sử dụng luồng thiết bị OAuth (mở trình duyệt)
+- `gac auth qwen logout` — Đăng xuất khỏi Qwen và xóa token đã lưu
+- `gac auth qwen status` — Kiểm tra trạng thái xác thực Qwen
 - `gac config show` — Hiển thị cấu hình hiện tại
 - `gac config set KEY VALUE` — Đặt khóa cấu hình trong `$HOME/.gac.env`
 - `gac config get KEY` — Lấy giá trị cấu hình

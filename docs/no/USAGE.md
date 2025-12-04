@@ -255,6 +255,7 @@ gac --skip-secret-scan  # Hopp over sikkerhetsskanning for denne commit
 - Den anbefalte måten å sette opp gac er å kjøre `gac init` og følge de interaktive promptene.
 - Allerede konfigurert språk og trenger bare å bytte provider eller modeller? Kjør `gac model` for å gjenta oppsettet uten språkspørsmål.
 - **Bruker Claude Code?** Se [Claude Code oppsettguide](CLAUDE_CODE.md) for OAuth-autentiseringsinstruksjoner.
+- **Bruker Qwen.ai?** Se [Qwen.ai oppsettveiledning](QWEN.md) for OAuth-autentiseringsinstruksjoner.
 - gac laster konfigurasjon i følgende prioriteringsrekkefølge:
   1. CLI-flagg
   2. Miljøvariabler
@@ -286,7 +287,13 @@ Følgende underkommandoer er tilgjengelige:
 
 - `gac init` — Interaktiv oppsettsguide for provider, modell og språkkonfigurasjon
 - `gac model` — Provider/modell/API-nøkkel oppsett uten språkprompts (ideelt for raske bytter)
-- `gac auth` — Autentiser eller re-autentiser Claude Code OAuth-token (nyttig når token utløper)
+- `gac auth` — Vis OAuth-autentiseringsstatus for alle leverandører
+- `gac auth claude-code login` — Logg inn på Claude Code med OAuth (åpner nettleser)
+- `gac auth claude-code logout` — Logg ut av Claude Code og fjern lagret token
+- `gac auth claude-code status` — Sjekk Claude Code-autentiseringsstatus
+- `gac auth qwen login` — Logg inn på Qwen med OAuth-enhetsflyt (åpner nettleser)
+- `gac auth qwen logout` — Logg ut av Qwen og fjern lagret token
+- `gac auth qwen status` — Sjekk Qwen-autentiseringsstatus
 - `gac config show` — Vis nåværende konfigurasjon
 - `gac config set KEY VALUE` — Sett en konfigurasjonsnøkkel i `$HOME/.gac.env`
 - `gac config get KEY` — Hent en konfigurasjonsverdi

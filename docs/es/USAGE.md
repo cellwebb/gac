@@ -304,6 +304,7 @@ gac --skip-secret-scan  # Omitir escaneo de seguridad para este commit
 - La forma recomendada de configurar gac es ejecutar `gac init` y seguir las instrucciones interactivas.
 - ¿Ya tienes el idioma configurado y solo necesitas cambiar proveedores o modelos? Ejecuta `gac model` para repetir la configuración sin preguntas de idioma.
 - **¿Usas Claude Code?** Consulta la [guía de configuración de Claude Code](CLAUDE_CODE.md) para instrucciones de autenticación OAuth.
+- **¿Usando Qwen.ai?** Consulta la [guía de configuración de Qwen.ai](QWEN.md) para obtener instrucciones de autenticación OAuth.
 - gac carga configuración en el siguiente orden de precedencia:
   1. Banderas CLI
   2. Variables de entorno
@@ -335,7 +336,13 @@ Los siguientes subcomandos están disponibles:
 
 - `gac init` — Asistente de configuración interactivo para proveedor, modelo e idioma
 - `gac model` — Configuración de proveedor/modelo/API clave sin indicaciones de idioma (ideal para cambios rápidos)
-- `gac auth` — Autenticar o reautenticar token OAuth de Claude Code (útil cuando el token expira)
+- `gac auth` — Mostrar estado de autenticación OAuth para todos los proveedores
+- `gac auth claude-code login` — Iniciar sesión en Claude Code usando OAuth (abre navegador)
+- `gac auth claude-code logout` — Cerrar sesión en Claude Code y eliminar token almacenado
+- `gac auth claude-code status` — Comprobar estado de autenticación de Claude Code
+- `gac auth qwen login` — Iniciar sesión en Qwen usando flujo de dispositivo OAuth (abre navegador)
+- `gac auth qwen logout` — Cerrar sesión en Qwen y eliminar token almacenado
+- `gac auth qwen status` — Comprobar estado de autenticación de Qwen
 - `gac config show` — Mostrar configuración actual
 - `gac config set KEY VALUE` — Establecer clave de configuración en `$HOME/.gac.env`
 - `gac config get KEY` — Obtener valor de configuración
