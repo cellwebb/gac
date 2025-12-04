@@ -11,7 +11,6 @@ from gac.oauth import (
     QwenOAuthProvider,
     TokenStore,
     authenticate_and_save,
-    load_stored_token,
     remove_token,
 )
 from gac.utils import setup_logging
@@ -46,14 +45,15 @@ def _show_auth_status() -> None:
     click.echo("OAuth Authentication Status")
     click.echo("-" * 40)
 
-    claude_token = load_stored_token()
+    token_store = TokenStore()
+
+    claude_token = token_store.get_token("claude-code")
     if claude_token:
         click.echo("Claude Code: ✓ Authenticated")
     else:
         click.echo("Claude Code: ✗ Not authenticated")
         click.echo("             Run 'gac auth claude-code login' to login")
 
-    token_store = TokenStore()
     qwen_token = token_store.get_token("qwen")
     if qwen_token:
         click.echo("Qwen:        ✓ Authenticated")
@@ -78,12 +78,13 @@ def claude_code_login(quiet: bool = False) -> None:
     """Login to Claude Code using OAuth.
 
     Opens a browser to authenticate with Claude Code. The token is stored
-    in ~/.gac.env.
+    securely in ~/.gac/oauth/claude-code.json.
     """
     if not quiet:
         setup_logging("INFO")
 
-    existing_token = load_stored_token()
+    token_store = TokenStore()
+    existing_token = token_store.get_token("claude-code")
     if existing_token:
         if not quiet:
             click.echo("✓ Already authenticated with Claude Code.")
@@ -112,25 +113,28 @@ def claude_code_login(quiet: bool = False) -> None:
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
 def claude_code_logout(quiet: bool = False) -> None:
     """Logout from Claude Code and remove stored tokens."""
-    existing_token = load_stored_token()
+    token_store = TokenStore()
+    existing_token = token_store.get_token("claude-code")
 
     if not existing_token:
         if not quiet:
             click.echo("Not currently authenticated with Claude Code.")
         return
 
-    if remove_token():
+    try:
+        remove_token()
         if not quiet:
             click.echo("✅ Successfully logged out from Claude Code.")
-    else:
+    except Exception as e:
         click.echo("❌ Failed to remove Claude Code token.")
-        raise click.ClickException("Claude Code logout failed")
+        raise click.ClickException("Claude Code logout failed") from e
 
 
 @claude_code.command("status")
 def claude_code_status() -> None:
     """Check Claude Code authentication status."""
-    token = load_stored_token()
+    token_store = TokenStore()
+    token = token_store.get_token("claude-code")
 
     if token:
         click.echo("Claude Code Authentication Status: ✓ Authenticated")
