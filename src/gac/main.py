@@ -1012,8 +1012,44 @@ def main(
                     console.print(f"[red]Re-authentication error: {auth_error}[/red]")
                     console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
                     sys.exit(1)
+            # Check if this is a Qwen OAuth token expiration
+            elif e.error_type == "authentication" and model.startswith("qwen:"):
+                logger.error(str(e))
+                console.print("[yellow]⚠ Qwen authentication failed[/yellow]")
+                console.print("[cyan]🔐 Starting automatic re-authentication...[/cyan]")
+
+                try:
+                    from gac.oauth import QwenOAuthProvider, TokenStore
+
+                    oauth_provider = QwenOAuthProvider(TokenStore())
+                    oauth_provider.initiate_auth(open_browser=True)
+                    console.print("[green]✓ Re-authentication successful![/green]")
+                    console.print("[cyan]Retrying commit...[/cyan]\n")
+
+                    # Retry the commit workflow
+                    execute_single_commit_workflow(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        model=model,
+                        temperature=temperature,
+                        max_output_tokens=max_output_tokens,
+                        max_retries=max_retries,
+                        require_confirmation=require_confirmation,
+                        quiet=quiet,
+                        no_verify=no_verify,
+                        dry_run=dry_run,
+                        message_only=message_only,
+                        push=push,
+                        show_prompt=show_prompt,
+                        hook_timeout=hook_timeout,
+                        interactive=interactive,
+                    )
+                except Exception as auth_error:
+                    console.print(f"[red]Re-authentication error: {auth_error}[/red]")
+                    console.print("[yellow]Run 'gac auth qwen login' to re-authenticate manually.[/yellow]")
+                    sys.exit(1)
             else:
-                # Non-Claude Code error or non-auth error
+                # Non-Claude Code/Qwen error or non-auth error
                 logger.error(str(e))
                 console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
                 sys.exit(1)
