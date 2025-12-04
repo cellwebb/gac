@@ -275,10 +275,12 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
 
     # Handle Claude Code OAuth separately
     if is_claude_code:
-        from gac.oauth.claude_code import authenticate_and_save, load_stored_token
+        from gac.oauth.claude_code import authenticate_and_save
+        from gac.oauth.token_store import TokenStore
 
-        existing_token = load_stored_token()
-        if existing_token:
+        token_store = TokenStore()
+        existing_token_data = token_store.get_token("claude-code")
+        if existing_token_data:
             click.echo("\n✓ Claude Code access token already configured.")
             action = questionary.select(
                 "What would you like to do?",

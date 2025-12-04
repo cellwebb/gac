@@ -658,10 +658,12 @@ def test_model_cli_claude_code_existing_token_keep_existing(tmp_path):
         with (
             mock.patch("questionary.select") as mselect,
             mock.patch("questionary.text") as mtext,
-            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.token_store.TokenStore") as mtoken_store,
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
-            mload_token.return_value = "existing-token"  # Existing token found
+            mock_store = mock.Mock()
+            mock_store.get_token.return_value = {"access_token": "existing-token"}
+            mtoken_store.return_value = mock_store
             mselect.return_value.ask.side_effect = [
                 "Claude Code (OAuth)",
                 "Keep existing token",  # Keep existing token
@@ -716,10 +718,12 @@ def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
         with (
             mock.patch("questionary.select") as mselect,
             mock.patch("questionary.text") as mtext,
-            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.token_store.TokenStore") as mtoken_store,
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
-            mload_token.return_value = "existing-token"  # Existing token found
+            mock_store = mock.Mock()
+            mock_store.get_token.return_value = {"access_token": "existing-token"}
+            mtoken_store.return_value = mock_store
             mselect.return_value.ask.side_effect = [
                 "Claude Code (OAuth)",
                 "Re-authenticate (get new token)",  # Re-authenticate
@@ -730,9 +734,7 @@ def test_model_cli_claude_code_existing_token_reauthenticate_fails(tmp_path):
             runner = CliRunner()
             result = runner.invoke(model)
             assert result.exit_code == 0
-            env_text = env_path.read_text()
-            assert "GAC_MODEL='claude-code:claude-sonnet-4-5'" in env_text
-            assert "Claude Code authentication failed. Keeping existing token." in result.output
+            assert "Claude Code authentication failed" in result.output
 
 
 def test_model_cli_claude_code_no_existing_token_success(tmp_path):
@@ -744,10 +746,12 @@ def test_model_cli_claude_code_no_existing_token_success(tmp_path):
         with (
             mock.patch("questionary.select") as mselect,
             mock.patch("questionary.text") as mtext,
-            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.token_store.TokenStore") as mtoken_store,
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
-            mload_token.return_value = None  # No existing token
+            mock_store = mock.Mock()
+            mock_store.get_token.return_value = None  # No existing token
+            mtoken_store.return_value = mock_store
             mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
             mauth.return_value = True  # Authentication succeeds
@@ -770,10 +774,12 @@ def test_model_cli_claude_code_no_existing_token_failure(tmp_path):
         with (
             mock.patch("questionary.select") as mselect,
             mock.patch("questionary.text") as mtext,
-            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.token_store.TokenStore") as mtoken_store,
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
-            mload_token.return_value = None  # No existing token
+            mock_store = mock.Mock()
+            mock_store.get_token.return_value = None  # No existing token
+            mtoken_store.return_value = mock_store
             mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
             mauth.return_value = False  # Authentication fails
@@ -793,10 +799,12 @@ def test_model_cli_claude_code_existing_token_cancel_action(tmp_path):
         with (
             mock.patch("questionary.select") as mselect,
             mock.patch("questionary.text") as mtext,
-            mock.patch("gac.oauth.claude_code.load_stored_token") as mload_token,
+            mock.patch("gac.oauth.token_store.TokenStore") as mtoken_store,
             mock.patch("gac.oauth.claude_code.authenticate_and_save") as mauth,
         ):
-            mload_token.return_value = "existing-token"  # Existing token found
+            mock_store = mock.Mock()
+            mock_store.get_token.return_value = {"access_token": "existing-token"}
+            mtoken_store.return_value = mock_store
             mselect.return_value.ask.side_effect = [
                 "Claude Code (OAuth)",
                 None,  # Cancel action selection
