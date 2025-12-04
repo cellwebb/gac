@@ -553,7 +553,7 @@ def test_authenticate_and_save_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(claude_code, "perform_oauth_flow", lambda quiet: tokens)
 
-    def fake_save_token(access_token: str) -> bool:
+    def fake_save_token(access_token: str, token_data: dict | None = None) -> bool:
         saved.append(access_token)
         return True
 
@@ -571,7 +571,7 @@ def test_authenticate_and_save_missing_access_token(monkeypatch: pytest.MonkeyPa
 
 def test_authenticate_and_save_handles_save_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(claude_code, "perform_oauth_flow", lambda quiet: {"access_token": "token"})
-    monkeypatch.setattr(claude_code, "save_token", lambda token: False)
+    monkeypatch.setattr(claude_code, "save_token", lambda token, token_data=None: False)
 
     assert claude_code.authenticate_and_save(quiet=True) is False
 

@@ -350,8 +350,56 @@ def load_stored_token() -> str | None:
     return None
 
 
-def save_token(access_token: str) -> bool:
-    """Save access token to token store."""
+def is_token_expired() -> bool:
+    """Check if the stored Claude Code token has expired.
+
+    Returns True if the token is expired or close to expiring (within 5 minutes).
+    """
+    store = TokenStore()
+    token = store.get_token("claude-code")
+    if not token:
+        return True
+
+    expiry = token.get("expiry")
+    if not expiry:
+        # No expiry information, assume it's still valid
+        return False
+
+    # Consider token expired if it expires within 5 minutes
+    current_time = time.time()
+    return current_time >= (expiry - 300)
+
+
+def refresh_token_if_expired(quiet: bool = True) -> bool:
+    """Refresh the Claude Code token if it has expired.
+
+    Args:
+        quiet: If True, suppress output messages
+
+    Returns:
+        True if token is valid (or was successfully refreshed), False otherwise
+    """
+    if not is_token_expired():
+        return True
+
+    if not quiet:
+        logger.info("Claude Code token expired, attempting to refresh...")
+
+    # Perform OAuth flow to get a new token
+    success = authenticate_and_save(quiet=quiet)
+    if not success and not quiet:
+        logger.error("Failed to refresh Claude Code token")
+
+    return success
+
+
+def save_token(access_token: str, token_data: dict[str, Any] | None = None) -> bool:
+    """Save access token to token store.
+
+    Args:
+        access_token: The OAuth access token string
+        token_data: Optional full token response data (includes expiry info)
+    """
     import os
 
     store = TokenStore()
@@ -360,6 +408,14 @@ def save_token(access_token: str) -> bool:
             "access_token": access_token,
             "token_type": "Bearer",
         }
+
+        # Add expiry information if available
+        if token_data:
+            if "expires_at" in token_data:
+                token["expiry"] = int(token_data["expires_at"])
+            elif "expires_in" in token_data:
+                token["expiry"] = int(time.time() + token_data["expires_in"])
+
         store.save_token("claude-code", token)
         # Also update the current environment so the token is immediately available
         os.environ["CLAUDE_CODE_ACCESS_TOKEN"] = access_token
@@ -395,7 +451,7 @@ def authenticate_and_save(quiet: bool = False) -> bool:
             print("❌ No access token returned from authentication")
         return False
 
-    if not save_token(access_token):
+    if not save_token(access_token, token_data=tokens):
         if not quiet:
             print("❌ Failed to save access token")
         return False
