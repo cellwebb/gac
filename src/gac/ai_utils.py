@@ -126,8 +126,16 @@ def generate_with_retries(
 
     # Load Claude Code token from TokenStore if needed
     if provider == "claude-code":
+        from gac.oauth import refresh_token_if_expired
         from gac.oauth.token_store import TokenStore
 
+        # Check token expiry and refresh if needed
+        if not refresh_token_if_expired(quiet=True):
+            raise AIError.authentication_error(
+                "Claude Code token not found or expired. Please authenticate with 'gac auth claude-code login'."
+            )
+
+        # Load the (possibly refreshed) token
         token_store = TokenStore()
         token_data = token_store.get_token("claude-code")
         if token_data and "access_token" in token_data:
