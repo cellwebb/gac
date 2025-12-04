@@ -12,11 +12,12 @@ import time
 import webbrowser
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from pathlib import Path
 from typing import Any, TypedDict
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
+
+from .token_store import OAuthToken, TokenStore
 
 logger = logging.getLogger(__name__)
 
@@ -340,32 +341,26 @@ def perform_oauth_flow(quiet: bool = False) -> dict[str, Any] | None:
     return tokens
 
 
-def get_token_storage_path() -> Path:
-    """Get path for storing OAuth tokens."""
-    return Path.home() / ".gac.env"
-
-
 def load_stored_token() -> str | None:
-    """Load stored access token from .gac.env."""
-    from dotenv import dotenv_values
-
-    env_path = get_token_storage_path()
-    if not env_path.exists():
-        return None
-
-    env_vars = dotenv_values(str(env_path))
-    return env_vars.get("CLAUDE_CODE_ACCESS_TOKEN")
+    """Load stored access token from token store."""
+    store = TokenStore()
+    token = store.get_token("claude-code")
+    if token:
+        return token.get("access_token")
+    return None
 
 
 def save_token(access_token: str) -> bool:
-    """Save access token to .gac.env and update environment."""
+    """Save access token to token store."""
     import os
 
-    from dotenv import set_key
-
-    env_path = get_token_storage_path()
+    store = TokenStore()
     try:
-        set_key(str(env_path), "CLAUDE_CODE_ACCESS_TOKEN", access_token)
+        token: OAuthToken = {
+            "access_token": access_token,
+            "token_type": "Bearer",
+        }
+        store.save_token("claude-code", token)
         # Also update the current environment so the token is immediately available
         os.environ["CLAUDE_CODE_ACCESS_TOKEN"] = access_token
         return True
@@ -375,17 +370,12 @@ def save_token(access_token: str) -> bool:
 
 
 def remove_token() -> bool:
-    """Remove stored access token from .gac.env."""
+    """Remove stored access token from token store."""
     import os
 
-    from dotenv import set_key
-
-    env_path = get_token_storage_path()
-    if not env_path.exists():
-        return True
-
+    store = TokenStore()
     try:
-        set_key(str(env_path), "CLAUDE_CODE_ACCESS_TOKEN", "")
+        store.remove_token("claude-code")
         os.environ.pop("CLAUDE_CODE_ACCESS_TOKEN", None)
         return True
     except Exception as exc:
@@ -411,6 +401,6 @@ def authenticate_and_save(quiet: bool = False) -> bool:
         return False
 
     if not quiet:
-        print(f"✓ Access token saved to {get_token_storage_path()}")
+        print("✓ Access token saved to ~/.gac/oauth/claude-code.json")
 
     return True
