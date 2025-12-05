@@ -1,11 +1,15 @@
 """OpenRouter API provider for gac."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_openrouter_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -27,8 +31,12 @@ def call_openrouter_api(model: str, messages: list[dict], temperature: float, ma
         "max_tokens": max_tokens,
     }
 
+    logger.debug(f"Calling OpenRouter API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]
@@ -36,6 +44,7 @@ def call_openrouter_api(model: str, messages: list[dict], temperature: float, ma
             raise AIError.model_error("OpenRouter API returned null content")
         if content == "":
             raise AIError.model_error("OpenRouter API returned empty content")
+        logger.debug("OpenRouter API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         # Handle specific HTTP status codes

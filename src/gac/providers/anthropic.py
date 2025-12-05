@@ -1,11 +1,15 @@
 """Anthropic AI provider implementation."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_anthropic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -32,8 +36,12 @@ def call_anthropic_api(model: str, messages: list[dict], temperature: float, max
     if system_message:
         data["system"] = system_message
 
+    logger.debug(f"Calling Anthropic API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["content"][0]["text"]
@@ -41,6 +49,7 @@ def call_anthropic_api(model: str, messages: list[dict], temperature: float, max
             raise AIError.model_error("Anthropic API returned null content")
         if content == "":
             raise AIError.model_error("Anthropic API returned empty content")
+        logger.debug("Anthropic API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 429:

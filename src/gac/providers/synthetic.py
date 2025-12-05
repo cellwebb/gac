@@ -1,11 +1,15 @@
 """Synthetic.new API provider for gac."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_synthetic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -23,8 +27,12 @@ def call_synthetic_api(model: str, messages: list[dict], temperature: float, max
 
     data = {"model": model, "messages": messages, "temperature": temperature, "max_completion_tokens": max_tokens}
 
+    logger.debug(f"Calling Synthetic.new API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]
@@ -32,6 +40,7 @@ def call_synthetic_api(model: str, messages: list[dict], temperature: float, max
             raise AIError.model_error("Synthetic.new API returned null content")
         if content == "":
             raise AIError.model_error("Synthetic.new API returned empty content")
+        logger.debug("Synthetic.new API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 429:

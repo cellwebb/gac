@@ -1,11 +1,15 @@
 """Ollama AI provider implementation."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_ollama_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -19,8 +23,12 @@ def call_ollama_api(model: str, messages: list[dict], temperature: float, max_to
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
+    logger.debug(f"Calling Ollama API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
 
@@ -38,6 +46,7 @@ def call_ollama_api(model: str, messages: list[dict], temperature: float, max_to
             raise AIError.model_error("Ollama API returned null content")
         if content == "":
             raise AIError.model_error("Ollama API returned empty content")
+        logger.debug("Ollama API response received successfully")
         return content
     except httpx.ConnectError as e:
         raise AIError.connection_error(f"Ollama connection failed. Make sure Ollama is running: {str(e)}") from e

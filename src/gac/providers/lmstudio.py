@@ -1,12 +1,16 @@
 """LM Studio AI provider implementation."""
 
+import logging
 import os
 from typing import Any
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_lmstudio_api(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
@@ -29,8 +33,12 @@ def call_lmstudio_api(model: str, messages: list[dict[str, Any]], temperature: f
         "stream": False,
     }
 
+    logger.debug(f"Calling LM Studio API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=payload, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=payload, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         choices = response_data.get("choices") or []
@@ -40,11 +48,13 @@ def call_lmstudio_api(model: str, messages: list[dict[str, Any]], temperature: f
         message = choices[0].get("message") or {}
         content = message.get("content")
         if content:
+            logger.debug("LM Studio API response received successfully")
             return content
 
         # Some OpenAI-compatible servers return text field directly
         content = choices[0].get("text")
         if content:
+            logger.debug("LM Studio API response received successfully")
             return content
 
         raise AIError.model_error("LM Studio API response missing content")

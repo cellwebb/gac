@@ -1,11 +1,15 @@
 """MiniMax API provider for gac."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_minimax_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -19,8 +23,12 @@ def call_minimax_api(model: str, messages: list[dict], temperature: float, max_t
 
     data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
 
+    logger.debug(f"Calling MiniMax API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]
@@ -28,6 +36,7 @@ def call_minimax_api(model: str, messages: list[dict], temperature: float, max_t
             raise AIError.model_error("MiniMax API returned null content")
         if content == "":
             raise AIError.model_error("MiniMax API returned empty content")
+        logger.debug("MiniMax API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 429:

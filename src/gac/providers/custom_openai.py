@@ -10,6 +10,7 @@ import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
 
@@ -61,7 +62,9 @@ def call_custom_openai_api(model: str, messages: list[dict], temperature: float,
     data = {"model": model, "messages": messages, "temperature": temperature, "max_completion_tokens": max_tokens}
 
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
 

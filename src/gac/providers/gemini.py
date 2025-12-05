@@ -1,12 +1,16 @@
 """Gemini AI provider implementation."""
 
+import logging
 import os
 from typing import Any
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
@@ -50,8 +54,12 @@ def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: flo
 
     headers = {"x-goog-api-key": api_key, "Content-Type": "application/json"}
 
+    logger.debug(f"Calling Gemini API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=payload, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=payload, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
 
@@ -75,6 +83,7 @@ def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: flo
         if content_text is None:
             raise AIError.model_error("Gemini API response missing text content")
 
+        logger.debug("Gemini API response received successfully")
         return content_text
     except AIError:
         raise

@@ -1,11 +1,15 @@
 """Z.AI API provider for gac."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def _call_zai_api_impl(
@@ -19,8 +23,12 @@ def _call_zai_api_impl(
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
 
+    logger.debug(f"Calling {api_name} API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
 
@@ -33,6 +41,7 @@ def _call_zai_api_impl(
                     raise AIError.model_error(f"{api_name} API returned null content")
                 if content == "":
                     raise AIError.model_error(f"{api_name} API returned empty content")
+                logger.debug(f"{api_name} API response received successfully")
                 return content
             else:
                 raise AIError.model_error(f"{api_name} API response missing content: {response_data}")

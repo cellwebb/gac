@@ -1,11 +1,15 @@
 """Qwen API provider for gac with OAuth support."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
+
+logger = logging.getLogger(__name__)
 
 QWEN_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
 
@@ -47,8 +51,10 @@ def call_qwen_api(model: str, messages: list[dict], temperature: float, max_toke
 
     data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
 
+    logger.debug(f"Calling Qwen API with model={model}")
+
     try:
-        response = httpx.post(api_url, headers=headers, json=data, timeout=120)
+        response = httpx.post(api_url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT)
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]
@@ -56,6 +62,7 @@ def call_qwen_api(model: str, messages: list[dict], temperature: float, max_toke
             raise AIError.model_error("Qwen API returned null content")
         if content == "":
             raise AIError.model_error("Qwen API returned empty content")
+        logger.debug("Qwen API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 401:

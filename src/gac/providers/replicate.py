@@ -1,11 +1,15 @@
 """Replicate API provider for gac."""
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_replicate_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -51,9 +55,13 @@ def call_replicate_api(model: str, messages: list[dict], temperature: float, max
         },
     }
 
+    logger.debug(f"Calling Replicate API with model={model}")
+
     try:
         # Create prediction
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         prediction_data = response.json()
 
@@ -66,7 +74,9 @@ def call_replicate_api(model: str, messages: list[dict], temperature: float, max
         elapsed_time = 0
 
         while elapsed_time < max_wait_time:
-            get_response = httpx.get(get_url, headers=headers, timeout=120, verify=get_ssl_verify())
+            get_response = httpx.get(
+                get_url, headers=headers, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+            )
             get_response.raise_for_status()
             status_data = get_response.json()
 
@@ -74,6 +84,7 @@ def call_replicate_api(model: str, messages: list[dict], temperature: float, max
                 content = status_data["output"]
                 if not content:
                     raise AIError.model_error("Replicate API returned empty content")
+                logger.debug("Replicate API response received successfully")
                 return content
             elif status_data["status"] == "failed":
                 raise AIError.model_error(f"Replicate prediction failed: {status_data.get('error', 'Unknown error')}")

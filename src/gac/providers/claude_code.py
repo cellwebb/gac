@@ -4,12 +4,16 @@ This provider allows users with Claude Code subscriptions to use their OAuth tok
 instead of paying for the expensive Anthropic API.
 """
 
+import logging
 import os
 
 import httpx
 
+from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.utils import get_ssl_verify
+
+logger = logging.getLogger(__name__)
 
 
 def call_claude_code_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -78,8 +82,12 @@ def call_claude_code_api(model: str, messages: list[dict], temperature: float, m
         "system": system_message,
     }
 
+    logger.debug(f"Calling Claude Code API with model={model}")
+
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
+        response = httpx.post(
+            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["content"][0]["text"]
@@ -87,6 +95,7 @@ def call_claude_code_api(model: str, messages: list[dict], temperature: float, m
             raise AIError.model_error("Claude Code API returned null content")
         if content == "":
             raise AIError.model_error("Claude Code API returned empty content")
+        logger.debug("Claude Code API response received successfully")
         return content
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 401:
