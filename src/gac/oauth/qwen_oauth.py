@@ -17,6 +17,7 @@ import httpx
 from gac import __version__
 from gac.errors import AIError
 from gac.oauth.token_store import OAuthToken, TokenStore
+from gac.utils import get_ssl_verify
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,7 @@ class QwenDeviceFlow:
                 "User-Agent": USER_AGENT,
             },
             timeout=30,
+            verify=get_ssl_verify(),
         )
 
         if not response.is_success:
@@ -132,6 +134,7 @@ class QwenDeviceFlow:
                         "User-Agent": USER_AGENT,
                     },
                     timeout=30,
+                    verify=get_ssl_verify(),
                 )
 
                 if response.is_success:
@@ -197,6 +200,7 @@ class QwenDeviceFlow:
                 "User-Agent": USER_AGENT,
             },
             timeout=30,
+            verify=get_ssl_verify(),
         )
 
         if not response.is_success:

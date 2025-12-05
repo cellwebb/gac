@@ -8,6 +8,7 @@ import httpx
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
+from gac.utils import get_ssl_verify
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,9 @@ def call_qwen_api(model: str, messages: list[dict], temperature: float, max_toke
     logger.debug(f"Calling Qwen API with model={model}")
 
     try:
-        response = httpx.post(api_url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT)
+        response = httpx.post(
+            api_url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
+        )
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]
