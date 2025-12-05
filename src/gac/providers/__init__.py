@@ -8,7 +8,6 @@ from .base import (
     AnthropicCompatibleProvider,
     BaseConfiguredProvider,
     GenericHTTPProvider,
-    NoAuthProvider,
     OpenAICompatibleProvider,
     ProviderConfig,
 )
@@ -76,7 +75,6 @@ __all__ = [
     "BaseConfiguredProvider",
     "OpenAICompatibleProvider",
     "AnthropicCompatibleProvider",
-    "NoAuthProvider",
     "GenericHTTPProvider",
     "ProviderConfig",
     "ProviderProtocol",

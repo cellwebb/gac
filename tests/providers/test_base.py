@@ -1,7 +1,6 @@
 """Tests for base provider classes."""
 
 import os
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -11,7 +10,6 @@ from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.base import (
     AnthropicCompatibleProvider,
-    NoAuthProvider,
     OpenAICompatibleProvider,
     ProviderConfig,
 )
@@ -35,26 +33,6 @@ class SimpleAnthropicProvider(AnthropicCompatibleProvider):
         api_key_env="SIMPLE_ANTHROPIC_API_KEY",
         base_url="https://api.simple.com/v1/messages",
     )
-
-
-class SimpleNoAuthProvider(NoAuthProvider):
-    """Simple no-auth provider for testing."""
-
-    config = ProviderConfig(
-        name="SimpleNoAuth",
-        api_key_env="",
-        base_url="http://localhost:8000/api/chat",
-    )
-
-    def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
-    ) -> dict[str, Any]:
-        """Build request body."""
-        return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens}
-
-    def _parse_response(self, response: dict[str, Any]) -> str:
-        """Parse response."""
-        return response.get("message", {}).get("content", "")
 
 
 class TestProviderConfig:
@@ -272,15 +250,6 @@ class TestAnthropicCompatibleProvider:
             assert body["system"] == "You are helpful"
             # System message should not be in messages list
             assert all(msg["role"] != "system" for msg in body["messages"])
-
-
-class TestNoAuthProvider:
-    """Test no-auth provider."""
-
-    def test_no_auth_provider_no_api_key(self):
-        """Test that no-auth provider doesn't require API key."""
-        provider = SimpleNoAuthProvider(SimpleNoAuthProvider.config)
-        assert provider.api_key == "no-key-needed"
 
 
 class TestErrorHandling:

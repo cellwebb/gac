@@ -338,34 +338,6 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         return text_content
 
 
-class NoAuthProvider(BaseConfiguredProvider):
-    """Base class for providers that don't use API keys (like Ollama)."""
-
-    @classmethod
-    def register(cls, provider_name: str, env_vars: list[str], api_function: Callable):
-        """Register this class as a provider.
-
-        Args:
-            provider_name: Name to register the provider under
-            env_vars: List of required environment variables
-            api_function: The API call function for the provider
-
-        Returns:
-            Decorated class ready for auto-registration
-        """
-        return register_provider(provider_name, env_vars, api_function)(cls)
-
-    def __init__(self, config: ProviderConfig):
-        """Initialize without API key loading."""
-        self.config = config
-        self._api_key = "no-key-needed"
-
-    @property
-    def api_key(self) -> str:
-        """Return placeholder for no-key providers."""
-        return "no-key-needed"
-
-
 class GenericHTTPProvider(BaseConfiguredProvider):
     """Base class for completely custom providers."""
 
@@ -420,7 +392,6 @@ __all__ = [
     "AnthropicCompatibleProvider",
     "BaseConfiguredProvider",
     "GenericHTTPProvider",
-    "NoAuthProvider",
     "OpenAICompatibleProvider",
     "ProviderConfig",
 ]

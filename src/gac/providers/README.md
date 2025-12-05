@@ -11,7 +11,6 @@ BaseConfiguredProvider (ABC - core logic)
      ↓
 ├── OpenAICompatibleProvider (OpenAI-style APIs)
 ├── AnthropicCompatibleProvider (Anthropic-style APIs)
-├── NoAuthProvider (Local models like Ollama)
 └── GenericHTTPProvider (Fully custom implementations)
      ↓
 Concrete Providers (e.g., OpenAIProvider, GeminiProvider)
@@ -106,14 +105,6 @@ Specialized base class for Anthropic-style APIs.
 - Anthropic, Custom Anthropic
 - Claude Code
 
-### NoAuthProvider
-
-Base class for providers that don't require API keys (local models).
-
-**Providers Using This Base:**
-
-- Ollama
-
 ### GenericHTTPProvider
 
 Base class for providers with completely custom API formats.
@@ -134,8 +125,7 @@ from gac.providers.error_handler import handle_provider_errors
 # Most providers fit one of these patterns:
 # 1. OpenAI-compatible format → inherit from OpenAICompatibleProvider
 # 2. Anthropic-compatible format → inherit from AnthropicCompatibleProvider
-# 3. No authentication needed → inherit from NoAuthProvider
-# 4. Custom format → inherit from GenericHTTPProvider
+# 3. Custom format → inherit from GenericHTTPProvider
 ```
 
 ### Step 2: Define Provider Configuration
