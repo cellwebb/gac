@@ -12,29 +12,13 @@ class MoonshotProvider(OpenAICompatibleProvider):
     )
 
 
-# Create provider instance for backward compatibility
-moonshot_provider = MoonshotProvider(MoonshotProvider.config)
+def _get_moonshot_provider() -> MoonshotProvider:
+    """Lazy getter to initialize Moonshot provider at call time."""
+    return MoonshotProvider(MoonshotProvider.config)
 
 
 @handle_provider_errors("Moonshot")
 def call_moonshot_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Moonshot AI API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return moonshot_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call Moonshot AI API directly."""
+    provider = _get_moonshot_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
