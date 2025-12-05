@@ -1,52 +1,53 @@
 """Synthetic.new API provider for gac."""
 
-import logging
 import os
+from typing import Any
 
-import httpx
-
-from gac.constants import ProviderDefaults
 from gac.errors import AIError
-from gac.utils import get_ssl_verify
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
-logger = logging.getLogger(__name__)
+
+class SyntheticProvider(OpenAICompatibleProvider):
+    """Synthetic.new OpenAI-compatible provider with alternative env vars and model preprocessing."""
+
+    config = ProviderConfig(
+        name="Synthetic",
+        api_key_env="SYNTHETIC_API_KEY",
+        base_url="https://api.synthetic.new/openai/v1/chat/completions",
+    )
+
+    def _get_api_key(self) -> str:
+        """Get API key from environment with fallback to SYN_API_KEY."""
+        api_key = os.getenv(self.config.api_key_env)
+        if not api_key:
+            api_key = os.getenv("SYN_API_KEY")
+        if not api_key:
+            raise AIError.authentication_error("SYNTHETIC_API_KEY or SYN_API_KEY not found in environment variables")
+        return api_key
+
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build request body with model name preprocessing and max_completion_tokens."""
+        # Auto-add hf: prefix if not present
+        if not model.startswith("hf:"):
+            model = f"hf:{model}"
+
+        data = super()._build_request_body(messages, temperature, max_tokens, model, **kwargs)
+        data["max_completion_tokens"] = data.pop("max_tokens")
+        # Ensure the prefixed model is used
+        data["model"] = model
+        return data
 
 
+def _get_synthetic_provider() -> SyntheticProvider:
+    """Lazy getter to initialize provider at call time."""
+    return SyntheticProvider(SyntheticProvider.config)
+
+
+@handle_provider_errors("Synthetic")
 def call_synthetic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Synthetic API directly."""
-    # Handle model names without hf: prefix
-    if not model.startswith("hf:"):
-        model = f"hf:{model}"
-
-    api_key = os.getenv("SYNTHETIC_API_KEY") or os.getenv("SYN_API_KEY")
-    if not api_key:
-        raise AIError.authentication_error("SYNTHETIC_API_KEY or SYN_API_KEY not found in environment variables")
-
-    url = "https://api.synthetic.new/openai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-    data = {"model": model, "messages": messages, "temperature": temperature, "max_completion_tokens": max_tokens}
-
-    logger.debug(f"Calling Synthetic.new API with model={model}")
-
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        content = response_data["choices"][0]["message"]["content"]
-        if content is None:
-            raise AIError.model_error("Synthetic.new API returned null content")
-        if content == "":
-            raise AIError.model_error("Synthetic.new API returned empty content")
-        logger.debug("Synthetic.new API response received successfully")
-        return content
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"Synthetic.new API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"Synthetic.new API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"Synthetic.new API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling Synthetic.new API: {str(e)}") from e
+    provider = _get_synthetic_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

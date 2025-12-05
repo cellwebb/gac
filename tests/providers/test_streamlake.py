@@ -71,7 +71,7 @@ class TestStreamLakeProviderMocked(BaseProviderTest):
 
     def test_supports_streamlake_api_key_alias(self):
         """Ensure VC_API_KEY alias works when STREAMLAKE_API_KEY is absent."""
-        with patch("gac.providers.streamlake.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.return_value = self._create_mock_response(self.success_response)
             messages = [{"role": "user", "content": "Generate a commit message"}]
             with patch.dict(os.environ, {"VC_API_KEY": "alias-key"}, clear=True):
@@ -96,7 +96,7 @@ class TestStreamLakeEdgeCases:
                 with pytest.raises(AIError) as exc_info:
                     call_streamlake_api("test-model", [], 0.7, 1000)
 
-                assert "no choices" in str(exc_info.value).lower()
+                assert "invalid response" in str(exc_info.value).lower() or "missing" in str(exc_info.value).lower()
 
     def test_streamlake_empty_choices(self):
         """Test handling of empty choices array."""
@@ -110,7 +110,7 @@ class TestStreamLakeEdgeCases:
                 with pytest.raises(AIError) as exc_info:
                     call_streamlake_api("test-model", [], 0.7, 1000)
 
-                assert "no choices" in str(exc_info.value).lower()
+                assert "invalid response" in str(exc_info.value).lower() or "missing" in str(exc_info.value).lower()
 
     def test_streamlake_missing_message(self):
         """Test handling of choice without message field."""
