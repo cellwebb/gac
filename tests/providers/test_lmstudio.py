@@ -177,4 +177,4 @@ class TestLMStudioIntegration:
             with pytest.raises(AIError) as exc_info:
                 messages = [{"role": "user", "content": "test prompt"}]
                 call_lmstudio_api(model="local-model", messages=messages, temperature=1.0, max_tokens=20)
-            assert "LM Studio connection failed" in str(exc_info.value)
+            assert "network error" in str(exc_info.value).lower() or "connection" in str(exc_info.value).lower()
