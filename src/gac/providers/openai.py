@@ -1,48 +1,59 @@
 """OpenAI API provider for gac."""
 
-import logging
-import os
+from typing import Any
 
-import httpx
-
-from gac.constants import ProviderDefaults
-from gac.errors import AIError
-from gac.utils import get_ssl_verify
-
-logger = logging.getLogger(__name__)
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
 
+class OpenAIProvider(OpenAICompatibleProvider):
+    """OpenAI API provider with model-specific adjustments."""
+
+    config = ProviderConfig(
+        name="OpenAI", api_key_env="OPENAI_API_KEY", base_url="https://api.openai.com/v1/chat/completions"
+    )
+
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build OpenAI-specific request body."""
+        data = super()._build_request_body(messages, temperature, max_tokens, model, **kwargs)
+
+        # OpenAI uses max_completion_tokens instead of max_tokens
+        data["max_completion_tokens"] = data.pop("max_tokens")
+
+        # Handle optional parameters
+        if "response_format" in kwargs:
+            data["response_format"] = kwargs["response_format"]
+        if "stop" in kwargs:
+            data["stop"] = kwargs["stop"]
+
+        return data
+
+
+# Create provider instance for backward compatibility
+openai_provider = OpenAIProvider(OpenAIProvider.config)
+
+
+@handle_provider_errors("OpenAI")
 def call_openai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call OpenAI API directly."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise AIError.authentication_error("OPENAI_API_KEY not found in environment variables")
+    """Call OpenAI API directly.
 
-    url = "https://api.openai.com/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    Args:
+        model: Model name
+        messages: List of message dictionaries
+        temperature: Temperature parameter
+        max_tokens: Maximum tokens in response
 
-    data = {"model": model, "messages": messages, "temperature": temperature, "max_completion_tokens": max_tokens}
+    Returns:
+        Generated text content
 
-    logger.debug(f"Calling OpenAI API with model={model}")
-
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        content = response_data["choices"][0]["message"]["content"]
-        if content is None:
-            raise AIError.model_error("OpenAI API returned null content")
-        if content == "":
-            raise AIError.model_error("OpenAI API returned empty content")
-        logger.debug("OpenAI API response received successfully")
-        return content
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"OpenAI API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"OpenAI API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"OpenAI API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling OpenAI API: {str(e)}") from e
+    Raises:
+        AIError: For any API-related errors
+    """
+    return openai_provider.generate(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
