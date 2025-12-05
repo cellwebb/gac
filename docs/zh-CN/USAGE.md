@@ -304,6 +304,7 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 - 设置 gac 的推荐方法是运行 `gac init` 并按照交互式提示操作。
 - 已经配置好语言，只想切换提供商或模型？运行 `gac model`，它会跳过所有语言相关的问题。
 - **使用 Claude Code？** 请参阅[Claude Code 设置指南](CLAUDE_CODE.md)获取 OAuth 认证说明。
+- **使用 Qwen.ai？** 请参阅 [Qwen.ai 设置指南](QWEN.md) 了解 OAuth 身份验证说明。
 - gac 按以下优先级顺序加载配置：
   1. CLI 标志
   2. 环境变量
@@ -335,7 +336,13 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 
 - `gac init` — 提供商、模型和语言配置的交互式设置向导
 - `gac model` — 提供商/模型/API 密钥设置，无语言提示（适合快速切换）
-- `gac auth` — 认证或重新认证 Claude Code OAuth 令牌（在令牌过期时有用）
+- `gac auth` — 显示所有提供商的 OAuth 身份验证状态
+- `gac auth claude-code login` — 使用 OAuth 登录 Claude Code（打开浏览器）
+- `gac auth claude-code logout` — 从 Claude Code 注销并删除存储的令牌
+- `gac auth claude-code status` — 检查 Claude Code 身份验证状态
+- `gac auth qwen login` — 使用 OAuth 设备流程登录 Qwen（打开浏览器）
+- `gac auth qwen logout` — 从 Qwen 注销并删除存储的令牌
+- `gac auth qwen status` — 检查 Qwen 身份验证状态
 - `gac config show` — 显示当前配置
 - `gac config set KEY VALUE` — 在 `$HOME/.gac.env` 中设置配置键
 - `gac config get KEY` — 获取配置值

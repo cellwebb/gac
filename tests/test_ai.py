@@ -470,6 +470,7 @@ class TestProviderRegistry:
             "ollama",
             "openai",
             "openrouter",
+            "qwen",
             "replicate",
             "streamlake",
             "synthetic",

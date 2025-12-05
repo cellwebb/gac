@@ -124,6 +124,53 @@ def generate_with_retries(
     if not messages:
         raise AIError.model_error("No messages provided for AI generation")
 
+    # Load Claude Code token from TokenStore if needed
+    if provider == "claude-code":
+        from gac.oauth import refresh_token_if_expired
+        from gac.oauth.token_store import TokenStore
+
+        # Check token expiry and refresh if needed
+        if not refresh_token_if_expired(quiet=True):
+            raise AIError.authentication_error(
+                "Claude Code token not found or expired. Please authenticate with 'gac auth claude-code login'."
+            )
+
+        # Load the (possibly refreshed) token
+        token_store = TokenStore()
+        token_data = token_store.get_token("claude-code")
+        if token_data and "access_token" in token_data:
+            os.environ["CLAUDE_CODE_ACCESS_TOKEN"] = token_data["access_token"]
+        else:
+            raise AIError.authentication_error(
+                "Claude Code token not found. Please authenticate with 'gac auth claude-code login'."
+            )
+
+    # Check Qwen OAuth token expiry and refresh if needed
+    if provider == "qwen":
+        from gac.oauth import QwenOAuthProvider, TokenStore
+
+        oauth_provider = QwenOAuthProvider(TokenStore())
+        token = oauth_provider.get_token()
+        if not token:
+            if not quiet:
+                console.print("[yellow]⚠ Qwen authentication not found or expired[/yellow]")
+                console.print("[cyan]🔐 Starting automatic authentication...[/cyan]")
+            try:
+                oauth_provider.initiate_auth(open_browser=True)
+                token = oauth_provider.get_token()
+                if not token:
+                    raise AIError.authentication_error(
+                        "Qwen authentication failed. Run 'gac auth qwen login' to authenticate manually."
+                    )
+                if not quiet:
+                    console.print("[green]✓ Authentication successful![/green]\n")
+            except AIError:
+                raise
+            except Exception as e:
+                raise AIError.authentication_error(
+                    f"Qwen authentication failed: {e}. Run 'gac auth qwen login' to authenticate manually."
+                ) from e
+
     # Set up spinner
     if is_group:
         message_type = f"grouped {task_description}s"

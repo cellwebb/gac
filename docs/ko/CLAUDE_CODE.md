@@ -69,7 +69,7 @@ Claude Code는 Anthropic API와 동일한 모델 액세스를 제공합니다. �
 
 - `claude-sonnet-4-5` - 최신이고 가장 지능적인 Sonnet 모델, 코딩에 최적
 - `claude-haiku-4-5` - 빠르고 효율적
-- `claude-opus-4-1` - 복잡한 추론에서 가장 강력한 모델
+- `claude-opus-4-5` - 복잡한 추론에서 가장 강력한 모델
 
 사용 가능한 모델의 전체 목록은 [Claude 문서](https://docs.claude.com/en/docs/about-claude/models/overview)를 확인하세요.
 
@@ -80,10 +80,32 @@ Claude Code는 Anthropic API와 동일한 모델 액세스를 제공합니다. �
 인증 오류가 표시되면 토큰이 만료되었을 수 있습니다. 다음을 실행하여 재인증하세요:
 
 ```bash
+gac auth claude-code login
+```
+
+브라우저가 자동으로 열려 새로운 OAuth 인증이 진행됩니다. 또는 `gac model`을 실행하고 "Claude Code (OAuth)"를 선택한 다음 "재인증(새 토큰 받기)"를 선택할 수도 있습니다.
+
+### 인증 상태 확인
+
+현재 인증되어 있는지 확인하려면:
+
+```bash
+gac auth claude-code status
+```
+
+또는 모든 공급자를 한번에 확인:
+
+```bash
 gac auth
 ```
 
-브라우저가 자동으로 열려 새로운 OAuth 인증이 진행됩니다. 또는 `gac model`을 실행하고 "Claude Code"를 선택한 다음 "재인증(새 토큰 받기)"를 선택할 수도 있습니다.
+### 로그아웃
+
+저장된 토큰을 제거하려면:
+
+```bash
+gac auth claude-code logout
+```
 
 ### "CLAUDE_CODE_ACCESS_TOKEN을 찾을 수 없음"
 
@@ -126,5 +148,6 @@ OAuth 인증이 실패하면:
 ## 참고 자료
 
 - [메인 문서](USAGE.md)
+- [Qwen.ai 설정 가이드](QWEN.md)
 - [문제 해결 가이드](TROUBLESHOOTING.md)
 - [Claude Code 문서](https://claude.ai/code)

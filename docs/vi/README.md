@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Phân Tích LLM Thông Minh**
 
@@ -221,6 +221,8 @@ Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuốn
 ## Nhận Trợ Giúp
 
 - **Tài liệu đầy đủ**: [USAGE.md](USAGE.md) - Tham chiếu CLI hoàn chỉnh
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/vi/CLAUDE_CODE.md) - Cài đặt và xác thực Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/vi/QWEN.md) - Cài đặt và xác thực Qwen.ai
 - **Gợi ý tùy chỉnh**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tùy chỉnh kiểu thông điệp commit
 - **Xử lý sự cố**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Các vấn đề phổ biến và giải pháp
 - **Đóng góp**: [CONTRIBUTING.md](CONTRIBUTING.md) - Thiết lập phát triển và hướng dẫn

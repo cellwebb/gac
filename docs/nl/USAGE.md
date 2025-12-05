@@ -254,6 +254,7 @@ gac --skip-secret-scan  # Sla security scan over voor deze commit
 - De aanbevolen manier om gac in te stellen is `gac init` uit te voeren en de interactieve prompts te volgen.
 - Al geconfigureerde taal en alleen providers of modellen moeten wisselen? Voer `gac model` uit om de setup te herhalen zonder taalvragen.
 - **Claude Code gebruiken?** Zie de [Claude Code installatiehandleiding](CLAUDE_CODE.md) voor OAuth-authenticatie-instructies.
+- **Qwen.ai gebruiken?** Zie de [Qwen.ai-installatiehandleiding](QWEN.md) voor OAuth-authenticatie-instructies.
 - gac laadt configuratie in de volgende volgorde van prioriteit:
   1. CLI vlaggen
   2. Omgevingsvariabelen
@@ -285,7 +286,13 @@ De volgende subcommando's zijn beschikbaar:
 
 - `gac init` — Interactieve setup wizard voor provider, model en taalconfiguratie
 - `gac model` — Provider/model/API key setup zonder taalprompts (ideaal voor snelle wissels)
-- `gac auth` — Authenticeer of herauthenticeer Claude Code OAuth token (handig wanneer token verloopt)
+- `gac auth` — Toon OAuth-authenticatiestatus voor alle providers
+- `gac auth claude-code login` — Inloggen op Claude Code met OAuth (opent browser)
+- `gac auth claude-code logout` — Uitloggen uit Claude Code en opgeslagen token verwijderen
+- `gac auth claude-code status` — Claude Code-authenticatiestatus controleren
+- `gac auth qwen login` — Inloggen op Qwen met OAuth device flow (opent browser)
+- `gac auth qwen logout` — Uitloggen uit Qwen en opgeslagen token verwijderen
+- `gac auth qwen status` — Qwen-authenticatiestatus controleren
 - `gac config show` — Huidige configuratie tonen
 - `gac config set KEY VALUE` — Configuratiesleutel instellen in `$HOME/.gac.env`
 - `gac config get KEY` — Configuratiewaarde krijgen

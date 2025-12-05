@@ -1,9 +1,9 @@
 import string
 import time
 from types import SimpleNamespace
+from unittest import mock
 from urllib.parse import parse_qs, urlparse
 
-import dotenv
 import pytest
 
 from gac.oauth import claude_code
@@ -547,14 +547,13 @@ def test_perform_oauth_flow_returns_none_when_exchange_fails(monkeypatch: pytest
     assert fake_server.shutdown_called
 
 
-def test_authenticate_and_save_success(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+def test_authenticate_and_save_success(monkeypatch: pytest.MonkeyPatch) -> None:
     tokens = {"access_token": "token"}
     saved: list[str] = []
 
     monkeypatch.setattr(claude_code, "perform_oauth_flow", lambda quiet: tokens)
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: tmp_path / ".gac.env")
 
-    def fake_save_token(access_token: str) -> bool:
+    def fake_save_token(access_token: str, token_data: dict | None = None) -> bool:
         saved.append(access_token)
         return True
 
@@ -572,7 +571,7 @@ def test_authenticate_and_save_missing_access_token(monkeypatch: pytest.MonkeyPa
 
 def test_authenticate_and_save_handles_save_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(claude_code, "perform_oauth_flow", lambda quiet: {"access_token": "token"})
-    monkeypatch.setattr(claude_code, "save_token", lambda token: False)
+    monkeypatch.setattr(claude_code, "save_token", lambda token, token_data=None: False)
 
     assert claude_code.authenticate_and_save(quiet=True) is False
 
@@ -583,65 +582,56 @@ def test_authenticate_and_save_returns_false_when_flow_fails(monkeypatch: pytest
     assert claude_code.authenticate_and_save(quiet=True) is False
 
 
-def test_load_stored_token_missing_file_returns_none(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    env_path = tmp_path / ".gac.env"
-    if env_path.exists():
-        env_path.unlink()
+def test_load_stored_token_missing_file_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    from gac.oauth.token_store import TokenStore
 
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
+    mock_store = mock.Mock(spec=TokenStore)
+    mock_store.get_token.return_value = None
+    monkeypatch.setattr(claude_code, "TokenStore", lambda: mock_store)
 
     assert claude_code.load_stored_token() is None
 
 
-def test_load_stored_token_reads_value(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    env_path = tmp_path / ".gac.env"
-    env_path.write_text("")
+def test_load_stored_token_reads_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    from gac.oauth.token_store import TokenStore
 
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
-    monkeypatch.setattr(dotenv, "dotenv_values", lambda path: {"CLAUDE_CODE_ACCESS_TOKEN": "token"})
+    mock_store = mock.Mock(spec=TokenStore)
+    mock_store.get_token.return_value = {"access_token": "token"}
+    monkeypatch.setattr(claude_code, "TokenStore", lambda: mock_store)
 
     assert claude_code.load_stored_token() == "token"
 
 
-def test_load_stored_token_returns_none_when_missing_key(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    env_path = tmp_path / ".gac.env"
-    env_path.write_text("")
+def test_load_stored_token_returns_none_when_missing_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    from gac.oauth.token_store import TokenStore
 
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
-    monkeypatch.setattr(dotenv, "dotenv_values", lambda path: {})
+    mock_store = mock.Mock(spec=TokenStore)
+    mock_store.get_token.return_value = {}  # Token dict without access_token
+    monkeypatch.setattr(claude_code, "TokenStore", lambda: mock_store)
 
     assert claude_code.load_stored_token() is None
 
 
-def test_save_token_success(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    env_path = tmp_path / ".gac.env"
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
+def test_save_token_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    from gac.oauth.token_store import TokenStore
 
-    captured: dict[str, str] = {}
-
-    def fake_set_key(path: str, key: str, value: str):
-        captured["path"] = path
-        captured["key"] = key
-        captured["value"] = value
-        return True
-
-    monkeypatch.setattr(dotenv, "set_key", fake_set_key)
+    mock_store = mock.Mock(spec=TokenStore)
+    mock_store.save_token.return_value = None
+    monkeypatch.setattr(claude_code, "TokenStore", lambda: mock_store)
 
     assert claude_code.save_token("token") is True
-    assert captured == {
-        "path": str(env_path),
-        "key": "CLAUDE_CODE_ACCESS_TOKEN",
-        "value": "token",
-    }
+    mock_store.save_token.assert_called_once()
+    call_args = mock_store.save_token.call_args
+    assert call_args[0][0] == "claude-code"  # provider name
+    assert call_args[0][1]["access_token"] == "token"
+    assert call_args[0][1]["token_type"] == "Bearer"
 
 
-def test_save_token_failure(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    env_path = tmp_path / ".gac.env"
-    monkeypatch.setattr(claude_code, "get_token_storage_path", lambda: env_path)
+def test_save_token_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    from gac.oauth.token_store import TokenStore
 
-    def fake_set_key(path: str, key: str, value: str):
-        raise RuntimeError("disk full")
-
-    monkeypatch.setattr(dotenv, "set_key", fake_set_key)
+    mock_store = mock.Mock(spec=TokenStore)
+    mock_store.save_token.side_effect = Exception("disk full")
+    monkeypatch.setattr(claude_code, "TokenStore", lambda: mock_store)
 
     assert claude_code.save_token("token") is False

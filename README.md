@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Smart LLM Analysis**
 
@@ -221,6 +221,8 @@ Track real-time installation metrics and package download statistics.
 ## Getting Help
 
 - **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/en/CLAUDE_CODE.md) - Claude Code setup and authentication
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/en/QWEN.md) - Qwen.ai setup and authentication
 - **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions
 - **Contributing**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Development setup and guidelines

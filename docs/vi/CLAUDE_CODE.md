@@ -69,7 +69,7 @@ Claude Code cung cấp quyền truy cập vào các mô hình tương tự như 
 
 - `claude-sonnet-4-5` - Mô hình Sonnet mới nhất và thông minh nhất, tốt nhất cho lập trình
 - `claude-haiku-4-5` - Nhanh và hiệu quả
-- `claude-opus-4-1` - Mô hình có khả năng nhất cho lý luận phức tạp
+- `claude-opus-4-5` - Mô hình có khả năng nhất cho lý luận phức tạp
 
 Xem [tài liệu Claude](https://docs.claude.com/en/docs/about-claude/models/overview) để có danh sách đầy đủ các mô hình có sẵn.
 
@@ -80,10 +80,32 @@ Xem [tài liệu Claude](https://docs.claude.com/en/docs/about-claude/models/ove
 Nếu bạn thấy lỗi xác thực, token của bạn có thể đã hết hạn. Xác thực lại bằng cách chạy:
 
 ```bash
+gac auth claude-code login
+```
+
+Trình duyệt của bạn sẽ tự động mở để xác thực OAuth mới. Ngoài ra, bạn có thể chạy `gac model`, chọn "Claude Code (OAuth)" và chọn "Xác thực lại (lấy token mới)".
+
+### Kiểm tra trạng thái xác thực
+
+Để kiểm tra xem bạn hiện đang được xác thực hay không:
+
+```bash
+gac auth claude-code status
+```
+
+Hoặc kiểm tra tất cả các nhà cung cấp cùng lúc:
+
+```bash
 gac auth
 ```
 
-Trình duyệt của bạn sẽ tự động mở để xác thực OAuth mới. Ngoài ra, bạn có thể chạy `gac model`, chọn "Claude Code" và chọn "Xác thực lại (lấy token mới)".
+### Đăng xuất
+
+Để xóa token đã lưu của bạn:
+
+```bash
+gac auth claude-code logout
+```
 
 ### "Không tìm thấy CLAUDE_CODE_ACCESS_TOKEN"
 
@@ -126,5 +148,6 @@ Nếu xác thực OAuth thất bại:
 ## Xem thêm
 
 - [Tài liệu chính](USAGE.md)
+- [Thiết lập và xác thực Qwen.ai](QWEN.md)
 - [Hướng dẫn xử lý sự cố](TROUBLESHOOTING.md)
 - [Tài liệu Claude Code](https://claude.ai/code)

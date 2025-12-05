@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **智慧 LLM 分析**
 
@@ -221,6 +221,8 @@ ANTHROPIC_API_KEY=your_key_here
 ## 獲取協助
 
 - **完整文件**：[USAGE.md](docs/zh-TW/USAGE.md) - 完整的 CLI 參考
+- **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-TW/CLAUDE_CODE.md) - Claude Code 設定與驗證
+- **Qwen.ai OAuth**：[docs/QWEN.md](docs/zh-TW/QWEN.md) - Qwen.ai 設定與驗證
 - **自訂提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-TW/CUSTOM_SYSTEM_PROMPTS.md) - 自訂提交訊息風格
 - **故障排除**：[TROUBLESHOOTING.md](docs/zh-TW/TROUBLESHOOTING.md) - 常見問題和解決方案
 - **貢獻**：[CONTRIBUTING.md](docs/zh-TW/CONTRIBUTING.md) - 開發設定和指南

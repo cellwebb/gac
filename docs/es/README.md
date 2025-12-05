@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Análisis inteligente con LLM**
 
@@ -221,6 +221,8 @@ Rastrea métricas de instalación en tiempo real y estadísticas de descarga de 
 ## Obtener ayuda
 
 - **Documentación completa**: [USAGE.md](docs/es/USAGE.md) - Referencia completa de CLI
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/es/CLAUDE_CODE.md) - Configuración y autenticación de Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/es/QWEN.md) - Configuración y autenticación de Qwen.ai
 - **Prompts personalizados**: [CUSTOM_SYSTEM_PROMPTS.md](docs/es/CUSTOM_SYSTEM_PROMPTS.md) - Personaliza el estilo del mensaje de commit
 - **Solución de problemas**: [TROUBLESHOOTING.md](docs/es/TROUBLESHOOTING.md) - Problemas comunes y soluciones
 - **Contribuir**: [CONTRIBUTING.md](docs/es/CONTRIBUTING.md) - Configuración de desarrollo y guías

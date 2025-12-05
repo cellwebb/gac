@@ -19,6 +19,7 @@ from .moonshot import call_moonshot_api
 from .ollama import call_ollama_api
 from .openai import call_openai_api
 from .openrouter import call_openrouter_api
+from .qwen import call_qwen_api
 from .replicate import call_replicate_api
 from .streamlake import call_streamlake_api
 from .synthetic import call_synthetic_api
@@ -46,6 +47,7 @@ PROVIDER_REGISTRY = {
     "ollama": call_ollama_api,
     "openai": call_openai_api,
     "openrouter": call_openrouter_api,
+    "qwen": call_qwen_api,
     "replicate": call_replicate_api,
     "streamlake": call_streamlake_api,
     "synthetic": call_synthetic_api,
@@ -77,6 +79,7 @@ __all__ = [
     "call_ollama_api",
     "call_openai_api",
     "call_openrouter_api",
+    "call_qwen_api",
     "call_replicate_api",
     "call_streamlake_api",
     "call_synthetic_api",

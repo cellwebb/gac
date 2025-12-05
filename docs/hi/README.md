@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/badge/ruff-checked-blue.svg)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **स्मार्ट LLM विश्लेषण**
 
@@ -221,6 +221,8 @@ ANTHROPIC_API_KEY=your_key_here
 ## सहायता प्राप्त करना
 
 - **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/hi/CLAUDE_CODE.md) - Claude Code सेटअप और प्रमाणीकरण
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/hi/QWEN.md) - Qwen.ai सेटअप और प्रमाणीकरण
 - **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें
 - **समस्या निवारण**: [TROUBLESHOOTING.md](docs/hi/TROUBLESHOOTING.md) - सामान्य समस्याएं और समाधान
 - **योगदान**: [CONTRIBUTING.md](docs/hi/CONTRIBUTING.md) - डेवलपमेंट सेटअप और दिशानिर्देश

@@ -6,7 +6,7 @@
 # 🚀 Git Auto Commit (gac)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
-[![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI** • **Z.AI** • **Z.AI Coding**
-- **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen.ai (OAuth)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Análise Inteligente de LLM**
 
@@ -221,6 +221,8 @@ Acompanhe métricas de instalação em tempo real e estatísticas de download de
 ## Obtendo Ajuda
 
 - **Documentação completa**: [USAGE.md](docs/pt/USAGE.md) - Referência completa da CLI
+- **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/pt/CLAUDE_CODE.md) - Configuração e autenticação do Claude Code
+- **Qwen.ai OAuth**: [docs/QWEN.md](docs/pt/QWEN.md) - Configuração e autenticação do Qwen.ai
 - **Prompts personalizados**: [CUSTOM_SYSTEM_PROMPTS.md](docs/pt/CUSTOM_SYSTEM_PROMPTS.md) - Personalize o estilo da mensagem de commit
 - **Solução de problemas**: [TROUBLESHOOTING.md](docs/pt/TROUBLESHOOTING.md) - Problemas comuns e soluções
 - **Contribuindo**: [CONTRIBUTING.md](docs/pt/CONTRIBUTING.md) - Configuração de desenvolvimento e diretrizes

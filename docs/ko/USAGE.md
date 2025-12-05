@@ -298,6 +298,7 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 - gac를 설정하는 권장 방법은 `gac init`를 실행하고 대화형 프롬프트를 따르는 것입니다.
 - 이미 언어가 구성되었고 프로바이더나 모델만 전환해야 하나요? 언어 질문 없이 설정을 반복하려면 `gac model`을 실행하세요.
 - **Claude Code를 사용하시나요?** OAuth 인증 지침은 [Claude Code 설정 가이드](CLAUDE_CODE.md)를 참조하세요.
+- **Qwen.ai를 사용 중이신가요?** [Qwen.ai 설정 가이드](QWEN.md)에서 OAuth 인증 지침을 확인하세요.
 - gac는 다음 우선순위 순서로 구성을 로드합니다:
   1. CLI 플래그
   2. 환경 변수
@@ -329,7 +330,13 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 
 - `gac init` — 공급자, 모델, 언어 구성을 위한 대화형 설정 마법사
 - `gac model` — 언어 프롬프트 없는 공급자/모델/API 키 설정 (빠른 전환에 이상적)
-- `gac auth` — Claude Code OAuth 토큰 인증 또는 재인증 (토큰 만료 시 유용)
+- `gac auth` — 모든 프로바이더의 OAuth 인증 상태 표시
+- `gac auth claude-code login` — OAuth를 사용하여 Claude Code에 로그인 (브라우저 열림)
+- `gac auth claude-code logout` — Claude Code에서 로그아웃하고 저장된 토큰 제거
+- `gac auth claude-code status` — Claude Code 인증 상태 확인
+- `gac auth qwen login` — OAuth 장치 흐름을 사용하여 Qwen에 로그인 (브라우저 열림)
+- `gac auth qwen logout` — Qwen에서 로그아웃하고 저장된 토큰 제거
+- `gac auth qwen status` — Qwen 인증 상태 확인
 - `gac config show` — 현재 구성 표시
 - `gac config set KEY VALUE` — `$HOME/.gac.env`에서 구성 키 설정
 - `gac config get KEY` — 구성 값 가져오기

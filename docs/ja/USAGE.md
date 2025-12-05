@@ -304,6 +304,7 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 - gac を設定する推奨方法は `gac init` を実行して対話的なプロンプトに従うことです。
 - すでに言語を設定しており、プロバイダーやモデルを切り替える必要があるだけですか？`gac model` を実行して質問なしでセットアップを繰り返してください。
 - **Claude Code を使用していますか？** OAuth 認証の手順については[Claude Code 設定ガイド](CLAUDE_CODE.md)を参照してください。
+- **Qwen.aiを使用していますか？** [Qwen.ai設定ガイド](QWEN.md)でOAuth認証の手順を確認してください。
 - gac は以下の優先度順で設定を読み込みます：
   1. CLI フラグ
   2. 環境変数
@@ -335,7 +336,13 @@ gac --skip-secret-scan  # このコミットのセキュリティスキャンを
 
 - `gac init` — プロバイダー、モデル、言語設定の対話的なセットアップウィザード
 - `gac model` — 言語プロンプトなしのプロバイダー/モデル/API キー設定（クイックスイッチに最適）
-- `gac auth` — Claude Code OAuth トークンの認証または再認証（トークン期限切れ時に有用）
+- `gac auth` — すべてのプロバイダーのOAuth認証ステータスを表示
+- `gac auth claude-code login` — OAuthを使用してClaude Codeにログイン（ブラウザを開く）
+- `gac auth claude-code logout` — Claude Codeからログアウトして保存されたトークンを削除
+- `gac auth claude-code status` — Claude Code認証ステータスを確認
+- `gac auth qwen login` — OAuthデバイスフローを使用してQwenにログイン（ブラウザを開く）
+- `gac auth qwen logout` — Qwenからログアウトして保存されたトークンを削除
+- `gac auth qwen status` — Qwen認証ステータスを確認
 - `gac config show` — 現在の設定を表示
 - `gac config set KEY VALUE` — `$HOME/.gac.env` で設定キーを設定
 - `gac config get KEY` — 設定値を取得
