@@ -32,8 +32,12 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
         if not base_url:
             raise AIError.model_error("CUSTOM_ANTHROPIC_BASE_URL environment variable not set")
 
-        if "/v1/messages" not in base_url:
-            base_url = base_url.rstrip("/")
+        base_url = base_url.rstrip("/")
+        if base_url.endswith("/messages"):
+            pass  # Already a complete endpoint URL
+        elif base_url.endswith("/v1"):
+            base_url = f"{base_url}/messages"
+        else:
             base_url = f"{base_url}/v1/messages"
 
         # Update config with the custom base URL
