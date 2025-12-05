@@ -114,13 +114,14 @@ Concrete Providers (e.g., OpenAIProvider, GeminiProvider)
 - [x] Test SSL verification is passed correctly
 - [x] Test timeout uses `ProviderDefaults.HTTP_TIMEOUT`
 
-**Current Test Status**: 434/458 tests passing (94.8%), 24 integration tests skipped
+**Current Test Status**: 1087/1124 tests passing (96.7%), 37 integration tests skipped
 
 - Phase 1 Foundation: ✅ All tests passing
 - Phase 2 OpenAI-compatible: ✅ 100 tests passing
 - Phase 3 Anthropic-compatible: ✅ 38 tests passing
-- Phase 4 Custom (GROUP A-C): ✅ 96 tests passing
-- Phases 5-6: ✅ 160+ tests passing
+- Phase 4 Custom (GROUP A-E): ✅ 96 tests passing
+- Phase 5 No-Auth Providers: ✅ 22 tests passing
+- Phase 6 OAuth Providers: ✅ 27 tests passing
 
 **Files to create:**
 
@@ -183,7 +184,7 @@ Providers to migrate:
 
 **Goal**: Migrate providers with unique API formats
 
-**STATUS**: 6 of 9 providers completed (67%)
+**STATUS**: ✅ COMPLETE - 9 of 9 providers completed (100%)
 
 Providers to migrate:
 
@@ -193,27 +194,31 @@ Providers to migrate:
 - [x] `synthetic.py` - Alternative env vars + model preprocessing (GROUP B)
 - [x] `custom_openai.py` - Custom endpoint support (GROUP C)
 - [x] `azure_openai.py` - Azure-specific configuration (GROUP C)
-- [ ] `gemini.py` - Google's unique format (GROUP D - complex)
-- [ ] `replicate.py` - Prediction-based async API (GROUP D - complex)
-- [ ] `zai.py` - Multiple endpoints (GROUP E)
+- [x] `gemini.py` - Google's unique format with role conversion (GROUP D - complex)
+- [x] `replicate.py` - Async prediction API with polling (GROUP D - complex)
+- [x] `zai.py` - Dual endpoints (regular + coding) (GROUP E)
 
 ### Phase 5: No-Auth Providers [Priority: MEDIUM]
 
 **Goal**: Migrate providers that don't require API keys
 
+**STATUS**: ✅ COMPLETE - 2 of 2 providers completed (100%)
+
 Providers to migrate:
 
-- [ ] `ollama.py`
-- [ ] `lmstudio.py`
+- [x] `ollama.py` - NoAuthProvider with flexible response format
+- [x] `lmstudio.py` - OpenAICompatibleProvider with optional auth and text field fallback
 
 ### Phase 6: OAuth Providers [Priority: LOW]
 
 **Goal**: Migrate OAuth-based providers (most complex)
 
+**STATUS**: ✅ COMPLETE - 2 of 2 providers completed (100%)
+
 Providers to migrate:
 
-- [ ] `claude_code.py` - OAuth token refresh
-- [ ] `qwen.py` - OAuth token refresh
+- [x] `claude_code.py` - AnthropicCompatibleProvider with special system message requirement
+- [x] `qwen.py` - OpenAICompatibleProvider with dual auth modes (API key + OAuth)
 
 ### Phase 7: Cleanup & Documentation [Priority: LOW]
 
