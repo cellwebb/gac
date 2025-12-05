@@ -37,6 +37,22 @@ This provides essential guidance for AI coding agents working on this repository
 
 **This requirement is NON-NEGOTIABLE for AI agents working with this project.**
 
+### Subagent Guidance
+
+**When invoking subagents or providing instructions to other AI agents, ALWAYS explicitly require them to use `uv run` prefixes for Python commands.**
+
+**Include this requirement in your prompts:**
+
+```text
+IMPORTANT: Use `uv run` prefix for ALL Python commands:
+- uv run python script.py (NEVER: python script.py)
+- uv run pytest (NEVER: pytest)
+- uv run ruff check . (NEVER: ruff check .)
+- uv run pip install package (NEVER: pip install package)
+```
+
+**Verify compliance:** Always check that subagent responses use proper `uv run` prefixes before accepting their output.
+
 ## Project Structure
 
 ```text
