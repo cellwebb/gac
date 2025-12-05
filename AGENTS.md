@@ -2,39 +2,40 @@
 
 This provides essential guidance for AI coding agents working on this repository.
 
-## ⚠️ UV REQUIRED - NO VANILLA PYTHON
+## 🚨 CRITICAL: AI AGENT COMMAND REQUIREMENTS
 
-**NEVER use vanilla `python`/`pip` in this repository. UV IS MANDATORY for all development.**
+**ALWAYS use `uv run` prefix for ALL Python-related commands. NEVER use vanilla commands.**
 
-This project has ZERO tolerance for vanilla Python usage. The UV requirement exists because:
-
-- **Project consistency**: 24+ AI providers have complex interdependencies that only UV handles reliably
-- **Dependency management**: The multi-provider ecosystem (OpenAI, Anthropic, Google, etc.) requires precise dependency resolution
-- **Reproducible builds**: All testing, CI/CD, and development workflows depend on UV's exact dependency locking
-- **Team standardization**: Every contributor (human or AI) must use the same toolchain to avoid environment drift
-- **Speed and reliability**: UV's 10-100x faster installs and caching are essential for rapid iteration
-
-**NEVER DO THIS:**
+### CORRECT (Always use these)
 
 ```bash
-# ❌ FORBIDDEN - will break reproducible builds
-python -m pytest
-pip install -e .
-pip install requests
-python -m pip list
+✅ uv run python script.py          # NEVER: python script.py
+✅ uv run pytest                    # NEVER: pytest
+✅ uv run python -m pytest tests/   # NEVER: python -m pytest tests/
+✅ uv run python -c "print('test')" # NEVER: python -c "print('test')"
+✅ uv run ruff check .              # NEVER: ruff check .
+✅ uv run ruff format .             # NEVER: ruff format .
+✅ uv run mypy src/                 # NEVER: mypy src/
+✅ uv run pip install package      # NEVER: pip install package
 ```
 
-**ALWAYS DO THIS:**
+### FORBIDDEN (Never use these)
 
-```bash
-# ✅ MANDATORY - only acceptable way
-uv run -- pytest
-uv pip install -e ".[dev]"
-uv add requests
-uv pip list
-```
+❌ `python` (any form)
+❌ `pytest` (any form)
+❌ `pip` (any form)
+❌ `ruff` (any form)
+❌ `mypy` (any form)
+❌ `black`, `isort`, `flake8`, or any other Python tools
 
-**No exceptions.** Using vanilla Python introduces environment inconsistency, dependency conflicts, and breaks the reproducible build chain that this project depends on.
+**Why?** All development tools must go through `uv run` to ensure:
+
+- Proper environment isolation
+- Consistent dependency resolution
+- No interference with global Python installations
+- Reliable tool execution across different systems
+
+**This requirement is NON-NEGOTIABLE for AI agents working with this project.**
 
 ## Project Structure
 
