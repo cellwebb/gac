@@ -6,6 +6,8 @@ instead of paying for the expensive Anthropic API.
 
 from typing import Any
 
+from gac.errors import AIError
+from gac.oauth.claude_code import load_stored_token
 from gac.providers.base import AnthropicCompatibleProvider, ProviderConfig
 from gac.providers.error_handler import handle_provider_errors
 
@@ -18,6 +20,16 @@ class ClaudeCodeProvider(AnthropicCompatibleProvider):
         api_key_env="CLAUDE_CODE_ACCESS_TOKEN",
         base_url="https://api.anthropic.com/v1/messages",
     )
+
+    def _get_api_key(self) -> str:
+        """Get OAuth token from token store."""
+        token = load_stored_token()
+        if token:
+            return token
+
+        raise AIError.authentication_error(
+            "Claude Code authentication not found. Run 'gac auth claude-code login' to authenticate."
+        )
 
     def _build_headers(self) -> dict[str, str]:
         """Build headers with OAuth token and special anthropic-beta."""
