@@ -64,7 +64,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_missing_choices(self):
         """Test handling of response without choices field."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"some_other_field": "value"}
             mock_response.raise_for_status = MagicMock()
@@ -77,7 +77,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_empty_choices(self):
         """Test handling of empty choices array."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": []}
             mock_response.raise_for_status = MagicMock()
@@ -90,7 +90,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_missing_message_and_text(self):
         """Test handling of choice without message or text field."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": [{"other_field": "value"}]}
             mock_response.raise_for_status = MagicMock()
@@ -103,7 +103,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_text_field_fallback(self):
         """Test fallback to text field when message.content not present."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": [{"text": "test response"}]}
             mock_response.raise_for_status = MagicMock()
@@ -114,7 +114,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_custom_api_url(self):
         """Test custom LMSTUDIO_API_URL environment variable."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": [{"message": {"content": "test response"}}]}
             mock_response.raise_for_status = MagicMock()
@@ -130,7 +130,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_with_api_key(self):
         """Test that API key is included in headers when provided."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": [{"message": {"content": "test response"}}]}
             mock_response.raise_for_status = MagicMock()
@@ -148,7 +148,7 @@ class TestLMStudioEdgeCases:
 
     def test_lmstudio_without_api_key(self):
         """Test that Authorization header is not included when no API key."""
-        with patch("httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {"choices": [{"message": {"content": "test response"}}]}
             mock_response.raise_for_status = MagicMock()

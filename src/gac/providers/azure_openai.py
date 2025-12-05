@@ -36,8 +36,10 @@ class AzureOpenAIProvider(OpenAICompatibleProvider):
         config.base_url = ""  # Will be set dynamically in _get_api_url
         super().__init__(config)
 
-    def _get_api_url(self, model: str) -> str:
+    def _get_api_url(self, model: str | None = None) -> str:
         """Build Azure-specific URL with deployment name and API version."""
+        if model is None:
+            return super()._get_api_url(model)
         return f"{self.endpoint}/openai/deployments/{model}/chat/completions?api-version={self.api_version}"
 
     def _build_headers(self) -> dict[str, str]:
