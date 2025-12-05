@@ -12,29 +12,13 @@ class MistralProvider(OpenAICompatibleProvider):
     )
 
 
-# Create provider instance for backward compatibility
-mistral_provider = MistralProvider(MistralProvider.config)
+def _get_mistral_provider() -> MistralProvider:
+    """Lazy getter to initialize Mistral provider at call time."""
+    return MistralProvider(MistralProvider.config)
 
 
 @handle_provider_errors("Mistral")
 def call_mistral_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Mistral API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return mistral_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call Mistral API directly."""
+    provider = _get_mistral_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
