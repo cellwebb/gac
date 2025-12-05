@@ -31,29 +31,13 @@ class OpenAIProvider(OpenAICompatibleProvider):
         return data
 
 
-# Create provider instance for backward compatibility
-openai_provider = OpenAIProvider(OpenAIProvider.config)
+def _get_openai_provider() -> OpenAIProvider:
+    """Lazy getter to initialize OpenAI provider at call time."""
+    return OpenAIProvider(OpenAIProvider.config)
 
 
 @handle_provider_errors("OpenAI")
 def call_openai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call OpenAI API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return openai_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call OpenAI API directly."""
+    provider = _get_openai_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
