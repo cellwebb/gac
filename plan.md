@@ -114,6 +114,14 @@ Concrete Providers (e.g., OpenAIProvider, GeminiProvider)
 - [x] Test SSL verification is passed correctly
 - [x] Test timeout uses `ProviderDefaults.HTTP_TIMEOUT`
 
+**Current Test Status**: 434/458 tests passing (94.8%), 24 integration tests skipped
+
+- Phase 1 Foundation: ✅ All tests passing
+- Phase 2 OpenAI-compatible: ✅ 100 tests passing
+- Phase 3 Anthropic-compatible: ✅ 38 tests passing
+- Phase 4 Custom (GROUP A-C): ✅ 96 tests passing
+- Phases 5-6: ✅ 160+ tests passing
+
 **Files to create:**
 
 - `src/gac/providers/protocol.py`
@@ -175,17 +183,19 @@ Providers to migrate:
 
 **Goal**: Migrate providers with unique API formats
 
+**STATUS**: 6 of 9 providers completed (67%)
+
 Providers to migrate:
 
-- [ ] `gemini.py` - Google's unique format
-- [ ] `replicate.py` - Prediction-based API
-- [ ] `azure_openai.py` - Azure-specific configuration
-- [ ] `custom_openai.py` - Custom endpoint support
-- [ ] `chutes.py` - Custom base URL
-- [ ] `streamlake.py` - Alternative env vars
-- [ ] `synthetic.py` - Alternative env vars
-- [ ] `kimi_coding.py` - Moonshot variant
-- [ ] `zai.py` - Multiple endpoints
+- [x] `chutes.py` - Custom base URL (GROUP A - simple)
+- [x] `kimi_coding.py` - OpenAI-compatible with max_completion_tokens (GROUP A - simple)
+- [x] `streamlake.py` - Alternative env vars (GROUP B)
+- [x] `synthetic.py` - Alternative env vars + model preprocessing (GROUP B)
+- [x] `custom_openai.py` - Custom endpoint support (GROUP C)
+- [x] `azure_openai.py` - Azure-specific configuration (GROUP C)
+- [ ] `gemini.py` - Google's unique format (GROUP D - complex)
+- [ ] `replicate.py` - Prediction-based async API (GROUP D - complex)
+- [ ] `zai.py` - Multiple endpoints (GROUP E)
 
 ### Phase 5: No-Auth Providers [Priority: MEDIUM]
 
