@@ -12,29 +12,13 @@ class AnthropicProvider(AnthropicCompatibleProvider):
     )
 
 
-# Create provider instance for backward compatibility
-anthropic_provider = AnthropicProvider(AnthropicProvider.config)
+def _get_anthropic_provider() -> AnthropicProvider:
+    """Lazy getter to initialize Anthropic provider at call time."""
+    return AnthropicProvider(AnthropicProvider.config)
 
 
 @handle_provider_errors("Anthropic")
 def call_anthropic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Anthropic API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return anthropic_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call Anthropic API directly."""
+    provider = _get_anthropic_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
