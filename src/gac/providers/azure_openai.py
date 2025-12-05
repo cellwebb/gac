@@ -4,19 +4,64 @@ This provider provides native support for Azure OpenAI Service with proper
 endpoint construction and API version handling.
 """
 
-import json
-import logging
 import os
+from typing import Any
 
-import httpx
-
-from gac.constants import ProviderDefaults
 from gac.errors import AIError
-from gac.utils import get_ssl_verify
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
-logger = logging.getLogger(__name__)
+
+class AzureOpenAIProvider(OpenAICompatibleProvider):
+    """Azure OpenAI-compatible provider with custom URL construction and headers."""
+
+    config = ProviderConfig(
+        name="Azure OpenAI",
+        api_key_env="AZURE_OPENAI_API_KEY",
+        base_url="",  # Will be set in __init__
+    )
+
+    def __init__(self, config: ProviderConfig):
+        """Initialize with Azure-specific endpoint and API version."""
+        endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        if not endpoint:
+            raise AIError.model_error("AZURE_OPENAI_ENDPOINT environment variable not set")
+
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+        if not api_version:
+            raise AIError.model_error("AZURE_OPENAI_API_VERSION environment variable not set")
+
+        self.api_version = api_version
+        self.endpoint = endpoint.rstrip("/")
+        config.base_url = ""  # Will be set dynamically in _get_api_url
+        super().__init__(config)
+
+    def _get_api_url(self, model: str) -> str:
+        """Build Azure-specific URL with deployment name and API version."""
+        return f"{self.endpoint}/openai/deployments/{model}/chat/completions?api-version={self.api_version}"
+
+    def _build_headers(self) -> dict[str, str]:
+        """Build headers with api-key instead of Bearer token."""
+        headers = super()._build_headers()
+        # Replace Bearer token with api-key
+        if "Authorization" in headers:
+            del headers["Authorization"]
+        headers["api-key"] = self.api_key
+        return headers
+
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build request body for Azure OpenAI."""
+        return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}
 
 
+def _get_azure_openai_provider() -> AzureOpenAIProvider:
+    """Lazy getter to initialize provider at call time."""
+    return AzureOpenAIProvider(AzureOpenAIProvider.config)
+
+
+@handle_provider_errors("Azure OpenAI")
 def call_azure_openai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Azure OpenAI Service API.
 
@@ -40,62 +85,5 @@ def call_azure_openai_api(model: str, messages: list[dict], temperature: float, 
     Raises:
         AIError: If authentication fails, API errors occur, or response is invalid
     """
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    if not api_key:
-        raise AIError.authentication_error("AZURE_OPENAI_API_KEY environment variable not set")
-
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    if not endpoint:
-        raise AIError.model_error("AZURE_OPENAI_ENDPOINT environment variable not set")
-
-    api_version = os.getenv("AZURE_OPENAI_API_VERSION")
-    if not api_version:
-        raise AIError.model_error("AZURE_OPENAI_API_VERSION environment variable not set")
-
-    # Build Azure OpenAI URL with proper structure
-    endpoint = endpoint.rstrip("/")
-    url = f"{endpoint}/openai/deployments/{model}/chat/completions?api-version={api_version}"
-
-    headers = {"api-key": api_key, "Content-Type": "application/json"}
-
-    data = {"messages": messages, "temperature": temperature, "max_tokens": max_tokens}
-
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-
-        try:
-            content = response_data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError) as e:
-            logger.error(f"Unexpected response format from Azure OpenAI API. Response: {json.dumps(response_data)}")
-            raise AIError.model_error(
-                f"Azure OpenAI API returned unexpected format. Expected response with "
-                f"'choices[0].message.content', but got: {type(e).__name__}. Check logs for full response structure."
-            ) from e
-
-        if content is None:
-            raise AIError.model_error("Azure OpenAI API returned null content")
-        if content == "":
-            raise AIError.model_error("Azure OpenAI API returned empty content")
-        return content
-    except httpx.ConnectError as e:
-        raise AIError.connection_error(f"Azure OpenAI API connection failed: {str(e)}") from e
-    except httpx.HTTPStatusError as e:
-        status_code = e.response.status_code
-        error_text = e.response.text
-
-        if status_code == 401:
-            raise AIError.authentication_error(f"Azure OpenAI API authentication failed: {error_text}") from e
-        elif status_code == 429:
-            raise AIError.rate_limit_error(f"Azure OpenAI API rate limit exceeded: {error_text}") from e
-        else:
-            raise AIError.model_error(f"Azure OpenAI API error: {status_code} - {error_text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"Azure OpenAI API request timed out: {str(e)}") from e
-    except AIError:
-        raise
-    except Exception as e:
-        raise AIError.model_error(f"Error calling Azure OpenAI API: {str(e)}") from e
+    provider = _get_azure_openai_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
