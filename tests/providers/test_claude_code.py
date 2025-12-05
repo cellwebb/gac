@@ -33,7 +33,7 @@ class TestClaudeCodeAPIKeyValidation:
         # Mock the token store to return None (no stored token)
         with patch("gac.providers.claude_code.load_stored_token", return_value=None):
             with pytest.raises(AIError) as exc_info:
-                call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
             assert exc_info.value.error_type == "authentication"
             assert "gac auth claude-code login" in str(exc_info.value)
@@ -60,7 +60,7 @@ class TestClaudeCodeProviderMocked(BaseProviderTest):
 
     @property
     def model_name(self) -> str:
-        return "claude-sonnet-4-5"
+        return "claude-haiku-4-5"
 
     @property
     def success_response(self) -> dict[str, Any]:
@@ -88,7 +88,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                    call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert exc_info.value.error_type == "model"
 
@@ -102,7 +102,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                    call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert exc_info.value.error_type == "model"
 
@@ -116,7 +116,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                    call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert exc_info.value.error_type == "model"
 
@@ -130,7 +130,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                    call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -148,7 +148,7 @@ class TestClaudeCodeEdgeCases:
                     {"role": "user", "content": "User message"},
                 ]
 
-                result = call_claude_code_api("claude-sonnet-4-5", messages, 0.7, 1000)
+                result = call_claude_code_api("claude-haiku-4-5", messages, 0.7, 1000)
 
                 call_args = mock_post.call_args
                 payload = call_args.kwargs["json"]
@@ -173,7 +173,7 @@ class TestClaudeCodeEdgeCases:
 
                 messages = [{"role": "user", "content": "User message"}]
 
-                result = call_claude_code_api("claude-sonnet-4-5", messages, 0.7, 1000)
+                result = call_claude_code_api("claude-haiku-4-5", messages, 0.7, 1000)
 
                 call_args = mock_post.call_args
                 payload = call_args.kwargs["json"]
@@ -194,7 +194,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 messages = [{"role": "user", "content": "Test"}]
-                call_claude_code_api("claude-sonnet-4-5", messages, 0.7, 1000)
+                call_claude_code_api("claude-haiku-4-5", messages, 0.7, 1000)
 
                 call_args = mock_post.call_args
                 headers = call_args.kwargs["headers"]
@@ -217,7 +217,7 @@ class TestClaudeCodeEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError):
-                    call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
+                    call_claude_code_api("claude-haiku-4-5", [], 0.7, 1000)
 
 
 @pytest.mark.integration
@@ -232,7 +232,7 @@ class TestClaudeCodeIntegration:
             pytest.skip("Claude Code OAuth token not found - run 'gac auth claude-code login' first")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_claude_code_api(model="claude-sonnet-4-5", messages=messages, temperature=1.0, max_tokens=50)
+        response = call_claude_code_api(model="claude-haiku-4-5", messages=messages, temperature=1.0, max_tokens=50)
 
         assert response is not None
         assert isinstance(response, str)
