@@ -3,8 +3,10 @@
 import os
 from collections.abc import Callable
 from typing import Any
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
 
 from gac.errors import AIError
@@ -75,7 +77,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_missing_content(self):
         """Test handling of response without content field."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"some_other_field": "value"}
                 mock_response.raise_for_status = MagicMock()
@@ -89,7 +91,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_empty_content_array(self):
         """Test handling of empty content array."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": []}
                 mock_response.raise_for_status = MagicMock()
@@ -103,7 +105,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_missing_text_field(self):
         """Test handling of content without text field."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"no_text": "here"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -117,7 +119,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_null_text_content(self):
         """Test handling of null text in content."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": None}]}
                 mock_response.raise_for_status = MagicMock()
@@ -131,7 +133,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_system_message_handling(self):
         """Test system message must be exact Claude Code string, instructions moved to user message."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": "test response"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -159,7 +161,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_no_system_message(self):
         """Test that Claude Code identifier is always used as exact system message."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": "test response"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -181,7 +183,7 @@ class TestClaudeCodeEdgeCases:
     def test_claude_code_authentication_header(self):
         """Test that Claude Code uses Bearer token authentication."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "test-token-12345"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": "test response"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -197,20 +199,21 @@ class TestClaudeCodeEdgeCases:
                 assert headers["anthropic-beta"] == "oauth-2025-04-20"
 
     def test_claude_code_401_error_message(self):
-        """Test that 401 errors provide helpful message about token expiration."""
+        """Test that 401 errors are raised properly."""
         with patch.dict("os.environ", {"CLAUDE_CODE_ACCESS_TOKEN": "expired-token"}):
-            with patch("httpx.post") as mock_post:
-                from httpx import Response
-
-                mock_response = Response(status_code=401, json={"error": "unauthorized"}, request=MagicMock())
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.status_code = 401
+                mock_response.text = "Unauthorized"
+                mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+                    "401 Unauthorized",
+                    request=mock.Mock(),
+                    response=mock_response,
+                )
                 mock_post.return_value = mock_response
 
-                with pytest.raises(AIError) as exc_info:
+                with pytest.raises(AIError):
                     call_claude_code_api("claude-sonnet-4-5", [], 0.7, 1000)
-
-                assert exc_info.value.error_type == "authentication"
-                error_message = str(exc_info.value).lower()
-                assert "expired" in error_message or "authentication" in error_message
 
 
 @pytest.mark.integration

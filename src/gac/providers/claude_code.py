@@ -1,21 +1,79 @@
-"""Claude Code provider implementation.
+"""Claude Code API provider for gac.
 
 This provider allows users with Claude Code subscriptions to use their OAuth tokens
 instead of paying for the expensive Anthropic API.
 """
 
-import logging
-import os
+from typing import Any
 
-import httpx
-
-from gac.constants import ProviderDefaults
-from gac.errors import AIError
-from gac.utils import get_ssl_verify
-
-logger = logging.getLogger(__name__)
+from gac.providers.base import AnthropicCompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
 
+class ClaudeCodeProvider(AnthropicCompatibleProvider):
+    """Claude Code OAuth provider with special system message requirements."""
+
+    config = ProviderConfig(
+        name="Claude Code",
+        api_key_env="CLAUDE_CODE_ACCESS_TOKEN",
+        base_url="https://api.anthropic.com/v1/messages",
+    )
+
+    def _build_headers(self) -> dict[str, str]:
+        """Build headers with OAuth token and special anthropic-beta."""
+        headers = super()._build_headers()
+        # Replace x-api-key with Bearer token
+        if "x-api-key" in headers:
+            del headers["x-api-key"]
+        headers["Authorization"] = f"Bearer {self.api_key}"
+        # Add special OAuth beta header
+        headers["anthropic-beta"] = "oauth-2025-04-20"
+        return headers
+
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build Anthropic-style request with fixed system message.
+
+        IMPORTANT: Claude Code OAuth tokens require the system message to be EXACTLY
+        "You are Claude Code, Anthropic's official CLI for Claude." with NO additional content.
+        Any other instructions must be moved to the first user message.
+        """
+        # Extract and process messages
+        anthropic_messages = []
+        system_instructions = ""
+
+        for msg in messages:
+            if msg["role"] == "system":
+                system_instructions = msg["content"]
+            else:
+                anthropic_messages.append({"role": msg["role"], "content": msg["content"]})
+
+        # Move any system instructions into the first user message
+        if system_instructions and anthropic_messages:
+            first_user_msg = anthropic_messages[0]
+            first_user_msg["content"] = f"{system_instructions}\n\n{first_user_msg['content']}"
+
+        # Claude Code requires this exact system message
+        system_message = "You are Claude Code, Anthropic's official CLI for Claude."
+
+        body = {
+            "messages": anthropic_messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "system": system_message,
+            **kwargs,
+        }
+
+        return body
+
+
+def _get_claude_code_provider() -> ClaudeCodeProvider:
+    """Lazy getter to initialize Claude Code provider at call time."""
+    return ClaudeCodeProvider(ClaudeCodeProvider.config)
+
+
+@handle_provider_errors("Claude Code")
 def call_claude_code_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Claude Code API using OAuth token.
 
@@ -37,76 +95,5 @@ def call_claude_code_api(model: str, messages: list[dict], temperature: float, m
     Raises:
         AIError: If authentication fails or API call fails
     """
-    access_token = os.getenv("CLAUDE_CODE_ACCESS_TOKEN")
-    if not access_token:
-        raise AIError.authentication_error(
-            "CLAUDE_CODE_ACCESS_TOKEN not found in environment variables. "
-            "Please authenticate with Claude Code and set this token."
-        )
-
-    url = "https://api.anthropic.com/v1/messages"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": "oauth-2025-04-20",
-        "content-type": "application/json",
-    }
-
-    # Convert messages to Anthropic format
-    # IMPORTANT: Claude Code OAuth tokens require the system message to be EXACTLY
-    # "You are Claude Code, Anthropic's official CLI for Claude." with NO additional content.
-    # Any other instructions must be moved to the user message.
-    anthropic_messages = []
-    system_instructions = ""
-
-    for msg in messages:
-        if msg["role"] == "system":
-            system_instructions = msg["content"]
-        else:
-            anthropic_messages.append({"role": msg["role"], "content": msg["content"]})
-
-    # Claude Code requires this exact system message, nothing more
-    system_message = "You are Claude Code, Anthropic's official CLI for Claude."
-
-    # Move any system instructions into the first user message
-    if system_instructions and anthropic_messages:
-        # Prepend system instructions to the first user message
-        first_user_msg = anthropic_messages[0]
-        first_user_msg["content"] = f"{system_instructions}\n\n{first_user_msg['content']}"
-
-    data = {
-        "model": model,
-        "messages": anthropic_messages,
-        "temperature": temperature,
-        "max_tokens": max_tokens,
-        "system": system_message,
-    }
-
-    logger.debug(f"Calling Claude Code API with model={model}")
-
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        content = response_data["content"][0]["text"]
-        if content is None:
-            raise AIError.model_error("Claude Code API returned null content")
-        if content == "":
-            raise AIError.model_error("Claude Code API returned empty content")
-        logger.debug("Claude Code API response received successfully")
-        return content
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 401:
-            raise AIError.authentication_error(
-                f"Claude Code authentication failed: {e.response.text}. "
-                "Your token may have expired. Please re-authenticate."
-            ) from e
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"Claude Code API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"Claude Code API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"Claude Code API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling Claude Code API: {str(e)}") from e
+    provider = _get_claude_code_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
