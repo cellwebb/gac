@@ -71,7 +71,7 @@ class TestSyntheticProviderMocked(BaseProviderTest):
 
     def test_supports_syn_api_key_alias(self):
         """Ensure SYN_API_KEY alias works when SYNTHETIC_API_KEY is absent."""
-        with patch("gac.providers.synthetic.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.return_value = self._create_mock_response(self.success_response)
             messages = [{"role": "user", "content": "Generate a commit message"}]
             with patch.dict(os.environ, {"SYN_API_KEY": "alias-key"}, clear=True):
@@ -83,7 +83,7 @@ class TestSyntheticProviderMocked(BaseProviderTest):
 
     def test_adds_hf_prefix_for_models(self):
         """Verify models without the hf: prefix are automatically corrected."""
-        with patch("gac.providers.synthetic.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.return_value = self._create_mock_response(self.success_response)
             messages = [{"role": "user", "content": "Generate a commit message"}]
             with patch.dict(os.environ, {"SYNTHETIC_API_KEY": "test-key"}, clear=True):
