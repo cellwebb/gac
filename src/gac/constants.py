@@ -26,6 +26,7 @@ class EnvDefaults:
     SKIP_SECRET_SCAN: bool = False
     VERBOSE: bool = False
     NO_TIKTOKEN: bool = False
+    NO_VERIFY_SSL: bool = False  # Skip SSL certificate verification (for corporate proxies)
     HOOK_TIMEOUT: int = 120  # Timeout for pre-commit and lefthook hooks in seconds
 
 

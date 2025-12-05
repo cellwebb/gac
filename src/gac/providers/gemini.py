@@ -6,6 +6,7 @@ from typing import Any
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
@@ -50,7 +51,7 @@ def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: flo
     headers = {"x-goog-api-key": api_key, "Content-Type": "application/json"}
 
     try:
-        response = httpx.post(url, headers=headers, json=payload, timeout=120)
+        response = httpx.post(url, headers=headers, json=payload, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         response_data = response.json()
 

@@ -5,6 +5,7 @@ import os
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def call_chutes_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -44,7 +45,7 @@ def call_chutes_api(model: str, messages: list[dict], temperature: float, max_to
     }
 
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120)
+        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         response_data = response.json()
         content = response_data["choices"][0]["message"]["content"]

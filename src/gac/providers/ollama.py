@@ -5,6 +5,7 @@ import os
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def call_ollama_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -19,7 +20,7 @@ def call_ollama_api(model: str, messages: list[dict], temperature: float, max_to
         headers["Authorization"] = f"Bearer {api_key}"
 
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120)
+        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         response_data = response.json()
 

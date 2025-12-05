@@ -5,6 +5,7 @@ import os
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def _call_zai_api_impl(
@@ -19,7 +20,7 @@ def _call_zai_api_impl(
     data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
 
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120)
+        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         response_data = response.json()
 
