@@ -35,6 +35,8 @@ def load_config() -> dict[str, str | int | float | bool | None]:
         "skip_secret_scan": os.getenv("GAC_SKIP_SECRET_SCAN", str(EnvDefaults.SKIP_SECRET_SCAN)).lower()
         in ("true", "1", "yes", "on"),
         "no_tiktoken": os.getenv("GAC_NO_TIKTOKEN", str(EnvDefaults.NO_TIKTOKEN)).lower() in ("true", "1", "yes", "on"),
+        "no_verify_ssl": os.getenv("GAC_NO_VERIFY_SSL", str(EnvDefaults.NO_VERIFY_SSL)).lower()
+        in ("true", "1", "yes", "on"),
         "verbose": os.getenv("GAC_VERBOSE", str(EnvDefaults.VERBOSE)).lower() in ("true", "1", "yes", "on"),
         "system_prompt_path": os.getenv("GAC_SYSTEM_PROMPT_PATH"),
         "language": os.getenv("GAC_LANGUAGE"),

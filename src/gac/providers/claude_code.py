@@ -9,6 +9,7 @@ import os
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def call_claude_code_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -78,7 +79,7 @@ def call_claude_code_api(model: str, messages: list[dict], temperature: float, m
     }
 
     try:
-        response = httpx.post(url, headers=headers, json=data, timeout=120)
+        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         response_data = response.json()
         content = response_data["content"][0]["text"]

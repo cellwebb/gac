@@ -18,6 +18,8 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 
+from gac.utils import get_ssl_verify
+
 logger = logging.getLogger(__name__)
 
 
@@ -250,6 +252,7 @@ def exchange_code_for_tokens(auth_code: str, context: OAuthContext) -> dict[str,
             json=payload,
             headers=headers,
             timeout=30,
+            verify=get_ssl_verify(),
         )
         logger.info("Token exchange response: %s", response.status_code)
         if response.status_code == 200:

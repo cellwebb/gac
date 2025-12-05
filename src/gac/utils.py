@@ -2,14 +2,43 @@
 
 import locale
 import logging
+import os
 import subprocess
 import sys
+from functools import lru_cache
 
 from rich.console import Console
 from rich.theme import Theme
 
-from gac.constants import Logging
+from gac.constants import EnvDefaults, Logging
 from gac.errors import GacError
+
+
+@lru_cache(maxsize=1)
+def should_skip_ssl_verification() -> bool:
+    """Return True when SSL certificate verification should be skipped.
+
+    This is useful for corporate environments with proxy servers that
+    intercept SSL traffic and cause certificate verification failures.
+
+    Can be enabled via:
+    - GAC_NO_VERIFY_SSL=true environment variable
+    - --no-verify-ssl CLI flag (which sets the env var)
+
+    Returns:
+        True if SSL verification should be skipped, False otherwise.
+    """
+    value = os.getenv("GAC_NO_VERIFY_SSL", str(EnvDefaults.NO_VERIFY_SSL))
+    return value.lower() in ("true", "1", "yes", "on")
+
+
+def get_ssl_verify() -> bool:
+    """Get the SSL verification setting for httpx requests.
+
+    Returns:
+        True to verify SSL certificates (default), False to skip verification.
+    """
+    return not should_skip_ssl_verification()
 
 
 def setup_logging(

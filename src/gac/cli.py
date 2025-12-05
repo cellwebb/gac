@@ -6,6 +6,7 @@ Defines the Click-based command-line interface and delegates execution to the ma
 """
 
 import logging
+import os
 import sys
 
 import click
@@ -74,6 +75,11 @@ console = Console()
 @click.option("--no-verify", is_flag=True, help="Skip pre-commit and lefthook hooks when committing")
 @click.option("--skip-secret-scan", is_flag=True, help="Skip security scan for secrets in staged changes")
 @click.option(
+    "--no-verify-ssl",
+    is_flag=True,
+    help="Skip SSL certificate verification (useful for corporate proxies)",
+)
+@click.option(
     "--hook-timeout",
     type=int,
     default=0,
@@ -103,6 +109,7 @@ def cli(
     verbose: bool = False,
     no_verify: bool = False,
     skip_secret_scan: bool = False,
+    no_verify_ssl: bool = False,
     hook_timeout: int = 0,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
@@ -115,6 +122,11 @@ def cli(
             effective_log_level = "ERROR"
         setup_logging(effective_log_level)
         logger.info("Starting gac")
+
+        # Set SSL verification environment variable if flag is used or config is set
+        if no_verify_ssl or config.get("no_verify_ssl", False):
+            os.environ["GAC_NO_VERIFY_SSL"] = "true"
+            logger.info("SSL certificate verification disabled")
 
         # Validate incompatible flag combinations
         if message_only and group:
@@ -179,6 +191,7 @@ def cli(
             "verbose": verbose,
             "no_verify": no_verify,
             "skip_secret_scan": skip_secret_scan,
+            "no_verify_ssl": no_verify_ssl,
             "hook_timeout": hook_timeout,
         }
 

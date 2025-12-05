@@ -5,6 +5,7 @@ import os
 import httpx
 
 from gac.errors import AIError
+from gac.utils import get_ssl_verify
 
 
 def call_replicate_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
@@ -52,7 +53,7 @@ def call_replicate_api(model: str, messages: list[dict], temperature: float, max
 
     try:
         # Create prediction
-        response = httpx.post(url, headers=headers, json=data, timeout=120)
+        response = httpx.post(url, headers=headers, json=data, timeout=120, verify=get_ssl_verify())
         response.raise_for_status()
         prediction_data = response.json()
 
@@ -65,7 +66,7 @@ def call_replicate_api(model: str, messages: list[dict], temperature: float, max
         elapsed_time = 0
 
         while elapsed_time < max_wait_time:
-            get_response = httpx.get(get_url, headers=headers, timeout=120)
+            get_response = httpx.get(get_url, headers=headers, timeout=120, verify=get_ssl_verify())
             get_response.raise_for_status()
             status_data = get_response.json()
 
