@@ -3,12 +3,12 @@
 import os
 from typing import Any
 
-from gac.providers.base import NoAuthProvider, ProviderConfig
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
 from gac.providers.error_handler import handle_provider_errors
 
 
-class OllamaProvider(NoAuthProvider):
-    """Ollama provider for local LLM models without authentication."""
+class OllamaProvider(OpenAICompatibleProvider):
+    """Ollama provider for local LLM models with optional authentication."""
 
     config = ProviderConfig(
         name="Ollama",
