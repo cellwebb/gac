@@ -295,8 +295,10 @@ class TestCustomOpenAIIntegration:
             pytest.skip("CUSTOM_OPENAI_API_KEY and CUSTOM_OPENAI_BASE_URL not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        # Use higher max_tokens to ensure complete response
-        response = call_custom_openai_api(model="MiniMax-M2", messages=messages, temperature=1.0, max_tokens=1024)
+        # Use synthetic.new endpoint with GLM-4.6 model
+        response = call_custom_openai_api(
+            model="hf:zai-org/GLM-4.6", messages=messages, temperature=1.0, max_tokens=1024
+        )
 
         assert response is not None
         assert isinstance(response, str)
