@@ -1,69 +1,48 @@
 """Z.AI API provider for gac."""
 
-import logging
-import os
-
-import httpx
-
-from gac.constants import ProviderDefaults
-from gac.errors import AIError
-from gac.utils import get_ssl_verify
-
-logger = logging.getLogger(__name__)
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
 
-def _call_zai_api_impl(
-    url: str, api_name: str, model: str, messages: list[dict], temperature: float, max_tokens: int
-) -> str:
-    """Internal implementation for Z.AI API calls."""
-    api_key = os.getenv("ZAI_API_KEY")
-    if not api_key:
-        raise AIError.authentication_error("ZAI_API_KEY not found in environment variables")
+class ZAIProvider(OpenAICompatibleProvider):
+    """Z.AI regular API provider with OpenAI-compatible format."""
 
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
-
-    logger.debug(f"Calling {api_name} API with model={model}")
-
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-
-        # Handle different possible response structures
-        if "choices" in response_data and len(response_data["choices"]) > 0:
-            choice = response_data["choices"][0]
-            if "message" in choice and "content" in choice["message"]:
-                content = choice["message"]["content"]
-                if content is None:
-                    raise AIError.model_error(f"{api_name} API returned null content")
-                if content == "":
-                    raise AIError.model_error(f"{api_name} API returned empty content")
-                logger.debug(f"{api_name} API response received successfully")
-                return content
-            else:
-                raise AIError.model_error(f"{api_name} API response missing content: {response_data}")
-        else:
-            raise AIError.model_error(f"{api_name} API unexpected response structure: {response_data}")
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"{api_name} API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"{api_name} API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"{api_name} API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling {api_name} API: {str(e)}") from e
+    config = ProviderConfig(
+        name="Z.AI",
+        api_key_env="ZAI_API_KEY",
+        base_url="https://api.z.ai/api/paas/v4/chat/completions",
+    )
 
 
+class ZAICodingProvider(OpenAICompatibleProvider):
+    """Z.AI coding API provider with OpenAI-compatible format."""
+
+    config = ProviderConfig(
+        name="Z.AI Coding",
+        api_key_env="ZAI_API_KEY",
+        base_url="https://api.z.ai/api/coding/paas/v4/chat/completions",
+    )
+
+
+def _get_zai_provider() -> ZAIProvider:
+    """Lazy getter to initialize Z.AI provider at call time."""
+    return ZAIProvider(ZAIProvider.config)
+
+
+def _get_zai_coding_provider() -> ZAICodingProvider:
+    """Lazy getter to initialize Z.AI coding provider at call time."""
+    return ZAICodingProvider(ZAICodingProvider.config)
+
+
+@handle_provider_errors("Z.AI")
 def call_zai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Z.AI regular API directly."""
-    url = "https://api.z.ai/api/paas/v4/chat/completions"
-    return _call_zai_api_impl(url, "Z.AI", model, messages, temperature, max_tokens)
+    provider = _get_zai_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
 
 
+@handle_provider_errors("Z.AI Coding")
 def call_zai_coding_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Z.AI coding API directly."""
-    url = "https://api.z.ai/api/coding/paas/v4/chat/completions"
-    return _call_zai_api_impl(url, "Z.AI coding", model, messages, temperature, max_tokens)
+    provider = _get_zai_coding_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
