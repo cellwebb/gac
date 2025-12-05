@@ -16,6 +16,8 @@ Tài liệu này mô tả tất cả các flag và tùy chọn có sẵn cho cô
   - [Ví Dụ Quy Trình](#ví-dụ-quy-trình)
   - [Nâng Cao](#nâng-cao)
     - [Bỏ Qua Hooks Pre-commit và Lefthook](#bỏ-qua-hooks-pre-commit-và-lefthook)
+    - [Quét Bảo Mật](#quét-bảo-mật)
+    - [Xác Minh Chứng Chỉ SSL](#xác-minh-chứng-chỉ-ssl)
   - [Ghi Chú Cấu Hình](#ghi-chú-cấu-hình)
     - [Tùy Chọn Cấu Hình Nâng Cao](#tùy-chọn-cấu-hình-nâng-cao)
     - [Lệnh Con Cấu Hình](#lệnh-con-cấu-hình)
@@ -59,6 +61,7 @@ Tạo thông điệp commit được hỗ trợ bởi LLM cho các thay đổi �
 | `--message-only`     |      | Chỉ in ra thông điệp commit được sinh ra, không thực hiện commit vào git |
 | `--no-verify`        |      | Bỏ qua các hook pre-commit và lefthook khi committing                    |
 | `--skip-secret-scan` |      | Bỏ qua quét bảo mật cho các bí mật trong các thay đổi đã staged          |
+| `--no-verify-ssl`    |      | Bỏ qua xác minh chứng chỉ SSL (hữu ích cho proxy doanh nghiệp)           |
 | `--interactive`      | `-i` | Đặt câu hỏi về các thay đổi để có commit tốt hơn                         |
 
 **Lưu ý:** Kết hợp `-a` và `-g` (tức là `-ag`) để stage TẤT CẢ các thay đổi trước, sau đó nhóm chúng vào các commit.
@@ -249,6 +252,24 @@ gac --skip-secret-scan  # Bỏ qua quét bảo mật cho commit này
 
 **Lưu ý:** Trình quét sử dụng khớp mẫu để phát hiện các định dạng bí mật phổ biến. Luôn xem lại các thay đổi đã staged của bạn trước khi commit.
 
+### Xác Minh Chứng Chỉ SSL
+
+Flag `--no-verify-ssl` cho phép bạn bỏ qua xác minh chứng chỉ SSL cho các cuộc gọi API:
+
+```sh
+gac --no-verify-ssl  # Bỏ qua xác minh SSL cho commit này
+```
+
+**Để cấu hình vĩnh viễn:** Đặt `GAC_NO_VERIFY_SSL=true` trong tệp `.gac.env` của bạn.
+
+**Sử dụng `--no-verify-ssl` khi:**
+
+- Proxy doanh nghiệp chặn lưu lượng SSL (proxy MITM)
+- Môi trường phát triển sử dụng chứng chỉ tự ký
+- Gặp lỗi chứng chỉ SSL do cài đặt bảo mật mạng
+
+**Lưu ý:** Chỉ sử dụng tùy chọn này trong môi trường mạng đáng tin cậy. Vô hiệu hóa xác minh SSL làm giảm bảo mật và có thể khiến các yêu cầu API của bạn dễ bị tấn công man-in-the-middle.
+
 ## Ghi Chú Cấu Hình
 
 - Cách được đề xuất để thiết lập gac là chạy `gac init` và làm theo các gợi ý tương tác.
@@ -274,6 +295,7 @@ Bạn có thể tùy chỉnh hành vi của gac với các biến môi trường
 - `GAC_LANGUAGE=Spanish` - Tạo thông điệp commit bằng ngôn ngữ cụ thể (ví dụ, Spanish, French, Japanese, German). Hỗ trợ tên đầy đủ hoặc mã ISO (es, fr, ja, de, zh-CN). Sử dụng `gac language` để lựa chọn tương tác
 - `GAC_TRANSLATE_PREFIXES=true` - Dịch các tiền tố commit tiêu chuẩn (feat, fix, v.v.) vào ngôn ngữ đích (mặc định: false, giữ tiền tố bằng tiếng Anh)
 - `GAC_SKIP_SECRET_SCAN=true` - Vô hiệu hóa quét bảo mật tự động cho các bí mật trong các thay đổi đã staged (sử dụng cẩn thận)
+- `GAC_NO_VERIFY_SSL=true` - Bỏ qua xác minh chứng chỉ SSL cho các cuộc gọi API (hữu ích cho proxy doanh nghiệp chặn lưu lượng SSL)
 - `GAC_NO_TIKTOKEN=true` - Hoàn toàn offline bằng cách bỏ qua bước tải xuống `tiktoken` và sử dụng trình ước lượng token thô tích hợp
 
 Xem `.gac.env.example` cho mẫu cấu hình hoàn chỉnh.

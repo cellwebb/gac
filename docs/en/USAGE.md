@@ -18,6 +18,7 @@ This document describes all available flags and options for the `gac` CLI tool.
     - [Script Integration and External Processing](#script-integration-and-external-processing)
     - [Skipping Pre-commit and Lefthook Hooks](#skipping-pre-commit-and-lefthook-hooks)
     - [Security Scanning](#security-scanning)
+    - [SSL Certificate Verification](#ssl-certificate-verification)
   - [Configuration Notes](#configuration-notes)
     - [Advanced Configuration Options](#advanced-configuration-options)
     - [Configuration Subcommands](#configuration-subcommands)
@@ -51,17 +52,18 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
 ## Core Workflow Flags
 
-| Flag / Option        | Short | Description                                                 |
-| -------------------- | ----- | ----------------------------------------------------------- |
-| `--add-all`          | `-a`  | Stage all changes before committing                         |
-| `--group`            | `-g`  | Group staged changes into multiple logical commits          |
-| `--push`             | `-p`  | Push changes to remote after committing                     |
-| `--yes`              | `-y`  | Automatically confirm commit without prompting              |
-| `--dry-run`          |       | Show what would happen without making any changes           |
-| `--message-only`     |       | Output only the generated commit message without committing |
-| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing          |
-| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes            |
-| `--interactive`      | `-i`  | Ask questions about the changes to generate better commits  |
+| Flag / Option        | Short | Description                                                      |
+| -------------------- | ----- | ---------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Stage all changes before committing                              |
+| `--group`            | `-g`  | Group staged changes into multiple logical commits               |
+| `--push`             | `-p`  | Push changes to remote after committing                          |
+| `--yes`              | `-y`  | Automatically confirm commit without prompting                   |
+| `--dry-run`          |       | Show what would happen without making any changes                |
+| `--message-only`     |       | Output only the generated commit message without committing      |
+| `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing               |
+| `--skip-secret-scan` |       | Skip security scan for secrets in staged changes                 |
+| `--no-verify-ssl`    |       | Skip SSL certificate verification (useful for corporate proxies) |
+| `--interactive`      | `-i`  | Ask questions about the changes to generate better commits       |
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
@@ -295,6 +297,26 @@ gac --skip-secret-scan  # Skip security scan for this commit
 
 **Note:** The scanner uses pattern matching to detect common secret formats. Always review your staged changes before committing.
 
+### SSL Certificate Verification
+
+gac supports skipping SSL certificate verification for environments where corporate proxies intercept SSL traffic and cause certificate verification failures.
+
+**Skipping SSL verification:**
+
+```sh
+gac --no-verify-ssl  # Skip SSL verification for this commit
+```
+
+**To disable permanently:** Set `GAC_NO_VERIFY_SSL=true` in your `.gac.env` file, or add `no_verify_ssl=true` to your configuration.
+
+**When to use:**
+
+- Corporate environments with SSL-intercepting proxies
+- Development environments with self-signed certificates
+- When you encounter SSL certificate verification errors
+
+**Note:** Disabling SSL verification reduces security. Only use this option when necessary and in trusted network environments.
+
 ## Configuration Notes
 
 - The recommended way to set up gac is to run `gac init` and follow the interactive prompts.
@@ -320,6 +342,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_LANGUAGE=Spanish` - Generate commit messages in a specific language (e.g., Spanish, French, Japanese, German). Supports full names or ISO codes (es, fr, ja, de, zh-CN). Use `gac language` for interactive selection
 - `GAC_TRANSLATE_PREFIXES=true` - Translate conventional commit prefixes (feat, fix, etc.) into the target language (default: false, keeps prefixes in English)
 - `GAC_SKIP_SECRET_SCAN=true` - Disable automatic security scanning for secrets in staged changes (use with caution)
+- `GAC_NO_VERIFY_SSL=true` - Skip SSL certificate verification for API calls (useful for corporate proxies that intercept SSL traffic)
 - `GAC_NO_TIKTOKEN=true` - Stay completely offline by bypassing the `tiktoken` download step and using the built-in rough token estimator
 
 See `.gac.env.example` for a complete configuration template.

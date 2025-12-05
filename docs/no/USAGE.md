@@ -17,6 +17,7 @@ Dette dokumentet beskriver alle tilgjengelige flagg og alternativer for `gac` CL
   - [Avansert](#avansert)
     - [Hoppe over Pre-commit og Lefthook Hooks](#hoppe-over-pre-commit-og-lefthook-hooks)
     - [Sikkerhetsskanning](#sikkerhetsskanning)
+    - [SSL-sertifikatverifisering](#ssl-sertifikatverifisering)
   - [Konfigurasjonsnotater](#konfigurasjonsnotater)
     - [Avanserte Konfigurasjonsalternativer](#avanserte-konfigurasjonsalternativer)
     - [Konfigurasjons-underkommandoer](#konfigurasjons-underkommandoer)
@@ -60,6 +61,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | `--message-only`     |      | Output kun den genererte commit-meldingen uten committing         |
 | `--no-verify`        |      | Hopp over pre-commit og lefthook hooks ved committing             |
 | `--skip-secret-scan` |      | Hopp over sikkerhetsskanning for hemmeligheter i staged endringer |
+| `--no-verify-ssl`    |      | Hopp over SSL-sertifikatverifisering (nyttig for bedriftsproxyer) |
 | `--interactive`      | `-i` | Still spørsmål om endringer for bedre commits                     |
 
 **Merknad:** Kombiner `-a` og `-g` (dvs. `-ag`) for å stage ALLE endringer først, deretter gruppere dem i commits.
@@ -250,6 +252,24 @@ gac --skip-secret-scan  # Hopp over sikkerhetsskanning for denne commit
 
 **Merknad:** Skanneren bruker pattern matching for å oppdage vanlige hemmelighetsformater. Gjennomgå alltid dine staged endringer før commit.
 
+### SSL-sertifikatverifisering
+
+`--no-verify-ssl`-flagget lar deg hoppe over SSL-sertifikatverifisering for API-kall:
+
+```sh
+gac --no-verify-ssl  # Hopp over SSL-verifisering for denne commit
+```
+
+**For å sette permanent:** Sett `GAC_NO_VERIFY_SSL=true` i din `.gac.env`-fil.
+
+**Bruk `--no-verify-ssl` når:**
+
+- Bedriftsproxyer avlytter SSL-trafikk (MITM-proxyer)
+- Utviklingsmiljøer bruker selv-signerte sertifikater
+- Du møter SSL-sertifikatfeil på grunn av nettverkssikkerhetsinnstillinger
+
+**Merknad:** Bruk kun dette alternativet i pålitelige nettverksmiljøer. Deaktivering av SSL-verifisering reduserer sikkerheten og kan gjøre API-forespørslene dine sårbare for man-in-the-middle-angrep.
+
 ## Konfigurasjonsnotater
 
 - Den anbefalte måten å sette opp gac er å kjøre `gac init` og følge de interaktive promptene.
@@ -275,6 +295,7 @@ Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 - `GAC_LANGUAGE=Norwegian` - Generer commit-meldinger på et spesifikt språk (f.eks. Norwegian, French, Japanese, German). Støtter fulle navn eller ISO-koder (nb, fr, ja, de, zh-CN). Bruk `gac language` for interaktivt valg
 - `GAC_TRANSLATE_PREFIXES=true` - Oversett konvensjonelle commit-prefikser (feat, fix, etc.) til målspråket (default: false, beholder prefikser på engelsk)
 - `GAC_SKIP_SECRET_SCAN=true` - Deaktiver automatisk sikkerhetsskanning for hemmeligheter i staged endringer (bruk med forsiktighet)
+- `GAC_NO_VERIFY_SSL=true` - Hopp over SSL-sertifikatverifisering for API-kall (nyttig for bedriftsproxyer som avlytter SSL-trafikk)
 - `GAC_NO_TIKTOKEN=true` - Hold deg helt offline ved å hoppe over `tiktoken` nedlastingssteg og bruke den innebygde grove token-estimatoren
 
 Se `.gac.env.example` for en komplett konfigurasjonsmal.

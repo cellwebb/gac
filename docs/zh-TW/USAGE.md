@@ -17,6 +17,7 @@
   - [進階](#進階)
     - [跳過 Pre-commit 和 Lefthook 鉤子](#跳過-pre-commit-和-lefthook-鉤子)
     - [安全掃描](#安全掃描)
+    - [SSL 證書驗證](#ssl-證書驗證)
   - [設定說明](#設定說明)
     - [進階設定選項](#進階設定選項)
     - [設定子命令](#設定子命令)
@@ -60,6 +61,7 @@ gac
 | `--message-only`     |      | 只輸出產生的提交訊息，本身不對 git 進行任何提交 |
 | `--no-verify`        |      | 提交時跳過 pre-commit 和 lefthook 鉤子          |
 | `--skip-secret-scan` |      | 跳過暫存變更中的密鑰安全掃描                    |
+| `--no-verify-ssl`    |      | 跳過 SSL 證書驗證（適用於企業代理）             |
 | `--interactive`      | `-i` | 就變更提問以獲得更好的提交                      |
 
 **注意：**組合 `-a` 和 `-g`（即 `-ag`）以先暫存所有變更，然後將它們分組為提交。
@@ -250,6 +252,24 @@ gac --skip-secret-scan  # 為此次提交跳過安全掃描
 
 **注意：**掃描程式使用模式比對來檢測常見的密鑰格式。在提交之前，始終檢視你的暫存變更。
 
+### SSL 證書驗證
+
+`--no-verify-ssl` 標誌允許你跳過 API 調用的 SSL 證書驗證：
+
+```sh
+gac --no-verify-ssl  # 跳過此次提交的 SSL 驗證
+```
+
+**要永久設定：**在你的 `.gac.env` 檔案中設定 `GAC_NO_VERIFY_SSL=true`。
+
+**在以下情況下使用 `--no-verify-ssl`：**
+
+- 企業代理攔截 SSL 流量（MITM 代理）
+- 開發環境使用自簽名證書
+- 遇到因網路安全設定導致的 SSL 證書錯誤
+
+**注意：**僅在你信任的網路環境中使用此選項。停用 SSL 驗證會降低安全性，可能使你的 API 請求容易受到中間人攻擊。
+
 ## 設定說明
 
 - 設定 gac 的推薦方法是執行 `gac init` 並按照互動式提示操作。
@@ -275,6 +295,7 @@ gac --skip-secret-scan  # 為此次提交跳過安全掃描
 - `GAC_LANGUAGE=Spanish` - 以特定語言生成提交訊息（例如，Spanish、French、Japanese、German）。支援完整名稱或 ISO 代碼（es、fr、ja、de、zh-CN）。使用 `gac language` 進行互動式選擇
 - `GAC_TRANSLATE_PREFIXES=true` - 將常規提交前綴（feat、fix 等）翻譯為目標語言（預設值：false，保持前綴為英語）
 - `GAC_SKIP_SECRET_SCAN=true` - 停用暫存變更中的密鑰自動安全掃描（謹慎使用）
+- `GAC_NO_VERIFY_SSL=true` - 跳過 API 調用的 SSL 證書驗證（適用於攔截 SSL 流量的企業代理）
 - `GAC_NO_TIKTOKEN=true` - 透過繞過 `tiktoken` 下載步驟並使用內建的粗略令牌估算器來保持完全離線
 
 檢視 `.gac.env.example` 了解完整的設定範本。

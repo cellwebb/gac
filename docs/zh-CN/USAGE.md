@@ -18,6 +18,7 @@
     - [脚本集成和外部处理](#脚本集成和外部处理)
     - [跳过 Pre-commit 和 Lefthook 钩子](#跳过-pre-commit-和-lefthook-钩子)
     - [安全扫描](#安全扫描)
+    - [SSL 证书验证](#ssl-证书验证)
   - [配置说明](#配置说明)
     - [高级配置选项](#高级配置选项)
     - [配置子命令](#配置子命令)
@@ -61,6 +62,7 @@ gac
 | `--message-only`     |      | 仅输出生成的提交信息，而不实际执行提交 |
 | `--no-verify`        |      | 提交时跳过 pre-commit 和 lefthook 钩子 |
 | `--skip-secret-scan` |      | 跳过暂存更改中的密钥安全扫描           |
+| `--no-verify-ssl`    |      | 跳过 SSL 证书验证（适用于企业代理）    |
 | `--interactive`      | `-i` | 就更改提问以获得更好的提交             |
 
 **注意：**组合 `-a` 和 `-g`（即 `-ag`）以先暂存所有更改，然后将它们分组为提交。
@@ -299,6 +301,26 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 
 **注意：**扫描程序使用模式匹配来检测常见的密钥格式。在提交之前，始终查看你的暂存更改。
 
+### SSL 证书验证
+
+gac 支持跳过 SSL 证书验证，适用于企业代理拦截 SSL 流量并导致证书验证失败的环境。
+
+**跳过 SSL 验证：**
+
+```sh
+gac --no-verify-ssl  # 为此次提交跳过 SSL 验证
+```
+
+**要永久禁用：**在你的 `.gac.env` 文件中设置 `GAC_NO_VERIFY_SSL=true`，或在配置中添加 `no_verify_ssl=true`。
+
+**何时使用：**
+
+- 使用 SSL 拦截代理的企业环境
+- 使用自签名证书的开发环境
+- 当你遇到 SSL 证书验证错误时
+
+**注意：**禁用 SSL 验证会降低安全性。仅在必要时并在受信任的网络环境中使用此选项。
+
 ## 配置说明
 
 - 设置 gac 的推荐方法是运行 `gac init` 并按照交互式提示操作。
@@ -324,6 +346,7 @@ gac --skip-secret-scan  # 为此次提交跳过安全扫描
 - `GAC_LANGUAGE=Spanish` - 以特定语言生成提交信息（例如，Spanish、French、Japanese、German）。支持完整名称或 ISO 代码（es、fr、ja、de、zh-CN）。使用 `gac language` 进行交互式选择
 - `GAC_TRANSLATE_PREFIXES=true` - 将常规提交前缀（feat、fix 等）翻译为目标语言（默认值：false，保持前缀为英语）
 - `GAC_SKIP_SECRET_SCAN=true` - 禁用暂存更改中的密钥自动安全扫描（谨慎使用）
+- `GAC_NO_VERIFY_SSL=true` - 跳过 API 调用的 SSL 证书验证（适用于拦截 SSL 流量的企业代理）
 - `GAC_NO_TIKTOKEN=true` - 通过绕过 `tiktoken` 下载步骤并使用内置的粗略令牌估算器来保持完全离线
 
 查看 `.gac.env.example` 了解完整的配置模板。

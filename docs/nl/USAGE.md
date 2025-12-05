@@ -16,6 +16,8 @@ Dit document beschrijft alle beschikbare vlaggen en opties voor de `gac` CLI too
   - [Voorbeeld Workflows](#voorbeeld-workflows)
   - [Geavanceerd](#geavanceerd)
     - [Pre-commit en Lefthook Hooks Overslaan](#pre-commit-en-lefthook-hooks-overslaan)
+    - [Security Scanning](#security-scanning)
+    - [SSL-certificaatverificatie](#ssl-certificaatverificatie)
   - [Configuratie Notities](#configuratie-notities)
     - [Geavanceerde Configuratie Opties](#geavanceerde-configuratie-opties)
     - [Configuratie Subcommando's](#configuratie-subcommandos)
@@ -59,6 +61,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--message-only`     |      | Toon alleen het gegenereerde commitbericht zonder daadwerkelijk te committen |
 | `--no-verify`        |      | Sla pre-commit en lefthook hooks over bij commit                             |
 | `--skip-secret-scan` |      | Sla security scan over voor geheimen in staged wijzigingen                   |
+| `--no-verify-ssl`    |      | Sla SSL-certificaatverificatie over (nuttig voor bedrijfsproxies)            |
 | `--interactive`      | `-i` | Stel vragen over wijzigingen voor betere commits                             |
 
 **Let op:** Combineer `-a` en `-g` (d.w.z. `-ag`) om eerst ALLE wijzigingen te stage, en ze daarna te groeperen in commits.
@@ -249,6 +252,24 @@ gac --skip-secret-scan  # Sla security scan over voor deze commit
 
 **Let op:** De scanner gebruikt patroone matching om algemene geheime formaten te detecteren. Bekijk altijd uw staged wijzigingen voordat u commit.
 
+### SSL-certificaatverificatie
+
+De `--no-verify-ssl` vlag staat u toe om SSL-certificaatverificatie voor API-aanroepen over te slaan:
+
+```sh
+gac --no-verify-ssl  # Sla SSL-verificatie over voor deze commit
+```
+
+**Om permanent in te stellen:** Stel `GAC_NO_VERIFY_SSL=true` in uw `.gac.env` bestand.
+
+**Gebruik `--no-verify-ssl` wanneer:**
+
+- Bedrijfsproxies SSL-verkeer onderscheppen (MITM-proxies)
+- Ontwikkelomgevingen zelfondertekende certificaten gebruiken
+- U SSL-certificaatfouten tegenkomt door netwerk beveiligingsinstellingen
+
+**Let op:** Gebruik deze optie alleen in vertrouwde netwerkomgevingen. Het uitschakelen van SSL-verificatie vermindert de beveiliging en kan uw API-verzoeken kwetsbaar maken voor man-in-the-middle aanvallen.
+
 ## Configuratie Notities
 
 - De aanbevolen manier om gac in te stellen is `gac init` uit te voeren en de interactieve prompts te volgen.
@@ -274,6 +295,7 @@ U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 - `GAC_LANGUAGE=Spanish` - Genereer commitberichten in een specifieke taal (bv., Spanish, French, Japanese, German). Ondersteunt volledige namen of ISO codes (es, fr, ja, de, zh-CN). Gebruik `gac language` voor interactieve selectie
 - `GAC_TRANSLATE_PREFIXES=true` - Vertaal conventionele commit prefixen (feat, fix, etc.) naar de doeltaal (standaard: false, houdt prefixen in Engels)
 - `GAC_SKIP_SECRET_SCAN=true` - Schakel automatische security scanning voor geheimen in staged wijzigingen uit (gebruik met voorzichtigheid)
+- `GAC_NO_VERIFY_SSL=true` - Sla SSL-certificaatverificatie over voor API-aanroepen (nuttig voor bedrijfsproxies die SSL-verkeer onderscheppen)
 - `GAC_NO_TIKTOKEN=true` - Blijf volledig offline door de `tiktoken` downloadstap over te slaan en de ingebouwde ruwe token-schatter te gebruiken
 
 Zie `.gac.env.example` voor een complete configuratiesjabloon.

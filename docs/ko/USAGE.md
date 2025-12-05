@@ -18,6 +18,7 @@
     - [스크립트 통합 및 외부 처리](#스크립트-통합-및-외부-처리)
     - [Pre-commit 및 Lefthook Hooks 건너뛰기](#pre-commit-및-lefthook-hooks-건너뛰기)
     - [보안 검사](#보안-검사)
+    - [SSL 인증서 검증](#ssl-인증서-검증)
   - [구성 노트](#구성-노트)
     - [고급 구성 옵션](#고급-구성-옵션)
     - [구성 하위 명령어](#구성-하위-명령어)
@@ -61,6 +62,7 @@ gac
 | `--message-only`     |      | 실제 커밋 없이 생성된 커밋 메시지만 출력           |
 | `--no-verify`        |      | 커밋 시 pre-commit 및 lefthook hooks 건너뛰기      |
 | `--skip-secret-scan` |      | 스테이징된 변경 사항의 비밀 검사 건너뛰기          |
+| `--no-verify-ssl`    |      | SSL 인증서 검증 건너뛰기 (기업 프록시에 유용)      |
 | `--interactive`      | `-i` | 더 나은 커밋을 위해 변경 사항에 대해 질문하기      |
 
 **참고:** 먼저 모든 변경 사항을 스테이징한 다음 커밋으로 그룹화하려면 `-a`와 `-g`를 결합하세요 (즉, `-ag`).
@@ -293,6 +295,24 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 
 **참고:** 스캐너는 패턴 일치를 사용하여 일반적인 비밀 형식을 감지합니다. 커밋하기 전에는 항상 스테이징된 변경 사항을 검토하세요.
 
+### SSL 인증서 검증
+
+`--no-verify-ssl` 플래그를 사용하면 API 호출의 SSL 인증서 검증을 건너뛸 수 있습니다:
+
+```sh
+gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
+```
+
+**영구적으로 설정하려면:** `.gac.env` 파일에서 `GAC_NO_VERIFY_SSL=true`를 설정하세요.
+
+**`--no-verify-ssl`을 사용하는 경우:**
+
+- 기업 프록시가 SSL 트래픽을 가로채는 경우 (MITM 프록시)
+- 개발 환경에서 자체 서명된 인증서를 사용하는 경우
+- 네트워크 보안 설정으로 인해 SSL 인증서 오류가 발생하는 경우
+
+**참고:** 신뢰할 수 있는 네트워크 환경에서만 이 옵션을 사용하세요. SSL 검증을 비활성화하면 보안이 감소하고 API 요청이 중간자 공격에 취약해질 수 있습니다.
+
 ## 구성 노트
 
 - gac를 설정하는 권장 방법은 `gac init`를 실행하고 대화형 프롬프트를 따르는 것입니다.
@@ -318,6 +338,7 @@ gac --skip-secret-scan  # 이 커밋에 대한 보안 검사 건너뛰기
 - `GAC_LANGUAGE=Spanish` - 특정 언어로 커밋 메시지 생성 (예: Spanish, French, Japanese, German). 전체 이름 또는 ISO 코드 지원 (es, fr, ja, de, zh-CN). 대화형 선택을 위해 `gac language` 사용
 - `GAC_TRANSLATE_PREFIXES=true` - 전통적인 커밋 접두사 (feat, fix 등)를 대상 언어로 번역 (기본값: false, 접두사를 영어로 유지)
 - `GAC_SKIP_SECRET_SCAN=true` - 스테이징된 변경 사항의 비밀에 대한 자동 보안 스캔 비활성화 (주의해서 사용)
+- `GAC_NO_VERIFY_SSL=true` - API 호출의 SSL 인증서 검증 건너뛰기 (SSL 트래픽을 가로채는 기업 프록시에 유용)
 - `GAC_NO_TIKTOKEN=true` - `tiktoken` 다운로드 단계를 우회하고 내장된 대략적인 토큰 추정기를 사용하여 완전히 오프라인으로 유지
 
 전체 구성 템플릿은 `.gac.env.example`을 참조하세요.

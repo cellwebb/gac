@@ -18,6 +18,7 @@ Este documento describe todas las banderas y opciones disponibles para la herram
     - [Integración con scripts y procesamiento externo](#integración-con-scripts-y-procesamiento-externo)
     - [Omitir Hooks Pre-commit y Lefthook](#omitir-hooks-pre-commit-y-lefthook)
     - [Escaneo de Seguridad](#escaneo-de-seguridad)
+    - [Verificación de Certificado SSL](#verificación-de-certificado-ssl)
   - [Notas de Configuración](#notas-de-configuración)
     - [Opciones de Configuración Avanzadas](#opciones-de-configuración-avanzadas)
     - [Subcomandos de Configuración](#subcomandos-de-configuración)
@@ -51,17 +52,18 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 
 ## Banderas del Flujo de Trabajo Principal
 
-| Bandera / Opción     | Corta | Descripción                                                       |
-| -------------------- | ----- | ----------------------------------------------------------------- |
-| `--add-all`          | `-a`  | Staging de todos los cambios antes de hacer commit                |
-| `--group`            | `-g`  | Agrupar cambios staged en múltiples commits lógicos               |
-| `--push`             | `-p`  | Hacer push de cambios al remoto después del commit                |
-| `--yes`              | `-y`  | Confirmar automáticamente el commit sin preguntar                 |
-| `--dry-run`          |       | Mostrar qué pasaría sin hacer cambios                             |
-| `--message-only`     |       | Mostrar solo el mensaje de commit generado sin realizar el commit |
-| `--no-verify`        |       | Omitir hooks pre-commit y lefthook al hacer commit                |
-| `--skip-secret-scan` |       | Omitir escaneo de seguridad de secretos en cambios staged         |
-| `--interactive`      | `-i`  | Hacer preguntas sobre los cambios para generar mejores commits    |
+| Bandera / Opción     | Corta | Descripción                                                             |
+| -------------------- | ----- | ----------------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Staging de todos los cambios antes de hacer commit                      |
+| `--group`            | `-g`  | Agrupar cambios staged en múltiples commits lógicos                     |
+| `--push`             | `-p`  | Hacer push de cambios al remoto después del commit                      |
+| `--yes`              | `-y`  | Confirmar automáticamente el commit sin preguntar                       |
+| `--dry-run`          |       | Mostrar qué pasaría sin hacer cambios                                   |
+| `--message-only`     |       | Mostrar solo el mensaje de commit generado sin realizar el commit       |
+| `--no-verify`        |       | Omitir hooks pre-commit y lefthook al hacer commit                      |
+| `--skip-secret-scan` |       | Omitir escaneo de seguridad de secretos en cambios staged               |
+| `--no-verify-ssl`    |       | Omitir verificación de certificado SSL (útil para proxies corporativos) |
+| `--interactive`      | `-i`  | Hacer preguntas sobre los cambios para generar mejores commits          |
 
 **Nota:** Combina `-a` y `-g` (ej., `-ag`) para hacer staging de TODOS los cambios primero, luego agruparlos en commits.
 
@@ -299,6 +301,24 @@ gac --skip-secret-scan  # Omitir escaneo de seguridad para este commit
 
 **Nota:** El escáner usa coincidencia de patrones para detectar formatos comunes de secretos. Siempre revisa tus cambios staged antes de hacer commit.
 
+### Verificación de Certificado SSL
+
+La bandera `--no-verify-ssl` te permite omitir la verificación de certificado SSL para llamadas API:
+
+```sh
+gac --no-verify-ssl  # Omitir verificación SSL para este commit
+```
+
+**Para configurar permanentemente:** Establece `GAC_NO_VERIFY_SSL=true` en tu archivo `.gac.env`.
+
+**Usa `--no-verify-ssl` cuando:**
+
+- Los proxies corporativos interceptan tráfico SSL (proxies MITM)
+- Los entornos de desarrollo usan certificados autofirmados
+- Encuentras errores de certificado SSL debido a configuraciones de seguridad de red
+
+**Nota:** Solo usa esta opción en entornos de red de confianza. Deshabilitar la verificación SSL reduce la seguridad y puede hacer que tus solicitudes API sean vulnerables a ataques man-in-the-middle.
+
 ## Notas de Configuración
 
 - La forma recomendada de configurar gac es ejecutar `gac init` y seguir las instrucciones interactivas.
@@ -324,6 +344,7 @@ Puedes personalizar el comportamiento de gac con estas variables de entorno opci
 - `GAC_LANGUAGE=Spanish` - Generar mensajes de commit en un idioma específico (ej., Spanish, French, Japanese, German). Soporta nombres completos o códigos ISO (es, fr, ja, de, zh-CN). Usa `gac language` para selección interactiva
 - `GAC_TRANSLATE_PREFIXES=true` - Traducir prefijos de commit convencionales (feat, fix, etc.) al idioma de destino (default: false, mantiene prefijos en inglés)
 - `GAC_SKIP_SECRET_SCAN=true` - Deshabilitar escaneo de seguridad automático para secretos en cambios staged (usa con precaución)
+- `GAC_NO_VERIFY_SSL=true` - Omitir verificación de certificado SSL para llamadas API (útil para proxies corporativos que interceptan tráfico SSL)
 - `GAC_NO_TIKTOKEN=true` - Mantenerse completamente offline omitiendo el paso de descarga de `tiktoken` y usando el estimador de tokens aproximado incorporado
 
 Consulta `.gac.env.example` para una plantilla de configuración completa.

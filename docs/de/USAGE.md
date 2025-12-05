@@ -18,6 +18,7 @@ Dieses Dokument beschreibt alle verfügbaren Flags und Optionen für das `gac` C
     - [Skript-Integration und externe Verarbeitung](#skript-integration-und-externe-verarbeitung)
     - [Pre-commit und Lefthook Hooks überspringen](#pre-commit-und-lefthook-hooks-überspringen)
     - [Sicherheits-Scanning](#sicherheits-scanning)
+    - [SSL-Zertifikatüberprüfung](#ssl-zertifikatüberprüfung)
   - [Konfigurationshinweise](#konfigurationshinweise)
     - [Erweiterte Konfigurationsoptionen](#erweiterte-konfigurationsoptionen)
     - [Konfigurations-Unterbefehle](#konfigurations-unterbefehle)
@@ -51,17 +52,18 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 
 ## Kern-Workflow-Flags
 
-| Flag / Option        | Kurz | Beschreibung                                                           |
-| -------------------- | ---- | ---------------------------------------------------------------------- |
-| `--add-all`          | `-a` | Alle Änderungen vor dem Committen stagen                               |
-| `--group`            | `-g` | Gestagete Änderungen in mehrere logische Commits gruppieren            |
-| `--push`             | `-p` | Änderungen nach dem Committen auf das Remote pushen                    |
-| `--yes`              | `-y` | Automatisch den Commit bestätigen ohne Aufforderung                    |
-| `--dry-run`          |      | Zeigen, was passieren würde, ohne Änderungen vorzunehmen               |
-| `--message-only`     |      | Nur die generierte Commit-Nachricht ohne eigentlichen Commit ausgeben  |
-| `--no-verify`        |      | Pre-commit und lefthook Hooks beim Committen überspringen              |
-| `--skip-secret-scan` |      | Sicherheits-Scan für Geheimnisse in gestageten Änderungen überspringen |
-| `--interactive`      | `-i` | Fragen zu Änderungen stellen für bessere Commits                       |
+| Flag / Option        | Kurz | Beschreibung                                                             |
+| -------------------- | ---- | ------------------------------------------------------------------------ |
+| `--add-all`          | `-a` | Alle Änderungen vor dem Committen stagen                                 |
+| `--group`            | `-g` | Gestagete Änderungen in mehrere logische Commits gruppieren              |
+| `--push`             | `-p` | Änderungen nach dem Committen auf das Remote pushen                      |
+| `--yes`              | `-y` | Automatisch den Commit bestätigen ohne Aufforderung                      |
+| `--dry-run`          |      | Zeigen, was passieren würde, ohne Änderungen vorzunehmen                 |
+| `--message-only`     |      | Nur die generierte Commit-Nachricht ohne eigentlichen Commit ausgeben    |
+| `--no-verify`        |      | Pre-commit und lefthook Hooks beim Committen überspringen                |
+| `--skip-secret-scan` |      | Sicherheits-Scan für Geheimnisse in gestageten Änderungen überspringen   |
+| `--no-verify-ssl`    |      | SSL-Zertifikatüberprüfung überspringen (nützlich für Unternehmensproxys) |
+| `--interactive`      | `-i` | Fragen zu Änderungen stellen für bessere Commits                         |
 
 **Hinweis:** Kombinieren Sie `-a` und `-g` (d.h. `-ag`) um ALLE Änderungen zuerst zu staggen, dann sie in Commits zu gruppieren.
 
@@ -299,6 +301,24 @@ gac --skip-secret-scan  # Sicherheits-Scan für diesen Commit überspringen
 
 **Hinweis:** Der Scanner verwendet Pattern-Matching, um gängige Geheimnisformate zu erkennen. Überprüfen Sie immer Ihre gestageten Änderungen vor dem Committen.
 
+### SSL-Zertifikatüberprüfung
+
+Das `--no-verify-ssl`-Flag ermöglicht es Ihnen, die SSL-Zertifikatüberprüfung für API-Aufrufe zu überspringen:
+
+```sh
+gac --no-verify-ssl  # SSL-Überprüfung für diesen Commit überspringen
+```
+
+**Um permanent einzustellen:** Setzen Sie `GAC_NO_VERIFY_SSL=true` in Ihrer `.gac.env`-Datei.
+
+**Verwenden Sie `--no-verify-ssl` wenn:**
+
+- Unternehmensproxys SSL-Verkehr abfangen (MITM-Proxys)
+- Entwicklungsumgebungen selbstsignierte Zertifikate verwenden
+- Sie SSL-Zertifikatfehler aufgrund von Netzwerk-Sicherheitseinstellungen erhalten
+
+**Hinweis:** Verwenden Sie diese Option nur in vertrauenswürdigen Netzwerkumgebungen. Das Deaktivieren der SSL-Überprüfung verringert die Sicherheit und kann Ihre API-Anfragen anfällig für Man-in-the-Middle-Angriffe machen.
+
 ## Konfigurationshinweise
 
 - Die empfohlene Methode zur Einrichtung von gac ist, `gac init` auszuführen und den interaktiven Aufforderungen zu folgen.
@@ -324,6 +344,7 @@ Sie können das Verhalten von gac mit diesen optionalen Umgebungsvariablen anpas
 - `GAC_LANGUAGE=Spanish` - Commit-Nachrichten in einer bestimmten Sprache generieren (z.B. Spanish, French, Japanese, German). Unterstützt vollständige Namen oder ISO-Codes (es, fr, ja, de, zh-CN). Verwenden Sie `gac language` für interaktive Auswahl
 - `GAC_TRANSLATE_PREFIXES=true` - Konventionelle Commit-Präfixe (feat, fix, etc.) in die Zielsprache übersetzen (Standard: false, behält Präfixe in Englisch)
 - `GAC_SKIP_SECRET_SCAN=true` - Automatisches Sicherheits-Scanning für Geheimnisse in gestageten Änderungen deaktivieren (mit Vorsicht verwenden)
+- `GAC_NO_VERIFY_SSL=true` - SSL-Zertifikatüberprüfung für API-Aufrufe überspringen (nützlich für Unternehmensproxys, die SSL-Verkehr abfangen)
 - `GAC_NO_TIKTOKEN=true` - Vollständig offline bleiben, indem der `tiktoken` Download-Schritt umgangen und der eingebaute grobe Token-Schätzer verwendet wird
 
 Siehe `.gac.env.example` für eine vollständige Konfigurationsvorlage.

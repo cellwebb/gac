@@ -18,6 +18,7 @@ Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `g
     - [Intégration par script et traitement externe](#intégration-par-script-et-traitement-externe)
     - [Sauter les hooks Pre-commit et Lefthook](#sauter-les-hooks-pre-commit-et-lefthook)
     - [Analyse de sécurité](#analyse-de-sécurité)
+    - [Vérification des certificats SSL](#vérification-des-certificats-ssl)
   - [Notes de configuration](#notes-de-configuration)
     - [Options de configuration avancées](#options-de-configuration-avancées)
     - [Sous-commandes de configuration](#sous-commandes-de-configuration)
@@ -51,17 +52,18 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 
 ## Drapeaux de workflow principaux
 
-| Drapeau / Option     | Court | Description                                                                |
-| -------------------- | ----- | -------------------------------------------------------------------------- |
-| `--add-all`          | `-a`  | Indexer tous les changements avant le commit                               |
-| `--group`            | `-g`  | Grouper les changements indexés en multiples commits logiques              |
-| `--push`             | `-p`  | Pousser les changements vers le distant après le commit                    |
-| `--yes`              | `-y`  | Confirmer automatiquement le commit sans demande                           |
-| `--dry-run`          |       | Montrer ce qui se passerait sans faire de changements                      |
-| `--message-only`     |       | Afficher uniquement le message de commit généré sans effectuer le commit   |
-| `--no-verify`        |       | Sauter les hooks pre-commit et lefthook lors du commit                     |
-| `--skip-secret-scan` |       | Sauter l'analyse de sécurité pour les secrets dans les changements indexés |
-| `--interactive`      | `-i`  | Poser des questions sur les changements pour générer de meilleurs commits  |
+| Drapeau / Option     | Court | Description                                                                      |
+| -------------------- | ----- | -------------------------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Indexer tous les changements avant le commit                                     |
+| `--group`            | `-g`  | Grouper les changements indexés en multiples commits logiques                    |
+| `--push`             | `-p`  | Pousser les changements vers le distant après le commit                          |
+| `--yes`              | `-y`  | Confirmer automatiquement le commit sans demande                                 |
+| `--dry-run`          |       | Montrer ce qui se passerait sans faire de changements                            |
+| `--message-only`     |       | Afficher uniquement le message de commit généré sans effectuer le commit         |
+| `--no-verify`        |       | Sauter les hooks pre-commit et lefthook lors du commit                           |
+| `--skip-secret-scan` |       | Sauter l'analyse de sécurité pour les secrets dans les changements indexés       |
+| `--no-verify-ssl`    |       | Sauter la vérification des certificats SSL (utile pour les proxies d'entreprise) |
+| `--interactive`      | `-i`  | Poser des questions sur les changements pour générer de meilleurs commits        |
 
 **Note :** Combinez `-a` et `-g` (c'est-à-dire `-ag`) pour indexer TOUS les changements d'abord, puis les grouper en commits.
 
@@ -299,6 +301,24 @@ gac --skip-secret-scan  # Sauter l'analyse de sécurité pour ce commit
 
 **Note :** L'analyseur utilise des motifs pour détecter les formats de secrets courants. Revoyez toujours vos changements indexés avant de commiter.
 
+### Vérification des certificats SSL
+
+Le drapeau `--no-verify-ssl` vous permet de sauter la vérification des certificats SSL pour les appels API :
+
+```sh
+gac --no-verify-ssl  # Sauter la vérification SSL pour ce commit
+```
+
+**Pour configurer de manière permanente :** Définissez `GAC_NO_VERIFY_SSL=true` dans votre fichier `.gac.env`.
+
+**Utilisez `--no-verify-ssl` lorsque :**
+
+- Les proxies d'entreprise interceptent le trafic SSL (proxies MITM)
+- Les environnements de développement utilisent des certificats auto-signés
+- Vous rencontrez des erreurs de certificat SSL dues aux paramètres de sécurité réseau
+
+**Note :** N'utilisez cette option que dans des environnements réseau de confiance. Désactiver la vérification SSL réduit la sécurité et peut rendre vos requêtes API vulnérables aux attaques de type man-in-the-middle.
+
 ## Notes de configuration
 
 - La méthode recommandée pour configurer gac est d'exécuter `gac init` et de suivre les invites interactives.
@@ -324,6 +344,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 - `GAC_LANGUAGE=Spanish` - Générer des messages de commit dans une langue spécifique (ex: Spanish, French, Japanese, German). Supporte les noms complets ou codes ISO (es, fr, ja, de, zh-CN). Utilisez `gac language` pour sélection interactive
 - `GAC_TRANSLATE_PREFIXES=true` - Traduire les préfixes de commits conventionnels (feat, fix, etc.) dans la langue cible (par défaut : false, garde les préfixes en anglais)
 - `GAC_SKIP_SECRET_SCAN=true` - Désactiver l'analyse de sécurité automatique pour les secrets dans les changements indexés (utiliser avec prudence)
+- `GAC_NO_VERIFY_SSL=true` - Sauter la vérification des certificats SSL pour les appels API (utile pour les proxies d'entreprise qui interceptent le trafic SSL)
 - `GAC_NO_TIKTOKEN=true` - Rester complètement hors ligne en contournant l'étape de téléchargement `tiktoken` et en utilisant l'estimateur de tokens approximatif intégré
 
 Voir `.gac.env.example` pour un modèle de configuration complet.

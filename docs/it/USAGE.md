@@ -18,6 +18,7 @@ Questo documento descrive tutte le flag e opzioni disponibili per lo strumento C
     - [Integrazione Script e Elaborazione Esterna](#integrazione-script-e-elaborazione-esterna)
     - [Saltare Hook Pre-commit e Lefthook](#saltare-hook-pre-commit-e-lefthook)
     - [Scansione Sicurezza](#scansione-sicurezza)
+    - [Verifica Certificato SSL](#verifica-certificato-ssl)
   - [Note di Configurazione](#note-di-configurazione)
     - [Opzioni di Configurazione Avanzate](#opzioni-di-configurazione-avanzate)
     - [Sottocomandi di Configurazione](#sottocomandi-di-configurazione)
@@ -51,17 +52,18 @@ Genera un messaggio di commit basato su LLM per le modifiche in staging e richie
 
 ## Flag del Workflow Principale
 
-| Flag / Opzione       | Breve | Descrizione                                               |
-| -------------------- | ----- | --------------------------------------------------------- |
-| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit      |
-| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici    |
-| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit             |
-| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere       |
-| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche               |
-| `--message-only`     |       | Output solo del messaggio di commit generato senza commit |
-| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit        |
-| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche     |
-| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori  |
+| Flag / Opzione       | Breve | Descrizione                                                |
+| -------------------- | ----- | ---------------------------------------------------------- |
+| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit       |
+| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici     |
+| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit              |
+| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere        |
+| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche                |
+| `--message-only`     |       | Output solo del messaggio di commit generato senza commit  |
+| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit         |
+| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche      |
+| `--no-verify-ssl`    |       | Salta verifica certificato SSL (utile per proxy aziendali) |
+| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori   |
 
 **Nota:** Combina `-a` e `-g` (cioè `-ag`) per mettere in staging TUTTE le modifiche prima, poi raggrupparle in commit.
 
@@ -295,6 +297,24 @@ gac --skip-secret-scan  # Salta scansione sicurezza per questo commit
 
 **Nota:** Lo scanner usa pattern matching per rilevare formati segreti comuni. Rivedi sempre le tue modifiche in staging prima del commit.
 
+### Verifica Certificato SSL
+
+Il flag `--no-verify-ssl` ti permette di saltare la verifica del certificato SSL per le chiamate API:
+
+```sh
+gac --no-verify-ssl  # Salta verifica SSL per questo commit
+```
+
+**Per impostare permanentemente:** Imposta `GAC_NO_VERIFY_SSL=true` nel tuo file `.gac.env`.
+
+**Usa `--no-verify-ssl` quando:**
+
+- Proxy aziendali intercettano traffico SSL (proxy MITM)
+- Ambienti di sviluppo usano certificati auto-firmati
+- Riscontri errori di certificato SSL a causa di impostazioni di sicurezza di rete
+
+**Nota:** Usa questa opzione solo in ambienti di rete affidabili. Disabilitare la verifica SSL riduce la sicurezza e può rendere le tue richieste API vulnerabili ad attacchi man-in-the-middle.
+
 ## Note di Configurazione
 
 - Il modo raccomandato per configurare gac è eseguire `gac init` e seguire i prompt interattivi.
@@ -320,6 +340,7 @@ Puoi personalizzare il comportamento di gac con queste variabili ambiente opzion
 - `GAC_LANGUAGE=Italian` - Genera messaggi di commit in una lingua specifica (es. Italian, French, Japanese, German). Supporta nomi completi o codici ISO (it, fr, ja, de, zh-CN). Usa `gac language` per selezione interattiva
 - `GAC_TRANSLATE_PREFIXES=true` - Traduci prefissi commit convenzionali (feat, fix, ecc.) nella lingua target (default: false, mantiene prefissi in inglese)
 - `GAC_SKIP_SECRET_SCAN=true` - Disabilita scansione sicurezza automatica per segreti nelle modifiche in staging (usa con cautela)
+- `GAC_NO_VERIFY_SSL=true` - Salta verifica certificato SSL per chiamate API (utile per proxy aziendali che intercettano traffico SSL)
 - `GAC_NO_TIKTOKEN=true` - Rimani completamente offline bypassando il passo download `tiktoken` e usando lo stimatore token approssimato integrato
 
 Vedi `.gac.env.example` per un template di configurazione completo.
