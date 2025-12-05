@@ -3,6 +3,7 @@
 import os
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from contextlib import contextmanager
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -23,6 +24,9 @@ class BaseProviderTest(ABC):
     - model_name: Default model to use in tests
     - success_response: Mock response for successful API call
     - empty_content_response: Mock response with empty content
+
+    Optional:
+    - auth_context(): Override to provide custom authentication context (e.g., for OAuth providers)
     """
 
     @property
@@ -67,6 +71,19 @@ class BaseProviderTest(ABC):
         """Mock response with empty content."""
         pass
 
+    @contextmanager
+    def auth_context(self):
+        """Context manager for authentication setup.
+
+        Override this for OAuth-only providers that don't use environment variables.
+        Default implementation uses api_key_env_var to set up environment.
+        """
+        if self.api_key_env_var:
+            with patch.dict(os.environ, {self.api_key_env_var: "test-key"}):
+                yield
+        else:
+            yield
+
     def _create_mock_response(self, response_data: dict[str, Any]) -> MagicMock:
         """Create a mock HTTP response."""
         mock_response = MagicMock()
@@ -82,12 +99,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                with patch.dict(os.environ, {self.api_key_env_var: "test-key"}):
-                    result = self.api_function(
-                        model=self.model_name, messages=messages, temperature=0.7, max_tokens=100
-                    )
-            else:
+            with self.auth_context():
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
             assert result == "feat: Add new feature"
@@ -100,12 +112,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(Exception) as exc_info:
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -124,12 +131,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "invalid-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -145,12 +147,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -166,12 +163,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -187,12 +179,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -203,12 +190,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -219,12 +201,7 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises(AIError):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
@@ -239,11 +216,6 @@ class BaseProviderTest(ABC):
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
 
-            if self.api_key_env_var:
-                env_patch = patch.dict(os.environ, {self.api_key_env_var: "test-key"})
-            else:
-                env_patch = patch.dict(os.environ, {})
-
-            with env_patch:
+            with self.auth_context():
                 with pytest.raises((AIError, ValueError, KeyError, TypeError)):
                     self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
