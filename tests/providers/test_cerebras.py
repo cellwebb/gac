@@ -75,7 +75,7 @@ class TestCerebrasEdgeCases:
     def test_cerebras_null_content(self):
         """Test handling of null content."""
         with patch.dict("os.environ", {"CEREBRAS_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"choices": [{"message": {"content": None}}]}
                 mock_response.raise_for_status = MagicMock()
