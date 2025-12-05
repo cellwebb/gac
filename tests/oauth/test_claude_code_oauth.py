@@ -231,7 +231,7 @@ def test_exchange_code_for_tokens_success_adds_expiry(monkeypatch: pytest.Monkey
         def json(self) -> dict:
             return {"access_token": "token", "expires_in": 30}
 
-    def fake_post(url, json, headers, timeout):
+    def fake_post(url, json, headers, timeout, verify=True):
         assert url == claude_code.CLAUDE_CODE_CONFIG["token_url"]
         return DummyResponse()
 
@@ -261,7 +261,7 @@ def test_exchange_code_for_tokens_returns_none_on_error_status(monkeypatch: pyte
         def json(self) -> dict:
             return {}
 
-    def fake_post(url, json, headers, timeout):
+    def fake_post(url, json, headers, timeout, verify=True):
         return DummyResponse()
 
     monkeypatch.setattr(claude_code.httpx, "post", fake_post)

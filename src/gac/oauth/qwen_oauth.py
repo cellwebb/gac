@@ -16,8 +16,7 @@ import httpx
 
 from gac import __version__
 from gac.errors import AIError
-
-from .token_store import OAuthToken, TokenStore
+from gac.oauth.token_store import OAuthToken, TokenStore
 
 logger = logging.getLogger(__name__)
 

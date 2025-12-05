@@ -17,8 +17,8 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 
+from gac.oauth.token_store import OAuthToken, TokenStore
 from gac.utils import get_ssl_verify
-from .token_store import OAuthToken, TokenStore
 
 logger = logging.getLogger(__name__)
 
