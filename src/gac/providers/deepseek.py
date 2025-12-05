@@ -12,29 +12,13 @@ class DeepSeekProvider(OpenAICompatibleProvider):
     )
 
 
-# Create provider instance for backward compatibility
-deepseek_provider = DeepSeekProvider(DeepSeekProvider.config)
+def _get_deepseek_provider() -> DeepSeekProvider:
+    """Lazy getter to initialize DeepSeek provider at call time."""
+    return DeepSeekProvider(DeepSeekProvider.config)
 
 
 @handle_provider_errors("DeepSeek")
 def call_deepseek_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call DeepSeek API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return deepseek_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call DeepSeek API directly."""
+    provider = _get_deepseek_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
