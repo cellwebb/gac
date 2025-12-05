@@ -75,7 +75,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_missing_content(self):
         """Test handling of response without content field."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"some_other_field": "value"}
                 mock_response.raise_for_status = MagicMock()
@@ -90,7 +90,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_empty_content_array(self):
         """Test handling of empty content array."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": []}
                 mock_response.raise_for_status = MagicMock()
@@ -105,7 +105,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_missing_text_field(self):
         """Test handling of content without text field."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"no_text": "here"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -120,7 +120,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_null_text_content(self):
         """Test handling of null text in content."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": None}]}
                 mock_response.raise_for_status = MagicMock()
@@ -134,7 +134,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_system_message_handling(self):
         """Test system message extraction and formatting."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": "test response"}]}
                 mock_response.raise_for_status = MagicMock()
@@ -161,7 +161,7 @@ class TestAnthropicEdgeCases:
     def test_anthropic_no_system_message(self):
         """Test that system field is not included when no system message."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("httpx.post") as mock_post:
+            with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"content": [{"text": "test response"}]}
                 mock_response.raise_for_status = MagicMock()

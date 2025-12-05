@@ -77,7 +77,7 @@ class BaseProviderTest(ABC):
 
     def test_successful_api_call(self):
         """Test that the provider successfully processes a valid API response."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.return_value = self._create_mock_response(self.success_response)
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
@@ -95,7 +95,7 @@ class BaseProviderTest(ABC):
 
     def test_empty_content_handling(self):
         """Test that the provider raises an error for empty content."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.return_value = self._create_mock_response(self.empty_content_response)
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
@@ -114,7 +114,7 @@ class BaseProviderTest(ABC):
 
     def test_http_401_authentication_error(self):
         """Test that the provider handles HTTP 401 authentication errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.status_code = 401
             mock_response.text = "Unauthorized"
@@ -135,7 +135,7 @@ class BaseProviderTest(ABC):
 
     def test_http_429_rate_limit_error(self):
         """Test that the provider handles HTTP 429 rate limit errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.status_code = 429
             mock_response.text = "Rate limit exceeded"
@@ -156,7 +156,7 @@ class BaseProviderTest(ABC):
 
     def test_http_500_server_error(self):
         """Test that the provider handles HTTP 500 server errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.status_code = 500
             mock_response.text = "Internal server error"
@@ -177,7 +177,7 @@ class BaseProviderTest(ABC):
 
     def test_http_503_service_unavailable(self):
         """Test that the provider handles HTTP 503 service unavailable errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.status_code = 503
             mock_response.text = "Service unavailable"
@@ -198,7 +198,7 @@ class BaseProviderTest(ABC):
 
     def test_connection_error(self):
         """Test that the provider handles connection errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.side_effect = httpx.ConnectError("Connection failed")
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
@@ -214,7 +214,7 @@ class BaseProviderTest(ABC):
 
     def test_timeout_error(self):
         """Test that the provider handles timeout errors."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_post.side_effect = httpx.TimeoutException("Request timed out")
 
             messages = [{"role": "user", "content": "Generate a commit message"}]
@@ -230,7 +230,7 @@ class BaseProviderTest(ABC):
 
     def test_malformed_json_response(self):
         """Test that the provider handles malformed JSON responses."""
-        with patch(f"{self.provider_module}.httpx.post") as mock_post:
+        with patch("gac.providers.base.httpx.post") as mock_post:
             mock_response = MagicMock()
             mock_response.status_code = 200
             mock_response.json.side_effect = ValueError("Invalid JSON")
