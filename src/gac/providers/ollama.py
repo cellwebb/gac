@@ -1,60 +1,86 @@
-"""Ollama AI provider implementation."""
+"""Ollama API provider for gac."""
 
-import logging
 import os
+from typing import Any
 
-import httpx
-
-from gac.constants import ProviderDefaults
-from gac.errors import AIError
-from gac.utils import get_ssl_verify
-
-logger = logging.getLogger(__name__)
+from gac.providers.base import NoAuthProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
 
-def call_ollama_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Ollama API directly."""
-    api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-    api_key = os.getenv("OLLAMA_API_KEY")
+class OllamaProvider(NoAuthProvider):
+    """Ollama provider for local LLM models without authentication."""
 
-    url = f"{api_url.rstrip('/')}/api/chat"
-    data = {"model": model, "messages": messages, "temperature": temperature, "stream": False}
-    headers = {"Content-Type": "application/json"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
+    config = ProviderConfig(
+        name="Ollama",
+        api_key_env="OLLAMA_API_KEY",
+        base_url="http://localhost:11434",
+    )
 
-    logger.debug(f"Calling Ollama API with model={model}")
+    def __init__(self, config: ProviderConfig):
+        """Initialize with configurable URL from environment."""
+        super().__init__(config)
+        # Allow URL override via environment variable
+        api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+        self.config.base_url = api_url.rstrip("/")
 
-    try:
-        response = httpx.post(
-            url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
+    def _build_headers(self) -> dict[str, str]:
+        """Build headers with optional API key."""
+        headers = super()._build_headers()
+        api_key = os.getenv("OLLAMA_API_KEY")
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        return headers
 
-        content = None
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build Ollama request body with stream disabled."""
+        return {
+            "messages": messages,
+            "temperature": temperature,
+            "stream": False,
+            **kwargs,
+        }
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get API URL with /api/chat endpoint."""
+        return f"{self.config.base_url}/api/chat"
+
+    def _get_api_key(self) -> str:
+        """Get optional API key for Ollama."""
+        api_key = os.getenv(self.config.api_key_env)
+        if not api_key:
+            return ""  # Optional API key
+        return api_key
+
+    def _parse_response(self, response: dict[str, Any]) -> str:
+        """Parse Ollama response with flexible format support."""
+        from gac.errors import AIError
+
         # Handle different response formats from Ollama
-        if "message" in response_data and "content" in response_data["message"]:
-            content = response_data["message"]["content"]
-        elif "response" in response_data:
-            content = response_data["response"]
+        if "message" in response and "content" in response["message"]:
+            content = response["message"]["content"]
+        elif "response" in response:
+            content = response["response"]
         else:
-            # Fallback: return the full response as string
-            content = str(response_data)
+            # Fallback: try to serialize response
+            content = str(response) if response else ""
 
         if content is None:
             raise AIError.model_error("Ollama API returned null content")
         if content == "":
             raise AIError.model_error("Ollama API returned empty content")
-        logger.debug("Ollama API response received successfully")
+
         return content
-    except httpx.ConnectError as e:
-        raise AIError.connection_error(f"Ollama connection failed. Make sure Ollama is running: {str(e)}") from e
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"Ollama API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"Ollama API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"Ollama API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling Ollama API: {str(e)}") from e
+
+
+def _get_ollama_provider() -> OllamaProvider:
+    """Lazy getter to initialize Ollama provider at call time."""
+    return OllamaProvider(OllamaProvider.config)
+
+
+@handle_provider_errors("Ollama")
+def call_ollama_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
+    """Call Ollama API directly."""
+    provider = _get_ollama_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

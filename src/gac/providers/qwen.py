@@ -1,79 +1,85 @@
 """Qwen API provider for gac with OAuth support."""
 
-import logging
 import os
 
-import httpx
-
-from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
-from gac.utils import get_ssl_verify
+from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.error_handler import handle_provider_errors
 
-logger = logging.getLogger(__name__)
-
-QWEN_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
+QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
 
 
-def get_qwen_auth() -> tuple[str, str]:
-    """Get Qwen authentication (API key or OAuth token).
+class QwenProvider(OpenAICompatibleProvider):
+    """Qwen provider with OAuth token and API key support."""
 
-    Returns:
-        Tuple of (token, api_url) for authentication.
-    """
-    api_key = os.getenv("QWEN_API_KEY")
-    if api_key:
-        return api_key, QWEN_API_URL
-
-    oauth_provider = QwenOAuthProvider(TokenStore())
-    token = oauth_provider.get_token()
-    if token:
-        resource_url = token.get("resource_url")
-        if resource_url:
-            if not resource_url.startswith(("http://", "https://")):
-                resource_url = f"https://{resource_url}"
-            if not resource_url.endswith("/chat/completions"):
-                resource_url = resource_url.rstrip("/") + "/v1/chat/completions"
-            api_url = resource_url
-        else:
-            api_url = QWEN_API_URL
-        return token["access_token"], api_url
-
-    raise AIError.authentication_error(
-        "Qwen authentication not found. Set QWEN_API_KEY or run 'gac auth qwen login' for OAuth."
+    config = ProviderConfig(
+        name="Qwen",
+        api_key_env="QWEN_API_KEY",
+        base_url=QWEN_DEFAULT_API_URL,
     )
 
+    def __init__(self, config: ProviderConfig):
+        """Initialize with OAuth or API key authentication."""
+        super().__init__(config)
+        # Resolve authentication and API URL
+        self._auth_token, resolved_url = self._get_qwen_auth()
+        self.config.base_url = resolved_url
 
+    def _get_api_key(self) -> str:
+        """Get API key from environment (for compatibility with parent class)."""
+        api_key = os.getenv(self.config.api_key_env)
+        if not api_key:
+            # Will use OAuth in _get_qwen_auth instead
+            return "oauth-token"
+        return api_key
+
+    def _get_qwen_auth(self) -> tuple[str, str]:
+        """Get Qwen authentication (API key or OAuth token).
+
+        Returns:
+            Tuple of (token, api_url) for authentication.
+        """
+        api_key = os.getenv("QWEN_API_KEY")
+        if api_key:
+            return api_key, QWEN_DEFAULT_API_URL
+
+        # Try OAuth
+        oauth_provider = QwenOAuthProvider(TokenStore())
+        token = oauth_provider.get_token()
+        if token:
+            resource_url = token.get("resource_url")
+            if resource_url:
+                if not resource_url.startswith(("http://", "https://")):
+                    resource_url = f"https://{resource_url}"
+                if not resource_url.endswith("/chat/completions"):
+                    resource_url = resource_url.rstrip("/") + "/v1/chat/completions"
+                api_url = resource_url
+            else:
+                api_url = QWEN_DEFAULT_API_URL
+            return token["access_token"], api_url
+
+        raise AIError.authentication_error(
+            "Qwen authentication not found. Set QWEN_API_KEY or run 'gac auth qwen login' for OAuth."
+        )
+
+    def _build_headers(self) -> dict[str, str]:
+        """Build headers with OAuth or API key token."""
+        headers = super()._build_headers()
+        # Replace Bearer token with the stored auth token
+        if "Authorization" in headers:
+            del headers["Authorization"]
+        headers["Authorization"] = f"Bearer {self._auth_token}"
+        return headers
+
+
+def _get_qwen_provider() -> QwenProvider:
+    """Lazy getter to initialize Qwen provider at call time."""
+    return QwenProvider(QwenProvider.config)
+
+
+@handle_provider_errors("Qwen")
 def call_qwen_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     """Call Qwen API with OAuth or API key authentication."""
-    auth_token, api_url = get_qwen_auth()
-
-    headers = {"Authorization": f"Bearer {auth_token}", "Content-Type": "application/json"}
-
-    data = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
-
-    logger.debug(f"Calling Qwen API with model={model}")
-
-    try:
-        response = httpx.post(
-            api_url, headers=headers, json=data, timeout=ProviderDefaults.HTTP_TIMEOUT, verify=get_ssl_verify()
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        content = response_data["choices"][0]["message"]["content"]
-        if content is None:
-            raise AIError.model_error("Qwen API returned null content")
-        if content == "":
-            raise AIError.model_error("Qwen API returned empty content")
-        logger.debug("Qwen API response received successfully")
-        return content
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 401:
-            raise AIError.authentication_error(f"Qwen authentication failed: {e.response.text}") from e
-        if e.response.status_code == 429:
-            raise AIError.rate_limit_error(f"Qwen API rate limit exceeded: {e.response.text}") from e
-        raise AIError.model_error(f"Qwen API error: {e.response.status_code} - {e.response.text}") from e
-    except httpx.TimeoutException as e:
-        raise AIError.timeout_error(f"Qwen API request timed out: {str(e)}") from e
-    except Exception as e:
-        raise AIError.model_error(f"Error calling Qwen API: {str(e)}") from e
+    provider = _get_qwen_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
