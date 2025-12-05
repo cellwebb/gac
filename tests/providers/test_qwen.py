@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Callable
+from contextlib import contextmanager
 from typing import Any
 from unittest import mock
 from unittest.mock import MagicMock, patch
@@ -29,11 +30,11 @@ class TestQwenImports:
         assert_import_success(call_qwen_api)
 
 
-class TestQwenAPIKeyValidation:
-    """Test Qwen API key validation."""
+class TestQwenOAuthValidation:
+    """Test Qwen OAuth validation."""
 
-    def test_missing_auth_error(self):
-        """Test that Qwen raises error when no auth is configured."""
+    def test_missing_oauth_token_error(self):
+        """Test that Qwen raises error when no OAuth token is available."""
         with patch.dict(os.environ, {}, clear=True):
             with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
                 mock_provider = mock.Mock()
@@ -63,7 +64,7 @@ class TestQwenProviderMocked(BaseProviderTest):
 
     @property
     def api_key_env_var(self) -> str | None:
-        return "QWEN_API_KEY"
+        return None
 
     @property
     def model_name(self) -> str:
@@ -77,27 +78,21 @@ class TestQwenProviderMocked(BaseProviderTest):
     def empty_content_response(self) -> dict[str, Any]:
         return {"choices": [{"message": {"content": ""}}]}
 
+    @contextmanager
+    def auth_context(self):
+        """Set up OAuth mock for Qwen (OAuth-only provider)."""
+        with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
+            mock_oauth_provider = mock.Mock()
+            mock_oauth_provider.get_token.return_value = {
+                "access_token": "test-oauth-token",
+                "resource_url": "chat.qwen.ai",
+            }
+            mock_provider_class.return_value = mock_oauth_provider
+            yield
+
 
 class TestQwenEdgeCases:
     """Test edge cases for Qwen provider."""
-
-    def test_qwen_with_api_key(self):
-        """Test Qwen using API key authentication."""
-        with patch.dict(os.environ, {"QWEN_API_KEY": "test-api-key"}):
-            with patch("gac.providers.base.httpx.post") as mock_post:
-                mock_response = MagicMock()
-                mock_response.json.return_value = {"choices": [{"message": {"content": "test response"}}]}
-                mock_response.raise_for_status = MagicMock()
-                mock_post.return_value = mock_response
-
-                result = call_qwen_api("qwen3-coder-plus", [], 0.7, 1000)
-
-                # Verify API key was used
-                call_args = mock_post.call_args
-                headers = call_args.kwargs["headers"]
-                assert "Authorization" in headers
-                assert headers["Authorization"] == "Bearer test-api-key"
-                assert result == "test response"
 
     def test_qwen_with_oauth(self):
         """Test Qwen using OAuth authentication."""
@@ -152,8 +147,15 @@ class TestQwenEdgeCases:
 
     def test_qwen_missing_choices(self):
         """Test handling of response without choices field."""
-        with patch.dict(os.environ, {"QWEN_API_KEY": "test-key"}):
+        with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
             with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_oauth_provider = mock.Mock()
+                mock_oauth_provider.get_token.return_value = {
+                    "access_token": "test-oauth-token",
+                    "resource_url": "chat.qwen.ai",
+                }
+                mock_provider_class.return_value = mock_oauth_provider
+
                 mock_response = MagicMock()
                 mock_response.json.return_value = {"some_other_field": "value"}
                 mock_response.raise_for_status = MagicMock()
@@ -166,8 +168,15 @@ class TestQwenEdgeCases:
 
     def test_qwen_authentication_error(self):
         """Test 401 authentication error."""
-        with patch.dict(os.environ, {"QWEN_API_KEY": "bad-key"}):
+        with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
             with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_oauth_provider = mock.Mock()
+                mock_oauth_provider.get_token.return_value = {
+                    "access_token": "test-oauth-token",
+                    "resource_url": "chat.qwen.ai",
+                }
+                mock_provider_class.return_value = mock_oauth_provider
+
                 mock_response = MagicMock()
                 mock_response.status_code = 401
                 mock_response.text = "Unauthorized"

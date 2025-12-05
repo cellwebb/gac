@@ -1,6 +1,4 @@
-"""Qwen API provider for gac with OAuth support."""
-
-import os
+"""Qwen API provider for gac with OAuth-only support."""
 
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
@@ -11,40 +9,33 @@ QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
 
 
 class QwenProvider(OpenAICompatibleProvider):
-    """Qwen provider with OAuth token and API key support."""
+    """Qwen provider with OAuth-only authentication."""
 
     config = ProviderConfig(
         name="Qwen",
-        api_key_env="QWEN_API_KEY",
+        api_key_env="",
         base_url=QWEN_DEFAULT_API_URL,
     )
 
     def __init__(self, config: ProviderConfig):
-        """Initialize with OAuth or API key authentication."""
+        """Initialize with OAuth authentication."""
         super().__init__(config)
-        # Resolve authentication and API URL
-        self._auth_token, resolved_url = self._get_qwen_auth()
+        self._auth_token, resolved_url = self._get_oauth_token()
         self.config.base_url = resolved_url
 
     def _get_api_key(self) -> str:
-        """Get API key from environment (for compatibility with parent class)."""
-        api_key = os.getenv(self.config.api_key_env)
-        if not api_key:
-            # Will use OAuth in _get_qwen_auth instead
-            return "oauth-token"
-        return api_key
+        """Return placeholder for parent class compatibility (OAuth is used instead)."""
+        return "oauth-token"
 
-    def _get_qwen_auth(self) -> tuple[str, str]:
-        """Get Qwen authentication (API key or OAuth token).
+    def _get_oauth_token(self) -> tuple[str, str]:
+        """Get Qwen OAuth token from token store.
 
         Returns:
-            Tuple of (token, api_url) for authentication.
-        """
-        api_key = os.getenv("QWEN_API_KEY")
-        if api_key:
-            return api_key, QWEN_DEFAULT_API_URL
+            Tuple of (access_token, api_url) for authentication.
 
-        # Try OAuth
+        Raises:
+            AIError: If no OAuth token is found.
+        """
         oauth_provider = QwenOAuthProvider(TokenStore())
         token = oauth_provider.get_token()
         if token:
@@ -59,12 +50,10 @@ class QwenProvider(OpenAICompatibleProvider):
                 api_url = QWEN_DEFAULT_API_URL
             return token["access_token"], api_url
 
-        raise AIError.authentication_error(
-            "Qwen authentication not found. Set QWEN_API_KEY or run 'gac auth qwen login' for OAuth."
-        )
+        raise AIError.authentication_error("Qwen OAuth token not found. Run 'gac auth qwen login' to authenticate.")
 
     def _build_headers(self) -> dict[str, str]:
-        """Build headers with OAuth or API key token."""
+        """Build headers with OAuth token."""
         headers = super()._build_headers()
         # Replace Bearer token with the stored auth token
         if "Authorization" in headers:
@@ -80,6 +69,6 @@ def _get_qwen_provider() -> QwenProvider:
 
 @handle_provider_errors("Qwen")
 def call_qwen_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Qwen API with OAuth or API key authentication."""
+    """Call Qwen API with OAuth authentication."""
     provider = _get_qwen_provider()
     return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
