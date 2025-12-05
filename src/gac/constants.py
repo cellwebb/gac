@@ -30,6 +30,12 @@ class EnvDefaults:
     HOOK_TIMEOUT: int = 120  # Timeout for pre-commit and lefthook hooks in seconds
 
 
+class ProviderDefaults:
+    """Default values for provider configurations."""
+
+    HTTP_TIMEOUT: int = 120  # seconds - timeout for HTTP requests to LLM providers
+
+
 class Logging:
     """Logging configuration constants."""
 

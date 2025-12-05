@@ -9,6 +9,57 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from gac.constants import EnvDefaults, Logging
+from gac.errors import ConfigError
+
+
+def validate_config(config: dict[str, str | int | float | bool | None]) -> None:
+    """Validate configuration values at load time.
+
+    Args:
+        config: Configuration dictionary to validate
+
+    Raises:
+        ConfigError: If any configuration value is invalid
+    """
+    # Validate temperature (0.0 to 2.0)
+    if config.get("temperature") is not None:
+        temp = config["temperature"]
+        if not isinstance(temp, (int, float)):
+            raise ConfigError(f"temperature must be a number, got {type(temp).__name__}")
+        if not 0.0 <= temp <= 2.0:
+            raise ConfigError(f"temperature must be between 0.0 and 2.0, got {temp}")
+
+    # Validate max_output_tokens (1 to 100000)
+    if config.get("max_output_tokens") is not None:
+        tokens = config["max_output_tokens"]
+        if not isinstance(tokens, int):
+            raise ConfigError(f"max_output_tokens must be an integer, got {type(tokens).__name__}")
+        if tokens < 1 or tokens > 100000:
+            raise ConfigError(f"max_output_tokens must be between 1 and 100000, got {tokens}")
+
+    # Validate max_retries (1 to 10)
+    if config.get("max_retries") is not None:
+        retries = config["max_retries"]
+        if not isinstance(retries, int):
+            raise ConfigError(f"max_retries must be an integer, got {type(retries).__name__}")
+        if retries < 1 or retries > 10:
+            raise ConfigError(f"max_retries must be between 1 and 10, got {retries}")
+
+    # Validate warning_limit_tokens (must be positive)
+    if config.get("warning_limit_tokens") is not None:
+        warning_limit = config["warning_limit_tokens"]
+        if not isinstance(warning_limit, int):
+            raise ConfigError(f"warning_limit_tokens must be an integer, got {type(warning_limit).__name__}")
+        if warning_limit < 1:
+            raise ConfigError(f"warning_limit_tokens must be positive, got {warning_limit}")
+
+    # Validate hook_timeout (must be positive)
+    if config.get("hook_timeout") is not None:
+        hook_timeout = config["hook_timeout"]
+        if not isinstance(hook_timeout, int):
+            raise ConfigError(f"hook_timeout must be an integer, got {type(hook_timeout).__name__}")
+        if hook_timeout < 1:
+            raise ConfigError(f"hook_timeout must be positive, got {hook_timeout}")
 
 
 def load_config() -> dict[str, str | int | float | bool | None]:
@@ -45,4 +96,5 @@ def load_config() -> dict[str, str | int | float | bool | None]:
         "hook_timeout": int(os.getenv("GAC_HOOK_TIMEOUT", EnvDefaults.HOOK_TIMEOUT)),
     }
 
+    validate_config(config)
     return config
