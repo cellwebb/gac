@@ -12,29 +12,13 @@ class MinimaxProvider(OpenAICompatibleProvider):
     )
 
 
-# Create provider instance for backward compatibility
-minimax_provider = MinimaxProvider(MinimaxProvider.config)
+def _get_minimax_provider() -> MinimaxProvider:
+    """Lazy getter to initialize MiniMax provider at call time."""
+    return MinimaxProvider(MinimaxProvider.config)
 
 
 @handle_provider_errors("MiniMax")
 def call_minimax_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call MiniMax API directly.
-
-    Args:
-        model: Model name
-        messages: List of message dictionaries
-        temperature: Temperature parameter
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text content
-
-    Raises:
-        AIError: For any API-related errors
-    """
-    return minimax_provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    """Call MiniMax API directly."""
+    provider = _get_minimax_provider()
+    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
