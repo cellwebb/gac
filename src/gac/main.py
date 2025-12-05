@@ -14,7 +14,7 @@ from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens
 from gac.config import load_config
 from gac.constants import EnvDefaults, Utility
-from gac.errors import AIError, GitError, handle_error
+from gac.errors import AIError, ConfigError, GitError, handle_error
 from gac.git import (
     detect_rename_mappings,
     get_staged_files,
@@ -233,7 +233,8 @@ def execute_grouped_commits_workflow(
 
         if first_iteration:
             warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
-            assert warning_limit_val is not None
+            if warning_limit_val is None:
+                raise ConfigError("warning_limit_tokens configuration missing")
             warning_limit = int(warning_limit_val)
             if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
                 sys.exit(0)
@@ -550,7 +551,8 @@ def execute_single_commit_workflow(
         prompt_tokens = count_tokens(conversation_messages, model)
         if first_iteration:
             warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
-            assert warning_limit_val is not None
+            if warning_limit_val is None:
+                raise ConfigError("warning_limit_tokens configuration missing")
             warning_limit = int(warning_limit_val)
             if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
                 sys.exit(0)
@@ -773,15 +775,18 @@ def main(
         model = str(model_from_config)
 
     temperature_val = config["temperature"]
-    assert temperature_val is not None
+    if temperature_val is None:
+        raise ConfigError("temperature configuration missing")
     temperature = float(temperature_val)
 
     max_tokens_val = config["max_output_tokens"]
-    assert max_tokens_val is not None
+    if max_tokens_val is None:
+        raise ConfigError("max_output_tokens configuration missing")
     max_output_tokens = int(max_tokens_val)
 
     max_retries_val = config["max_retries"]
-    assert max_retries_val is not None
+    if max_retries_val is None:
+        raise ConfigError("max_retries configuration missing")
     max_retries = int(max_retries_val)
 
     if stage_all and (not dry_run):
@@ -882,7 +887,8 @@ def main(
             logger.info("No secrets detected in staged changes")
 
     logger.debug(f"Preprocessing diff ({len(diff)} characters)")
-    assert model is not None
+    if model is None:
+        raise ConfigError("Model must be specified via GAC_MODEL environment variable or --model flag")
     processed_diff = preprocess_diff(diff, token_limit=Utility.DEFAULT_DIFF_TOKEN_LIMIT, model=model)
     logger.debug(f"Processed diff ({len(processed_diff)} characters)")
 
