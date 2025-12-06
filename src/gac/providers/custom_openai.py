@@ -36,7 +36,7 @@ class CustomOpenAIProvider(OpenAICompatibleProvider):
         super().__init__(config)
 
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Build request body with max_completion_tokens instead of max_tokens."""
         data = super()._build_request_body(messages, temperature, max_tokens, model, **kwargs)

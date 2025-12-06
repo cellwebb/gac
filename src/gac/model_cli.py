@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import cast
 
 import click
 import questionary
@@ -61,7 +62,7 @@ def _prompt_required_text(prompt: str) -> str | None:
             return None
         value = response.strip()
         if value:
-            return value  # type: ignore[no-any-return]
+            return cast(str, value)
         click.echo("A value is required. Please try again.")
 
 

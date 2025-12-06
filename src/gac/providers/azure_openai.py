@@ -51,7 +51,7 @@ class AzureOpenAIProvider(OpenAICompatibleProvider):
         return headers
 
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Build request body for Azure OpenAI."""
         return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}

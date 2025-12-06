@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from rich.console import Console
 
@@ -216,7 +216,7 @@ def with_error_handling(
     """
 
     def decorator(func: Callable[..., T]) -> Callable[..., T | None]:
-        def wrapper(*args, **kwargs) -> T | None:
+        def wrapper(*args: Any, **kwargs: Any) -> T | None:
             try:
                 return func(*args, **kwargs)
             except Exception as e:

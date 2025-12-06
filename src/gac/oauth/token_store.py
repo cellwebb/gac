@@ -5,7 +5,7 @@ import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, cast
 
 
 class OAuthToken(TypedDict, total=False):
@@ -65,7 +65,7 @@ class TokenStore:
         with open(token_path) as f:
             token_data = json.load(f)
             if isinstance(token_data, dict) and isinstance(token_data.get("access_token"), str):
-                return token_data  # type: ignore[return-value]
+                return cast(OAuthToken, token_data)
             return None
 
     def remove_token(self, provider: str) -> None:

@@ -12,7 +12,7 @@ import time
 import webbrowser
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
@@ -331,7 +331,7 @@ def perform_oauth_flow(quiet: bool = False) -> dict[str, Any] | None:
         print("✓ Authorization code received")
         print("  Exchanging for access token...\n")
 
-    tokens = exchange_code_for_tokens(result.code, context)  # type: ignore[arg-type]
+    tokens = exchange_code_for_tokens(cast(str, result.code), context)
     if not tokens:
         if not quiet:
             print("❌ Token exchange failed. Please try again.")

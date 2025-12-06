@@ -4,7 +4,7 @@
 import logging
 import subprocess
 import sys
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from rich.console import Console
 
@@ -28,7 +28,7 @@ class GitState(NamedTuple):
     diff_stat: str
     processed_diff: str
     has_secrets: bool
-    secrets: list
+    secrets: list[Any]
 
 
 class GitStateValidator:
@@ -117,7 +117,7 @@ class GitStateValidator:
             secrets=secrets,
         )
 
-    def handle_secret_detection(self, secrets: list, quiet: bool = False) -> bool:
+    def handle_secret_detection(self, secrets: list[Any], quiet: bool = False) -> bool:
         """Handle secret detection and user interaction. Returns True if commit should continue."""
         if not secrets:
             return True

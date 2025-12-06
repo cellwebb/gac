@@ -8,6 +8,7 @@ Defines the Click-based command-line interface and delegates execution to the ma
 import logging
 import os
 import sys
+from typing import Any
 
 import click
 from rich.console import Console
@@ -206,7 +207,7 @@ cli.add_command(model_cli)
 
 @click.command(context_settings=language_cli.context_settings)
 @click.pass_context
-def lang(ctx):
+def lang(ctx: Any) -> None:
     """Set the language for commit messages interactively. (Alias for 'language')"""
     ctx.forward(language_cli)
 

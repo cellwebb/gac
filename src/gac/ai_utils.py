@@ -9,7 +9,7 @@ import os
 import time
 from collections.abc import Callable
 from functools import lru_cache
-from typing import Any
+from typing import Any, cast
 
 import tiktoken
 from rich.console import Console
@@ -55,7 +55,7 @@ def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -
     elif isinstance(content, list):
         return "\n".join(msg["content"] for msg in content if isinstance(msg, dict) and "content" in msg)
     elif isinstance(content, dict) and "content" in content:
-        return content["content"]  # type: ignore[no-any-return]
+        return cast(str, content["content"])
     return ""
 
 

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def run_subprocess_with_encoding_fallback(
     command: list[str], silent: bool = False, timeout: int = 60
-) -> subprocess.CompletedProcess:
+) -> subprocess.CompletedProcess[str]:
     """Run subprocess with encoding fallback, returning full CompletedProcess object.
 
     This is used for cases where we need both stdout and stderr separately,

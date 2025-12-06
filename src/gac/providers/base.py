@@ -26,7 +26,7 @@ class ProviderConfig:
     timeout: int = ProviderDefaults.HTTP_TIMEOUT
     headers: dict[str, str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize default headers if not provided."""
         if self.headers is None:
             self.headers = {"Content-Type": "application/json"}
@@ -85,7 +85,7 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
 
     @abstractmethod
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Build the request body for the API call.
 
@@ -158,7 +158,12 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         return response.json()
 
     def generate(
-        self, model: str, messages: list[dict], temperature: float = 0.7, max_tokens: int = 1024, **kwargs
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+        **kwargs: Any,
     ) -> str:
         """Generate text using the AI provider.
 
@@ -204,7 +209,7 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
     """
 
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Build OpenAI-style request body.
 
@@ -245,7 +250,7 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         return headers
 
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Build Anthropic-style request body."""
         # Convert messages to Anthropic format
@@ -283,7 +288,7 @@ class GenericHTTPProvider(BaseConfiguredProvider):
     """Base class for completely custom providers."""
 
     def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:
         """Default implementation - override this in subclasses."""
         return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}

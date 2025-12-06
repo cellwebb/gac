@@ -6,7 +6,7 @@ import logging
 import subprocess
 import sys
 from collections import Counter
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import click
 from rich.console import Console
@@ -28,7 +28,7 @@ console = Console()
 class GroupedCommitResult(NamedTuple):
     """Result of grouped commit generation."""
 
-    commits: list[dict]
+    commits: list[dict[str, Any]]
     raw_response: str
 
 
@@ -38,7 +38,9 @@ class GroupedCommitWorkflow:
     def __init__(self, config: GACConfig):
         self.config = config
 
-    def validate_grouped_files_or_feedback(self, staged: set[str], grouped_result: dict) -> tuple[bool, str, str]:
+    def validate_grouped_files_or_feedback(
+        self, staged: set[str], grouped_result: dict[str, Any]
+    ) -> tuple[bool, str, str]:
         """Validate that grouped commits cover all staged files correctly."""
         commits = grouped_result.get("commits", []) if isinstance(grouped_result, dict) else []
         all_files: list[str] = []
@@ -91,9 +93,9 @@ class GroupedCommitWorkflow:
             console.print(f"[yellow]Retry {attempts} of {content_retry_budget - 1}: {retry_context}[/yellow]")
         return False
 
-    def parse_and_validate_json_response(self, raw_response: str) -> dict | None:
+    def parse_and_validate_json_response(self, raw_response: str) -> dict[str, Any] | None:
         """Parse and validate JSON response from AI."""
-        parsed: dict | None = None
+        parsed: dict[str, Any] | None = None
         extract = raw_response
         first_brace = raw_response.find("{")
         last_brace = raw_response.rfind("}")

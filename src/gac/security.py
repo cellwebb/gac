@@ -93,7 +93,7 @@ class SecretPatterns:
     ]
 
     @classmethod
-    def get_all_patterns(cls) -> dict[str, re.Pattern]:
+    def get_all_patterns(cls) -> dict[str, re.Pattern[str]]:
         """Get all secret detection patterns.
 
         Returns:

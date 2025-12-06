@@ -5,6 +5,7 @@ prompt building, AI generation, and commit/push operations. This module contains
 
 import logging
 import sys
+from typing import Any
 
 from rich.console import Console
 
@@ -168,7 +169,7 @@ def _execute_single_commit_workflow(
 
 def _handle_oauth_retry(
     e: AIError,
-    prompts,
+    prompts: Any,
     model: str,
     temperature: float,
     max_output_tokens: int,

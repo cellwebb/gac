@@ -1,6 +1,6 @@
 """Provider protocol for type-safe AI provider implementations."""
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -14,7 +14,9 @@ class ProviderProtocol(Protocol):
     and function-based providers (used in the registry).
     """
 
-    def generate(self, model: str, messages: list[dict], temperature: float, max_tokens: int, **kwargs) -> str:
+    def generate(
+        self, model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int, **kwargs: Any
+    ) -> str:
         """Generate text using the AI model.
 
         Args:

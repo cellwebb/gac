@@ -10,7 +10,7 @@ GAC_ENV_PATH = Path.home() / ".gac.env"
 
 
 @click.group()
-def config():
+def config() -> None:
     """Manage gac configuration."""
     pass
 

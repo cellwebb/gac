@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 from functools import lru_cache
+from typing import Any
 
 from rich.console import Console
 from rich.theme import Theme
@@ -61,13 +62,13 @@ def setup_logging(
     if quiet:
         log_level = logging.ERROR
 
-    kwargs = {"force": force} if force else {}
+    kwargs: dict[str, Any] = {"force": force} if force else {}
 
     logging.basicConfig(
         level=log_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        **kwargs,  # type: ignore[arg-type]
+        **kwargs,
     )
 
     if suppress_noisy:
@@ -342,19 +343,19 @@ def edit_commit_message_inplace(message: str) -> str | None:
         kb = KeyBindings()
 
         @kb.add("c-s")
-        def _(event):
+        def _(event: Any) -> None:
             """Submit with Ctrl+S."""
             submitted["value"] = True
             event.app.exit()
 
         @kb.add("c-c")
-        def _(event):
+        def _(event: Any) -> None:
             """Cancel editing."""
             cancelled["value"] = True
             event.app.exit()
 
         @kb.add("escape", "enter")
-        def _(event):
+        def _(event: Any) -> None:
             """Submit with Esc+Enter."""
             submitted["value"] = True
             event.app.exit()

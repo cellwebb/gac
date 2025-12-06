@@ -82,7 +82,7 @@ def handle_provider_errors(provider_name: str) -> Callable[[Callable[..., Any]],
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except AIError:
