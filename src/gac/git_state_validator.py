@@ -47,8 +47,7 @@ class GitStateValidator:
         except (subprocess.SubprocessError, GitError, OSError) as e:
             logger.error(f"Error checking git repository: {e}")
             handle_error(GitError("Not in a git repository"), exit_program=True)
-            # This line is never reached due to exit_program=True
-            return ""
+            return ""  # Never reached, but required for type safety
 
     def stage_all_if_requested(self, stage_all: bool, dry_run: bool) -> None:
         """Stage all changes if requested and not in dry run mode."""
