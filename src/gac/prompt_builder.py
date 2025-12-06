@@ -3,6 +3,9 @@
 
 from typing import NamedTuple
 
+from rich.console import Console
+from rich.panel import Panel
+
 from gac.config import GACConfig
 from gac.git_state_validator import GitState
 
@@ -80,9 +83,6 @@ class PromptBuilder:
 
     def display_prompts(self, system_prompt: str, user_prompt: str) -> None:
         """Display prompts for debugging purposes."""
-        from rich.console import Console
-        from rich.panel import Panel
-
         console = Console()
         full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
         console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
