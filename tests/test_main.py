@@ -5,52 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import ConfigError
-from gac.main import _execute_single_commit_workflow, _parse_model_identifier, main
-
-
-class TestParseModelIdentifier:
-    """Test the _parse_model_identifier function."""
-
-    def test_parse_model_identifier_valid_format(self):
-        """Test parsing valid model identifiers."""
-        provider, model_name = _parse_model_identifier("openai:gpt-4o-mini")
-        assert provider == "openai"
-        assert model_name == "gpt-4o-mini"
-
-        provider, model_name = _parse_model_identifier("anthropic:claude-3-haiku")
-        assert provider == "anthropic"
-        assert model_name == "claude-3-haiku"
-
-    def test_parse_model_identifier_trims_whitespace(self):
-        """Test that whitespace is trimmed from model identifiers."""
-        provider, model_name = _parse_model_identifier("  openai:gpt-4  ")
-        assert provider == "openai"
-        assert model_name == "gpt-4"
-
-    def test_parse_model_identifier_invalid_format_exits(self):
-        """Test that invalid model format causes SystemExit."""
-        with patch("gac.main.console.print") as mock_print, pytest.raises(SystemExit) as exc:
-            _parse_model_identifier("invalid-model")
-
-        assert exc.value.code == 1
-        mock_print.assert_called()
-        printed_args = " ".join(str(call) for call in mock_print.call_args_list)
-        assert "Invalid model format" in printed_args
-        assert "Expected 'provider:model'" in printed_args
-
-    def test_parse_model_identifier_empty_parts_exits(self):
-        """Test that empty provider or model name causes SystemExit."""
-        test_cases = ["openai:", ":gpt-4", "provider:"]
-
-        for invalid_model in test_cases:
-            with patch("gac.main.console.print") as mock_print, pytest.raises(SystemExit) as exc:
-                _parse_model_identifier(invalid_model)
-
-            assert exc.value.code == 1
-            mock_print.assert_called()
-            printed_args = " ".join(str(call) for call in mock_print.call_args_list)
-            assert "Invalid model format" in printed_args
-            assert "provider and model name are required" in printed_args
+from gac.main import _execute_single_commit_workflow, main
 
 
 class TestMainIntegration:
@@ -148,7 +103,7 @@ class TestSingleCommitWorkflow:
         mock_count_tokens.return_value = 100
 
         with (
-            patch("gac.workflow_utils.display_commit_message") as mock_display,
+            patch("gac.main.display_commit_message") as mock_display,
             pytest.raises(SystemExit) as exc,
         ):
             _execute_single_commit_workflow(
@@ -184,7 +139,7 @@ class TestSingleCommitWorkflow:
         mock_count_tokens.return_value = 100
 
         with (
-            patch("gac.workflow_utils.display_commit_message") as mock_display,
+            patch("gac.main.display_commit_message") as mock_display,
             pytest.raises(SystemExit) as exc,
         ):
             _execute_single_commit_workflow(
