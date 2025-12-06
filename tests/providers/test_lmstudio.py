@@ -8,9 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.lmstudio import call_lmstudio_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_import_success, temporarily_set_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_lmstudio_api = PROVIDER_REGISTRY["lm-studio"]
 
 
 class TestLMStudioImports:
@@ -20,11 +22,10 @@ class TestLMStudioImports:
         """Test that LM Studio provider module can be imported."""
         from gac.providers import lmstudio  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that LM Studio API function can be imported and is callable."""
-        from gac.providers.lmstudio import call_lmstudio_api
-
-        assert_import_success(call_lmstudio_api)
+    def test_provider_in_registry(self):
+        """Test that LM Studio provider is in the registry."""
+        assert "lm-studio" in PROVIDER_REGISTRY
+        assert_import_success(PROVIDER_REGISTRY["lm-studio"])
 
 
 class TestLMStudioProviderMocked(BaseProviderTest):
@@ -40,7 +41,7 @@ class TestLMStudioProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_lmstudio_api
+        return PROVIDER_REGISTRY["lm-studio"]
 
     @property
     def api_key_env_var(self) -> str | None:

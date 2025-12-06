@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.fireworks import call_fireworks_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestFireworksImports:
         """Test that Fireworks AI provider module can be imported."""
         from gac.providers import fireworks  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Fireworks AI API function can be imported."""
-        from gac.providers.fireworks import call_fireworks_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "fireworks" in PROVIDER_REGISTRY
 
 
 class TestFireworksAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestFireworksAPIKeyValidation:
         """Test that Fireworks AI raises error when API key is missing."""
         with temporarily_remove_env_var("FIREWORKS_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_fireworks_api("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["fireworks"]("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "fireworks", "FIREWORKS_API_KEY")
 
@@ -50,7 +52,7 @@ class TestFireworksProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_fireworks_api
+        return PROVIDER_REGISTRY["fireworks"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestFireworksEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_fireworks_api("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["fireworks"]("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -98,7 +100,7 @@ class TestFireworksIntegration:
             pytest.skip("FIREWORKS_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_fireworks_api(
+        response = PROVIDER_REGISTRY["fireworks"](
             model="accounts/fireworks/models/gpt-oss-20b",
             messages=messages,
             temperature=1.0,

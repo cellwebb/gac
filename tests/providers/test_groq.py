@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.groq import call_groq_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import (
     assert_missing_api_key_error,
     temporarily_remove_env_var,
@@ -24,9 +24,11 @@ class TestGroqImports:
         """Test that Groq provider module can be imported."""
         from gac.providers import groq  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Groq API function can be imported."""
-        from gac.providers.groq import call_groq_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "groq" in PROVIDER_REGISTRY
 
 
 class TestGroqAPIKeyValidation:
@@ -36,7 +38,7 @@ class TestGroqAPIKeyValidation:
         """Test that Groq raises error when API key is missing."""
         with temporarily_remove_env_var("GROQ_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "groq", "GROQ_API_KEY")
 
@@ -54,7 +56,7 @@ class TestGroqProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_groq_api
+        return PROVIDER_REGISTRY["groq"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -92,7 +94,7 @@ class TestGroqEdgeCases:
 
             # This should raise error because message field is missing
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
             assert "null content" in str(exc_info.value).lower()
 
     def test_groq_text_field_with_content(self):
@@ -104,7 +106,7 @@ class TestGroqEdgeCases:
             mock_response.raise_for_status = MagicMock()
             mock_post.return_value = mock_response
 
-            result = call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+            result = PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
             assert result == "test content"
 
     def test_groq_unexpected_choice_structure(self):
@@ -116,7 +118,7 @@ class TestGroqEdgeCases:
             mock_post.return_value = mock_response
 
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
 
             assert "invalid response" in str(exc_info.value).lower()
 
@@ -129,7 +131,7 @@ class TestGroqEdgeCases:
             mock_post.return_value = mock_response
 
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
 
             assert "invalid response" in str(exc_info.value).lower()
 
@@ -142,7 +144,7 @@ class TestGroqEdgeCases:
             mock_post.return_value = mock_response
 
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
 
             assert "invalid response" in str(exc_info.value).lower()
 
@@ -155,7 +157,7 @@ class TestGroqEdgeCases:
             mock_post.return_value = mock_response
 
             with pytest.raises(AIError) as exc_info:
-                call_groq_api("llama-3.1-70b", [], 0.7, 1000)
+                PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
 
             assert "null content" in str(exc_info.value).lower()
 
@@ -171,7 +173,9 @@ class TestGroqIntegration:
             pytest.skip("GROQ_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_groq_api(model="llama-3.3-70b-versatile", messages=messages, temperature=1.0, max_tokens=50)
+        response = PROVIDER_REGISTRY["groq"](
+            model="llama-3.3-70b-versatile", messages=messages, temperature=1.0, max_tokens=50
+        )
 
         assert response is not None
         assert isinstance(response, str)

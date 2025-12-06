@@ -8,9 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.synthetic import call_synthetic_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_synthetic_api = PROVIDER_REGISTRY["synthetic"]
 
 
 class TestSyntheticImports:
@@ -20,9 +22,9 @@ class TestSyntheticImports:
         """Test that Synthetic provider module can be imported."""
         from gac.providers import synthetic  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Synthetic API function can be imported."""
-        from gac.providers.synthetic import call_synthetic_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that Synthetic provider is in the registry."""
+        assert "synthetic" in PROVIDER_REGISTRY
 
 
 class TestSyntheticAPIKeyValidation:
@@ -51,7 +53,7 @@ class TestSyntheticProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_synthetic_api
+        return PROVIDER_REGISTRY["synthetic"]
 
     @property
     def api_key_env_var(self) -> str | None:

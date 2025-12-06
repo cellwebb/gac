@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.moonshot import call_moonshot_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestMoonshotImports:
         """Test that Moonshot AI provider module can be imported."""
         from gac.providers import moonshot  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Moonshot AI API function can be imported."""
-        from gac.providers.moonshot import call_moonshot_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "moonshot" in PROVIDER_REGISTRY
 
 
 class TestMoonshotAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestMoonshotAPIKeyValidation:
         """Test that Moonshot AI raises error when API key is missing."""
         with temporarily_remove_env_var("MOONSHOT_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_moonshot_api("kimi-k2-turbo-preview", [], 0.7, 1000)
+                PROVIDER_REGISTRY["moonshot"]("kimi-k2-turbo-preview", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "moonshot", "MOONSHOT_API_KEY")
 
@@ -50,7 +52,7 @@ class TestMoonshotProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_moonshot_api
+        return PROVIDER_REGISTRY["moonshot"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestMoonshotEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_moonshot_api("kimi-k2-turbo-preview", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["moonshot"]("kimi-k2-turbo-preview", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -98,7 +100,7 @@ class TestMoonshotIntegration:
             pytest.skip("MOONSHOT_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_moonshot_api(
+        response = PROVIDER_REGISTRY["moonshot"](
             model="kimi-k2-turbo-preview",
             messages=messages,
             temperature=1.0,

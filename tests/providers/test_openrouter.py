@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.openrouter import call_openrouter_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestOpenRouterImports:
         """Test that OpenRouter provider module can be imported."""
         from gac.providers import openrouter  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that OpenRouter API function can be imported."""
-        from gac.providers.openrouter import call_openrouter_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "openrouter" in PROVIDER_REGISTRY
 
 
 class TestOpenRouterAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestOpenRouterAPIKeyValidation:
         """Test that OpenRouter raises error when API key is missing."""
         with temporarily_remove_env_var("OPENROUTER_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_openrouter_api("mistralai/mistral-7b-instruct", [], 0.7, 1000)
+                PROVIDER_REGISTRY["openrouter"]("mistralai/mistral-7b-instruct", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "openrouter", "OPENROUTER_API_KEY")
 
@@ -50,7 +52,7 @@ class TestOpenRouterProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_openrouter_api
+        return PROVIDER_REGISTRY["openrouter"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestOpenRouterEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_openrouter_api("mistralai/mistral-7b-instruct", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["openrouter"]("mistralai/mistral-7b-instruct", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -99,7 +101,7 @@ class TestOpenRouterIntegration:
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
         try:
-            response = call_openrouter_api(
+            response = PROVIDER_REGISTRY["openrouter"](
                 model="mistralai/mistral-7b-instruct", messages=messages, temperature=1.0, max_tokens=50
             )
 

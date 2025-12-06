@@ -9,9 +9,11 @@ import httpx
 import pytest
 
 from gac.errors import AIError
-from gac.providers.custom_openai import call_custom_openai_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_custom_openai_api = PROVIDER_REGISTRY["custom-openai"]
 
 
 class TestCustomOpenAIImports:
@@ -20,8 +22,9 @@ class TestCustomOpenAIImports:
     def test_import_provider(self):
         """Test that Custom OpenAI provider module can be imported."""
 
-    def test_import_api_function(self):
-        """Test that Custom OpenAI API function can be imported."""
+    def test_provider_in_registry(self):
+        """Test that Custom OpenAI provider is in the registry."""
+        assert "custom-openai" in PROVIDER_REGISTRY
 
 
 class TestCustomOpenAIAPIKeyValidation:
@@ -60,7 +63,7 @@ class TestCustomOpenAIProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_custom_openai_api
+        return PROVIDER_REGISTRY["custom-openai"]
 
     @property
     def api_key_env_var(self) -> str | None:

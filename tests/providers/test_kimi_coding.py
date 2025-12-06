@@ -8,8 +8,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.kimi_coding import call_kimi_coding_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.providers.conftest import BaseProviderTest
+
+call_kimi_coding_api = PROVIDER_REGISTRY["kimi-coding"]
 
 
 class TestKimiImports:
@@ -19,9 +21,9 @@ class TestKimiImports:
         """Test that Kimi Coding provider module can be imported."""
         from gac.providers import kimi_coding  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Kimi Coding API function can be imported."""
-        from gac.providers.kimi_coding import call_kimi_coding_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that Kimi Coding provider is in the registry."""
+        assert "kimi-coding" in PROVIDER_REGISTRY
 
 
 class TestKimiAPIKeyValidation:
@@ -50,7 +52,7 @@ class TestKimiProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_kimi_coding_api
+        return PROVIDER_REGISTRY["kimi-coding"]
 
     @property
     def api_key_env_var(self) -> str | None:

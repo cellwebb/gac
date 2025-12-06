@@ -8,9 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.streamlake import call_streamlake_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_streamlake_api = PROVIDER_REGISTRY["streamlake"]
 
 
 class TestStreamLakeImports:
@@ -20,9 +22,9 @@ class TestStreamLakeImports:
         """Test that StreamLake provider module can be imported."""
         from gac.providers import streamlake  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that StreamLake API function can be imported."""
-        from gac.providers.streamlake import call_streamlake_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that StreamLake provider is in the registry."""
+        assert "streamlake" in PROVIDER_REGISTRY
 
 
 class TestStreamLakeAPIKeyValidation:
@@ -51,7 +53,7 @@ class TestStreamLakeProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_streamlake_api
+        return PROVIDER_REGISTRY["streamlake"]
 
     @property
     def api_key_env_var(self) -> str | None:

@@ -8,9 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.replicate import call_replicate_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_replicate_api = PROVIDER_REGISTRY["replicate"]
 
 
 class TestReplicateImports:
@@ -20,9 +22,9 @@ class TestReplicateImports:
         """Test that Replicate provider module can be imported."""
         from gac.providers import replicate  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Replicate API function can be imported."""
-        from gac.providers.replicate import call_replicate_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that Replicate provider is in the registry."""
+        assert "replicate" in PROVIDER_REGISTRY
 
 
 class TestReplicateAPIKeyValidation:
@@ -50,7 +52,7 @@ class TestReplicateProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_replicate_api
+        return PROVIDER_REGISTRY["replicate"]
 
     @property
     def api_key_env_var(self) -> str | None:

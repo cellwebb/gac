@@ -8,13 +8,16 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.zai import call_zai_api, call_zai_coding_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import (
     assert_missing_api_key_error,
     temporarily_remove_env_var,
     temporarily_set_env_var,
 )
 from tests.providers.conftest import BaseProviderTest
+
+call_zai_api = PROVIDER_REGISTRY["zai"]
+call_zai_coding_api = PROVIDER_REGISTRY["zai-coding"]
 
 
 class TestZAIImports:
@@ -24,9 +27,10 @@ class TestZAIImports:
         """Test that ZAI provider module can be imported."""
         from gac.providers import zai  # noqa: F401
 
-    def test_import_api_functions(self):
-        """Test that ZAI API functions can be imported."""
-        from gac.providers.zai import call_zai_api, call_zai_coding_api  # noqa: F401
+    def test_providers_in_registry(self):
+        """Test that ZAI providers are in the registry."""
+        assert "zai" in PROVIDER_REGISTRY
+        assert "zai-coding" in PROVIDER_REGISTRY
 
 
 class TestZAIAPIKeyValidation:
@@ -62,7 +66,7 @@ class TestZAIProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_zai_api
+        return PROVIDER_REGISTRY["zai"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -94,7 +98,7 @@ class TestZAICodingProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_zai_coding_api
+        return PROVIDER_REGISTRY["zai-coding"]
 
     @property
     def api_key_env_var(self) -> str | None:

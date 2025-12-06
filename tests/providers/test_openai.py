@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.openai import call_openai_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestOpenAIImports:
         """Test that OpenAI provider module can be imported."""
         from gac.providers import openai  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that OpenAI API function can be imported."""
-        from gac.providers.openai import call_openai_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "openai" in PROVIDER_REGISTRY
 
 
 class TestOpenAIAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestOpenAIAPIKeyValidation:
         """Test that OpenAI raises error when API key is missing."""
         with temporarily_remove_env_var("OPENAI_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_openai_api("gpt-5-nano", [], 0.7, 1000)
+                PROVIDER_REGISTRY["openai"]("gpt-5-nano", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "openai", "OPENAI_API_KEY")
 
@@ -50,7 +52,7 @@ class TestOpenAIProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_openai_api
+        return PROVIDER_REGISTRY["openai"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestOpenAIEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_openai_api("gpt-5-nano", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["openai"]("gpt-5-nano", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -98,7 +100,7 @@ class TestOpenAIIntegration:
             pytest.skip("OPENAI_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_openai_api(
+        response = PROVIDER_REGISTRY["openai"](
             model="gpt-5-nano",
             messages=messages,
             temperature=1.0,

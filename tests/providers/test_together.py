@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.together import call_together_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestTogetherAIImports:
         """Test that Together AI provider module can be imported."""
         from gac.providers import together  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Together AI API function can be imported."""
-        from gac.providers.together import call_together_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "together" in PROVIDER_REGISTRY
 
 
 class TestTogetherAIAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestTogetherAIAPIKeyValidation:
         """Test that Together AI raises error when API key is missing."""
         with temporarily_remove_env_var("TOGETHER_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_together_api("openai/gpt-oss-20B", [], 0.7, 1000)
+                PROVIDER_REGISTRY["together"]("openai/gpt-oss-20B", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "together", "TOGETHER_API_KEY")
 
@@ -50,7 +52,7 @@ class TestTogetherAIProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_together_api
+        return PROVIDER_REGISTRY["together"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestTogetherAIEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_together_api("openai/gpt-oss-20B", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["together"]("openai/gpt-oss-20B", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -98,7 +100,7 @@ class TestTogetherAIIntegration:
             pytest.skip("TOGETHER_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_together_api(
+        response = PROVIDER_REGISTRY["together"](
             model="openai/gpt-oss-20B",
             messages=messages,
             temperature=1.0,

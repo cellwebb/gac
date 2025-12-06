@@ -9,9 +9,11 @@ import httpx
 import pytest
 
 from gac.errors import AIError
-from gac.providers.azure_openai import call_azure_openai_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_azure_openai_api = PROVIDER_REGISTRY["azure-openai"]
 
 
 class TestAzureOpenAIImports:
@@ -20,8 +22,9 @@ class TestAzureOpenAIImports:
     def test_import_provider(self):
         """Test that Azure OpenAI provider module can be imported."""
 
-    def test_import_api_function(self):
-        """Test that Azure OpenAI API function can be imported."""
+    def test_provider_in_registry(self):
+        """Test that Azure OpenAI provider is in the registry."""
+        assert "azure-openai" in PROVIDER_REGISTRY
 
 
 class TestAzureOpenAIAPIKeyValidation:
@@ -81,7 +84,7 @@ class TestAzureOpenAIProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_azure_openai_api
+        return PROVIDER_REGISTRY["azure-openai"]
 
     @property
     def api_key_env_var(self) -> str:

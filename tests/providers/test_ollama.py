@@ -9,9 +9,11 @@ import httpx
 import pytest
 
 from gac.errors import AIError
-from gac.providers.ollama import call_ollama_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_import_success
 from tests.providers.conftest import BaseProviderTest
+
+call_ollama_api = PROVIDER_REGISTRY["ollama"]
 
 
 class TestOllamaImports:
@@ -21,11 +23,10 @@ class TestOllamaImports:
         """Test that Ollama provider module can be imported."""
         from gac.providers import ollama  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Ollama API function can be imported and is callable."""
-        from gac.providers.ollama import call_ollama_api
-
-        assert_import_success(call_ollama_api)
+    def test_provider_in_registry(self):
+        """Test that Ollama provider is in the registry."""
+        assert "ollama" in PROVIDER_REGISTRY
+        assert_import_success(PROVIDER_REGISTRY["ollama"])
 
 
 class TestOllamaProviderMocked(BaseProviderTest):
@@ -41,7 +42,7 @@ class TestOllamaProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_ollama_api
+        return PROVIDER_REGISTRY["ollama"]
 
     @property
     def api_key_env_var(self) -> str | None:

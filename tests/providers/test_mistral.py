@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.mistral import call_mistral_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestMistralImports:
         """Test that Mistral provider module can be imported."""
         from gac.providers import mistral  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Mistral API function can be imported."""
-        from gac.providers.mistral import call_mistral_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "mistral" in PROVIDER_REGISTRY
 
 
 class TestMistralAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestMistralAPIKeyValidation:
         """Mistral should raise an error when API key is missing."""
         with temporarily_remove_env_var("MISTRAL_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_mistral_api("mistral-tiny", [], 0.7, 100)
+                PROVIDER_REGISTRY["mistral"]("mistral-tiny", [], 0.7, 100)
 
             assert_missing_api_key_error(exc_info, "mistral", "MISTRAL_API_KEY")
 
@@ -50,7 +52,7 @@ class TestMistralProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_mistral_api
+        return PROVIDER_REGISTRY["mistral"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -93,7 +95,7 @@ class TestMistralEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_mistral_api("mistral-tiny", [], 0.7, 100)
+                    PROVIDER_REGISTRY["mistral"]("mistral-tiny", [], 0.7, 100)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -114,7 +116,7 @@ class TestMistralProviderIntegration:
         ]
 
         try:
-            response = call_mistral_api(
+            response = PROVIDER_REGISTRY["mistral"](
                 model="mistral-tiny",  # Use their smallest model for testing
                 messages=messages,
                 temperature=0.7,

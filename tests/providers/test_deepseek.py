@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.deepseek import call_deepseek_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestDeepSeekImports:
         """Test that DeepSeek provider module can be imported."""
         from gac.providers import deepseek  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that DeepSeek API function can be imported."""
-        from gac.providers.deepseek import call_deepseek_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "deepseek" in PROVIDER_REGISTRY
 
 
 class TestDeepSeekAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestDeepSeekAPIKeyValidation:
         """Test that DeepSeek raises error when API key is missing."""
         with temporarily_remove_env_var("DEEPSEEK_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_deepseek_api("deepseek-chat", [], 0.7, 1000)
+                PROVIDER_REGISTRY["deepseek"]("deepseek-chat", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "deepseek", "DEEPSEEK_API_KEY")
 
@@ -50,7 +52,7 @@ class TestDeepSeekProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_deepseek_api
+        return PROVIDER_REGISTRY["deepseek"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestDeepSeekEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_deepseek_api("deepseek-chat", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["deepseek"]("deepseek-chat", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -98,7 +100,7 @@ class TestDeepSeekIntegration:
             pytest.skip("DEEPSEEK_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_deepseek_api(
+        response = PROVIDER_REGISTRY["deepseek"](
             model="deepseek-chat",
             messages=messages,
             temperature=1.0,

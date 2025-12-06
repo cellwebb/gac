@@ -9,10 +9,12 @@ import pytest
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.base import (
-    MAX_ERROR_RESPONSE_LENGTH,
     AnthropicCompatibleProvider,
     OpenAICompatibleProvider,
     ProviderConfig,
+)
+from gac.providers.error_handler import (
+    MAX_ERROR_RESPONSE_LENGTH,
     sanitize_error_response,
 )
 

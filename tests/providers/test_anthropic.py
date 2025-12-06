@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.anthropic import call_anthropic_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
 
@@ -20,9 +20,11 @@ class TestAnthropicImports:
         """Test that Anthropic provider module can be imported."""
         from gac.providers import anthropic  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Anthropic API function can be imported."""
-        from gac.providers.anthropic import call_anthropic_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that provider is registered."""
+        from gac.providers import PROVIDER_REGISTRY
+
+        assert "anthropic" in PROVIDER_REGISTRY
 
 
 class TestAnthropicAPIKeyValidation:
@@ -32,7 +34,7 @@ class TestAnthropicAPIKeyValidation:
         """Test that Anthropic raises error when API key is missing."""
         with temporarily_remove_env_var("ANTHROPIC_API_KEY"):
             with pytest.raises(AIError) as exc_info:
-                call_anthropic_api("claude-3-haiku-20240307", [], 0.7, 1000)
+                PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", [], 0.7, 1000)
 
             assert_missing_api_key_error(exc_info, "anthropic", "ANTHROPIC_API_KEY")
 
@@ -50,7 +52,7 @@ class TestAnthropicProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_anthropic_api
+        return PROVIDER_REGISTRY["anthropic"]
 
     @property
     def api_key_env_var(self) -> str | None:
@@ -82,7 +84,7 @@ class TestAnthropicEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_anthropic_api("claude-3-haiku-20240307", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", [], 0.7, 1000)
 
                 # Should raise a model error for missing content
                 assert exc_info.value.error_type == "model"
@@ -97,7 +99,7 @@ class TestAnthropicEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_anthropic_api("claude-3-haiku-20240307", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", [], 0.7, 1000)
 
                 # Should raise an error for empty content array
                 assert exc_info.value.error_type == "model"
@@ -112,7 +114,7 @@ class TestAnthropicEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_anthropic_api("claude-3-haiku-20240307", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", [], 0.7, 1000)
 
                 # Should raise an error for missing text field
                 assert exc_info.value.error_type == "model"
@@ -127,7 +129,7 @@ class TestAnthropicEdgeCases:
                 mock_post.return_value = mock_response
 
                 with pytest.raises(AIError) as exc_info:
-                    call_anthropic_api("claude-3-haiku-20240307", [], 0.7, 1000)
+                    PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", [], 0.7, 1000)
 
                 assert "null content" in str(exc_info.value).lower()
 
@@ -145,7 +147,7 @@ class TestAnthropicEdgeCases:
                     {"role": "user", "content": "User message"},
                 ]
 
-                result = call_anthropic_api("claude-3-haiku-20240307", messages, 0.7, 1000)
+                result = PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", messages, 0.7, 1000)
 
                 # Verify the payload structure
                 call_args = mock_post.call_args
@@ -169,7 +171,7 @@ class TestAnthropicEdgeCases:
 
                 messages = [{"role": "user", "content": "User message"}]
 
-                result = call_anthropic_api("claude-3-haiku-20240307", messages, 0.7, 1000)
+                result = PROVIDER_REGISTRY["anthropic"]("claude-3-haiku-20240307", messages, 0.7, 1000)
 
                 # Verify the payload structure
                 call_args = mock_post.call_args
@@ -191,7 +193,7 @@ class TestAnthropicIntegration:
             pytest.skip("ANTHROPIC_API_KEY not set - skipping real API test")
 
         messages = [{"role": "user", "content": "Say 'test success' and nothing else."}]
-        response = call_anthropic_api(
+        response = PROVIDER_REGISTRY["anthropic"](
             model="claude-3-haiku-20240307", messages=messages, temperature=1.0, max_tokens=50
         )
 

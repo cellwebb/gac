@@ -11,9 +11,11 @@ import httpx
 import pytest
 
 from gac.errors import AIError
-from gac.providers.qwen import call_qwen_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_import_success
 from tests.providers.conftest import BaseProviderTest
+
+call_qwen_api = PROVIDER_REGISTRY["qwen"]
 
 
 class TestQwenImports:
@@ -23,11 +25,10 @@ class TestQwenImports:
         """Test that Qwen provider module can be imported."""
         from gac.providers import qwen  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Qwen API function can be imported and is callable."""
-        from gac.providers.qwen import call_qwen_api
-
-        assert_import_success(call_qwen_api)
+    def test_provider_in_registry(self):
+        """Test that Qwen provider is in the registry."""
+        assert "qwen" in PROVIDER_REGISTRY
+        assert_import_success(PROVIDER_REGISTRY["qwen"])
 
 
 class TestQwenOAuthValidation:
@@ -60,7 +61,7 @@ class TestQwenProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_qwen_api
+        return PROVIDER_REGISTRY["qwen"]
 
     @property
     def api_key_env_var(self) -> str | None:

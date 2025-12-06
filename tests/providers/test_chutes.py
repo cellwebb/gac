@@ -8,9 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from gac.errors import AIError
-from gac.providers.chutes import call_chutes_api
+from gac.providers import PROVIDER_REGISTRY
 from tests.provider_test_utils import assert_missing_api_key_error, temporarily_remove_env_var
 from tests.providers.conftest import BaseProviderTest
+
+call_chutes_api = PROVIDER_REGISTRY["chutes"]
 
 
 class TestChutesImports:
@@ -20,9 +22,9 @@ class TestChutesImports:
         """Test that Chutes.ai provider module can be imported."""
         from gac.providers import chutes  # noqa: F401
 
-    def test_import_api_function(self):
-        """Test that Chutes.ai API function can be imported."""
-        from gac.providers.chutes import call_chutes_api  # noqa: F401
+    def test_provider_in_registry(self):
+        """Test that Chutes.ai provider is in the registry."""
+        assert "chutes" in PROVIDER_REGISTRY
 
 
 class TestChutesAPIKeyValidation:
@@ -50,7 +52,7 @@ class TestChutesProviderMocked(BaseProviderTest):
 
     @property
     def api_function(self) -> Callable:
-        return call_chutes_api
+        return PROVIDER_REGISTRY["chutes"]
 
     @property
     def api_key_env_var(self) -> str | None:
