@@ -159,48 +159,37 @@ Issues ordered by effort (lowest hanging fruit first).
 - **Updated all test files**: Changed to use `PROVIDER_REGISTRY["provider-name"]` instead of `call_*_api`
 - **All 1105 tests pass**
 
-### 3.3 Add missing integration tests
-
-**File:** `tests/providers/test_integration.py` (new)
-
-- [ ] Create new test file with `@pytest.mark.integration` decorator
-- [ ] Add test for retry logic with simulated rate limits
-- [ ] Add test for OAuth token refresh flow
-- [ ] Add test for connection timeout recovery
-- [ ] Add test for actual API call success path
-- [ ] Document how to run integration tests
-- [ ] Add to CI as optional job
-
 ---
 
 ## Tier 4: Major Refactors (1+ days each)
 
-### 4.1 Break down main() function
+### 4.1 Break down main() function ✅
 
 **File:** `src/gac/main.py`
 
-- [ ] Analyze `main()` and identify logical sections
-- [ ] Extract `GitStateValidator` class/function
-  - [ ] Validate repo state
-  - [ ] Check staged changes
-  - [ ] Return structured git state
-- [ ] Extract `PromptBuilder` class/function
-  - [ ] Build system prompt
-  - [ ] Build user prompt from git state
-  - [ ] Handle verbose/one-liner modes
-- [ ] Extract `CommitExecutor` class/function
-  - [ ] Handle commit creation
-  - [ ] Handle amend logic
-  - [ ] Handle dry-run mode
-- [ ] Extract `GroupedCommitWorkflow` class/function
-  - [ ] Handle multi-file grouping logic
-  - [ ] Handle per-group AI calls
-- [ ] Extract `InteractiveMode` class/function
-  - [ ] Handle user prompts
-  - [ ] Handle edit/regenerate flows
-- [ ] Refactor `main()` to be thin orchestrator
-- [ ] Add unit tests for each extracted component
-- [ ] Verify integration tests still pass
+- [x] Analyze `main()` and identify logical sections
+- [x] Extract `GitStateValidator` class/function
+  - [x] Validate repo state
+  - [x] Check staged changes
+  - [x] Return structured git state
+- [x] Extract `PromptBuilder` class/function
+  - [x] Build system prompt
+  - [x] Build user prompt from git state
+  - [x] Handle verbose/one-liner modes
+- [x] Extract `CommitExecutor` class/function
+  - [x] Handle commit creation
+  - [x] Handle amend logic
+  - [x] Handle dry-run mode
+- [x] Extract `GroupedCommitWorkflow` class/function
+  - [x] Handle multi-file grouping logic
+  - [x] Handle per-group AI calls
+- [x] Extract `InteractiveMode` class/function
+  - [x] Handle user prompts
+  - [x] Handle edit/regenerate flows
+- [x] Refactor `main()` to be thin orchestrator
+- [x] Add unit tests for each extracted component
+- [x] Verify integration tests still pass
+- [x] Moved generate_contextual_questions() to InteractiveMode class for better separation of concerns
 
 ### 4.2 Replace string-based error classification
 
