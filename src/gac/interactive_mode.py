@@ -7,7 +7,6 @@ import re
 from rich.console import Console
 
 from gac.ai import generate_commit_message
-from gac.ai_utils import count_tokens
 from gac.config import GACConfig
 from gac.git_state_validator import GitState
 from gac.workflow_utils import (
@@ -170,18 +169,14 @@ class InteractiveMode:
         commit_message: str,
         conversation_messages: list[dict[str, str]],
         quiet: bool = False,
-    ) -> tuple[str, bool]:
-        """Handle confirmation loop for single commit. Returns (final_message, should_continue)."""
-        from gac.workflow_utils import display_commit_message
+    ) -> tuple[str, str]:
+        """Handle confirmation loop for single commit. Returns (final_message, decision).
 
-        # Calculate and display token usage
-        prompt_tokens = count_tokens(conversation_messages, model)
-        display_commit_message(commit_message, prompt_tokens, model, quiet)
-
+        Decision is one of: "yes", "no", "regenerate"
+        """
         if not self.config.get("require_confirmation", True):
-            return commit_message, True
+            return commit_message, "yes"
 
         decision, final_message, _ = handle_confirmation_loop(commit_message, conversation_messages, quiet, model)
 
-        should_continue = decision == "yes"
-        return final_message, should_continue
+        return final_message, decision

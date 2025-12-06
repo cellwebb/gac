@@ -52,7 +52,7 @@ def _parse_model_identifier(model: str) -> tuple[str, str]:
     return provider, model_name
 
 
-def _execute_single_commit_workflow_refactored(
+def _execute_single_commit_workflow(
     *,
     system_prompt: str,
     user_prompt: str,
@@ -127,18 +127,27 @@ def _execute_single_commit_workflow_refactored(
             print(commit_message)
             sys.exit(0)
 
+        # Display commit message panel (always show, regardless of confirmation mode)
+        if not quiet:
+            from gac.workflow_utils import display_commit_message
+
+            display_commit_message(commit_message, prompt_tokens, model, quiet)
+
         # Handle confirmation
         if require_confirmation:
-            final_message, should_continue = interactive_mode.handle_single_commit_confirmation(
+            final_message, decision = interactive_mode.handle_single_commit_confirmation(
                 model=model,
                 commit_message=commit_message,
                 conversation_messages=conversation_messages,
                 quiet=quiet,
             )
-            if should_continue:
+            if decision == "yes":
                 commit_message = final_message
                 break
-            # If user wants to regenerate, continue the loop
+            elif decision == "no":
+                console.print("[yellow]Commit aborted.[/yellow]")
+                sys.exit(0)
+            # decision == "regenerate": continue the loop
         else:
             break
 
@@ -198,7 +207,7 @@ def _handle_oauth_retry(
                 console.print("[cyan]Retrying commit...[/cyan]\n")
 
                 # Retry the commit workflow
-                _execute_single_commit_workflow_refactored(
+                _execute_single_commit_workflow(
                     system_prompt=prompts.system_prompt,
                     user_prompt=prompts.user_prompt,
                     model=model,
@@ -241,7 +250,7 @@ def _handle_oauth_retry(
             console.print("[cyan]Retrying commit...[/cyan]\n")
 
             # Retry the commit workflow
-            _execute_single_commit_workflow_refactored(
+            _execute_single_commit_workflow(
                 system_prompt=prompts.system_prompt,
                 user_prompt=prompts.user_prompt,
                 model=model,
@@ -417,7 +426,7 @@ def main(
             )
         else:
             # Execute single commit workflow
-            _execute_single_commit_workflow_refactored(
+            _execute_single_commit_workflow(
                 system_prompt=prompts.system_prompt,
                 user_prompt=prompts.user_prompt,
                 model=model,
