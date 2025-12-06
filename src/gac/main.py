@@ -5,7 +5,6 @@ prompt building, AI generation, and commit/push operations. This module contains
 
 import logging
 import sys
-from typing import Any
 
 from rich.console import Console
 
@@ -19,38 +18,15 @@ from gac.git import run_lefthook_hooks, run_pre_commit_hooks
 from gac.git_state_validator import GitState, GitStateValidator
 from gac.grouped_commit_workflow import GroupedCommitWorkflow
 from gac.interactive_mode import InteractiveMode
+from gac.oauth_retry import handle_oauth_retry
 from gac.prompt import clean_commit_message
 from gac.prompt_builder import PromptBuilder
+from gac.workflow_utils import check_token_warning, display_commit_message
 
 logger = logging.getLogger(__name__)
 
 config: GACConfig = load_config()
 console = Console()  # Initialize console globally to prevent undefined access
-
-
-def _parse_model_identifier(model: str) -> tuple[str, str]:
-    """Validate and split model identifier into provider and model name."""
-    normalized = model.strip()
-    if ":" not in normalized:
-        message = (
-            f"Invalid model format: '{model}'. Expected 'provider:model', e.g. 'openai:gpt-4o-mini'. "
-            "Use 'gac config set model <provider:model>' to update your configuration."
-        )
-        logger.error(message)
-        console.print(f"[red]{message}[/red]")
-        sys.exit(1)
-
-    provider, model_name = normalized.split(":", 1)
-    if not provider or not model_name:
-        message = (
-            f"Invalid model format: '{model}'. Both provider and model name are required "
-            "(example: 'anthropic:claude-haiku-4-5')."
-        )
-        logger.error(message)
-        console.print(f"[red]{message}[/red]")
-        sys.exit(1)
-
-    return provider, model_name
 
 
 def _execute_single_commit_workflow(
@@ -104,8 +80,6 @@ def _execute_single_commit_workflow(
             if warning_limit_val is None:
                 raise ConfigError("warning_limit_tokens configuration missing")
             warning_limit = int(warning_limit_val)
-            from gac.workflow_utils import check_token_warning
-
             if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
                 sys.exit(0)
         first_iteration = False
@@ -130,8 +104,6 @@ def _execute_single_commit_workflow(
 
         # Display commit message panel (always show, regardless of confirmation mode)
         if not quiet:
-            from gac.workflow_utils import display_commit_message
-
             display_commit_message(commit_message, prompt_tokens, model, quiet)
 
         # Handle confirmation
@@ -165,121 +137,6 @@ def _execute_single_commit_workflow(
         if push:
             logger.info("Changes pushed to remote.")
     sys.exit(0)
-
-
-def _handle_oauth_retry(
-    e: AIError,
-    prompts: Any,
-    model: str,
-    temperature: float,
-    max_output_tokens: int,
-    max_retries: int,
-    require_confirmation: bool,
-    quiet: bool,
-    no_verify: bool,
-    dry_run: bool,
-    message_only: bool,
-    push: bool,
-    show_prompt: bool,
-    hook_timeout: int,
-    interactive: bool,
-    commit_executor: CommitExecutor,
-    interactive_mode: InteractiveMode,
-    git_state: GitState,
-    hint: str,
-) -> None:
-    """Handle OAuth retry logic for expired tokens."""
-    logger.error(str(e))
-
-    # Check if this is a Claude Code OAuth token expiration
-    if (
-        e.error_type == "authentication"
-        and model.startswith("claude-code:")
-        and ("expired" in str(e).lower() or "oauth" in str(e).lower())
-    ):
-        console.print("[yellow]⚠ Claude Code OAuth token has expired[/yellow]")
-        console.print("[cyan]🔐 Starting automatic re-authentication...[/cyan]")
-
-        try:
-            from gac.oauth.claude_code import authenticate_and_save
-
-            if authenticate_and_save(quiet=quiet):
-                console.print("[green]✓ Re-authentication successful![/green]")
-                console.print("[cyan]Retrying commit...[/cyan]\n")
-
-                # Retry the commit workflow
-                _execute_single_commit_workflow(
-                    system_prompt=prompts.system_prompt,
-                    user_prompt=prompts.user_prompt,
-                    model=model,
-                    temperature=temperature,
-                    max_output_tokens=max_output_tokens,
-                    max_retries=max_retries,
-                    require_confirmation=require_confirmation,
-                    quiet=quiet,
-                    no_verify=no_verify,
-                    dry_run=dry_run,
-                    message_only=message_only,
-                    push=push,
-                    show_prompt=show_prompt,
-                    hook_timeout=hook_timeout,
-                    interactive=interactive,
-                    commit_executor=commit_executor,
-                    interactive_mode=interactive_mode,
-                    git_state=git_state,
-                    hint=hint,
-                )
-            else:
-                console.print("[red]Re-authentication failed.[/red]")
-                console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
-                sys.exit(1)
-        except (AIError, ConfigError, OSError) as auth_error:
-            console.print(f"[red]Re-authentication error: {auth_error}[/red]")
-            console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
-            sys.exit(1)
-    # Check if this is a Qwen OAuth token expiration
-    elif e.error_type == "authentication" and model.startswith("qwen:"):
-        console.print("[yellow]⚠ Qwen authentication failed[/yellow]")
-        console.print("[cyan]🔐 Starting automatic re-authentication...[/cyan]")
-
-        try:
-            from gac.oauth import QwenOAuthProvider, TokenStore
-
-            oauth_provider = QwenOAuthProvider(TokenStore())
-            oauth_provider.initiate_auth(open_browser=True)
-            console.print("[green]✓ Re-authentication successful![/green]")
-            console.print("[cyan]Retrying commit...[/cyan]\n")
-
-            # Retry the commit workflow
-            _execute_single_commit_workflow(
-                system_prompt=prompts.system_prompt,
-                user_prompt=prompts.user_prompt,
-                model=model,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                max_retries=max_retries,
-                require_confirmation=require_confirmation,
-                quiet=quiet,
-                no_verify=no_verify,
-                dry_run=dry_run,
-                message_only=message_only,
-                push=push,
-                show_prompt=show_prompt,
-                hook_timeout=hook_timeout,
-                interactive=interactive,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint=hint,
-            )
-        except (AIError, ConfigError, OSError) as auth_error:
-            console.print(f"[red]Re-authentication error: {auth_error}[/red]")
-            console.print("[yellow]Run 'gac auth qwen login' to re-authenticate manually.[/yellow]")
-            sys.exit(1)
-    else:
-        # Non-Claude Code/Qwen error or non-auth error
-        console.print(f"[red]Failed to generate commit message: {str(e)}[/red]")
-        sys.exit(1)
 
 
 def main(
@@ -449,26 +306,26 @@ def main(
                 hint=hint,
             )
     except AIError as e:
-        _handle_oauth_retry(
-            e,
-            prompts,
-            model,
-            temperature,
-            max_output_tokens,
-            max_retries,
-            require_confirmation,
-            quiet,
-            no_verify,
-            dry_run,
-            message_only,
-            push,
-            show_prompt,
-            hook_timeout,
-            interactive,
-            commit_executor,
-            interactive_mode,
-            git_state,
-            hint,
+        handle_oauth_retry(
+            e=e,
+            prompts=prompts,
+            model=model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+            max_retries=max_retries,
+            require_confirmation=require_confirmation,
+            quiet=quiet,
+            no_verify=no_verify,
+            dry_run=dry_run,
+            message_only=message_only,
+            push=push,
+            show_prompt=show_prompt,
+            hook_timeout=hook_timeout,
+            interactive=interactive,
+            commit_executor=commit_executor,
+            interactive_mode=interactive_mode,
+            git_state=git_state,
+            hint=hint,
         )
 
 
