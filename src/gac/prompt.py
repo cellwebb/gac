@@ -835,23 +835,6 @@ def _fix_double_prefix(message: str) -> str:
     return message
 
 
-def _ensure_conventional_prefix(message: str) -> str:
-    """Ensure the message starts with a conventional commit prefix.
-
-    Args:
-        message: The message to check
-
-    Returns:
-        Message with conventional prefix ensured
-    """
-    if not any(
-        message.strip().startswith(prefix + ":") or message.strip().startswith(prefix + "(")
-        for prefix in CommitMessageConstants.CONVENTIONAL_PREFIXES
-    ):
-        message = f"chore: {message.strip()}"
-    return message
-
-
 def _normalize_whitespace(message: str) -> str:
     """Normalize whitespace, ensuring no more than one blank line between paragraphs.
 
