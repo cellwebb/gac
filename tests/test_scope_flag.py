@@ -44,7 +44,7 @@ class TestScopeFlag:
             # Add other specific commands if main uses them before prompt
             return "mock git output"
 
-        monkeypatch.setattr("gac.main.run_git_command", mock_run_git_command)
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
         # Mock both generate_commit_message and clean_commit_message to handle the new flow
@@ -76,7 +76,7 @@ class TestScopeFlag:
         def mock_get_staged_files(existing_only=False):
             return ["file1.py"]
 
-        monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
 
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
@@ -209,7 +209,7 @@ class TestScopeIntegration:
 
         # Mock both the git module and main module's run_git_command
         monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
-        monkeypatch.setattr("gac.main.run_git_command", git_spy.run_git_command)
+        monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
 
         # Mock AI to return message with scope
         call_count = 0
@@ -253,7 +253,7 @@ class TestScopeIntegration:
                 return []  # No files exist on disk
             return ["file1.py"]
 
-        monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
 
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)

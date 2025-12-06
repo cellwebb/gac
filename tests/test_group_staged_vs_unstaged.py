@@ -13,7 +13,7 @@ def skip_git_hooks(monkeypatch):
     """Ensure group staging tests don't call real git hooks."""
     monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
-    monkeypatch.setattr("gac.main.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+    monkeypatch.setattr("gac.git.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
 
 
 def test_group_without_add_all_only_shows_staged():
@@ -22,8 +22,8 @@ def test_group_without_add_all_only_shows_staged():
     response = json.dumps({"commits": [{"files": ["file1.py"], "message": "feat: update"}]})
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["file1.py"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.main.get_staged_status", return_value=staged_status) as mock_status,
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
@@ -57,8 +57,8 @@ def test_group_with_add_all_stages_everything():
         return "/fake/repo" if args == ["rev-parse", "--show-toplevel"] else ""
 
     with (
-        patch("gac.main.run_git_command", side_effect=mock_git_cmd),
-        patch("gac.main.get_staged_files", return_value=["file1.py", "file2.py"]),
+        patch("gac.git.run_git_command", side_effect=mock_git_cmd),
+        patch("gac.git.get_staged_files", return_value=["file1.py", "file2.py"]),
         patch("gac.main.get_staged_status", return_value=staged_status),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
@@ -75,8 +75,8 @@ def test_normal_mode_uses_staged_status():
     """Normal mode also uses staged-only status."""
     status = "Changes to be committed:\n\tmodified:   file1.py"
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["file1.py"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.main.get_staged_status", return_value=status) as mock_status,
         patch("gac.main.build_prompt", return_value=("system", "user")),
         patch("gac.main.generate_commit_message", return_value="feat: update"),

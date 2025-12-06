@@ -46,14 +46,14 @@ class TestTokenUsageDisplay:
             return "mock git output"
 
         mock_run_git_command.last_commit_message = None
-        monkeypatch.setattr("gac.main.run_git_command", mock_run_git_command)
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
         # Mock staged files
         def mock_get_staged_files(existing_only=False):
             return ["file.py"]
 
-        monkeypatch.setattr("gac.main.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
 
         # Mock clean_commit_message to return the message as-is

@@ -14,7 +14,7 @@ def skip_git_hooks(monkeypatch):
     """Avoid invoking lefthook/pre-commit binaries during unit tests."""
     monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
-    monkeypatch.setattr("gac.main.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+    monkeypatch.setattr("gac.git.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
 
 
 def test_group_with_no_staged_changes(tmp_path, monkeypatch):
@@ -22,8 +22,8 @@ def test_group_with_no_staged_changes(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     with (
-        patch("gac.main.run_git_command", return_value=str(tmp_path)),
-        patch("gac.main.get_staged_files", return_value=[]),
+        patch("gac.git.run_git_command", return_value=str(tmp_path)),
+        patch("gac.git.get_staged_files", return_value=[]),
         patch("gac.main.console.print") as mock_print,
     ):
         with pytest.raises(SystemExit) as exc:
@@ -44,8 +44,8 @@ def test_group_json_parsing_success():
     )
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["src/file1.py", "tests/test_file1.py", "README.md"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["src/file1.py", "tests/test_file1.py", "README.md"]),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
         patch("gac.main.click.prompt", return_value="y"),
@@ -69,8 +69,8 @@ def test_group_json_parsing_success():
 def test_group_validation_errors(invalid_data):
     """Validation catches various structural errors."""
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["file.py"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["file.py"]),
         patch("gac.ai.generate_grouped_commits", return_value=invalid_data),
         patch("gac.main.console.print"),
     ):
@@ -84,8 +84,8 @@ def test_group_dry_run():
     response = json.dumps({"commits": [{"files": ["file1.py"], "message": "feat: add"}]})
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["file1.py"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print") as mock_print,
         patch("gac.main.execute_commit") as mock_commit,
@@ -109,8 +109,8 @@ def test_group_retries_when_files_missing():
     )
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=["a.py", "b.py"]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=["a.py", "b.py"]),
         patch("gac.ai.generate_grouped_commits", side_effect=[first, second]) as mock_gen,
         patch("gac.main.console.print"),
         patch("gac.main.execute_commit") as mock_commit,
@@ -137,8 +137,8 @@ def test_group_restores_staging_on_first_commit_failure():
     original_files = ["a.py", "b.py"]
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=original_files),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=original_files),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
         patch("gac.main.execute_commit", side_effect=GitError("Commit failed")) as mock_commit,
@@ -170,8 +170,8 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
             raise GitError("Second commit failed")
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=original_files),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=original_files),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
         patch("gac.main.execute_commit", side_effect=commit_side_effect) as mock_commit,
@@ -198,9 +198,9 @@ def test_group_displays_file_lists():
     )
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
         patch(
-            "gac.main.get_staged_files",
+            "gac.git.get_staged_files",
             return_value=["src/auth.py", "src/login.py", "tests/test_auth.py", "README.md", "docs/auth.md"],
         ),
         patch("gac.ai.generate_grouped_commits", return_value=response),
@@ -247,8 +247,8 @@ def test_group_token_scaling(num_files, expected_multiplier):
     }
 
     with (
-        patch("gac.main.run_git_command", return_value="/fake/repo"),
-        patch("gac.main.get_staged_files", return_value=[f"file{i}.py" for i in range(num_files)]),
+        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.get_staged_files", return_value=[f"file{i}.py" for i in range(num_files)]),
         patch("gac.main.config", mock_config),
         patch("gac.ai.generate_grouped_commits", return_value=response) as mock_gen,
         patch("gac.main.console.print"),
