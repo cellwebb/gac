@@ -56,30 +56,32 @@ class TestParseModelIdentifier:
 class TestMainIntegration:
     """Test main function integration."""
 
+    @patch("gac.main.config")
     @patch("gac.main.GitStateValidator")
     @patch("gac.main.PromptBuilder")
     @patch("gac.main.CommitExecutor")
     @patch("gac.main.InteractiveMode")
     @patch("gac.main.GroupedCommitWorkflow")
-    @patch("gac.main.load_config")
     def test_main_function_initializes_components(
         self,
-        mock_load_config,
         mock_grouped_workflow,
         mock_interactive_mode,
         mock_commit_executor,
         mock_prompt_builder,
         mock_git_validator,
+        mock_config,
     ):
         """Test that main function properly initializes all components."""
-        # Mock config
-        mock_config = {
+        # Mock config with required fields
+        config_values = {
             "model": "openai:gpt-4o-mini",
             "temperature": 0.1,
             "max_output_tokens": 4096,
             "max_retries": 3,
+            "warning_limit_tokens": 500,
         }
-        mock_load_config.return_value = mock_config
+        mock_config.__getitem__.side_effect = lambda key: config_values.get(key)
+        mock_config.get.side_effect = lambda key, default=None: config_values.get(key, default)
 
         # Mock git validator
         mock_git_state = mock_git_validator.return_value.get_git_state.return_value
