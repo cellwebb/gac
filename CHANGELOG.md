@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.10.5] - 2025-12-06
+
+### Changed
+
+- Streamlined release workflow by implementing kittylog tool for improved changelog management and automated version tracking
+
 ## [3.10.4] - 2025-12-06
 
 ### Fixed
