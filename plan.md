@@ -88,15 +88,23 @@ Issues ordered by effort (lowest hanging fruit first).
 - Updated call sites in `main.py` and `cli.py` with proper type annotations
 - All files pass mypy type checking
 
-### 2.3 Sanitize API responses in error messages
+### 2.3 Sanitize API responses in error messages ✅
 
 **File:** `src/gac/providers/base.py:173`
 
-- [ ] Create `sanitize_error_response(text: str) -> str` function
-- [ ] Truncate to max 200 characters
-- [ ] Add regex patterns to redact potential API keys/tokens
-- [ ] Update error message construction to use sanitizer
-- [ ] Add tests for sanitization logic
+- [x] Create `sanitize_error_response(text: str) -> str` function
+- [x] Truncate to max 200 characters
+- [x] Add regex patterns to redact potential API keys/tokens
+- [x] Update error message construction to use sanitizer
+- [x] Add tests for sanitization logic
+
+**Notes:**
+
+- Added `sanitize_error_response()` function with 9 sensitive patterns (OpenAI, Anthropic, GitHub, Google, Stripe, Slack, JWT, Bearer, generic alphanumeric)
+- Truncates to 200 characters after redaction
+- Updated `_make_http_request()` to sanitize HTTP error responses
+- Added 17 comprehensive tests covering all patterns and edge cases
+- All 1104 tests pass
 
 ---
 
