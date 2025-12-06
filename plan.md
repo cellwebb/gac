@@ -191,23 +191,23 @@ Issues ordered by effort (lowest hanging fruit first).
 - [x] Verify integration tests still pass
 - [x] Moved generate_contextual_questions() to InteractiveMode class for better separation of concerns
 
-### 4.2 Replace string-based error classification
+### 4.2 Replace string-based error classification ✅
 
-**File:** `src/gac/ai_utils.py:78-98`
+**Status:** Completed (alternative approach chosen)
 
-- [ ] Create exception hierarchy in `errors.py`:
-  - [ ] `AIAuthError(AIError)` - API key issues
-  - [ ] `AIRateLimitError(AIError)` - rate limits
-  - [ ] `AIConnectionError(AIError)` - network issues
-  - [ ] `AIModelError(AIError)` - model not found/invalid
-  - [ ] `AIContentError(AIError)` - content policy violations
-- [ ] Update `error_handler.py` decorator to raise specific types
-- [ ] Update each provider to raise appropriate exception types
-- [ ] Remove `_classify_error()` function
-- [ ] Update retry logic to use `isinstance()` checks
-- [ ] Update all error handling call sites
-- [ ] Add comprehensive tests for each error type
-- [ ] Document exception hierarchy
+**Original plan:** Create exception subclass hierarchy (`AIAuthError`, `AIRateLimitError`, etc.)
+
+**Actual implementation:** Used factory methods on single `AIError` class instead of subclasses.
+This was a deliberate design choice documented in `errors.py:116-117`:
+
+> "Simplified error hierarchy - we use a single AIError class with error codes instead of multiple subclasses for better maintainability"
+
+**What was done:**
+
+- [x] `AIError` class has factory methods: `.authentication_error()`, `.rate_limit_error()`, `.connection_error()`, `.timeout_error()`, `.model_error()`
+- [x] `@handle_provider_errors` decorator in `error_handler.py` classifies errors by HTTP status codes (401→auth, 429→rate_limit, 404→model, 5xx→connection)
+- [x] Removed dead `_classify_error()` function from `ai_utils.py` (was never called in production)
+- [x] Removed corresponding tests from `test_ai_utils.py`
 
 ### 4.3 Complete type annotation coverage
 
