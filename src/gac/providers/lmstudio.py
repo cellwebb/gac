@@ -12,7 +12,7 @@ class LMStudioProvider(OpenAICompatibleProvider):
     config = ProviderConfig(
         name="LM Studio",
         api_key_env="LMSTUDIO_API_KEY",
-        base_url="http://localhost:1234/v1/chat/completions",
+        base_url="http://localhost:1234/v1",
     )
 
     def __init__(self, config: ProviderConfig):
@@ -21,7 +21,7 @@ class LMStudioProvider(OpenAICompatibleProvider):
         # Allow URL override via environment variable
         api_url = os.getenv("LMSTUDIO_API_URL", "http://localhost:1234")
         api_url = api_url.rstrip("/")
-        self.config.base_url = f"{api_url}/v1/chat/completions"
+        self.config.base_url = f"{api_url}/v1"
 
     def _get_api_key(self) -> str:
         """Get optional API key for LM Studio."""
@@ -41,6 +41,10 @@ class LMStudioProvider(OpenAICompatibleProvider):
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
         return headers
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get LM Studio API URL with /chat/completions endpoint."""
+        return f"{self.config.base_url}/chat/completions"
 
     def _build_request_body(
         self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs

@@ -16,8 +16,12 @@ class ReplicateProvider(GenericHTTPProvider):
     config = ProviderConfig(
         name="Replicate",
         api_key_env="REPLICATE_API_TOKEN",
-        base_url="https://api.replicate.com/v1/predictions",
+        base_url="https://api.replicate.com/v1",
     )
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get Replicate API URL with /predictions endpoint."""
+        return f"{self.config.base_url}/predictions"
 
     def _build_headers(self) -> dict[str, str]:
         """Build headers with Token-based authorization."""

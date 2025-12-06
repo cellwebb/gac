@@ -12,8 +12,12 @@ class StreamlakeProvider(OpenAICompatibleProvider):
     config = ProviderConfig(
         name="StreamLake",
         api_key_env="STREAMLAKE_API_KEY",
-        base_url="https://vanchin.streamlake.ai/api/gateway/v1/endpoints/chat/completions",
+        base_url="https://vanchin.streamlake.ai/api/gateway/v1/endpoints",
     )
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get StreamLake API URL with /chat/completions endpoint."""
+        return f"{self.config.base_url}/chat/completions"
 
     def _get_api_key(self) -> str:
         """Get API key from environment with fallback to VC_API_KEY."""

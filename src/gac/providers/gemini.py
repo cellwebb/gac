@@ -12,14 +12,14 @@ class GeminiProvider(GenericHTTPProvider):
     config = ProviderConfig(
         name="Gemini",
         api_key_env="GEMINI_API_KEY",
-        base_url="https://generativelanguage.googleapis.com/v1beta/models",
+        base_url="https://generativelanguage.googleapis.com/v1beta",
     )
 
     def _get_api_url(self, model: str | None = None) -> str:
         """Build Gemini URL with model in path."""
         if model is None:
             return super()._get_api_url(model)
-        return f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        return f"{self.config.base_url}/models/{model}:generateContent"
 
     def _build_headers(self) -> dict[str, str]:
         """Build headers with Google API key."""

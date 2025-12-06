@@ -4,7 +4,7 @@ from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
 
-QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
+QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1"
 
 
 class QwenProvider(OpenAICompatibleProvider):
@@ -19,8 +19,7 @@ class QwenProvider(OpenAICompatibleProvider):
     def __init__(self, config: ProviderConfig):
         """Initialize with OAuth authentication."""
         super().__init__(config)
-        self._auth_token, resolved_url = self._get_oauth_token()
-        self.config.base_url = resolved_url
+        self._auth_token, self._resolved_base_url = self._get_oauth_token()
 
     def _get_api_key(self) -> str:
         """Return placeholder for parent class compatibility (OAuth is used instead)."""
@@ -42,12 +41,12 @@ class QwenProvider(OpenAICompatibleProvider):
             if resource_url:
                 if not resource_url.startswith(("http://", "https://")):
                     resource_url = f"https://{resource_url}"
-                if not resource_url.endswith("/chat/completions"):
-                    resource_url = resource_url.rstrip("/") + "/v1/chat/completions"
-                api_url = resource_url
+                if not resource_url.endswith("/v1"):
+                    resource_url = resource_url.rstrip("/") + "/v1"
+                base_url = resource_url
             else:
-                api_url = QWEN_DEFAULT_API_URL
-            return token["access_token"], api_url
+                base_url = QWEN_DEFAULT_API_URL
+            return token["access_token"], base_url
 
         raise AIError.authentication_error("Qwen OAuth token not found. Run 'gac auth qwen login' to authenticate.")
 
@@ -59,3 +58,7 @@ class QwenProvider(OpenAICompatibleProvider):
             del headers["Authorization"]
         headers["Authorization"] = f"Bearer {self._auth_token}"
         return headers
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get Qwen API URL with /chat/completions endpoint."""
+        return f"{self._resolved_base_url}/chat/completions"
