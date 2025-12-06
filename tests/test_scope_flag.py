@@ -104,7 +104,7 @@ class TestScopeFlag:
             captured_prompt = kwargs
             return ("system prompt", "user prompt")
 
-        monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
+        monkeypatch.setattr("gac.prompt.build_prompt", capture_prompt)
 
         result = runner.invoke(cli, flag + ["--no-verify"])
 
@@ -121,7 +121,7 @@ class TestScopeFlag:
             captured_prompt = kwargs
             return ("system prompt", "user prompt")
 
-        monkeypatch.setattr("gac.main.build_prompt", capture_prompt)
+        monkeypatch.setattr("gac.prompt.build_prompt", capture_prompt)
 
         result = runner.invoke(cli, ["--one-liner", "--scope", "--hint", "Update documentation", "--no-verify"])
 

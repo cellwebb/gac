@@ -70,7 +70,7 @@ class TestPromptBuilder:
         mock_build_group_prompt.assert_called_once()
 
     @patch("gac.prompt_builder.Panel")
-    @patch("rich.console.Console")
+    @patch("gac.prompt_builder.Console")
     def test_display_prompts(self, mock_console, mock_panel, builder):
         """Test displaying prompts."""
         mock_console_instance = Mock()

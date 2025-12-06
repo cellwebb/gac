@@ -59,23 +59,23 @@ class TestMessageOnlyFlag:
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate_commit_message)
 
         # Mock clean_commit_message
-        monkeypatch.setattr("gac.main.clean_commit_message", lambda x: x)
+        monkeypatch.setattr("gac.prompt.clean_commit_message", lambda x: x)
 
         # Mock check_token_warning
-        monkeypatch.setattr("gac.main.check_token_warning", lambda *args, **kwargs: True)
+        monkeypatch.setattr("gac.workflow_utils.check_token_warning", lambda *args, **kwargs: True)
 
         # Mock scan_staged_diff
-        monkeypatch.setattr("gac.main.scan_staged_diff", lambda x: [])
+        monkeypatch.setattr("gac.security.scan_staged_diff", lambda x: [])
 
         # Mock run_lefthook_hooks and run_pre_commit_hooks
         monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *args, **kwargs: True)
         monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *args, **kwargs: True)
 
         # Mock preprocess_diff
-        monkeypatch.setattr("gac.main.preprocess_diff", lambda *args, **kwargs: "diff content")
+        monkeypatch.setattr("gac.preprocess.preprocess_diff", lambda *args, **kwargs: "diff content")
 
         # Mock build_prompt
-        monkeypatch.setattr("gac.main.build_prompt", lambda *args, **kwargs: ("system", "user"))
+        monkeypatch.setattr("gac.prompt.build_prompt", lambda *args, **kwargs: ("system", "user"))
 
         def mock_count_tokens(*args, **kwargs):
             return 100
