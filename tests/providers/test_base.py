@@ -254,11 +254,16 @@ class TestAnthropicCompatibleProvider:
             assert all(msg["role"] != "system" for msg in body["messages"])
 
 
-class TestErrorHandling:
-    """Test error handling in providers."""
+class TestErrorPropagation:
+    """Test that exceptions propagate from base providers to decorator.
 
-    def test_http_error_handling(self):
-        """Test that HTTP errors are properly converted."""
+    Error handling is centralized in the @handle_provider_errors decorator.
+    Base provider classes should let httpx exceptions propagate up so the
+    decorator can convert them to appropriate AIError types.
+    """
+
+    def test_http_error_propagates(self):
+        """Test that HTTP errors propagate from base provider."""
         provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
 
         with (
@@ -270,7 +275,7 @@ class TestErrorHandling:
             mock_response.text = "Internal server error"
             mock_post.side_effect = httpx.HTTPStatusError("500 error", request=MagicMock(), response=mock_response)
 
-            with pytest.raises(AIError):
+            with pytest.raises(httpx.HTTPStatusError):
                 provider.generate(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "user", "content": "test"}],
@@ -278,8 +283,8 @@ class TestErrorHandling:
                     max_tokens=100,
                 )
 
-    def test_timeout_error_handling(self):
-        """Test that timeout errors are properly converted."""
+    def test_timeout_error_propagates(self):
+        """Test that timeout errors propagate from base provider."""
         provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
 
         with (
@@ -288,7 +293,7 @@ class TestErrorHandling:
         ):
             mock_post.side_effect = httpx.TimeoutException("Request timeout")
 
-            with pytest.raises(AIError) as exc_info:
+            with pytest.raises(httpx.TimeoutException):
                 provider.generate(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "user", "content": "test"}],
@@ -296,10 +301,8 @@ class TestErrorHandling:
                     max_tokens=100,
                 )
 
-            assert "timed out" in str(exc_info.value).lower() or "timeout" in str(exc_info.value).lower()
-
-    def test_connection_error_handling(self):
-        """Test that connection errors are properly converted."""
+    def test_connection_error_propagates(self):
+        """Test that connection errors propagate from base provider."""
         provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
 
         with (
@@ -308,64 +311,13 @@ class TestErrorHandling:
         ):
             mock_post.side_effect = httpx.RequestError("Connection failed")
 
-            with pytest.raises(AIError) as exc_info:
+            with pytest.raises(httpx.RequestError):
                 provider.generate(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "user", "content": "test"}],
                     temperature=0.7,
                     max_tokens=100,
                 )
-
-            assert "connection" in str(exc_info.value).lower()
-
-    def test_http_error_sanitizes_response(self):
-        """Test that HTTP error responses are sanitized."""
-        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
-
-        with (
-            patch("gac.providers.base.httpx.post") as mock_post,
-            patch.dict(os.environ, {"SIMPLE_API_KEY": "test-key"}),
-        ):
-            mock_response = MagicMock()
-            mock_response.status_code = 401
-            mock_response.text = "Invalid API key: sk-abcdefghijklmnopqrstuvwxyz1234567890abcd"
-            mock_post.side_effect = httpx.HTTPStatusError("401 error", request=MagicMock(), response=mock_response)
-
-            with pytest.raises(AIError) as exc_info:
-                provider.generate(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": "test"}],
-                    temperature=0.7,
-                    max_tokens=100,
-                )
-
-            error_message = str(exc_info.value)
-            assert "sk-abcdefghijklmnopqrstuvwxyz1234567890abcd" not in error_message
-            assert "[REDACTED]" in error_message
-
-    def test_http_error_truncates_long_response(self):
-        """Test that long HTTP error responses are truncated."""
-        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
-
-        with (
-            patch("gac.providers.base.httpx.post") as mock_post,
-            patch.dict(os.environ, {"SIMPLE_API_KEY": "test-key"}),
-        ):
-            mock_response = MagicMock()
-            mock_response.status_code = 500
-            mock_response.text = "Error message. " * 50
-            mock_post.side_effect = httpx.HTTPStatusError("500 error", request=MagicMock(), response=mock_response)
-
-            with pytest.raises(AIError) as exc_info:
-                provider.generate(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": "test"}],
-                    temperature=0.7,
-                    max_tokens=100,
-                )
-
-            error_message = str(exc_info.value)
-            assert "..." in error_message
 
 
 class TestSanitizeErrorResponse:

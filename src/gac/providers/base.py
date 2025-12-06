@@ -192,7 +192,11 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         return self.config.base_url
 
     def _make_http_request(self, url: str, body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
-        """Make the HTTP request with standardized error handling.
+        """Make the HTTP request.
+
+        Error handling is delegated to the @handle_provider_errors decorator
+        which wraps the provider's API function. This avoids duplicate exception
+        handling and ensures consistent error classification across all providers.
 
         Args:
             url: API URL
@@ -203,29 +207,22 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             Response JSON dictionary
 
         Raises:
-            AIError: For any API-related errors
+            httpx.HTTPStatusError: For HTTP errors (handled by decorator)
+            httpx.TimeoutException: For timeout errors (handled by decorator)
+            httpx.RequestError: For network errors (handled by decorator)
         """
-        try:
-            response = httpx.post(url, json=body, headers=headers, timeout=self.config.timeout, verify=get_ssl_verify())
-            response.raise_for_status()
-            return response.json()
-
-        except httpx.HTTPStatusError as e:
-            sanitized_response = sanitize_error_response(e.response.text)
-            raise AIError.model_error(
-                f"{self.config.name} AI API error: HTTP {e.response.status_code} - {sanitized_response}"
-            ) from e
-        except httpx.TimeoutException as e:
-            raise AIError.timeout_error(f"{self.config.name} API request timed out") from e
-        except httpx.RequestError as e:
-            raise AIError.connection_error(f"{self.config.name} API network error: {e}") from e
-        except Exception as e:
-            raise AIError.model_error(f"Error calling {self.config.name} AI API: {e!s}") from e
+        response = httpx.post(url, json=body, headers=headers, timeout=self.config.timeout, verify=get_ssl_verify())
+        response.raise_for_status()
+        return response.json()
 
     def generate(
         self, model: str, messages: list[dict], temperature: float = 0.7, max_tokens: int = 1024, **kwargs
     ) -> str:
         """Generate text using the AI provider.
+
+        Error handling is delegated to the @handle_provider_errors decorator
+        which wraps the provider's API function. This ensures consistent error
+        classification across all providers.
 
         Args:
             model: Model name to use
@@ -238,31 +235,14 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             Generated text content
 
         Raises:
-            AIError: For any API-related errors
+            AIError: For any API-related errors (via decorator)
         """
         logger.debug(f"Generating with {self.config.name} provider (model={model})")
 
         # Build request components
-        try:
-            url = self._get_api_url(model)
-        except AIError:
-            raise
-        except Exception as e:
-            raise AIError.model_error(f"Error calling {self.config.name} AI API: {e!s}") from e
-
-        try:
-            headers = self._build_headers()
-        except AIError:
-            raise
-        except Exception as e:
-            raise AIError.model_error(f"Error calling {self.config.name} AI API: {e!s}") from e
-
-        try:
-            body = self._build_request_body(messages, temperature, max_tokens, model, **kwargs)
-        except AIError:
-            raise
-        except Exception as e:
-            raise AIError.model_error(f"Error calling {self.config.name} AI API: {e!s}") from e
+        url = self._get_api_url(model)
+        headers = self._build_headers()
+        body = self._build_request_body(messages, temperature, max_tokens, model, **kwargs)
 
         # Add model to body if not already present
         if "model" not in body:

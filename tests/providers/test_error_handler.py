@@ -154,3 +154,65 @@ class TestErrorHandler:
 
         error = exc_info.value
         assert error.__cause__ is not None
+
+    def test_error_types_are_correct(self):
+        """Test that error types are correctly set."""
+        with pytest.raises(AIError) as exc_info:
+            _function_auth_error()
+        assert exc_info.value.error_type == "authentication"
+
+        with pytest.raises(AIError) as exc_info:
+            _function_rate_limit_error()
+        assert exc_info.value.error_type == "rate_limit"
+
+        with pytest.raises(AIError) as exc_info:
+            _function_not_found_error()
+        assert exc_info.value.error_type == "model"
+
+        with pytest.raises(AIError) as exc_info:
+            _function_server_error()
+        assert exc_info.value.error_type == "connection"
+
+        with pytest.raises(AIError) as exc_info:
+            _function_timeout_error()
+        assert exc_info.value.error_type == "timeout"
+
+        with pytest.raises(AIError) as exc_info:
+            _function_connection_error()
+        assert exc_info.value.error_type == "connection"
+
+
+@handle_provider_errors("TestProvider")
+def _function_http_error_with_api_key():
+    """Helper function that raises HTTP error with API key in response."""
+    mock_response = MagicMock()
+    mock_response.status_code = 400
+    mock_response.text = "Invalid API key: sk-abcdefghijklmnopqrstuvwxyz1234567890abcd"
+    raise httpx.HTTPStatusError("400", request=MagicMock(), response=mock_response)
+
+
+@handle_provider_errors("TestProvider")
+def _function_reraise_aierror():
+    """Helper function that raises AIError directly."""
+    raise AIError.authentication_error("Direct AIError")
+
+
+class TestErrorHandlerSanitization:
+    """Test error response sanitization in the decorator."""
+
+    def test_api_key_redacted_in_error(self):
+        """Test that API keys are redacted from HTTP error responses."""
+        with pytest.raises(AIError) as exc_info:
+            _function_http_error_with_api_key()
+
+        error_message = str(exc_info.value)
+        assert "sk-abcdefghijklmnopqrstuvwxyz1234567890abcd" not in error_message
+        assert "[REDACTED]" in error_message
+
+    def test_aierror_passthrough(self):
+        """Test that AIError is re-raised without wrapping."""
+        with pytest.raises(AIError) as exc_info:
+            _function_reraise_aierror()
+
+        assert "Direct AIError" in str(exc_info.value)
+        assert exc_info.value.error_type == "authentication"
