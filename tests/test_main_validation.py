@@ -46,3 +46,29 @@ def test_single_workflow_invalid_model_exits_with_message():
     assert exc.value.code == 1
     printed = " ".join(str(call) for call in mock_print.call_args_list)
     assert "Invalid model format" in printed
+
+
+def test_trailing_colon_model_exits_with_message():
+    """Test that 'openai:' (trailing colon, empty model name) is rejected."""
+    kwargs = _workflow_kwargs(model="openai:")
+
+    with patch("gac.main.console.print") as mock_print, pytest.raises(SystemExit) as exc:
+        execute_single_commit_workflow(**kwargs)
+
+    assert exc.value.code == 1
+    printed = " ".join(str(call) for call in mock_print.call_args_list)
+    assert "Invalid model format" in printed
+    assert "provider and model name are required" in printed
+
+
+def test_leading_colon_model_exits_with_message():
+    """Test that ':gpt-4' (leading colon, empty provider) is rejected."""
+    kwargs = _workflow_kwargs(model=":gpt-4")
+
+    with patch("gac.main.console.print") as mock_print, pytest.raises(SystemExit) as exc:
+        execute_single_commit_workflow(**kwargs)
+
+    assert exc.value.code == 1
+    printed = " ".join(str(call) for call in mock_print.call_args_list)
+    assert "Invalid model format" in printed
+    assert "provider and model name are required" in printed
