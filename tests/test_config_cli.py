@@ -17,24 +17,24 @@ def test_config_cli_show_set_get_unset(monkeypatch):
         fake_path = Path(tmpdir) / ".gac.env"
         with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
             # Test 'set'
-            result = runner.invoke(config, ["set", "TEST_KEY", "test_value"])
+            result = runner.invoke(config, ["set", "TEST_VAR", "test_value"])
             assert result.exit_code == 0
-            assert "Set TEST_KEY" in result.output
+            assert "Set TEST_VAR" in result.output
             # Test 'get'
-            result = runner.invoke(config, ["get", "TEST_KEY"])
+            result = runner.invoke(config, ["get", "TEST_VAR"])
             assert result.exit_code == 0
             assert "test_value" in result.output
             # Test 'show'
             result = runner.invoke(config, ["show"])
             assert result.exit_code == 0
-            assert "TEST_KEY='test_value'" in result.output
+            assert "TEST_VAR=test_value" in result.output
             # Test 'unset'
-            result = runner.invoke(config, ["unset", "TEST_KEY"])
+            result = runner.invoke(config, ["unset", "TEST_VAR"])
             assert result.exit_code == 0
-            assert "Unset TEST_KEY" in result.output
-            # Should not find TEST_KEY now
-            os.environ.pop("TEST_KEY", None)
-            result = runner.invoke(config, ["get", "TEST_KEY"])
+            assert "Unset TEST_VAR" in result.output
+            # Should not find TEST_VAR now
+            os.environ.pop("TEST_VAR", None)
+            result = runner.invoke(config, ["get", "TEST_VAR"])
             assert result.exit_code == 0
             assert "not set" in result.output
 
