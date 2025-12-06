@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+"""Interactive mode handling for gac."""
+
+import logging
+import re
+
+from rich.console import Console
+
+from gac.ai import generate_commit_message
+from gac.ai_utils import count_tokens
+from gac.config import GACConfig
+from gac.workflow_utils import (
+    collect_interactive_answers,
+    format_answers_for_prompt,
+    handle_confirmation_loop,
+)
+
+logger = logging.getLogger(__name__)
+console = Console()
+
+
+class InteractiveMode:
+    """Handles interactive question generation and user interaction flows."""
+
+    def __init__(self, config: GACConfig):
+        self.config = config
+
+    def extract_git_data_from_prompt(self, user_prompt: str) -> tuple[str, str, str, str]:
+        """Extract git status, diff, diff_stat, and hint from user prompt."""
+        status_match = re.search(r"<git_status>\n(.*?)\n</git_status>", user_prompt, re.DOTALL)
+        diff_match = re.search(r"<git_diff>\n(.*?)\n</git_diff>", user_prompt, re.DOTALL)
+        diff_stat_match = re.search(r"<git_diff_stat>\n(.*?)\n</git_diff_stat>", user_prompt, re.DOTALL)
+        hint_match = re.search(r"<hint_text>(.*?)</hint_text>", user_prompt, re.DOTALL)
+
+        status = status_match.group(1) if status_match else ""
+        diff = diff_match.group(1) if diff_match else ""
+        diff_stat = diff_stat_match.group(1) if diff_stat_match else ""
+        hint = hint_match.group(1) if hint_match else ""
+
+        return status, diff, diff_stat, hint
+
+    def generate_contextual_questions(
+        self,
+        model: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+        max_retries: int,
+        quiet: bool = False,
+    ) -> list[str]:
+        """Generate contextual questions about staged changes."""
+        from gac.prompt import build_question_generation_prompt
+
+        status, diff, diff_stat, hint = self.extract_git_data_from_prompt(user_prompt)
+
+        try:
+            # Build prompts for question generation
+            system_prompt, question_prompt = build_question_generation_prompt(
+                status=status,
+                processed_diff=diff,
+                diff_stat=diff_stat,
+                hint=hint,
+            )
+
+            # Generate questions using existing infrastructure
+            logger.info("Generating contextual questions about staged changes...")
+            questions_text = generate_commit_message(
+                model=model,
+                prompt=(system_prompt, question_prompt),
+                temperature=temperature,
+                max_tokens=max_tokens,
+                max_retries=max_retries,
+                quiet=quiet,
+                skip_success_message=True,  # Don't show "Generated commit message" for questions
+                task_description="contextual questions",
+            )
+
+            # Parse the response to extract individual questions
+            questions = self._parse_questions_from_response(questions_text)
+
+            logger.info(f"Generated {len(questions)} contextual questions")
+            return questions
+
+        except Exception as e:
+            logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
+            if not quiet:
+                console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
+            return []
+
+    def _parse_questions_from_response(self, response: str) -> list[str]:
+        """Parse the AI response to extract individual questions from a numbered list.
+
+        Args:
+            response: The raw response from the AI model
+
+        Returns:
+            A list of cleaned questions
+        """
+        questions = []
+        lines = response.strip().split("\n")
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # Match numbered list format (e.g., "1. Question text?" or "1) Question text?")
+            match = re.match(r"^\d+\.\s+(.+)$", line)
+            if not match:
+                match = re.match(r"^\d+\)\s+(.+)$", line)
+
+            if match:
+                question = match.group(1).strip()
+                # Remove any leading symbols like •, -, *
+                question = re.sub(r"^[•\-*]\s+", "", question)
+                if question and question.endswith("?"):
+                    questions.append(question)
+            elif line.endswith("?") and len(line) > 5:  # Fallback for non-numbered questions
+                questions.append(line)
+
+        return questions
+
+    def handle_interactive_flow(
+        self,
+        model: str,
+        user_prompt: str,
+        conversation_messages: list[dict[str, str]],
+        temperature: float,
+        max_tokens: int,
+        max_retries: int,
+        quiet: bool = False,
+    ) -> None:
+        """Handle the complete interactive flow for collecting user context."""
+        try:
+            questions = self.generate_contextual_questions(
+                model=model,
+                user_prompt=user_prompt,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                max_retries=max_retries,
+                quiet=quiet,
+            )
+
+            if not questions:
+                return
+
+            # Collect answers interactively
+            answers = collect_interactive_answers(questions)
+
+            if answers is None:
+                # User aborted interactive mode
+                if not quiet:
+                    console.print("[yellow]Proceeding with commit without additional context[/yellow]\n")
+            elif answers:
+                # User provided some answers, format them for the prompt
+                answers_context = format_answers_for_prompt(answers)
+                enhanced_user_prompt = user_prompt + answers_context
+
+                # Update the conversation messages with the enhanced prompt
+                if conversation_messages and conversation_messages[-1]["role"] == "user":
+                    conversation_messages[-1]["content"] = enhanced_user_prompt
+
+                logger.info(f"Collected answers for {len(answers)} questions")
+            else:
+                # User skipped all questions
+                if not quiet:
+                    console.print("[dim]No answers provided, proceeding with original context[/dim]\n")
+
+        except Exception as e:
+            logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
+            if not quiet:
+                console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
+
+    def handle_single_commit_confirmation(
+        self,
+        model: str,
+        commit_message: str,
+        conversation_messages: list[dict[str, str]],
+        quiet: bool = False,
+    ) -> tuple[str, bool]:
+        """Handle confirmation loop for single commit. Returns (final_message, should_continue)."""
+        from gac.workflow_utils import display_commit_message
+
+        # Calculate and display token usage
+        prompt_tokens = count_tokens(conversation_messages, model)
+        display_commit_message(commit_message, prompt_tokens, model, quiet)
+
+        if not self.config.get("require_confirmation", True):
+            return commit_message, True
+
+        decision, final_message, _ = handle_confirmation_loop(commit_message, conversation_messages, quiet, model)
+
+        should_continue = decision == "yes"
+        return final_message, should_continue
