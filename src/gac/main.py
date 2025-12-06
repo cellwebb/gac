@@ -3,7 +3,9 @@
 prompt building, AI generation, and commit/push operations. This module contains no CLI wiring.
 """
 
+import json
 import logging
+import subprocess
 import sys
 
 import click
@@ -12,7 +14,7 @@ from rich.panel import Panel
 
 from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens
-from gac.config import load_config
+from gac.config import GACConfig, load_config
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError, ConfigError, GitError, handle_error
 from gac.git import (
@@ -39,7 +41,7 @@ from gac.workflow_utils import (
 
 logger = logging.getLogger(__name__)
 
-config = load_config()
+config: GACConfig = load_config()
 console = Console()  # Initialize console globally to prevent undefined access
 
 
@@ -216,7 +218,7 @@ def execute_grouped_commits_workflow(
                     if not quiet:
                         console.print("[dim]No answers provided, proceeding with original context[/dim]\n")
 
-        except Exception as e:
+        except (AIError, ConfigError, GitError) as e:
             logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
             if not quiet:
                 console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
@@ -421,7 +423,7 @@ def execute_grouped_commits_workflow(
                                 run_git_command(["add", "-A", file_path])
                         execute_commit(commit["message"].strip(), no_verify, hook_timeout)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
-                    except Exception as e:
+                    except (AIError, ConfigError, GitError, subprocess.SubprocessError, OSError) as e:
                         console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
                         console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
                         if idx == 1:
@@ -448,7 +450,7 @@ def execute_grouped_commits_workflow(
                         "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
                     )
                     sys.exit(1)
-            except Exception as e:
+            except (GitError, OSError) as e:
                 console.print(f"[red]Error pushing changes: {e}[/red]")
                 sys.exit(1)
 
@@ -541,7 +543,7 @@ def execute_single_commit_workflow(
                     if not quiet:
                         console.print("[dim]No answers provided, proceeding with original context[/dim]\n")
 
-        except Exception as e:
+        except (AIError, ConfigError, GitError) as e:
             logger.warning(f"Failed to generate contextual questions, proceeding without them: {e}")
             if not quiet:
                 console.print("[yellow]⚠️  Could not generate contextual questions, proceeding normally[/yellow]\n")
@@ -621,7 +623,7 @@ def execute_single_commit_workflow(
                     "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
                 )
                 sys.exit(1)
-        except Exception as e:
+        except (GitError, OSError) as e:
             console.print(f"[red]Error pushing changes: {e}[/red]")
             sys.exit(1)
 
@@ -693,7 +695,7 @@ def generate_contextual_questions(
         logger.info(f"Generated {len(questions)} contextual questions")
         return questions
 
-    except Exception as e:
+    except (AIError, ConfigError, GitError, json.JSONDecodeError, ValueError, ConnectionError) as e:
         logger.error(f"Failed to generate contextual questions: {e}")
         raise AIError.model_error(f"Failed to generate contextual questions: {e}") from e
 
@@ -759,7 +761,7 @@ def main(
         git_dir = run_git_command(["rev-parse", "--show-toplevel"])
         if not git_dir:
             raise GitError("Not in a git repository")
-    except Exception as e:
+    except (subprocess.SubprocessError, GitError, OSError) as e:
         logger.error(f"Error checking git repository: {e}")
         handle_error(GitError("Not in a git repository"), exit_program=True)
 
@@ -1014,7 +1016,7 @@ def main(
                         console.print("[red]Re-authentication failed.[/red]")
                         console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
                         sys.exit(1)
-                except Exception as auth_error:
+                except (AIError, ConfigError, OSError) as auth_error:
                     console.print(f"[red]Re-authentication error: {auth_error}[/red]")
                     console.print("[yellow]Run 'gac model' to re-authenticate manually.[/yellow]")
                     sys.exit(1)
@@ -1050,7 +1052,7 @@ def main(
                         hook_timeout=hook_timeout,
                         interactive=interactive,
                     )
-                except Exception as auth_error:
+                except (AIError, ConfigError, OSError) as auth_error:
                     console.print(f"[red]Re-authentication error: {auth_error}[/red]")
                     console.print("[yellow]Run 'gac auth qwen login' to re-authenticate manually.[/yellow]")
                     sys.exit(1)

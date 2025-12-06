@@ -107,7 +107,7 @@ class TestGenerateContextualQuestions:
         self, mock_build_question_generation_prompt, mock_generate_commit_message, sample_inputs
     ):
         """Test that LLM errors are properly wrapped as AIError."""
-        mock_generate_commit_message.side_effect = Exception("LLM API error")
+        mock_generate_commit_message.side_effect = ConnectionError("LLM API error")
 
         with pytest.raises(AIError) as exc_info:
             generate_contextual_questions(**sample_inputs)

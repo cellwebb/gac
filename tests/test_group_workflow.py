@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
+from gac.errors import GitError
 from gac.main import main
 
 
@@ -140,7 +141,7 @@ def test_group_restores_staging_on_first_commit_failure():
         patch("gac.main.get_staged_files", return_value=original_files),
         patch("gac.ai.generate_grouped_commits", return_value=response),
         patch("gac.main.console.print"),
-        patch("gac.main.execute_commit", side_effect=Exception("Commit failed")) as mock_commit,
+        patch("gac.main.execute_commit", side_effect=GitError("Commit failed")) as mock_commit,
         patch("gac.main.restore_staging") as mock_restore,
         patch("gac.main.click.prompt", return_value="y"),
     ):
@@ -166,7 +167,7 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
 
     def commit_side_effect(msg, no_verify, hook_timeout):
         if "add b" in msg:
-            raise Exception("Second commit failed")
+            raise GitError("Second commit failed")
 
     with (
         patch("gac.main.run_git_command", return_value="/fake/repo"),

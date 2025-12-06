@@ -99,7 +99,7 @@ class TestAiUtils:
         """Test error handling in count_tokens function."""
         # Test with a model that will cause encoding error
         with patch("gac.ai_utils.get_encoding") as mock_encoding:
-            mock_encoding.side_effect = Exception("Encoding error")
+            mock_encoding.side_effect = ValueError("Encoding error")
 
             # Should fall back to character-based estimation (len/4)
             token_count = count_tokens("Hello world", "test:model")
@@ -232,7 +232,11 @@ class TestGenerateCommitMessage:
         "gac.providers.PROVIDER_REGISTRY",
         {
             "openai": MagicMock(
-                side_effect=[Exception("Network error"), Exception("Timeout"), "feat: Success after retries"]
+                side_effect=[
+                    ConnectionError("network connection failed"),
+                    TimeoutError("request timeout"),
+                    "feat: Success after retries",
+                ]
             )
         },
     )
@@ -253,20 +257,22 @@ class TestGenerateCommitMessage:
         mock_sleep.assert_any_call(2)  # Second retry: 2^1 = 2
 
     @patch("gac.ai_utils.time.sleep")
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Persistent error"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ConnectionError("Persistent error"))}
+    )
     def test_generate_commit_message_max_retries_exceeded(self, mock_sleep):
         """Test that AIError is raised when max retries are exceeded."""
         # Test max retries exceeded
         with pytest.raises(AIError) as exc_info:
             generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=2, quiet=True)
 
-        assert "Failed to generate commit message after 2 retries" in str(exc_info.value)
+        assert "Failed to generate commit message" in str(exc_info.value)
         from gac.providers import PROVIDER_REGISTRY
 
         mock_openai_api = PROVIDER_REGISTRY["openai"]
         assert mock_openai_api.call_count == 2
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Invalid API key"))})
+    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ValueError("Invalid API key"))})
     def test_generate_commit_message_authentication_error(self):
         """Test error type classification for authentication errors."""
         # Test authentication error
@@ -275,12 +281,12 @@ class TestGenerateCommitMessage:
 
         assert exc_info.value.error_type == "authentication"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Rate limit exceeded"))})
+    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ValueError("Rate limit exceeded"))})
     def test_generate_commit_message_rate_limit_error(self):
         """Test error type classification for rate limit errors."""
         # Test rate limit error
         with pytest.raises(AIError) as exc_info:
-            generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=1, quiet=True)
+            generate_commit_message(model="openai:gpt-4.1.1-mini", prompt="test", max_retries=1, quiet=True)
 
         assert exc_info.value.error_type == "rate_limit"
 

@@ -3,6 +3,7 @@
 This module provides utility functions that support the AI provider implementations.
 """
 
+import json
 import logging
 import os
 import time
@@ -41,7 +42,7 @@ def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: st
     try:
         encoding = get_encoding(model)
         return len(encoding.encode(text))
-    except Exception as e:
+    except (KeyError, UnicodeError, ValueError) as e:
         logger.error(f"Error counting tokens: {e}")
         # Fallback to rough estimation (4 chars per token on average)
         return len(text) // 4
@@ -71,7 +72,7 @@ def get_encoding(model: str) -> tiktoken.Encoding:
     except KeyError:
         # Fall back to default encoding if model not found
         return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
-    except Exception:
+    except (OSError, ConnectionError):
         # If there are any network/SSL issues, fall back to default encoding
         return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
@@ -196,7 +197,7 @@ def generate_with_retries(
                     console.print("[green]✓ Authentication successful![/green]\n")
             except AIError:
                 raise
-            except Exception as e:
+            except (ValueError, KeyError, json.JSONDecodeError, ConnectionError, OSError) as e:
                 raise AIError.authentication_error(
                     f"Qwen authentication failed: {e}. Run 'gac auth qwen login' to authenticate manually."
                 ) from e
@@ -213,7 +214,7 @@ def generate_with_retries(
         spinner = Status(f"Generating {message_type} with {provider} {model_name}...")
         spinner.start()
 
-    last_exception = None
+    last_exception: Exception | None = None
     last_error_type = "unknown"
 
     for attempt in range(max_retries):
@@ -238,12 +239,17 @@ def generate_with_retries(
                     console.print(f"✓ Generated {message_type} with {provider} {model_name}")
 
             if content is not None and content.strip():
-                return content.strip()  # type: ignore[no-any-return]
+                return content.strip()
             else:
                 logger.warning(f"Empty or None content received from {provider} {model_name}: {repr(content)}")
                 raise AIError.model_error("Empty response from AI model")
 
+        except AIError as e:
+            last_exception = e
+            error_type = e.error_type
+            last_error_type = error_type
         except Exception as e:
+            # Catch any other unexpected exceptions and classify them
             last_exception = e
             error_type = _classify_error(str(e))
             last_error_type = error_type

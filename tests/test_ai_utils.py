@@ -150,7 +150,7 @@ class TestCountTokens:
 
         mock_encoding = MagicMock()
         mock_encoding.encode.return_value = [1, 2, 3, 4]  # 4 tokens for "Hello, world!"
-        mock_tiktoken.encoding_for_model.side_effect = Exception("Network error")
+        mock_tiktoken.encoding_for_model.side_effect = ConnectionError("Network error")
         mock_tiktoken.get_encoding.return_value = mock_encoding
 
         text = "Hello, world!"

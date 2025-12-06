@@ -57,7 +57,7 @@ def run_subprocess_with_encoding_fallback(
             continue
         except subprocess.TimeoutExpired:
             raise
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError, FileNotFoundError) as e:
             if not silent:
                 logger.debug(f"Command error: {e}")
             # Try next encoding for non-timeout errors
@@ -182,7 +182,7 @@ def get_diff(staged: bool = True, color: bool = True, commit1: str | None = None
 
         output = run_git_command(args)
         return output
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, FileNotFoundError) as e:
         logger.error(f"Failed to get diff: {str(e)}")
         raise GitError(f"Failed to get diff: {str(e)}") from e
 
@@ -246,7 +246,7 @@ def run_pre_commit_hooks(hook_timeout: int = 120) -> bool:
             else:
                 logger.error(f"Pre-commit hooks failed with exit code {result.returncode}")
             return False
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, FileNotFoundError, PermissionError) as e:
         logger.debug(f"Error running pre-commit: {e}")
         # If pre-commit isn't available, don't block the commit
         return True
@@ -296,7 +296,7 @@ def run_lefthook_hooks(hook_timeout: int = 120) -> bool:
             else:
                 logger.error(f"Lefthook hooks failed with exit code {result.returncode}")
             return False
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, FileNotFoundError, PermissionError) as e:
         logger.debug(f"Error running Lefthook: {e}")
         # If lefthook isn't available, don't block the commit
         return True
@@ -320,7 +320,7 @@ def push_changes() -> bool:
         else:
             logger.error(f"Failed to push changes: {error_msg}")
         return False
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, ConnectionError) as e:
         logger.error(f"Failed to push changes: {e}")
         return False
 

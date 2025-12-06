@@ -141,7 +141,7 @@ def test_get_diff_unstaged():
 def test_get_diff_exception():
     """Test get_diff when exception is raised."""
     with patch("gac.git.run_git_command") as mock_run, patch("gac.git.logger") as mock_logger:
-        mock_run.side_effect = Exception("git error")
+        mock_run.side_effect = subprocess.SubprocessError("git error")
         try:
             get_diff()
             raise AssertionError("Expected GitError to be raised")
@@ -210,7 +210,7 @@ def test_push_changes_generic_exception():
         patch("gac.git.logger") as mock_logger,
     ):
         mock_run_git.return_value = "origin\n"  # For 'git remote'
-        mock_run_sub.side_effect = Exception("Unexpected error")
+        mock_run_sub.side_effect = ConnectionError("Unexpected error")
         result = push_changes()
         assert result is False
         mock_logger.error.assert_called_once_with("Failed to push changes: Unexpected error")
@@ -362,7 +362,7 @@ def test_run_pre_commit_hooks_exception_handling():
     ):
         mock_exists.return_value = True
         mock_run.return_value = "pre-commit 3.0.0"  # pre-commit is available
-        mock_subprocess_run.side_effect = Exception("subprocess error")
+        mock_subprocess_run.side_effect = FileNotFoundError("subprocess error")
 
         result = run_pre_commit_hooks()
         assert result is True  # Should return True on exception
@@ -470,7 +470,7 @@ def test_run_lefthook_hooks_exception_handling():
         # Mock that .lefthook.yml exists
         mock_exists.return_value = True
         mock_run.return_value = "lefthook 1.0.0"  # lefthook is available
-        mock_subprocess_run.side_effect = Exception("subprocess error")
+        mock_subprocess_run.side_effect = FileNotFoundError("subprocess error")
 
         result = run_lefthook_hooks()
         assert result is True  # Should return True on exception
