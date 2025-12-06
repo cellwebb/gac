@@ -256,7 +256,6 @@ def center_text(text: str, width: int = 80) -> str:
     Returns:
         Centered text with proper padding
     """
-    import unicodedata
 
     def get_display_width(s: str) -> int:
         """Get the display width of a string, accounting for wide characters."""
