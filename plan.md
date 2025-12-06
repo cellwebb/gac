@@ -137,20 +137,27 @@ Issues ordered by effort (lowest hanging fruit first).
 - **Tests updated**: All tests now use AIError instead of generic exceptions (13 new/updated tests)
 - **All 1105 tests pass**
 
-### 3.2 Simplify provider registration pattern
+### 3.2 Simplify provider registration pattern ✅
 
 **Files:** All providers in `src/gac/providers/`
 
-- [ ] Decide: Option A (registry stores classes) or Option B (remove helpers)
-- [ ] If Option A:
-  - [ ] Update `PROVIDER_REGISTRY` to store provider classes
-  - [ ] Update `get_provider()` to instantiate and call `.generate()`
-  - [ ] Remove wrapper functions from all providers
-- [ ] If Option B:
-  - [ ] Inline `_get_*_provider()` calls into wrapper functions
-  - [ ] Remove all `_get_*_provider()` helper functions
-- [ ] Update tests accordingly
-- [ ] Verify all providers still work
+- [x] Decide: Option A (registry stores classes) or Option B (remove helpers)
+- [x] If Option A:
+  - [x] Update `PROVIDER_REGISTRY` to store provider classes
+  - [x] Update `get_provider()` to instantiate and call `.generate()`
+  - [x] Remove wrapper functions from all providers
+- [x] Update tests accordingly
+- [x] Verify all providers still work
+
+**Notes:**
+
+- **Chose Option A**: Registry stores classes, auto-generates wrapper functions
+- **Updated `registry.py`**: Added `create_provider_func()` to auto-generate wrapper functions from provider classes
+- **Updated `__init__.py`**: Now imports provider classes and uses `register_provider()` to register them
+- **Removed wrapper functions**: Eliminated `call_*_api()` functions from all 26 provider files
+- **Fixed class-level config**: Added `config` class attribute to `CustomAnthropicProvider`
+- **Updated all test files**: Changed to use `PROVIDER_REGISTRY["provider-name"]` instead of `call_*_api`
+- **All 1105 tests pass**
 
 ### 3.3 Add missing integration tests
 
