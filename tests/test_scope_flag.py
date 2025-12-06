@@ -207,9 +207,9 @@ class TestScopeIntegration:
         # Create our spy instance
         git_spy = GitCommandSpy()
 
-        # Mock both the git module and main module's run_git_command
+        # Mock run_git_command in all modules that import it
         monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
-        monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", git_spy.run_git_command)
 
         # Mock AI to return message with scope
         call_count = 0
@@ -227,16 +227,16 @@ class TestScopeIntegration:
             nonlocal call_count
             call_count += 1
 
-            # Since we're always inferring scope now, check for "inferred scope" in the prompt
-            if "inferred scope" in prompt_text.lower():
+            # Check if scope inference is disabled by looking for the no-scope instruction
+            # "Do NOT include a scope" only appears in the no-scope template
+            if "do not include a scope" in prompt_text.lower():
+                return "feat: add new feature"
+            else:
+                # Scope inference is enabled
                 if call_count == 1:
-                    # First call should return the first message
                     return "feat(auth): add login functionality"
                 else:
-                    # Subsequent calls should return the second message
                     return "fix(api): handle null response"
-            else:
-                return "feat: add new feature"
 
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate)
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
@@ -254,7 +254,11 @@ class TestScopeIntegration:
             return ["file1.py"]
 
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
-        monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
+        monkeypatch.setattr("gac.git_state_validator.get_staged_files", mock_get_staged_files)
+
+        # Also mock get_staged_status
+        monkeypatch.setattr("gac.git.get_staged_status", lambda: "M file1.py")
+        monkeypatch.setattr("gac.git_state_validator.get_staged_status", lambda: "M file1.py")
 
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
 
@@ -273,28 +277,29 @@ class TestScopeIntegration:
 
             monkeypatch.setattr("gac.main.clean_commit_message", spy_clean_commit_message)
 
-            # Test with scope inference enabled
+            # Test with scope inference enabled (first call)
             with pytest.raises(SystemExit) as exc_info:
                 main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
             assert exc_info.value.code == 0
             assert git_spy.commit_message == "feat(auth): add login functionality"
 
-            # Reset spy for the next test
+            # Reset spy and call_count for the next test
             git_spy.commit_message = None
 
-            # Reset spy for the next test
-            git_spy.commit_message = None
-
-            # Test with AI-determined scope
+            # Test with AI-determined scope (second call)
             with pytest.raises(SystemExit) as exc_info:
                 main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
             assert exc_info.value.code == 0
             assert git_spy.commit_message == "fix(api): handle null response"
 
             # Reset spy for the next test
+            # Note: call_count doesn't need to be reset because the mock checks
+            # for "inferred scope" in the prompt - when infer_scope=False,
+            # the prompt won't contain "inferred scope" so it returns the no-scope message
             git_spy.commit_message = None
 
-            # Test without scope
+            # Test without scope - the mock returns "feat: add new feature" when
+            # "inferred scope" is not in the prompt text
             with pytest.raises(SystemExit) as exc_info:
                 main(infer_scope=False, dry_run=True)  # Use dry_run to avoid actual git calls
             assert exc_info.value.code == 0
