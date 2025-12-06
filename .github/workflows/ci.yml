@@ -83,8 +83,8 @@ jobs:
       - name: Check formatting with ruff
         run: uvx ruff format --check .
 
-      - name: Type check with mypy
-        run: mypy src/gac
+      - name: Type check with mypy (strict mode)
+        run: mypy src/gac --strict
 
   test:
     runs-on: ${{ matrix.os }}

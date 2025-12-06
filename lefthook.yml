@@ -18,5 +18,9 @@ pre-commit:
       exclude: ^(\.venv/|_deprecated/)
       run: uvx ruff format {staged_files}
       stage_fixed: true
+    mypy:
+      glob: "*.py"
+      exclude: ^(\.venv/|_deprecated/|tests/)
+      run: uv run -- mypy src/gac --strict
     check-upstream:
       run: .githooks/check-upstream
