@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for GitStateValidator class."""
 
+import subprocess
 from unittest.mock import patch
 
 import pytest
@@ -44,7 +45,7 @@ class TestGitStateValidator:
     @patch("gac.git_state_validator.handle_error")
     def test_validate_repository_failure(self, mock_handle_error, mock_run_command, validator):
         """Test repository validation failure."""
-        mock_run_command.side_effect = Exception("Not a git repository")
+        mock_run_command.side_effect = subprocess.SubprocessError("Not a git repository")
 
         validator.validate_repository()
 
@@ -70,7 +71,7 @@ class TestGitStateValidator:
         mock_get_staged.return_value = []
 
         with patch("gac.git_state_validator.sys.exit") as mock_exit:
-            validator.get_git_state()
+            validator.get_git_state(model="openai:gpt-4o-mini")
 
             mock_exit.assert_called_once_with(0)
 
@@ -87,7 +88,7 @@ class TestGitStateValidator:
             patch("gac.git_state_validator.run_git_command"),
             patch("gac.git_state_validator.preprocess_diff", return_value="processed"),
         ):
-            git_state = validator.get_git_state()
+            git_state = validator.get_git_state(model="openai:gpt-4o-mini")
 
             assert git_state.has_secrets is True
             assert git_state.secrets == ["secret1", "secret2"]
@@ -99,22 +100,32 @@ class TestGitStateValidator:
         assert result is True
 
     @patch("gac.git_state_validator.console.print")
-    @patch("gac.git_state_validator.click.prompt")
+    @patch("click.prompt")
     def test_handle_secret_detection_abort(self, mock_prompt, mock_print, validator):
         """Test handle_secret_detection when user chooses to abort."""
+        from gac.security import DetectedSecret
+
+        mock_secret = DetectedSecret(
+            file_path="file.py", line_number=10, secret_type="api_key", matched_text="sk_test_123"
+        )
         mock_prompt.return_value = "a"
 
         with patch("gac.git_state_validator.sys.exit") as mock_exit:
-            validator.handle_secret_detection(["secret1"])
+            validator.handle_secret_detection([mock_secret])
 
             mock_exit.assert_called_once_with(0)
 
     @patch("gac.git_state_validator.console.print")
-    @patch("gac.git_state_validator.click.prompt")
+    @patch("click.prompt")
     def test_handle_secret_detection_continue(self, mock_prompt, mock_print, validator):
         """Test handle_secret_detection when user chooses to continue."""
+        from gac.security import DetectedSecret
+
+        mock_secret = DetectedSecret(
+            file_path="file.py", line_number=10, secret_type="api_key", matched_text="sk_test_123"
+        )
         mock_prompt.return_value = "c"
 
-        result = validator.handle_secret_detection(["secret1"])
+        result = validator.handle_secret_detection([mock_secret])
 
         assert result is True
