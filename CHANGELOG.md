@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.10.6] - 2025-12-06
+
+### Improvements
+
+- Better organization of settings for easier maintenance
+- Improved error messages when something goes wrong
+- Faster and more reliable overall performance
+
+### Bug Fixes
+
+- Fixed crashes when working with certain model configurations
+- Resolved issues with workflow interruptions due to expired sessions
+
 ## [3.10.5] - 2025-12-06
 
 ### Changed
