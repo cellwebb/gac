@@ -14,7 +14,7 @@ from rich.console import Console
 
 from gac import __version__
 from gac.auth_cli import auth as auth_cli
-from gac.config import load_config
+from gac.config import GACConfig, load_config
 from gac.config_cli import config as config_cli
 from gac.constants import Languages, Logging
 from gac.diff_cli import diff as diff_cli
@@ -25,7 +25,7 @@ from gac.main import main
 from gac.model_cli import model as model_cli
 from gac.utils import setup_logging
 
-config = load_config()
+config: GACConfig = load_config()
 logger = logging.getLogger(__name__)
 console = Console()
 

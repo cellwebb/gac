@@ -5,6 +5,7 @@ Handles environment variable and .gac.env file precedence for application settin
 
 import os
 from pathlib import Path
+from typing import TypedDict
 
 from dotenv import load_dotenv
 
@@ -12,7 +13,31 @@ from gac.constants import EnvDefaults, Logging
 from gac.errors import ConfigError
 
 
-def validate_config(config: dict[str, str | int | float | bool | None]) -> None:
+class GACConfig(TypedDict, total=False):
+    """TypedDict for GAC configuration values.
+
+    Fields that can be None or omitted are marked with total=False.
+    """
+
+    model: str | None
+    temperature: float
+    max_output_tokens: int
+    max_retries: int
+    log_level: str
+    warning_limit_tokens: int
+    always_include_scope: bool
+    skip_secret_scan: bool
+    no_tiktoken: bool
+    no_verify_ssl: bool
+    verbose: bool
+    system_prompt_path: str | None
+    language: str | None
+    translate_prefixes: bool
+    rtl_confirmed: bool
+    hook_timeout: int
+
+
+def validate_config(config: GACConfig) -> None:
     """Validate configuration values at load time.
 
     Args:
@@ -62,7 +87,7 @@ def validate_config(config: dict[str, str | int | float | bool | None]) -> None:
             raise ConfigError(f"hook_timeout must be positive, got {hook_timeout}")
 
 
-def load_config() -> dict[str, str | int | float | bool | None]:
+def load_config() -> GACConfig:
     """Load configuration from $HOME/.gac.env, then ./.gac.env, then environment variables."""
     user_config = Path.home() / ".gac.env"
     if user_config.exists():
@@ -74,7 +99,7 @@ def load_config() -> dict[str, str | int | float | bool | None]:
     if project_gac_env.exists():
         load_dotenv(project_gac_env, override=True)
 
-    config = {
+    config: GACConfig = {
         "model": os.getenv("GAC_MODEL"),
         "temperature": float(os.getenv("GAC_TEMPERATURE", EnvDefaults.TEMPERATURE)),
         "max_output_tokens": int(os.getenv("GAC_MAX_OUTPUT_TOKENS", EnvDefaults.MAX_OUTPUT_TOKENS)),
