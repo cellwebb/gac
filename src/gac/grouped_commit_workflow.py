@@ -19,6 +19,7 @@ from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
+from gac.model_identifier import ModelIdentifier
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -214,10 +215,10 @@ class GroupedCommitWorkflow:
 
     def display_grouped_commits(self, result: GroupedCommitResult, model: str, prompt_tokens: int, quiet: bool) -> None:
         """Display the generated grouped commits to the user."""
-        provider, model_name = model.split(":", 1)
+        model_id = ModelIdentifier.parse(model)
 
         if not quiet:
-            console.print(f"[green]✔ Generated commit messages with {provider} {model_name}[/green]")
+            console.print(f"[green]✔ Generated commit messages with {model_id.provider} {model_id.model_name}[/green]")
             num_commits = len(result.commits)
             console.print(f"[bold green]Proposed Commits ({num_commits}):[/bold green]\n")
             for idx, commit in enumerate(result.commits, 1):
