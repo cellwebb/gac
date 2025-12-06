@@ -157,25 +157,3 @@ def diff(
         commit1=commit1,
         commit2=commit2,
     )
-
-
-# Function for testing only
-def _callback_for_testing(
-    filter: bool,
-    truncate: bool,
-    max_tokens: int | None,
-    staged: bool,
-    color: bool,
-    commit1: str | None = None,
-    commit2: str | None = None,
-) -> None:
-    """A version of the diff command callback that can be called directly from tests."""
-    _diff_implementation(
-        filter=filter,
-        truncate=truncate,
-        max_tokens=max_tokens,
-        staged=staged,
-        color=color,
-        commit1=commit1,
-        commit2=commit2,
-    )
