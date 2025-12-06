@@ -77,58 +77,6 @@ def get_encoding(model: str) -> tiktoken.Encoding:
         return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
 
-def _classify_error(error_str: str) -> str:
-    """Classify error types based on error message content.
-
-    This function uses string matching to categorize API errors into actionable types.
-    The classification determines retry behavior and user-facing error messages.
-
-    Classification Rules (checked in order, first match wins):
-        1. "authentication" - API key or auth issues (no retry, user must fix credentials)
-           Keywords: "api key", "unauthorized", "authentication", "invalid api key"
-        2. "timeout" - Request took too long (retry with same params)
-           Keywords: "timeout", "timed out", "request timeout"
-        3. "rate_limit" - Too many requests (retry with exponential backoff)
-           Keywords: "rate limit", "too many requests", "rate limit exceeded"
-        4. "connection" - Network connectivity issues (retry after delay)
-           Keywords: "connect", "network", "network connection failed"
-        5. "model" - Model not found or unavailable (no retry, user must fix config)
-           Keywords: "model", "not found", "model not found"
-        6. "unknown" - Default fallback for unrecognized errors
-
-    Limitations:
-        - String matching is fragile; error messages vary across providers
-        - "not found" may false-positive on non-model errors (e.g., "endpoint not found")
-        - "model" keyword may match unrelated context in verbose error messages
-        - Case-insensitive matching may miss structured error codes
-
-    Args:
-        error_str: The error message to classify (converted to lowercase internally)
-
-    Returns:
-        One of: "authentication", "timeout", "rate_limit", "connection", "model", "unknown"
-    """
-    error_str = error_str.lower()
-
-    if (
-        "api key" in error_str
-        or "unauthorized" in error_str
-        or "authentication" in error_str
-        or "invalid api key" in error_str
-    ):
-        return "authentication"
-    elif "timeout" in error_str or "timed out" in error_str or "request timeout" in error_str:
-        return "timeout"
-    elif "rate limit" in error_str or "too many requests" in error_str or "rate limit exceeded" in error_str:
-        return "rate_limit"
-    elif "connect" in error_str or "network" in error_str or "network connection failed" in error_str:
-        return "connection"
-    elif "model" in error_str or "not found" in error_str or "model not found" in error_str:
-        return "model"
-    else:
-        return "unknown"
-
-
 def generate_with_retries(
     provider_funcs: dict[str, Callable[..., str]],
     model: str,
