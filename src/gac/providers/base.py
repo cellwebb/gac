@@ -203,18 +203,22 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
     Handles standard OpenAI API format with minimal customization needed.
     """
 
+    def _build_request_body(
+        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
+    ) -> dict[str, Any]:
+        """Build OpenAI-style request body.
+
+        Note: Subclasses should override this if they need max_completion_tokens
+        instead of max_tokens (like OpenAI provider does).
+        """
+        return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}
+
     def _build_headers(self) -> dict[str, str]:
         """Build headers with OpenAI-style authorization."""
         headers = super()._build_headers()
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
-
-    def _build_request_body(
-        self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
-    ) -> dict[str, Any]:
-        """Build OpenAI-style request body."""
-        return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}
 
     def _parse_response(self, response: dict[str, Any]) -> str:
         """Parse OpenAI-style response."""
