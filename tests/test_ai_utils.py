@@ -235,7 +235,11 @@ class TestGenerateWithRetries:
     def test_auth_error_spinner_fail(self, mock_console, mock_status):
         mock_spinner = MagicMock()
         mock_status.return_value = mock_spinner
-        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Invalid API key"))}
+
+        def raise_auth_error(**kw):
+            raise AIError.authentication_error("Invalid API key")
+
+        funcs = {"openai": raise_auth_error}
         with pytest.raises(AIError):
             ai_utils.generate_with_retries(
                 funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False
@@ -250,7 +254,7 @@ class TestGenerateWithRetries:
         def func(**kw):
             call_count[0] += 1
             if call_count[0] < 2:
-                raise Exception("fail")
+                raise AIError.connection_error("fail")
             return "ok"
 
         funcs = {"openai": func}
@@ -258,13 +262,19 @@ class TestGenerateWithRetries:
         assert call_count[0] == 2
 
     def test_final_auth_error(self):
-        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Invalid API key"))}
+        def raise_auth_error(**kw):
+            raise AIError.authentication_error("Invalid API key")
+
+        funcs = {"openai": raise_auth_error}
         with pytest.raises(AIError) as e:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
         assert e.value.error_type == "authentication"
 
     def test_final_model_error(self):
-        funcs = {"openai": lambda **kw: (_ for _ in ()).throw(Exception("Model not found"))}
+        def raise_model_error(**kw):
+            raise AIError.model_error("Model not found")
+
+        funcs = {"openai": raise_model_error}
         with pytest.raises(AIError) as e:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
         assert e.value.error_type == "model"

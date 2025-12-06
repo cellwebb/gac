@@ -233,8 +233,8 @@ class TestGenerateCommitMessage:
         {
             "openai": MagicMock(
                 side_effect=[
-                    ConnectionError("network connection failed"),
-                    TimeoutError("request timeout"),
+                    AIError.connection_error("network connection failed"),
+                    AIError.timeout_error("request timeout"),
                     "feat: Success after retries",
                 ]
             )
@@ -258,7 +258,8 @@ class TestGenerateCommitMessage:
 
     @patch("gac.ai_utils.time.sleep")
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ConnectionError("Persistent error"))}
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.connection_error("Persistent error"))},
     )
     def test_generate_commit_message_max_retries_exceeded(self, mock_sleep):
         """Test that AIError is raised when max retries are exceeded."""
@@ -272,16 +273,22 @@ class TestGenerateCommitMessage:
         mock_openai_api = PROVIDER_REGISTRY["openai"]
         assert mock_openai_api.call_count == 2
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ValueError("Invalid API key"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.authentication_error("Invalid API key"))},
+    )
     def test_generate_commit_message_authentication_error(self):
         """Test error type classification for authentication errors."""
-        # Test authentication error
+        # Test authentication error - should not retry
         with pytest.raises(AIError) as exc_info:
             generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=1, quiet=True)
 
         assert exc_info.value.error_type == "authentication"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=ValueError("Rate limit exceeded"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.rate_limit_error("Rate limit exceeded"))},
+    )
     def test_generate_commit_message_rate_limit_error(self):
         """Test error type classification for rate limit errors."""
         # Test rate limit error
@@ -290,7 +297,10 @@ class TestGenerateCommitMessage:
 
         assert exc_info.value.error_type == "rate_limit"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Request timeout"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.timeout_error("Request timeout"))},
+    )
     def test_generate_commit_message_timeout_error(self):
         """Test error type classification for timeout errors."""
         # Test timeout error
@@ -300,7 +310,8 @@ class TestGenerateCommitMessage:
         assert exc_info.value.error_type == "timeout"
 
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Network connection failed"))}
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.connection_error("Network connection failed"))},
     )
     def test_generate_commit_message_connection_error(self):
         """Test error type classification for connection errors."""
@@ -310,16 +321,22 @@ class TestGenerateCommitMessage:
 
         assert exc_info.value.error_type == "connection"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Model not found"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.model_error("Model not found"))},
+    )
     def test_generate_commit_message_model_error(self):
         """Test error type classification for model errors."""
-        # Test model error
+        # Test model error - should not retry
         with pytest.raises(AIError) as exc_info:
             generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=1, quiet=True)
 
         assert exc_info.value.error_type == "model"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Some random error"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.unknown_error("Some random error"))},
+    )
     def test_generate_commit_message_unknown_error(self):
         """Test error type classification for unknown errors."""
         # Test unknown error
@@ -339,7 +356,8 @@ class TestGenerateCommitMessage:
     @patch("gac.ai_utils.Status")
     @patch("gac.ai_utils.console")
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=[Exception("Temporary error"), "Success"])}
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=[AIError.connection_error("Temporary error"), "Success"])},
     )
     def test_generate_commit_message_retry_with_spinner(self, mock_console, mock_status_class, mock_sleep):
         """Test retry logic with spinner animation."""
@@ -362,7 +380,10 @@ class TestGenerateCommitMessage:
 
     @patch("gac.ai_utils.Status")
     @patch("gac.ai_utils.console")
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(side_effect=Exception("Persistent error"))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(side_effect=AIError.connection_error("Persistent error"))},
+    )
     def test_generate_commit_message_failure_with_spinner(self, mock_console, mock_status_class):
         """Test that spinner shows failure when all retries are exhausted."""
         # Setup mocks

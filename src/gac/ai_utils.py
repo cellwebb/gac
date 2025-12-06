@@ -248,34 +248,22 @@ def generate_with_retries(
             last_exception = e
             error_type = e.error_type
             last_error_type = error_type
-        except Exception as e:
-            # Catch any other unexpected exceptions and classify them
-            last_exception = e
-            error_type = _classify_error(str(e))
-            last_error_type = error_type
 
             # For authentication and model errors, don't retry
             if error_type in ["authentication", "model"]:
                 if spinner and not skip_success_message:
                     spinner.stop()
                     console.print(f"✗ Failed to generate {message_type} with {provider} {model_name}")
-
-                # Create the appropriate error type based on classification
-                if error_type == "authentication":
-                    raise AIError.authentication_error(f"AI generation failed: {str(e)}") from e
-                elif error_type == "model":
-                    raise AIError.model_error(f"AI generation failed: {str(e)}") from e
+                raise
 
             if attempt < max_retries - 1:
                 # Exponential backoff
                 wait_time = 2**attempt
                 if not quiet and not skip_success_message:
                     if attempt == 0:
-                        logger.warning(f"AI generation failed, retrying in {wait_time}s: {str(e)}")
+                        logger.warning(f"AI generation failed, retrying in {wait_time}s: {e}")
                     else:
-                        logger.warning(
-                            f"AI generation failed (attempt {attempt + 1}), retrying in {wait_time}s: {str(e)}"
-                        )
+                        logger.warning(f"AI generation failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}")
 
                 if spinner and not skip_success_message:
                     for i in range(wait_time, 0, -1):
@@ -286,7 +274,7 @@ def generate_with_retries(
             else:
                 num_retries = max_retries
                 retry_word = "retry" if num_retries == 1 else "retries"
-                logger.error(f"AI generation failed after {num_retries} {retry_word}: {str(e)}")
+                logger.error(f"AI generation failed after {num_retries} {retry_word}: {e}")
 
     if spinner and not skip_success_message:
         spinner.stop()
