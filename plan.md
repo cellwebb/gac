@@ -39,31 +39,54 @@ Issues ordered by effort (lowest hanging fruit first).
 
 ## Tier 2: Small Refactors (1-2 hours each)
 
-### 2.1 Replace broad exception handling with specific exceptions
+### 2.1 Replace broad exception handling with specific exceptions ✅✅
 
 **Files:**
 
-- `src/gac/git.py:60-65`
-- `src/gac/main.py:219-222`
-- `src/gac/ai_utils.py:216`
+- `src/gac/git.py` (all locations)
+- `src/gac/main.py` (all locations)
+- `src/gac/ai_utils.py` (all locations)
 
-- [ ] Audit `git.py` - identify actual exceptions that can be raised
-- [ ] Replace `except Exception` with `except (subprocess.SubprocessError, OSError)`
-- [ ] Audit `main.py` - identify actual exceptions in question generation
-- [ ] Replace with `except (json.JSONDecodeError, KeyError, TypeError)`
-- [ ] Audit `ai_utils.py` retry loop - identify actual exceptions
-- [ ] Replace with `except (httpx.HTTPError, AIError)`
-- [ ] Run `uv run -- pytest` to verify no regressions
+- [x] **COMPLETE AUDIT**: Found and fixed ALL `except Exception` in target files
+- [x] **git.py**: Replaced with `subprocess.SubprocessError`, `OSError`, `FileNotFoundError`, `PermissionError`, `ConnectionError`
+- [x] **main.py**: Replaced with `AIError`, `ConfigError`, `GitError`, `subprocess.SubprocessError`, `OSError`, `ConnectionError`
+- [x] **ai_utils.py**:
+  - Token counting: `KeyError`, `UnicodeError`, `ValueError`
+  - Encoding detection: `KeyError`, `OSError`, `ConnectionError`
+  - Qwen auth: `ValueError`, `KeyError`, `json.JSONDecodeError`, `ConnectionError`, `OSError`
+  - Retry loop: Kept `Exception` as comprehensive catch-all (appropriate for retry logic)
+- [x] **Updated ALL breaking tests** to use realistic exception types
+- [x] **Final verification**: Confirmed zero `except Exception` in git.py and main.py
+- [x] All tests pass (1087 passed)
+- [x] Full mypy compliance (55 source files, no issues)
 
-### 2.2 Add TypedDict for configuration
+**Notes:**
+
+- **Systematic approach**: Found ALL remaining `except Exception` handlers in target files
+- **Realistic exception types**: Tests now use exceptions that would actually occur in practice
+- **Comprehensive coverage**: No broad exception handling left in git.py or main.py
+- **Only remaining**: One intentional `except Exception` in ai_utils.py retry loop (appropriate)
+- Tested with mock exceptions used in unit tests
+
+### 2.2 Add TypedDict for configuration ✅
 
 **File:** `src/gac/config.py`
 
-- [ ] Define `GACConfig` TypedDict with all config fields
-- [ ] Add proper types for each field (str | None, float, int, bool, etc.)
-- [ ] Update `load_config()` return type
-- [ ] Update all call sites to use typed config
-- [ ] Run `uv run -- mypy` to verify
+- [x] Define `GACConfig` TypedDict with all config fields
+- [x] Add proper types for each field (str | None, float, int, bool, etc.)
+- [x] Update `load_config()` return type
+- [x] Update all call sites to use typed config
+- [x] Run `uv run -- mypy` to verify (55 source files, no issues)
+
+**Notes:**
+
+- Created TypedDict with 16 configuration fields including optional fields
+- Used `total=False` to allow omitting optional
+- Updated function signatures:
+  - `validate_config(config: GACConfig) -> None`
+  - `load_config() -> GACConfig`
+- Updated call sites in `main.py` and `cli.py` with proper type annotations
+- All files pass mypy type checking
 
 ### 2.3 Sanitize API responses in error messages
 
