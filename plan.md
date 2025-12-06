@@ -110,7 +110,7 @@ Issues ordered by effort (lowest hanging fruit first).
 
 ## Tier 3: Medium Refactors (half day each)
 
-### 3.1 Consolidate error handling layers
+### 3.1 Consolidate error handling layers ✅
 
 **Files:**
 
@@ -118,13 +118,24 @@ Issues ordered by effort (lowest hanging fruit first).
 - `src/gac/providers/base.py`
 - `src/gac/ai_utils.py`
 
-- [ ] Map current error flow through all three locations
-- [ ] Decide on single authoritative location (recommend: decorator)
-- [ ] Remove duplicate catching in `_make_http_request()`
-- [ ] Simplify retry loop to only handle `AIError` types
-- [ ] Update all providers to use consolidated approach
-- [ ] Add tests verifying error propagation
-- [ ] Document the error handling strategy
+- [x] Map current error flow through all three locations
+- [x] Decide on single authoritative location (recommend: decorator)
+- [x] Remove duplicate catching in `_make_http_request()`
+- [x] Simplify retry loop to only handle `AIError` types
+- [x] Update all providers to use consolidated approach
+- [x] Add tests verifying error propagation
+- [x] Document the error handling strategy
+
+**Notes:**
+
+- **Single authoritative location**: `@handle_provider_errors` decorator in `error_handler.py`
+- **Removed duplicate catching**: `_make_http_request()` now lets exceptions propagate to decorator
+- **Simplified generate()**: Removed try/except blocks that duplicated decorator logic
+- **Retry loop cleanup**: Removed `except Exception` fallback, now only catches `AIError`
+- **Error classification**: Decorator handles HTTP status codes (401→auth, 429→rate_limit, 404→model, 5xx→connection)
+- **Sanitization**: Added `sanitize_error_response()` call in decorator for HTTP errors
+- **Tests updated**: All tests now use AIError instead of generic exceptions (13 new/updated tests)
+- **All 1105 tests pass**
 
 ### 3.2 Simplify provider registration pattern
 
