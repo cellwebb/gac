@@ -6,6 +6,7 @@ This module provides utility functions that support the AI provider implementati
 import logging
 import os
 import time
+from collections.abc import Callable
 from functools import lru_cache
 from typing import Any
 
@@ -76,7 +77,36 @@ def get_encoding(model: str) -> tiktoken.Encoding:
 
 
 def _classify_error(error_str: str) -> str:
-    """Classify error types based on error message content."""
+    """Classify error types based on error message content.
+
+    This function uses string matching to categorize API errors into actionable types.
+    The classification determines retry behavior and user-facing error messages.
+
+    Classification Rules (checked in order, first match wins):
+        1. "authentication" - API key or auth issues (no retry, user must fix credentials)
+           Keywords: "api key", "unauthorized", "authentication", "invalid api key"
+        2. "timeout" - Request took too long (retry with same params)
+           Keywords: "timeout", "timed out", "request timeout"
+        3. "rate_limit" - Too many requests (retry with exponential backoff)
+           Keywords: "rate limit", "too many requests", "rate limit exceeded"
+        4. "connection" - Network connectivity issues (retry after delay)
+           Keywords: "connect", "network", "network connection failed"
+        5. "model" - Model not found or unavailable (no retry, user must fix config)
+           Keywords: "model", "not found", "model not found"
+        6. "unknown" - Default fallback for unrecognized errors
+
+    Limitations:
+        - String matching is fragile; error messages vary across providers
+        - "not found" may false-positive on non-model errors (e.g., "endpoint not found")
+        - "model" keyword may match unrelated context in verbose error messages
+        - Case-insensitive matching may miss structured error codes
+
+    Args:
+        error_str: The error message to classify (converted to lowercase internally)
+
+    Returns:
+        One of: "authentication", "timeout", "rate_limit", "connection", "model", "unknown"
+    """
     error_str = error_str.lower()
 
     if (
@@ -99,7 +129,7 @@ def _classify_error(error_str: str) -> str:
 
 
 def generate_with_retries(
-    provider_funcs: dict,
+    provider_funcs: dict[str, Callable[..., str]],
     model: str,
     messages: list[dict[str, str]],
     temperature: float,
