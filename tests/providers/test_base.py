@@ -9,9 +9,11 @@ import pytest
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.base import (
+    MAX_ERROR_RESPONSE_LENGTH,
     AnthropicCompatibleProvider,
     OpenAICompatibleProvider,
     ProviderConfig,
+    sanitize_error_response,
 )
 
 
@@ -315,3 +317,158 @@ class TestErrorHandling:
                 )
 
             assert "connection" in str(exc_info.value).lower()
+
+    def test_http_error_sanitizes_response(self):
+        """Test that HTTP error responses are sanitized."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+
+        with (
+            patch("gac.providers.base.httpx.post") as mock_post,
+            patch.dict(os.environ, {"SIMPLE_API_KEY": "test-key"}),
+        ):
+            mock_response = MagicMock()
+            mock_response.status_code = 401
+            mock_response.text = "Invalid API key: sk-abcdefghijklmnopqrstuvwxyz1234567890abcd"
+            mock_post.side_effect = httpx.HTTPStatusError("401 error", request=MagicMock(), response=mock_response)
+
+            with pytest.raises(AIError) as exc_info:
+                provider.generate(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": "test"}],
+                    temperature=0.7,
+                    max_tokens=100,
+                )
+
+            error_message = str(exc_info.value)
+            assert "sk-abcdefghijklmnopqrstuvwxyz1234567890abcd" not in error_message
+            assert "[REDACTED]" in error_message
+
+    def test_http_error_truncates_long_response(self):
+        """Test that long HTTP error responses are truncated."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+
+        with (
+            patch("gac.providers.base.httpx.post") as mock_post,
+            patch.dict(os.environ, {"SIMPLE_API_KEY": "test-key"}),
+        ):
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_response.text = "Error message. " * 50
+            mock_post.side_effect = httpx.HTTPStatusError("500 error", request=MagicMock(), response=mock_response)
+
+            with pytest.raises(AIError) as exc_info:
+                provider.generate(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": "test"}],
+                    temperature=0.7,
+                    max_tokens=100,
+                )
+
+            error_message = str(exc_info.value)
+            assert "..." in error_message
+
+
+class TestSanitizeErrorResponse:
+    """Test error response sanitization."""
+
+    def test_empty_input(self):
+        """Test that empty input returns empty string."""
+        assert sanitize_error_response("") == ""
+
+    def test_short_input_no_secrets(self):
+        """Test that short input without secrets passes through."""
+        text = "Error: Invalid request"
+        result = sanitize_error_response(text)
+        assert result == text
+
+    def test_truncates_long_input(self):
+        """Test that long input is truncated to max length."""
+        long_text = "Error message. " * 50
+        result = sanitize_error_response(long_text)
+        assert len(result) == MAX_ERROR_RESPONSE_LENGTH + 3
+        assert result.endswith("...")
+
+    def test_redacts_openai_api_key(self):
+        """Test that OpenAI API keys are redacted."""
+        text = "Invalid API key: sk-abcdefghijklmnopqrstuvwxyz1234567890abcd"
+        result = sanitize_error_response(text)
+        assert "sk-abcdefghijklmnopqrstuvwxyz1234567890abcd" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_anthropic_api_key(self):
+        """Test that Anthropic API keys are redacted."""
+        text = "Invalid key: sk-ant-abcdefghijklmnopqrstuvwxyz"
+        result = sanitize_error_response(text)
+        assert "sk-ant-" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_github_token(self):
+        """Test that GitHub tokens are redacted."""
+        text = "Token: ghp_abcdefghijklmnopqrstuvwxyz123456"
+        result = sanitize_error_response(text)
+        assert "ghp_abcdefghijklmnopqrstuvwxyz123456" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_jwt_token(self):
+        """Test that JWT tokens are redacted."""
+        text = "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+        result = sanitize_error_response(text)
+        assert "eyJ" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_bearer_token(self):
+        """Test that Bearer tokens are redacted."""
+        text = "Authorization: Bearer abcdefghijklmnopqrstuvwxyz1234567890"
+        result = sanitize_error_response(text)
+        assert "Bearer abcdefghijklmnopqrstuvwxyz1234567890" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_google_api_key(self):
+        """Test that Google API keys are redacted."""
+        text = "Key: AIzaSyAbcdefghijklmnopqrstuvwxyz12345"
+        result = sanitize_error_response(text)
+        assert "AIzaSy" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_stripe_key(self):
+        """Test that Stripe keys are redacted."""
+        text = "Key: sk_live_abcdefghijklmnopqrstuvwxyz123456"
+        result = sanitize_error_response(text)
+        assert "sk_live_" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_slack_token(self):
+        """Test that Slack tokens are redacted."""
+        text = "Token: xoxb-abcdefghijklmnopqrstuvwxyz"
+        result = sanitize_error_response(text)
+        assert "xoxb-" not in result
+        assert "[REDACTED]" in result
+
+    def test_redacts_multiple_secrets(self):
+        """Test that multiple secrets in same text are redacted."""
+        text = "Keys: sk-abc1234567890123456789012 and ghp_xyz1234567890123456789012345"
+        result = sanitize_error_response(text)
+        assert "sk-abc" not in result
+        assert "ghp_xyz" not in result
+        assert result.count("[REDACTED]") >= 2
+
+    def test_redacts_long_alphanumeric_tokens(self):
+        """Test that generic long alphanumeric tokens are redacted."""
+        text = "Token: abcdefghijklmnopqrstuvwxyz123456789012"
+        result = sanitize_error_response(text)
+        assert "abcdefghijklmnopqrstuvwxyz123456789012" not in result
+        assert "[REDACTED]" in result
+
+    def test_preserves_short_alphanumeric(self):
+        """Test that short alphanumeric strings are preserved."""
+        text = "Error code: ABC123"
+        result = sanitize_error_response(text)
+        assert result == text
+
+    def test_truncation_after_redaction(self):
+        """Test that truncation happens after redaction."""
+        long_key = "sk-" + "a" * 50
+        long_text = f"Error with key {long_key} followed by " + "x" * 200
+        result = sanitize_error_response(long_text)
+        assert "[REDACTED]" in result
+        assert len(result) <= MAX_ERROR_RESPONSE_LENGTH + 3

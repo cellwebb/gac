@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -16,6 +17,47 @@ from gac.providers.registry import register_provider
 from gac.utils import get_ssl_verify
 
 logger = logging.getLogger(__name__)
+
+
+MAX_ERROR_RESPONSE_LENGTH = 200
+
+SENSITIVE_PATTERNS = [
+    re.compile(r"sk-[A-Za-z0-9_-]{20,}"),  # OpenAI keys
+    re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),  # Anthropic keys
+    re.compile(r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}"),  # GitHub tokens
+    re.compile(r"AIza[0-9A-Za-z_-]{20,}"),  # Google API keys
+    re.compile(r"(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{20,}"),  # Stripe keys
+    re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),  # Slack tokens
+    re.compile(r"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"),  # JWT tokens
+    re.compile(r"Bearer\s+[A-Za-z0-9_-]{20,}"),  # Bearer tokens
+    re.compile(r"[A-Za-z0-9]{32,}"),  # Generic long alphanumeric tokens
+]
+
+
+def sanitize_error_response(text: str) -> str:
+    """Sanitize API error response text for safe logging/display.
+
+    This function:
+    1. Redacts potential API keys and tokens
+    2. Truncates to MAX_ERROR_RESPONSE_LENGTH characters
+
+    Args:
+        text: Raw error response text from an API
+
+    Returns:
+        Sanitized text safe for logging/display
+    """
+    if not text:
+        return ""
+
+    sanitized = text
+    for pattern in SENSITIVE_PATTERNS:
+        sanitized = pattern.sub("[REDACTED]", sanitized)
+
+    if len(sanitized) > MAX_ERROR_RESPONSE_LENGTH:
+        sanitized = sanitized[:MAX_ERROR_RESPONSE_LENGTH] + "..."
+
+    return sanitized
 
 
 @dataclass
@@ -169,8 +211,9 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             return response.json()
 
         except httpx.HTTPStatusError as e:
+            sanitized_response = sanitize_error_response(e.response.text)
             raise AIError.model_error(
-                f"{self.config.name} AI API error: HTTP {e.response.status_code} - {e.response.text}"
+                f"{self.config.name} AI API error: HTTP {e.response.status_code} - {sanitized_response}"
             ) from e
         except httpx.TimeoutException as e:
             raise AIError.timeout_error(f"{self.config.name} API request timed out") from e
@@ -392,6 +435,8 @@ __all__ = [
     "AnthropicCompatibleProvider",
     "BaseConfiguredProvider",
     "GenericHTTPProvider",
+    "MAX_ERROR_RESPONSE_LENGTH",
     "OpenAICompatibleProvider",
     "ProviderConfig",
+    "sanitize_error_response",
 ]
