@@ -9,6 +9,7 @@ from rich.console import Console
 from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens
 from gac.config import GACConfig
+from gac.git_state_validator import GitState
 from gac.workflow_utils import (
     collect_interactive_answers,
     format_answers_for_prompt,
@@ -25,24 +26,11 @@ class InteractiveMode:
     def __init__(self, config: GACConfig):
         self.config = config
 
-    def extract_git_data_from_prompt(self, user_prompt: str) -> tuple[str, str, str, str]:
-        """Extract git status, diff, diff_stat, and hint from user prompt."""
-        status_match = re.search(r"<git_status>\n(.*?)\n</git_status>", user_prompt, re.DOTALL)
-        diff_match = re.search(r"<git_diff>\n(.*?)\n</git_diff>", user_prompt, re.DOTALL)
-        diff_stat_match = re.search(r"<git_diff_stat>\n(.*?)\n</git_diff_stat>", user_prompt, re.DOTALL)
-        hint_match = re.search(r"<hint_text>(.*?)</hint_text>", user_prompt, re.DOTALL)
-
-        status = status_match.group(1) if status_match else ""
-        diff = diff_match.group(1) if diff_match else ""
-        diff_stat = diff_stat_match.group(1) if diff_stat_match else ""
-        hint = hint_match.group(1) if hint_match else ""
-
-        return status, diff, diff_stat, hint
-
     def generate_contextual_questions(
         self,
         model: str,
-        user_prompt: str,
+        git_state: GitState,
+        hint: str,
         temperature: float,
         max_tokens: int,
         max_retries: int,
@@ -51,7 +39,9 @@ class InteractiveMode:
         """Generate contextual questions about staged changes."""
         from gac.prompt import build_question_generation_prompt
 
-        status, diff, diff_stat, hint = self.extract_git_data_from_prompt(user_prompt)
+        status = git_state.status
+        diff = git_state.processed_diff
+        diff_stat = git_state.diff_stat
 
         try:
             # Build prompts for question generation
@@ -124,6 +114,8 @@ class InteractiveMode:
         self,
         model: str,
         user_prompt: str,
+        git_state: GitState,
+        hint: str,
         conversation_messages: list[dict[str, str]],
         temperature: float,
         max_tokens: int,
@@ -134,7 +126,8 @@ class InteractiveMode:
         try:
             questions = self.generate_contextual_questions(
                 model=model,
-                user_prompt=user_prompt,
+                git_state=git_state,
+                hint=hint,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 max_retries=max_retries,

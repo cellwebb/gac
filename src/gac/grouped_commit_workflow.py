@@ -18,6 +18,7 @@ from gac.config import GACConfig
 from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
+from gac.git_state_validator import GitState
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -344,6 +345,8 @@ class GroupedCommitWorkflow:
         show_prompt: bool,
         interactive: bool,
         message_only: bool,
+        git_state: GitState,
+        hint: str,
         hook_timeout: int = 120,
     ) -> None:
         """Execute the complete grouped commit workflow."""
@@ -367,6 +370,8 @@ class GroupedCommitWorkflow:
             interactive_mode.handle_interactive_flow(
                 model=model,
                 user_prompt=user_prompt,
+                git_state=git_state,
+                hint=hint,
                 conversation_messages=conversation_messages,
                 temperature=temperature,
                 max_tokens=max_output_tokens,

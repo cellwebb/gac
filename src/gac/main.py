@@ -15,7 +15,7 @@ from gac.config import GACConfig, load_config
 from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, handle_error
 from gac.git import run_lefthook_hooks, run_pre_commit_hooks
-from gac.git_state_validator import GitStateValidator
+from gac.git_state_validator import GitState, GitStateValidator
 from gac.grouped_commit_workflow import GroupedCommitWorkflow
 from gac.interactive_mode import InteractiveMode
 from gac.prompt import clean_commit_message
@@ -71,6 +71,8 @@ def _execute_single_commit_workflow_refactored(
     interactive: bool = False,
     commit_executor: CommitExecutor,
     interactive_mode: InteractiveMode,
+    git_state: GitState,
+    hint: str,
 ) -> None:
     """Execute single commit workflow using extracted components."""
     conversation_messages: list[dict[str, str]] = []
@@ -83,6 +85,8 @@ def _execute_single_commit_workflow_refactored(
         interactive_mode.handle_interactive_flow(
             model=model,
             user_prompt=user_prompt,
+            git_state=git_state,
+            hint=hint,
             conversation_messages=conversation_messages,
             temperature=temperature,
             max_tokens=max_output_tokens,
@@ -171,6 +175,8 @@ def _handle_oauth_retry(
     interactive: bool,
     commit_executor: CommitExecutor,
     interactive_mode: InteractiveMode,
+    git_state: GitState,
+    hint: str,
 ) -> None:
     """Handle OAuth retry logic for expired tokens."""
     logger.error(str(e))
@@ -210,6 +216,8 @@ def _handle_oauth_retry(
                     interactive=interactive,
                     commit_executor=commit_executor,
                     interactive_mode=interactive_mode,
+                    git_state=git_state,
+                    hint=hint,
                 )
             else:
                 console.print("[red]Re-authentication failed.[/red]")
@@ -251,6 +259,8 @@ def _handle_oauth_retry(
                 interactive=interactive,
                 commit_executor=commit_executor,
                 interactive_mode=interactive_mode,
+                git_state=git_state,
+                hint=hint,
             )
         except (AIError, ConfigError, OSError) as auth_error:
             console.print(f"[red]Re-authentication error: {auth_error}[/red]")
@@ -402,6 +412,8 @@ def main(
                 interactive=interactive,
                 message_only=message_only,
                 hook_timeout=hook_timeout,
+                git_state=git_state,
+                hint=hint,
             )
         else:
             # Execute single commit workflow
@@ -423,6 +435,8 @@ def main(
                 interactive=interactive,
                 commit_executor=commit_executor,
                 interactive_mode=interactive_mode,
+                git_state=git_state,
+                hint=hint,
             )
     except AIError as e:
         _handle_oauth_retry(
@@ -443,6 +457,8 @@ def main(
             interactive,
             commit_executor,
             interactive_mode,
+            git_state,
+            hint,
         )
 
 
