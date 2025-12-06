@@ -4,7 +4,6 @@ from typing import Any
 
 from gac.errors import AIError
 from gac.providers.base import GenericHTTPProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class GeminiProvider(GenericHTTPProvider):
@@ -89,15 +88,3 @@ class GeminiProvider(GenericHTTPProvider):
             raise AIError.model_error("Gemini API response missing text content")
 
         return content_text
-
-
-def _get_gemini_provider() -> GeminiProvider:
-    """Lazy getter to initialize provider at call time."""
-    return GeminiProvider(GeminiProvider.config)
-
-
-@handle_provider_errors("Gemini")
-def call_gemini_api(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
-    """Call Gemini API directly."""
-    provider = _get_gemini_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

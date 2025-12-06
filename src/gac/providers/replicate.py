@@ -7,7 +7,6 @@ import httpx
 
 from gac.errors import AIError
 from gac.providers.base import GenericHTTPProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 from gac.utils import get_ssl_verify
 
 
@@ -146,15 +145,3 @@ class ReplicateProvider(GenericHTTPProvider):
                 raise AIError.model_error(f"Error polling Replicate API: {str(e)}") from e
 
         raise AIError.timeout_error("Replicate API prediction timed out")
-
-
-def _get_replicate_provider() -> ReplicateProvider:
-    """Lazy getter to initialize provider at call time."""
-    return ReplicateProvider(ReplicateProvider.config)
-
-
-@handle_provider_errors("Replicate")
-def call_replicate_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Replicate API directly."""
-    provider = _get_replicate_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

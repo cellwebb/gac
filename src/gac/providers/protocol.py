@@ -1,17 +1,6 @@
-"""Provider protocol for type-safe AI provider implementations.
+"""Provider protocol for type-safe AI provider implementations."""
 
-This module defines the contract that all AI providers must follow,
-ensuring consistent interface across different provider implementations.
-"""
-
-from collections.abc import Callable
-from typing import Any, Protocol, runtime_checkable
-
-# Function signature for provider functions
-ProviderFunction = Callable[
-    [str, list[dict], float, int],  # model, messages, temperature, max_tokens
-    str,  # Returns generated content
-]
+from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -78,39 +67,3 @@ class ProviderProtocol(Protocol):
             Timeout in seconds
         """
         ...
-
-
-def validate_provider(provider: Any) -> bool:
-    """Validate that a provider conforms to the protocol or function signature.
-
-    Args:
-        provider: Provider to validate (can be class or function)
-
-    Returns:
-        True if provider conforms to protocol or is a valid function
-
-    Raises:
-        TypeError: If provider doesn't conform to protocol or function signature
-    """
-    # Check if it's a callable function (for function-based providers)
-    if callable(provider) and hasattr(provider, "__code__"):
-        # It's a function, check if it matches the expected signature
-        import inspect
-
-        sig = inspect.signature(provider)
-        params = list(sig.parameters.keys())
-
-        # Expected parameters: model, messages, temperature, max_tokens
-        expected_params = {"model", "messages", "temperature", "max_tokens"}
-        if set(params) >= expected_params:
-            return True
-
-    # Check if it's a class implementing the protocol
-    elif isinstance(provider, ProviderProtocol):
-        return True
-
-    raise TypeError(
-        f"Provider {provider} does not conform to ProviderProtocol or valid function signature. "
-        f"Expected either: 1) Class with generate method and properties, "
-        f"or 2) Function with parameters: model, messages, temperature, max_tokens"
-    )

@@ -9,7 +9,6 @@ from typing import Any
 
 from gac.errors import AIError
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class AzureOpenAIProvider(OpenAICompatibleProvider):
@@ -56,36 +55,3 @@ class AzureOpenAIProvider(OpenAICompatibleProvider):
     ) -> dict[str, Any]:
         """Build request body for Azure OpenAI."""
         return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}
-
-
-def _get_azure_openai_provider() -> AzureOpenAIProvider:
-    """Lazy getter to initialize provider at call time."""
-    return AzureOpenAIProvider(AzureOpenAIProvider.config)
-
-
-@handle_provider_errors("Azure OpenAI")
-def call_azure_openai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Azure OpenAI Service API.
-
-    Environment variables:
-        AZURE_OPENAI_API_KEY: Azure OpenAI API key (required)
-        AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint URL (required)
-            Example: https://your-resource.openai.azure.com
-        AZURE_OPENAI_API_VERSION: Azure OpenAI API version (required)
-            Example: 2025-01-01-preview
-            Example: 2024-02-15-preview
-
-    Args:
-        model: The deployment name in Azure OpenAI (e.g., 'gpt-4o', 'gpt-35-turbo')
-        messages: List of message dictionaries with 'role' and 'content' keys
-        temperature: Controls randomness (0.0-1.0)
-        max_tokens: Maximum tokens in the response
-
-    Returns:
-        The generated commit message
-
-    Raises:
-        AIError: If authentication fails, API errors occur, or response is invalid
-    """
-    provider = _get_azure_openai_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

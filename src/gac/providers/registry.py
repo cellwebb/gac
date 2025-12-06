@@ -1,55 +1,58 @@
-"""Auto-registration system for AI providers."""
+"""Provider registry for AI providers."""
 
 from collections.abc import Callable
+from functools import wraps
+from typing import TYPE_CHECKING, Any
 
-# Global registry for all providers
-PROVIDER_REGISTRY: dict[str, Callable] = {}
-PROVIDER_ENV_VARS: dict[str, list[str]] = {}
+if TYPE_CHECKING:
+    from gac.providers.base import BaseConfiguredProvider
+
+# Global registry for provider functions
+PROVIDER_REGISTRY: dict[str, Callable[..., str]] = {}
 
 
-def register_provider(name: str, env_vars: list[str], api_function: Callable):
-    """Register a provider with its API function.
+def create_provider_func(provider_class: type["BaseConfiguredProvider"]) -> Callable[..., str]:
+    """Create a provider function from a provider class.
+
+    This function creates a callable that:
+    1. Instantiates the provider class
+    2. Calls generate() with the provided arguments
+    3. Is wrapped with @handle_provider_errors for consistent error handling
 
     Args:
-        name: Provider name (e.g., "groq", "openai")
-        env_vars: List of required environment variables
-        api_function: The API call function for the provider
+        provider_class: A provider class with a `config` class attribute
 
     Returns:
-        Decorator function that registers the class
+        A callable function that can be used to generate text
     """
+    from gac.providers.error_handler import handle_provider_errors
 
-    def decorator(cls):
-        """Decorator that registers the class and returns it unchanged."""
-        PROVIDER_REGISTRY[name] = api_function
-        PROVIDER_ENV_VARS[name] = env_vars
-        return cls
+    provider_name = provider_class.config.name
 
-    return decorator
+    @handle_provider_errors(provider_name)
+    @wraps(provider_class.generate)
+    def provider_func(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
+        provider = provider_class(provider_class.config)
+        return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
+
+    # Add metadata for introspection
+    provider_func.__name__ = f"call_{provider_name.lower().replace(' ', '_').replace('.', '_')}_api"
+    provider_func.__doc__ = f"Call {provider_name} API to generate text."
+
+    return provider_func
 
 
-def get_all_provider_names() -> list[str]:
-    """Get list of all registered provider names.
+def register_provider(name: str, provider_class: type["BaseConfiguredProvider"]) -> None:
+    """Register a provider class and auto-generate its function.
 
-    Returns:
-        Sorted list of provider names
+    Args:
+        name: Provider name (e.g., "openai", "anthropic")
+        provider_class: The provider class to register
     """
-    return sorted(PROVIDER_REGISTRY.keys())
-
-
-def get_all_env_vars() -> list[str]:
-    """Get list of all environment variables used by providers.
-
-    Returns:
-        Sorted list of unique environment variable names
-    """
-    return sorted({var for vars_list in PROVIDER_ENV_VARS.values() for var in vars_list})
+    PROVIDER_REGISTRY[name] = create_provider_func(provider_class)
 
 
 __all__ = [
-    "PROVIDER_ENV_VARS",
     "PROVIDER_REGISTRY",
-    "get_all_env_vars",
-    "get_all_provider_names",
     "register_provider",
 ]

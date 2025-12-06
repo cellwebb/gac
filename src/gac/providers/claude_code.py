@@ -9,7 +9,6 @@ from typing import Any
 from gac.errors import AIError
 from gac.oauth.claude_code import load_stored_token
 from gac.providers.base import AnthropicCompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class ClaudeCodeProvider(AnthropicCompatibleProvider):
@@ -78,34 +77,3 @@ class ClaudeCodeProvider(AnthropicCompatibleProvider):
         }
 
         return body
-
-
-def _get_claude_code_provider() -> ClaudeCodeProvider:
-    """Lazy getter to initialize Claude Code provider at call time."""
-    return ClaudeCodeProvider(ClaudeCodeProvider.config)
-
-
-@handle_provider_errors("Claude Code")
-def call_claude_code_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Claude Code API using OAuth token.
-
-    This provider uses the Claude Code subscription OAuth token instead of the Anthropic API key.
-    It authenticates using Bearer token authentication with the special anthropic-beta header.
-
-    Environment variables:
-        CLAUDE_CODE_ACCESS_TOKEN: OAuth access token from Claude Code authentication
-
-    Args:
-        model: Model name (e.g., 'claude-sonnet-4-5')
-        messages: List of message dictionaries with 'role' and 'content' keys
-        temperature: Sampling temperature (0.0-1.0)
-        max_tokens: Maximum tokens in response
-
-    Returns:
-        Generated text response
-
-    Raises:
-        AIError: If authentication fails or API call fails
-    """
-    provider = _get_claude_code_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

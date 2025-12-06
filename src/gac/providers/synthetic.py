@@ -5,7 +5,6 @@ from typing import Any
 
 from gac.errors import AIError
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class SyntheticProvider(OpenAICompatibleProvider):
@@ -39,15 +38,3 @@ class SyntheticProvider(OpenAICompatibleProvider):
         # Ensure the prefixed model is used
         data["model"] = model
         return data
-
-
-def _get_synthetic_provider() -> SyntheticProvider:
-    """Lazy getter to initialize provider at call time."""
-    return SyntheticProvider(SyntheticProvider.config)
-
-
-@handle_provider_errors("Synthetic")
-def call_synthetic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Synthetic API directly."""
-    provider = _get_synthetic_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

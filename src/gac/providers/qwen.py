@@ -3,7 +3,6 @@
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1/chat/completions"
 
@@ -60,15 +59,3 @@ class QwenProvider(OpenAICompatibleProvider):
             del headers["Authorization"]
         headers["Authorization"] = f"Bearer {self._auth_token}"
         return headers
-
-
-def _get_qwen_provider() -> QwenProvider:
-    """Lazy getter to initialize Qwen provider at call time."""
-    return QwenProvider(QwenProvider.config)
-
-
-@handle_provider_errors("Qwen")
-def call_qwen_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Qwen API with OAuth authentication."""
-    provider = _get_qwen_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

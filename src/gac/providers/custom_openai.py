@@ -9,7 +9,6 @@ from typing import Any
 
 from gac.errors import AIError
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class CustomOpenAIProvider(OpenAICompatibleProvider):
@@ -43,39 +42,3 @@ class CustomOpenAIProvider(OpenAICompatibleProvider):
         data = super()._build_request_body(messages, temperature, max_tokens, model, **kwargs)
         data["max_completion_tokens"] = data.pop("max_tokens")
         return data
-
-
-def _get_custom_openai_provider() -> CustomOpenAIProvider:
-    """Lazy getter to initialize provider at call time."""
-    return CustomOpenAIProvider(CustomOpenAIProvider.config)
-
-
-@handle_provider_errors("Custom OpenAI")
-def call_custom_openai_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call a custom OpenAI-compatible API endpoint.
-
-    This provider is useful for:
-    - OpenAI-compatible proxies or gateways
-    - Self-hosted OpenAI-compatible services
-    - Other services implementing the OpenAI Chat Completions API
-
-    Environment variables:
-        CUSTOM_OPENAI_API_KEY: API key for authentication (required)
-        CUSTOM_OPENAI_BASE_URL: Base URL for the API endpoint (required)
-            Example: https://your-proxy.example.com/v1
-            Example: https://your-custom-endpoint.com
-
-    Args:
-        model: The model to use (e.g., 'gpt-4', 'gpt-3.5-turbo')
-        messages: List of message dictionaries with 'role' and 'content' keys
-        temperature: Controls randomness (0.0-1.0)
-        max_tokens: Maximum tokens in the response
-
-    Returns:
-        The generated commit message
-
-    Raises:
-        AIError: If authentication fails, API errors occur, or response is invalid
-    """
-    provider = _get_custom_openai_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

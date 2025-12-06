@@ -2,9 +2,7 @@
 
 import logging
 import os
-import re
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,51 +11,9 @@ import httpx
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.protocol import ProviderProtocol
-from gac.providers.registry import register_provider
 from gac.utils import get_ssl_verify
 
 logger = logging.getLogger(__name__)
-
-
-MAX_ERROR_RESPONSE_LENGTH = 200
-
-SENSITIVE_PATTERNS = [
-    re.compile(r"sk-[A-Za-z0-9_-]{20,}"),  # OpenAI keys
-    re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),  # Anthropic keys
-    re.compile(r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}"),  # GitHub tokens
-    re.compile(r"AIza[0-9A-Za-z_-]{20,}"),  # Google API keys
-    re.compile(r"(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{20,}"),  # Stripe keys
-    re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),  # Slack tokens
-    re.compile(r"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"),  # JWT tokens
-    re.compile(r"Bearer\s+[A-Za-z0-9_-]{20,}"),  # Bearer tokens
-    re.compile(r"[A-Za-z0-9]{32,}"),  # Generic long alphanumeric tokens
-]
-
-
-def sanitize_error_response(text: str) -> str:
-    """Sanitize API error response text for safe logging/display.
-
-    This function:
-    1. Redacts potential API keys and tokens
-    2. Truncates to MAX_ERROR_RESPONSE_LENGTH characters
-
-    Args:
-        text: Raw error response text from an API
-
-    Returns:
-        Sanitized text safe for logging/display
-    """
-    if not text:
-        return ""
-
-    sanitized = text
-    for pattern in SENSITIVE_PATTERNS:
-        sanitized = pattern.sub("[REDACTED]", sanitized)
-
-    if len(sanitized) > MAX_ERROR_RESPONSE_LENGTH:
-        sanitized = sanitized[:MAX_ERROR_RESPONSE_LENGTH] + "..."
-
-    return sanitized
 
 
 @dataclass
@@ -87,20 +43,6 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
 
     Implements ProviderProtocol for type safety.
     """
-
-    @classmethod
-    def register(cls, provider_name: str, env_vars: list[str], api_function: Callable):
-        """Register this class as a provider.
-
-        Args:
-            provider_name: Name to register the provider under
-            env_vars: List of required environment variables
-            api_function: The API call function for the provider
-
-        Returns:
-            Decorated class ready for auto-registration
-        """
-        return register_provider(provider_name, env_vars, api_function)(cls)
 
     def __init__(self, config: ProviderConfig):
         self.config = config
@@ -261,20 +203,6 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
     Handles standard OpenAI API format with minimal customization needed.
     """
 
-    @classmethod
-    def register(cls, provider_name: str, env_vars: list[str], api_function: Callable):
-        """Register this class as a provider.
-
-        Args:
-            provider_name: Name to register the provider under
-            env_vars: List of required environment variables
-            api_function: The API call function for the provider
-
-        Returns:
-            Decorated class ready for auto-registration
-        """
-        return register_provider(provider_name, env_vars, api_function)(cls)
-
     def _build_headers(self) -> dict[str, str]:
         """Build headers with OpenAI-style authorization."""
         headers = super()._build_headers()
@@ -303,20 +231,6 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
 
 class AnthropicCompatibleProvider(BaseConfiguredProvider):
     """Base class for Anthropic-compatible providers."""
-
-    @classmethod
-    def register(cls, provider_name: str, env_vars: list[str], api_function: Callable):
-        """Register this class as a provider.
-
-        Args:
-            provider_name: Name to register the provider under
-            env_vars: List of required environment variables
-            api_function: The API call function for the provider
-
-        Returns:
-            Decorated class ready for auto-registration
-        """
-        return register_provider(provider_name, env_vars, api_function)(cls)
 
     def _build_headers(self) -> dict[str, str]:
         """Build headers with Anthropic-style authorization."""
@@ -364,20 +278,6 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
 class GenericHTTPProvider(BaseConfiguredProvider):
     """Base class for completely custom providers."""
 
-    @classmethod
-    def register(cls, provider_name: str, env_vars: list[str], api_function: Callable):
-        """Register this class as a provider.
-
-        Args:
-            provider_name: Name to register the provider under
-            env_vars: List of required environment variables
-            api_function: The API call function for the provider
-
-        Returns:
-            Decorated class ready for auto-registration
-        """
-        return register_provider(provider_name, env_vars, api_function)(cls)
-
     def _build_request_body(
         self, messages: list[dict], temperature: float, max_tokens: int, model: str, **kwargs
     ) -> dict[str, Any]:
@@ -415,8 +315,6 @@ __all__ = [
     "AnthropicCompatibleProvider",
     "BaseConfiguredProvider",
     "GenericHTTPProvider",
-    "MAX_ERROR_RESPONSE_LENGTH",
     "OpenAICompatibleProvider",
     "ProviderConfig",
-    "sanitize_error_response",
 ]

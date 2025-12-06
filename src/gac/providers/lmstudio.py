@@ -4,7 +4,6 @@ import os
 from typing import Any
 
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class LMStudioProvider(OpenAICompatibleProvider):
@@ -75,15 +74,3 @@ class LMStudioProvider(OpenAICompatibleProvider):
             return content
 
         raise AIError.model_error("Invalid response: missing content")
-
-
-def _get_lmstudio_provider() -> LMStudioProvider:
-    """Lazy getter to initialize LM Studio provider at call time."""
-    return LMStudioProvider(LMStudioProvider.config)
-
-
-@handle_provider_errors("LM Studio")
-def call_lmstudio_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call LM Studio API directly."""
-    provider = _get_lmstudio_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

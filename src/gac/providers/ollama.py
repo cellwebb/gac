@@ -4,7 +4,6 @@ import os
 from typing import Any
 
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 
 class OllamaProvider(OpenAICompatibleProvider):
@@ -72,15 +71,3 @@ class OllamaProvider(OpenAICompatibleProvider):
             raise AIError.model_error("Ollama API returned empty content")
 
         return content
-
-
-def _get_ollama_provider() -> OllamaProvider:
-    """Lazy getter to initialize Ollama provider at call time."""
-    return OllamaProvider(OllamaProvider.config)
-
-
-@handle_provider_errors("Ollama")
-def call_ollama_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call Ollama API directly."""
-    provider = _get_ollama_provider()
-    return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)

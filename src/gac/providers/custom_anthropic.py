@@ -11,13 +11,18 @@ from typing import Any
 
 from gac.errors import AIError
 from gac.providers.base import AnthropicCompatibleProvider, ProviderConfig
-from gac.providers.error_handler import handle_provider_errors
 
 logger = logging.getLogger(__name__)
 
 
 class CustomAnthropicProvider(AnthropicCompatibleProvider):
     """Custom Anthropic-compatible provider with configurable endpoint and version."""
+
+    config = ProviderConfig(
+        name="Custom Anthropic",
+        api_key_env="CUSTOM_ANTHROPIC_API_KEY",
+        base_url="",  # Will be set in __init__ from environment
+    )
 
     def __init__(self, config: ProviderConfig):
         """Initialize the provider with custom configuration from environment variables.
@@ -96,50 +101,3 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
                 f"'content[0].text' or items with type='text', but got: {type(e).__name__}. "
                 f"Check logs for full response structure."
             ) from e
-
-
-def _get_custom_anthropic_provider() -> CustomAnthropicProvider:
-    """Get or create the Custom Anthropic provider instance (lazy initialization)."""
-    return CustomAnthropicProvider(
-        ProviderConfig(
-            name="Custom Anthropic",
-            api_key_env="CUSTOM_ANTHROPIC_API_KEY",
-            base_url="",  # Will be set by __init__
-        )
-    )
-
-
-@handle_provider_errors("Custom Anthropic")
-def call_custom_anthropic_api(model: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
-    """Call a custom Anthropic-compatible API endpoint.
-
-    This provider is useful for:
-    - Anthropic-compatible proxies or gateways
-    - Self-hosted Anthropic-compatible services
-    - Other services implementing the Anthropic Messages API
-
-    Environment variables:
-        CUSTOM_ANTHROPIC_API_KEY: API key for authentication (required)
-        CUSTOM_ANTHROPIC_BASE_URL: Base URL for the API endpoint (required)
-            Example: https://your-proxy.example.com
-        CUSTOM_ANTHROPIC_VERSION: API version header (optional, defaults to '2023-06-01')
-
-    Args:
-        model: The model to use (e.g., 'claude-sonnet-4-5', 'claude-haiku-4-5')
-        messages: List of message dictionaries with 'role' and 'content' keys
-        temperature: Controls randomness (0.0-1.0)
-        max_tokens: Maximum tokens in the response
-
-    Returns:
-        The generated commit message
-
-    Raises:
-        AIError: If authentication fails, API errors occur, or response is invalid
-    """
-    provider = _get_custom_anthropic_provider()
-    return provider.generate(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
