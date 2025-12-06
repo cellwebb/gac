@@ -18,6 +18,8 @@ def config():
 @config.command()
 def show() -> None:
     """Show all current config values."""
+    from dotenv import dotenv_values
+
     project_env_path = Path(".gac.env")
     user_exists = GAC_ENV_PATH.exists()
     project_exists = project_env_path.exists()
@@ -29,9 +31,14 @@ def show() -> None:
 
     if user_exists:
         click.echo(f"User config ({GAC_ENV_PATH}):")
-        with open(GAC_ENV_PATH, encoding="utf-8") as f:
-            for line in f:
-                click.echo(line.rstrip())
+        user_config = dotenv_values(str(GAC_ENV_PATH))
+        for key, value in sorted(user_config.items()):
+            if value is not None:
+                if any(sensitive in key.lower() for sensitive in ["key", "token", "secret"]):
+                    display_value = "***hidden***"
+                else:
+                    display_value = value
+                click.echo(f"  {key}={display_value}")
     else:
         click.echo("No $HOME/.gac.env found.")
 
@@ -39,9 +46,14 @@ def show() -> None:
         if user_exists:
             click.echo("")
         click.echo("Project config (./.gac.env):")
-        with open(project_env_path, encoding="utf-8") as f:
-            for line in f:
-                click.echo(line.rstrip())
+        project_config = dotenv_values(str(project_env_path))
+        for key, value in sorted(project_config.items()):
+            if value is not None:
+                if any(sensitive in key.lower() for sensitive in ["key", "token", "secret"]):
+                    display_value = "***hidden***"
+                else:
+                    display_value = value
+                click.echo(f"  {key}={display_value}")
         click.echo("")
         click.echo("Note: Project-level .gac.env overrides $HOME/.gac.env values for any duplicated variables.")
     else:
