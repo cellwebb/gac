@@ -281,6 +281,10 @@ class GroupedCommitWorkflow:
         """
         num_commits = len(result.commits)
 
+        restore_needed = False
+        original_staged_files: list[str] | None = None
+        original_staged_diff: str | None = None
+
         if dry_run:
             console.print(f"[yellow]Dry run: Would create {num_commits} commits[/yellow]")
             for idx, commit in enumerate(result.commits, 1):
@@ -311,16 +315,17 @@ class GroupedCommitWorkflow:
                         execute_commit(commit["message"].strip(), no_verify, hook_timeout)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except (AIError, ConfigError, GitError, subprocess.SubprocessError, OSError) as e:
+                        restore_needed = True
                         console.print(f"[red]✗ Failed at commit {idx}/{num_commits}: {e}[/red]")
                         console.print(f"[yellow]Completed {idx - 1}/{num_commits} commits.[/yellow]")
-                        if idx == 1:
-                            console.print("[yellow]Restoring original staging area...[/yellow]")
-                            restore_staging(original_staged_files, original_staged_diff)
-                            console.print("[green]Original staging area restored.[/green]")
-                        return 1
+                        break
             except KeyboardInterrupt:
+                restore_needed = True
                 console.print("\n[yellow]Interrupted by user. Restoring original staging area...[/yellow]")
-                restore_staging(original_staged_files, original_staged_diff)
+
+            if restore_needed:
+                console.print("[yellow]Restoring original staging area...[/yellow]")
+                restore_staging(original_staged_files or [], original_staged_diff)
                 console.print("[green]Original staging area restored.[/green]")
                 return 1
 
@@ -335,12 +340,21 @@ class GroupedCommitWorkflow:
                     logger.info("Changes pushed successfully")
                     console.print("[green]Changes pushed successfully[/green]")
                 else:
+                    restore_needed = True
                     console.print(
                         "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
                     )
-                    return 1
             except (GitError, OSError) as e:
+                restore_needed = True
                 console.print(f"[red]Error pushing changes: {e}[/red]")
+
+            if restore_needed:
+                console.print("[yellow]Restoring original staging area...[/yellow]")
+                if original_staged_files is None or original_staged_diff is None:
+                    original_staged_files = get_staged_files(existing_only=False)
+                    original_staged_diff = run_git_command(["diff", "--cached", "--binary"])
+                restore_staging(original_staged_files, original_staged_diff)
+                console.print("[green]Original staging area restored.[/green]")
                 return 1
 
         return 0
