@@ -6,6 +6,7 @@ import pytest
 
 from gac.errors import ConfigError
 from gac.main import _execute_single_commit_workflow, main
+from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 
 
 class TestMainIntegration:
@@ -93,6 +94,47 @@ class TestSingleCommitWorkflow:
         git_state.diff_stat = "1 file changed"
         return commit_executor, interactive_mode, git_state
 
+    def _create_context(
+        self,
+        commit_executor,
+        interactive_mode,
+        git_state,
+        require_confirmation=True,
+        quiet=False,
+        push=False,
+        message_only=False,
+        interactive=False,
+    ):
+        """Helper to create a WorkflowContext for tests."""
+        prompts = MagicMock()
+        prompts.system_prompt = "system"
+        prompts.user_prompt = "user"
+
+        gen_config = GenerationConfig(
+            model="openai:gpt-4o-mini",
+            temperature=0.1,
+            max_output_tokens=4096,
+            max_retries=3,
+        )
+        flags = WorkflowFlags(
+            require_confirmation=require_confirmation,
+            quiet=quiet,
+            no_verify=False,
+            dry_run=False,
+            message_only=message_only,
+            push=push,
+            show_prompt=False,
+            interactive=interactive,
+        )
+        state = WorkflowState(
+            prompts=prompts,
+            git_state=git_state,
+            hint="",
+            commit_executor=commit_executor,
+            interactive_mode=interactive_mode,
+        )
+        return WorkflowContext(config=gen_config, flags=flags, state=state)
+
     @patch("gac.main.generate_commit_message")
     @patch("gac.main.count_tokens")
     @patch("gac.main.config", {"warning_limit_tokens": 50000})
@@ -102,28 +144,15 @@ class TestSingleCommitWorkflow:
         mock_generate.return_value = "feat: test commit message"
         mock_count_tokens.return_value = 100
 
+        ctx = self._create_context(
+            commit_executor, interactive_mode, git_state, require_confirmation=False, quiet=False
+        )
+
         with (
             patch("gac.main.display_commit_message") as mock_display,
             pytest.raises(SystemExit) as exc,
         ):
-            _execute_single_commit_workflow(
-                system_prompt="system",
-                user_prompt="user",
-                model="openai:gpt-4o-mini",
-                temperature=0.1,
-                max_output_tokens=4096,
-                max_retries=3,
-                require_confirmation=False,  # -y flag
-                quiet=False,
-                no_verify=False,
-                dry_run=False,
-                push=False,
-                show_prompt=False,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint="",
-            )
+            _execute_single_commit_workflow(ctx)
 
         assert exc.value.code == 0
         mock_display.assert_called_once()
@@ -138,28 +167,13 @@ class TestSingleCommitWorkflow:
         mock_generate.return_value = "feat: test commit message"
         mock_count_tokens.return_value = 100
 
+        ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=False, quiet=True)
+
         with (
             patch("gac.main.display_commit_message") as mock_display,
             pytest.raises(SystemExit) as exc,
         ):
-            _execute_single_commit_workflow(
-                system_prompt="system",
-                user_prompt="user",
-                model="openai:gpt-4o-mini",
-                temperature=0.1,
-                max_output_tokens=4096,
-                max_retries=3,
-                require_confirmation=False,
-                quiet=True,  # quiet mode
-                no_verify=False,
-                dry_run=False,
-                push=False,
-                show_prompt=False,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint="",
-            )
+            _execute_single_commit_workflow(ctx)
 
         assert exc.value.code == 0
         mock_display.assert_not_called()
@@ -176,28 +190,13 @@ class TestSingleCommitWorkflow:
 
         interactive_mode.handle_single_commit_confirmation.return_value = ("feat: test commit message", "no")
 
+        ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
+
         with (
             patch("gac.workflow_utils.display_commit_message"),
             pytest.raises(SystemExit) as exc,
         ):
-            _execute_single_commit_workflow(
-                system_prompt="system",
-                user_prompt="user",
-                model="openai:gpt-4o-mini",
-                temperature=0.1,
-                max_output_tokens=4096,
-                max_retries=3,
-                require_confirmation=True,
-                quiet=False,
-                no_verify=False,
-                dry_run=False,
-                push=False,
-                show_prompt=False,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint="",
-            )
+            _execute_single_commit_workflow(ctx)
 
         assert exc.value.code == 0
         mock_console.print.assert_called_with("[yellow]Commit aborted.[/yellow]")
@@ -217,28 +216,13 @@ class TestSingleCommitWorkflow:
             ("feat: second message", "yes"),
         ]
 
+        ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
+
         with (
             patch("gac.workflow_utils.display_commit_message"),
             pytest.raises(SystemExit) as exc,
         ):
-            _execute_single_commit_workflow(
-                system_prompt="system",
-                user_prompt="user",
-                model="openai:gpt-4o-mini",
-                temperature=0.1,
-                max_output_tokens=4096,
-                max_retries=3,
-                require_confirmation=True,
-                quiet=False,
-                no_verify=False,
-                dry_run=False,
-                push=False,
-                show_prompt=False,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint="",
-            )
+            _execute_single_commit_workflow(ctx)
 
         assert exc.value.code == 0
         assert mock_generate.call_count == 2
@@ -256,28 +240,101 @@ class TestSingleCommitWorkflow:
 
         interactive_mode.handle_single_commit_confirmation.return_value = ("feat: edited message", "yes")
 
+        ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
+
         with (
             patch("gac.workflow_utils.display_commit_message"),
             pytest.raises(SystemExit) as exc,
         ):
-            _execute_single_commit_workflow(
-                system_prompt="system",
-                user_prompt="user",
-                model="openai:gpt-4o-mini",
-                temperature=0.1,
-                max_output_tokens=4096,
-                max_retries=3,
-                require_confirmation=True,
-                quiet=False,
-                no_verify=False,
-                dry_run=False,
-                push=False,
-                show_prompt=False,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-                git_state=git_state,
-                hint="",
-            )
+            _execute_single_commit_workflow(ctx)
 
         assert exc.value.code == 0
         commit_executor.create_commit.assert_called_once_with("feat: edited message")
+
+
+class TestWorkflowContext:
+    """Unit tests for WorkflowContext dataclasses."""
+
+    @pytest.fixture
+    def sample_context(self):
+        """Create a sample WorkflowContext for testing."""
+        prompts = MagicMock()
+        prompts.system_prompt = "system prompt"
+        prompts.user_prompt = "user prompt"
+
+        git_state = MagicMock()
+        commit_executor = MagicMock()
+        interactive_mode = MagicMock()
+
+        gen_config = GenerationConfig(
+            model="openai:gpt-4o-mini",
+            temperature=0.5,
+            max_output_tokens=2048,
+            max_retries=5,
+        )
+        flags = WorkflowFlags(
+            require_confirmation=True,
+            quiet=True,
+            no_verify=False,
+            dry_run=True,
+            message_only=False,
+            push=True,
+            show_prompt=False,
+            interactive=True,
+            hook_timeout=60,
+        )
+        state = WorkflowState(
+            prompts=prompts,
+            git_state=git_state,
+            hint="test hint",
+            commit_executor=commit_executor,
+            interactive_mode=interactive_mode,
+        )
+        return WorkflowContext(config=gen_config, flags=flags, state=state)
+
+    def test_config_properties_delegate_correctly(self, sample_context):
+        """Test that config properties delegate to GenerationConfig."""
+        assert sample_context.model == "openai:gpt-4o-mini"
+        assert sample_context.temperature == 0.5
+        assert sample_context.max_output_tokens == 2048
+        assert sample_context.max_retries == 5
+
+    def test_flags_properties_delegate_correctly(self, sample_context):
+        """Test that flag properties delegate to WorkflowFlags."""
+        assert sample_context.quiet is True
+        assert sample_context.dry_run is True
+        assert sample_context.message_only is False
+        assert sample_context.interactive is True
+
+    def test_state_properties_delegate_correctly(self, sample_context):
+        """Test that state properties delegate to WorkflowState."""
+        assert sample_context.system_prompt == "system prompt"
+        assert sample_context.user_prompt == "user prompt"
+        assert sample_context.hint == "test hint"
+        assert sample_context.git_state is not None
+
+    def test_frozen_dataclasses_are_immutable(self, sample_context):
+        """Test that frozen dataclasses cannot be modified."""
+        with pytest.raises(AttributeError):
+            sample_context.config = None
+
+        with pytest.raises(AttributeError):
+            sample_context.config.model = "different:model"
+
+    def test_workflow_state_is_mutable(self):
+        """Test that WorkflowState (non-frozen) can be modified if needed."""
+        prompts = MagicMock()
+        git_state = MagicMock()
+        commit_executor = MagicMock()
+        interactive_mode = MagicMock()
+
+        state = WorkflowState(
+            prompts=prompts,
+            git_state=git_state,
+            hint="original",
+            commit_executor=commit_executor,
+            interactive_mode=interactive_mode,
+        )
+
+        state.hint = "modified"
+        assert state.hint == "modified"

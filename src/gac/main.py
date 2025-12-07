@@ -15,12 +15,13 @@ from gac.config import GACConfig, load_config
 from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, handle_error
 from gac.git import run_lefthook_hooks, run_pre_commit_hooks
-from gac.git_state_validator import GitState, GitStateValidator
+from gac.git_state_validator import GitStateValidator
 from gac.grouped_commit_workflow import GroupedCommitWorkflow
 from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
 from gac.prompt import clean_commit_message
 from gac.prompt_builder import PromptBuilder
+from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
 logger = logging.getLogger(__name__)
@@ -29,90 +30,72 @@ config: GACConfig = load_config()
 console = Console()  # Initialize console globally to prevent undefined access
 
 
-def _execute_single_commit_workflow(
-    *,
-    system_prompt: str,
-    user_prompt: str,
-    model: str,
-    temperature: float,
-    max_output_tokens: int,
-    max_retries: int,
-    require_confirmation: bool,
-    quiet: bool,
-    no_verify: bool,
-    dry_run: bool,
-    message_only: bool = False,
-    push: bool,
-    show_prompt: bool,
-    hook_timeout: int = 120,
-    interactive: bool = False,
-    commit_executor: CommitExecutor,
-    interactive_mode: InteractiveMode,
-    git_state: GitState,
-    hint: str,
-) -> None:
-    """Execute single commit workflow using extracted components."""
+def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
+    """Execute single commit workflow using extracted components.
+
+    Args:
+        ctx: WorkflowContext containing all configuration, flags, and state
+    """
     conversation_messages: list[dict[str, str]] = []
-    if system_prompt:
-        conversation_messages.append({"role": "system", "content": system_prompt})
-    conversation_messages.append({"role": "user", "content": user_prompt})
+    if ctx.system_prompt:
+        conversation_messages.append({"role": "system", "content": ctx.system_prompt})
+    conversation_messages.append({"role": "user", "content": ctx.user_prompt})
 
     # Handle interactive questions if enabled
-    if interactive and not message_only:
-        interactive_mode.handle_interactive_flow(
-            model=model,
-            user_prompt=user_prompt,
-            git_state=git_state,
-            hint=hint,
+    if ctx.interactive and not ctx.message_only:
+        ctx.state.interactive_mode.handle_interactive_flow(
+            model=ctx.model,
+            user_prompt=ctx.user_prompt,
+            git_state=ctx.git_state,
+            hint=ctx.hint,
             conversation_messages=conversation_messages,
-            temperature=temperature,
-            max_tokens=max_output_tokens,
-            max_retries=max_retries,
-            quiet=quiet,
+            temperature=ctx.temperature,
+            max_tokens=ctx.max_output_tokens,
+            max_retries=ctx.max_retries,
+            quiet=ctx.quiet,
         )
 
     # Generate commit message
     first_iteration = True
     while True:
-        prompt_tokens = count_tokens(conversation_messages, model)
+        prompt_tokens = count_tokens(conversation_messages, ctx.model)
         if first_iteration:
             warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
             if warning_limit_val is None:
                 raise ConfigError("warning_limit_tokens configuration missing")
             warning_limit = int(warning_limit_val)
-            if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
+            if not check_token_warning(prompt_tokens, warning_limit, ctx.flags.require_confirmation):
                 sys.exit(0)
         first_iteration = False
 
         raw_commit_message = generate_commit_message(
-            model=model,
+            model=ctx.model,
             prompt=conversation_messages,
-            temperature=temperature,
-            max_tokens=max_output_tokens,
-            max_retries=max_retries,
-            quiet=quiet or message_only,
+            temperature=ctx.temperature,
+            max_tokens=ctx.max_output_tokens,
+            max_retries=ctx.max_retries,
+            quiet=ctx.quiet or ctx.message_only,
         )
         commit_message = clean_commit_message(raw_commit_message)
         logger.info("Generated commit message:")
         logger.info(commit_message)
         conversation_messages.append({"role": "assistant", "content": commit_message})
 
-        if message_only:
-            # Output only the commit message without any formatting
+        if ctx.message_only:
             print(commit_message)
             sys.exit(0)
 
         # Display commit message panel (always show, regardless of confirmation mode)
-        if not quiet:
-            display_commit_message(commit_message, prompt_tokens, model, quiet)
+        if not ctx.quiet:
+            display_commit_message(commit_message, prompt_tokens, ctx.model, ctx.quiet)
 
         # Handle confirmation
-        if require_confirmation:
-            final_message, decision = interactive_mode.handle_single_commit_confirmation(
-                model=model,
+        if ctx.flags.require_confirmation:
+            final_message, decision = ctx.state.interactive_mode.handle_single_commit_confirmation(
+                model=ctx.model,
                 commit_message=commit_message,
                 conversation_messages=conversation_messages,
-                quiet=quiet,
+                quiet=ctx.quiet,
             )
             if decision == "yes":
                 commit_message = final_message
@@ -125,16 +108,16 @@ def _execute_single_commit_workflow(
             break
 
     # Execute the commit
-    commit_executor.create_commit(commit_message)
+    ctx.state.commit_executor.create_commit(commit_message)
 
     # Push if requested
-    if push:
-        commit_executor.push_to_remote()
+    if ctx.flags.push:
+        ctx.state.commit_executor.push_to_remote()
 
-    if not quiet:
+    if not ctx.quiet:
         logger.info("Successfully committed changes with message:")
         logger.info(commit_message)
-        if push:
+        if ctx.flags.push:
             logger.info("Changes pushed to remote.")
     sys.exit(0)
 
@@ -283,14 +266,14 @@ def main(
                 hint=hint,
             )
         else:
-            # Execute single commit workflow
-            _execute_single_commit_workflow(
-                system_prompt=prompts.system_prompt,
-                user_prompt=prompts.user_prompt,
+            # Build workflow context
+            gen_config = GenerationConfig(
                 model=model,
                 temperature=temperature,
                 max_output_tokens=max_output_tokens,
                 max_retries=max_retries,
+            )
+            flags = WorkflowFlags(
                 require_confirmation=require_confirmation,
                 quiet=quiet,
                 no_verify=no_verify,
@@ -298,21 +281,29 @@ def main(
                 message_only=message_only,
                 push=push,
                 show_prompt=show_prompt,
-                hook_timeout=hook_timeout,
                 interactive=interactive,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
+                hook_timeout=hook_timeout,
+            )
+            state = WorkflowState(
+                prompts=prompts,
                 git_state=git_state,
                 hint=hint,
+                commit_executor=commit_executor,
+                interactive_mode=interactive_mode,
             )
+            ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
+
+            # Execute single commit workflow
+            _execute_single_commit_workflow(ctx)
     except AIError as e:
-        handle_oauth_retry(
-            e=e,
-            prompts=prompts,
+        # Build context for retry
+        gen_config = GenerationConfig(
             model=model,
             temperature=temperature,
             max_output_tokens=max_output_tokens,
             max_retries=max_retries,
+        )
+        flags = WorkflowFlags(
             require_confirmation=require_confirmation,
             quiet=quiet,
             no_verify=no_verify,
@@ -320,13 +311,18 @@ def main(
             message_only=message_only,
             push=push,
             show_prompt=show_prompt,
-            hook_timeout=hook_timeout,
             interactive=interactive,
-            commit_executor=commit_executor,
-            interactive_mode=interactive_mode,
+            hook_timeout=hook_timeout,
+        )
+        state = WorkflowState(
+            prompts=prompts,
             git_state=git_state,
             hint=hint,
+            commit_executor=commit_executor,
+            interactive_mode=interactive_mode,
         )
+        ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
+        handle_oauth_retry(e=e, ctx=ctx)
 
 
 if __name__ == "__main__":
