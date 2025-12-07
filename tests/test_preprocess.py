@@ -5,6 +5,8 @@ from unittest.mock import patch
 from gac.preprocess import (
     analyze_code_patterns,
     calculate_section_importance,
+    extract_binary_file_summary,
+    extract_filtered_file_summary,
     filter_binary_and_minified,
     get_extension_score,
     is_lockfile_or_generated,
@@ -388,3 +390,30 @@ diff --git a/README.md b/README.md
         assert "[Minified file change]" in filtered  # Should have the minified marker
         assert "def foo" in filtered  # main.py content present
         assert "a" * 1000 not in filtered  # minified content removed
+
+    def test_extract_binary_file_summary(self):
+        """Test extracting binary file summary (line 143)."""
+        section = "diff --git a/image.png b/image.png\nBinary files a/image.png and b/image.png differ\n"
+        result = extract_binary_file_summary(section)
+
+        assert "image.png" in result
+        assert "[Binary file change]" in result
+        assert len(result) < len(section)  # Should be shorter than original
+
+    def test_extract_filtered_file_summary(self):
+        """Test extracting filtered file summary with custom change type."""
+        section = 'diff --git a/package-lock.json b/package-lock.json\n+{"version": "1.0.0"}\n'
+        result = extract_filtered_file_summary(section, "[Lockfile change]")
+
+        assert "package-lock.json" in result
+        assert "[Lockfile change]" in result
+        assert len(result) < len(section)  # Should be shorter than original
+
+    def test_extract_filtered_file_summary_default_change_type(self):
+        """Test extracting filtered file summary with default change type."""
+        section = "diff --git a/min.js b/min.js\n+var a=1;\n"
+        result = extract_filtered_file_summary(section)
+
+        assert "min.js" in result
+        # Should use some default change type indicator
+        assert "[Filtered file change]" in result or "[Minified file change]" in result or "[File change]" in result
