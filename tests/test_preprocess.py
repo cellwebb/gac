@@ -124,8 +124,21 @@ index 2345678..bcdef01 234567
         minified4 = "\n".join(["e" * 600 for _ in range(3)] + ["short" for _ in range(7)])
         assert is_minified_content(minified4)
         # Test with normal content
-        normal = """function formatText() {\n    // Normal function\n    const text = \"Hello world\";\n    return text.trim();\n}"""  # noqa: E501
+        normal = """function formatText() {\n    // Normal function\n    const text = "Hello world";\n    return text.trim();\n}"""  # noqa: E501
         assert not is_minified_content(normal)
+
+        # Test edge case: exactly boundary conditions
+        boundary_case = "a" * 200  # Exactly 200 chars
+        assert not is_minified_content(boundary_case)  # Should not trigger >200
+
+        another_boundary = "a" * 201  # Just over 200
+        assert is_minified_content(another_boundary)
+
+        # Test with empty content
+        assert not is_minified_content("")
+
+        # Test with very short content
+        assert not is_minified_content("short")
 
     def test_is_lockfile_or_generated(self):
         """Test detection of lockfiles and generated files."""
