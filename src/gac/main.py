@@ -19,7 +19,7 @@ from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
 from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
-from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
+from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
 logger = logging.getLogger(__name__)
@@ -120,27 +120,11 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     return 0
 
 
-def main(
-    stage_all: bool = False,
-    group: bool = False,
-    interactive: bool = False,
-    model: str | None = None,
-    hint: str = "",
-    one_liner: bool = False,
-    show_prompt: bool = False,
-    infer_scope: bool = False,
-    require_confirmation: bool = True,
-    push: bool = False,
-    quiet: bool = False,
-    dry_run: bool = False,
-    message_only: bool = False,
-    verbose: bool = False,
-    no_verify: bool = False,
-    skip_secret_scan: bool = False,
-    language: str | None = None,
-    hook_timeout: int = 120,
-) -> int:
+def main(opts: CLIOptions) -> int:
     """Main application logic for gac.
+
+    Args:
+        opts: CLI options bundled in a dataclass
 
     Returns:
         Exit code: 0 for success, non-zero for failure
@@ -148,11 +132,14 @@ def main(
     # Initialize components
     git_validator = GitStateValidator(config)
     prompt_builder = PromptBuilder(config)
-    commit_executor = CommitExecutor(dry_run=dry_run, quiet=quiet, no_verify=no_verify, hook_timeout=hook_timeout)
+    commit_executor = CommitExecutor(
+        dry_run=opts.dry_run, quiet=opts.quiet, no_verify=opts.no_verify, hook_timeout=opts.hook_timeout
+    )
     interactive_mode = InteractiveMode(config)
     grouped_workflow = GroupedCommitWorkflow(config)
 
     # Validate and get model configuration
+    model = opts.model
     if model is None:
         model_from_config = config["model"]
         if model_from_config is None:
@@ -181,16 +168,16 @@ def main(
 
     # Get git state and handle hooks
     git_state = git_validator.get_git_state(
-        stage_all=stage_all,
-        dry_run=dry_run,
-        skip_secret_scan=skip_secret_scan,
-        quiet=quiet,
+        stage_all=opts.stage_all,
+        dry_run=opts.dry_run,
+        skip_secret_scan=opts.skip_secret_scan,
+        quiet=opts.quiet,
         model=model,
-        hint=hint,
-        one_liner=one_liner,
-        infer_scope=infer_scope,
-        verbose=verbose,
-        language=language,
+        hint=opts.hint,
+        one_liner=opts.one_liner,
+        infer_scope=opts.infer_scope,
+        verbose=opts.verbose,
+        language=opts.language,
     )
 
     # No staged changes found
@@ -198,20 +185,20 @@ def main(
         return 0
 
     # Run pre-commit hooks
-    if not no_verify and not dry_run:
-        if not run_lefthook_hooks(hook_timeout):
+    if not opts.no_verify and not opts.dry_run:
+        if not run_lefthook_hooks(opts.hook_timeout):
             console.print("[red]Lefthook hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             return 1
 
-        if not run_pre_commit_hooks(hook_timeout):
+        if not run_pre_commit_hooks(opts.hook_timeout):
             console.print("[red]Pre-commit hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
             return 1
 
     # Handle secret detection
     if git_state.has_secrets:
-        secret_decision = git_validator.handle_secret_detection(git_state.secrets, quiet)
+        secret_decision = git_validator.handle_secret_detection(git_state.secrets, opts.quiet)
         if secret_decision is None:
             # User chose to abort
             return 0
@@ -219,22 +206,22 @@ def main(
             # Secrets were removed, we need to refresh the git state
             git_state = git_validator.get_git_state(
                 stage_all=False,
-                dry_run=dry_run,
+                dry_run=opts.dry_run,
                 skip_secret_scan=True,  # Skip secret scan this time
-                quiet=quiet,
+                quiet=opts.quiet,
                 model=model,
-                hint=hint,
-                one_liner=one_liner,
-                infer_scope=infer_scope,
-                verbose=verbose,
-                language=language,
+                hint=opts.hint,
+                one_liner=opts.one_liner,
+                infer_scope=opts.infer_scope,
+                verbose=opts.verbose,
+                language=opts.language,
             )
             # After removing secret files, no staged changes may remain
             if git_state is None:
                 return 0
 
     # Adjust max_output_tokens for grouped mode
-    if group:
+    if opts.group:
         num_files = len(git_state.staged_files)
         multiplier = min(5, 2 + (num_files // 10))
         max_output_tokens *= multiplier
@@ -243,20 +230,20 @@ def main(
     # Build prompts
     prompts = prompt_builder.build_prompts(
         git_state=git_state,
-        group=group,
-        one_liner=one_liner,
-        hint=hint,
-        infer_scope=infer_scope,
-        verbose=verbose,
-        language=language,
+        group=opts.group,
+        one_liner=opts.one_liner,
+        hint=opts.hint,
+        infer_scope=opts.infer_scope,
+        verbose=opts.verbose,
+        language=opts.language,
     )
 
     # Display prompts if requested
-    if show_prompt:
+    if opts.show_prompt:
         prompt_builder.display_prompts(prompts.system_prompt, prompts.user_prompt)
 
     try:
-        if group:
+        if opts.group:
             # Execute grouped workflow
             return grouped_workflow.execute_workflow(
                 system_prompt=prompts.system_prompt,
@@ -265,17 +252,17 @@ def main(
                 temperature=temperature,
                 max_output_tokens=max_output_tokens,
                 max_retries=max_retries,
-                require_confirmation=require_confirmation,
-                quiet=quiet,
-                no_verify=no_verify,
-                dry_run=dry_run,
-                push=push,
-                show_prompt=show_prompt,
-                interactive=interactive,
-                message_only=message_only,
-                hook_timeout=hook_timeout,
+                require_confirmation=opts.require_confirmation,
+                quiet=opts.quiet,
+                no_verify=opts.no_verify,
+                dry_run=opts.dry_run,
+                push=opts.push,
+                show_prompt=opts.show_prompt,
+                interactive=opts.interactive,
+                message_only=opts.message_only,
+                hook_timeout=opts.hook_timeout,
                 git_state=git_state,
-                hint=hint,
+                hint=opts.hint,
             )
         else:
             # Build workflow context
@@ -286,20 +273,20 @@ def main(
                 max_retries=max_retries,
             )
             flags = WorkflowFlags(
-                require_confirmation=require_confirmation,
-                quiet=quiet,
-                no_verify=no_verify,
-                dry_run=dry_run,
-                message_only=message_only,
-                push=push,
-                show_prompt=show_prompt,
-                interactive=interactive,
-                hook_timeout=hook_timeout,
+                require_confirmation=opts.require_confirmation,
+                quiet=opts.quiet,
+                no_verify=opts.no_verify,
+                dry_run=opts.dry_run,
+                message_only=opts.message_only,
+                push=opts.push,
+                show_prompt=opts.show_prompt,
+                interactive=opts.interactive,
+                hook_timeout=opts.hook_timeout,
             )
             state = WorkflowState(
                 prompts=prompts,
                 git_state=git_state,
-                hint=hint,
+                hint=opts.hint,
                 commit_executor=commit_executor,
                 interactive_mode=interactive_mode,
             )
@@ -316,20 +303,20 @@ def main(
             max_retries=max_retries,
         )
         flags = WorkflowFlags(
-            require_confirmation=require_confirmation,
-            quiet=quiet,
-            no_verify=no_verify,
-            dry_run=dry_run,
-            message_only=message_only,
-            push=push,
-            show_prompt=show_prompt,
-            interactive=interactive,
-            hook_timeout=hook_timeout,
+            require_confirmation=opts.require_confirmation,
+            quiet=opts.quiet,
+            no_verify=opts.no_verify,
+            dry_run=opts.dry_run,
+            message_only=opts.message_only,
+            push=opts.push,
+            show_prompt=opts.show_prompt,
+            interactive=opts.interactive,
+            hook_timeout=opts.hook_timeout,
         )
         state = WorkflowState(
             prompts=prompts,
             git_state=git_state,
-            hint=hint,
+            hint=opts.hint,
             commit_executor=commit_executor,
             interactive_mode=interactive_mode,
         )
@@ -338,4 +325,4 @@ def main(
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(CLIOptions()))

@@ -25,6 +25,7 @@ from gac.language_cli import language as language_cli
 from gac.main import main
 from gac.model_cli import model as model_cli
 from gac.utils import setup_logging
+from gac.workflow_context import CLIOptions
 
 config: GACConfig = load_config()
 logger = logging.getLogger(__name__)
@@ -146,7 +147,7 @@ def cli(
         resolved_language = Languages.resolve_code(language) if language else None
 
         try:
-            exit_code = main(
+            opts = CLIOptions(
                 stage_all=add_all,
                 group=group,
                 interactive=interactive,
@@ -166,6 +167,7 @@ def cli(
                 language=resolved_language,
                 hook_timeout=hook_timeout if hook_timeout > 0 else config["hook_timeout"],
             )
+            exit_code = main(opts)
             sys.exit(exit_code)
         except Exception as e:
             handle_error(e, exit_program=True)
