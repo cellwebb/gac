@@ -3,7 +3,8 @@
 from gac.__version__ import __version__
 from gac.ai import generate_commit_message
 from gac.git import get_staged_files, push_changes
-from gac.prompt import build_prompt, clean_commit_message
+from gac.postprocess import clean_commit_message
+from gac.prompt import build_prompt
 
 __all__ = [
     "__version__",

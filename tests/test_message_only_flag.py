@@ -59,7 +59,7 @@ class TestMessageOnlyFlag:
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate_commit_message)
 
         # Mock clean_commit_message
-        monkeypatch.setattr("gac.prompt.clean_commit_message", lambda x: x)
+        monkeypatch.setattr("gac.main.clean_commit_message", lambda x: x)
 
         # Mock check_token_warning
         monkeypatch.setattr("gac.workflow_utils.check_token_warning", lambda *args, **kwargs: True)

@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
+from gac.postprocess import clean_commit_message
 from gac.prompt import (
     build_prompt,
-    clean_commit_message,
     load_custom_system_template,
     load_system_template,
 )

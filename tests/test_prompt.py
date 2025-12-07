@@ -4,7 +4,8 @@
 
 from unittest.mock import patch
 
-from gac.prompt import build_prompt, clean_commit_message
+from gac.postprocess import clean_commit_message
+from gac.prompt import build_prompt
 
 TEST_SYSTEM_TEMPLATE = """<role>
 You are an expert git commit message generator. Your task is to analyze code changes and create a concise, meaningful git commit message. You will receive git status and diff information. Your entire response will be used directly as a git commit message.

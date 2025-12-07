@@ -266,7 +266,7 @@ class TestScopeIntegration:
         with patch("click.prompt", return_value="y"):
             # For dry_run mode, we need to capture the message before it would be passed to git
             # We can do this by capturing the clean_commit_message function's output
-            from gac.prompt import clean_commit_message
+            from gac.postprocess import clean_commit_message
 
             original_clean = clean_commit_message
 

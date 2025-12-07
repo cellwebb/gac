@@ -72,7 +72,7 @@ def test_normal_mode_uses_staged_status():
         patch("gac.git_state_validator.get_staged_status", return_value=status),
         patch("gac.prompt.build_prompt", return_value=("system", "user")),
         patch("gac.main.generate_commit_message", return_value="feat: update"),
-        patch("gac.prompt.clean_commit_message", return_value="feat: update"),
+        patch("gac.main.clean_commit_message", return_value="feat: update"),
         patch("gac.main.console.print"),
         patch("gac.workflow_utils.execute_commit"),
         patch("click.prompt", return_value="y"),

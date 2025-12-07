@@ -18,7 +18,7 @@ from gac.git_state_validator import GitStateValidator
 from gac.grouped_commit_workflow import GroupedCommitWorkflow
 from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
-from gac.prompt import clean_commit_message
+from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
 from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
