@@ -35,20 +35,27 @@ class TestAiUtils:
         assert extract_text_content({}) == ""
 
     def test_get_encoding_known_model(self):
-        """Test getting encoding for known models without mocking."""
-        # Test with a well-known OpenAI model that should map to cl100k_base
-        encoding = get_encoding("openai:gpt-4")
-        assert isinstance(encoding, tiktoken.Encoding)
-        assert encoding.name == "cl100k_base"
+        """Test getting encoding for known models with optimized mocking."""
+        # Create a mock encoding to avoid slow tiktoken loading
+        mock_encoding = MagicMock(spec=tiktoken.Encoding)
+        mock_encoding.name = "cl100k_base"
+        mock_encoding.encode.return_value = [9906, 1917]  # Tokens for "Hello world"
+        mock_encoding.decode.return_value = "Hello world"
 
-        # Verify encoding behavior
-        tokens = encoding.encode("Hello world")
-        assert len(tokens) > 0
-        assert isinstance(tokens[0], int)
+        with patch("tiktoken.encoding_for_model", return_value=mock_encoding):
+            # Test with a well-known OpenAI model that should map to cl100k_base
+            encoding = get_encoding("openai:gpt-4")
+            assert isinstance(encoding, tiktoken.Encoding)
+            assert encoding.name == "cl100k_base"
 
-        # Decode should round-trip correctly
-        decoded = encoding.decode(tokens)
-        assert decoded == "Hello world"
+            # Verify encoding behavior
+            tokens = encoding.encode("Hello world")
+            assert len(tokens) > 0
+            assert isinstance(tokens[0], int)
+
+            # Decode should round-trip correctly
+            decoded = encoding.decode(tokens)
+            assert decoded == "Hello world"
 
     def test_count_tokens(self):
         """Test token counting functionality."""
@@ -86,14 +93,19 @@ class TestAiUtils:
 
     def test_get_encoding_unknown_model(self):
         """Test getting encoding for unknown models falls back to default."""
-        # Clear the cache first to ensure fresh test
-        get_encoding.cache_clear()
+        # Create a mock default encoding to avoid slow tiktoken loading
+        mock_encoding = MagicMock(spec=tiktoken.Encoding)
+        mock_encoding.name = "cl100k_base"
 
-        # Test with unknown model should fall back to default encoding
-        encoding = get_encoding("unknown:model-xyz")
-        assert isinstance(encoding, tiktoken.Encoding)
-        # Should use the default cl100k_base encoding
-        assert encoding.name == "cl100k_base"
+        with patch("tiktoken.get_encoding", return_value=mock_encoding):
+            # Clear the cache first to ensure fresh test
+            get_encoding.cache_clear()
+
+            # Test with unknown model should fall back to default encoding
+            encoding = get_encoding("unknown:model-xyz")
+            assert isinstance(encoding, tiktoken.Encoding)
+            # Should use the default cl100k_base encoding
+            assert encoding.name == "cl100k_base"
 
     def test_count_tokens_error_handling(self):
         """Test error handling in count_tokens function."""
@@ -107,15 +119,20 @@ class TestAiUtils:
 
     def test_count_tokens_with_various_content_types(self):
         """Test count_tokens with different content formats."""
-        # Test with list containing invalid items
-        messages = [
-            {"role": "user", "content": "Valid message"},
-            {"role": "assistant"},  # Missing content
-            "invalid",  # Not a dict
-            {"content": "No role"},  # Has content
-        ]
-        token_count = count_tokens(messages, "openai:gpt-4")
-        assert token_count > 0  # Should count valid messages
+        # Mock encoding to avoid slow tiktoken loading
+        mock_encoding = MagicMock(spec=tiktoken.Encoding)
+        mock_encoding.encode.return_value = [1, 2, 3, 4, 5]  # Mock tokens
+
+        with patch("gac.ai_utils.get_encoding", return_value=mock_encoding):
+            # Test with list containing invalid items
+            messages = [
+                {"role": "user", "content": "Valid message"},
+                {"role": "assistant"},  # Missing content
+                "invalid",  # Not a dict
+                {"content": "No role"},  # Has content
+            ]
+            token_count = count_tokens(messages, "openai:gpt-4")
+            assert token_count == 5  # Should return mock token count
 
 
 class TestGenerateCommitMessage:

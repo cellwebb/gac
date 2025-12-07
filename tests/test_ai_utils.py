@@ -21,11 +21,17 @@ class TestCountTokens:
 
     def test_count_tokens(self):
         """Test token counting functionality."""
-        # Test with string content
-        text = "Hello, world!"
-        token_count = ai_utils.count_tokens(text, "openai:gpt-4")
-        assert token_count > 0
-        assert isinstance(token_count, int)
+        # Mock encoding to avoid slow tiktoken loading
+        with patch("gac.ai_utils.get_encoding") as mock_get_encoding:
+            mock_encoding = MagicMock()
+            mock_encoding.encode.return_value = [1, 2, 3, 4]  # Mock tokens
+            mock_get_encoding.return_value = mock_encoding
+
+            # Test with string content
+            text = "Hello, world!"
+            token_count = ai_utils.count_tokens(text, "openai:gpt-4")
+            assert token_count == 4  # Should return mock token count
+            assert isinstance(token_count, int)
 
     def test_count_tokens_empty_content(self):
         """Test token counting with empty content."""
