@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.10.7] - 2025-12-06
+
+### Added
+
+- New workflow system to make commits more reliable and consistent
+
+### Fixed
+
+- Resolved test failures that could cause inconsistent behavior during commit operations
+
 ## [3.10.6] - 2025-12-06
 
 ### Improvements
