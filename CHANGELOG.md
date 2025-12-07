@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.10.13] - 2025-12-07
+
+### Improvements
+
+- Better support for Anthropic-compatible providers with automatic URL handling
+- Improved authentication retry process for better reliability
+- Enhanced error detection and classification for clearer messages
+- More robust handling of large files and token limits
+- Better support for right-to-left languages in text display
+- Improved configuration management with better error handling
+
+### Bug Fixes
+
+- Fixed crashes when working with certain provider configurations
+- Resolved issues with OAuth token refresh failures
+- Fixed problems with minified content detection at boundary conditions
+
 ## [3.10.12] - 2025-12-06
 
 ### Improvements
