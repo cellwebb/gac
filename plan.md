@@ -116,28 +116,32 @@ OAuth tokens stored in local JSON files without verifying permissions are `0600`
 
 ---
 
-## 5. Clean Up Lazy Imports in ai_utils.py
+## 5. Clean Up Lazy Imports in ai_utils.py ✅ COMPLETED
 
 **Priority:** Low | **Effort:** Low | **Impact:** Code cleanliness
 
 **Problem:**
-Circular dependency avoidance via lazy imports:
+Lazy imports inside `generate_with_retries()` function appeared to be for circular
+dependency avoidance, but were actually unnecessary.
+
+**Analysis:**
+The import chain `ai_utils.py` → `gac.providers` → `gac.providers.qwen` → `gac.oauth`
+means `gac.oauth` is already fully loaded by the time `ai_utils.py` finishes its
+top-level imports. The lazy imports were redundant.
+
+**Solution Applied:**
+Moved OAuth imports to top level:
 
 ```python
-if provider == "claude-code":
-    from gac.oauth import refresh_token_if_expired
+from gac.oauth import QwenOAuthProvider, refresh_token_if_expired
+from gac.oauth.token_store import TokenStore
 ```
 
-**Solution:**
+Removed lazy imports from inside `generate_with_retries()` function.
 
-- Extract OAuth retry logic to separate module
-- Use `TYPE_CHECKING` guards where appropriate
-- Consider dependency injection pattern
+**Files modified:**
 
-**Files to modify:**
-
-- `src/gac/ai_utils.py`
-- `src/gac/oauth_retry.py` (may already handle this)
+- `src/gac/ai_utils.py` - Moved 3 lazy imports to top level
 
 ---
 
@@ -176,5 +180,5 @@ The following were removed as irrelevant for a single-run CLI tool:
 - [x] 2. Refactor `main()` to use context dataclass
 - [ ] 3. Add model validation per provider
 - [ ] 4. Validate OAuth token file permissions
-- [ ] 5. Clean up lazy imports in ai_utils.py
+- [x] 5. Clean up lazy imports in ai_utils.py
 - [ ] 6. Break up grouped_commit_workflow.py (optional)

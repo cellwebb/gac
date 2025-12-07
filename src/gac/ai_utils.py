@@ -17,6 +17,8 @@ from rich.status import Status
 
 from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
+from gac.oauth import QwenOAuthProvider, refresh_token_if_expired
+from gac.oauth.token_store import TokenStore
 from gac.providers import SUPPORTED_PROVIDERS
 
 logger = logging.getLogger(__name__)
@@ -105,9 +107,6 @@ def generate_with_retries(
 
     # Load Claude Code token from TokenStore if needed
     if provider == "claude-code":
-        from gac.oauth import refresh_token_if_expired
-        from gac.oauth.token_store import TokenStore
-
         # Check token expiry and refresh if needed
         if not refresh_token_if_expired(quiet=True):
             raise AIError.authentication_error(
@@ -126,8 +125,6 @@ def generate_with_retries(
 
     # Check Qwen OAuth token expiry and refresh if needed
     if provider == "qwen":
-        from gac.oauth import QwenOAuthProvider, TokenStore
-
         oauth_provider = QwenOAuthProvider(TokenStore())
         token = oauth_provider.get_token()
         if not token:
