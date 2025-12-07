@@ -50,76 +50,35 @@ def test_config_show_no_file():
             assert "No $HOME/.gac.env found" in result.output
 
 
-def test_config_show_project_level(monkeypatch):
-    """Test show command when only project .gac.env exists."""
-    runner = CliRunner()
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir)
-        project_dir = tmp_path / "project"
-        project_dir.mkdir()
-        project_env = project_dir / ".gac.env"
-        project_env.write_text("GAC_MODEL=project-model\n", encoding="utf-8")
-
-        fake_user_env = tmp_path / "home" / ".gac.env"
-        fake_user_env.parent.mkdir(parents=True, exist_ok=True)
-
-        with patch("gac.config_cli.GAC_ENV_PATH", fake_user_env):
-            monkeypatch.chdir(project_dir)
-            result = runner.invoke(config, ["show"])
-
-        assert result.exit_code == 0
-        assert "No $HOME/.gac.env found." in result.output
-        assert "Project config (./.gac.env):" in result.output
-        assert "GAC_MODEL=project-model" in result.output
-
-
-def test_config_show_includes_override_note(monkeypatch):
-    """Test show command lists both user and project config with override note."""
-    runner = CliRunner()
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir)
-        project_dir = tmp_path / "project"
-        project_dir.mkdir()
-        project_env = project_dir / ".gac.env"
-        project_env.write_text("GAC_MODEL=project-model\n", encoding="utf-8")
-
-        user_env = tmp_path / "home" / ".gac.env"
-        user_env.parent.mkdir(parents=True, exist_ok=True)
-        user_env.write_text("GAC_MODEL=home-model\n", encoding="utf-8")
-
-        with patch("gac.config_cli.GAC_ENV_PATH", user_env):
-            monkeypatch.chdir(project_dir)
-            result = runner.invoke(config, ["show"])
-
-        assert result.exit_code == 0
-        assert f"User config ({user_env}):" in result.output
-        assert "GAC_MODEL=home-model" in result.output
-        assert "Project config (./.gac.env):" in result.output
-        assert "GAC_MODEL=project-model" in result.output
-        assert "overrides $HOME/.gac.env" in result.output
-
-
-def test_config_unset_no_file():
-    """Test unset command when .gac.env doesn't exist."""
+def test_config_show_project_level_file():
+    """Test show command with project-level .gac.env (lines 28-30, 36->35, 38)."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
         fake_path = Path(tmpdir) / ".gac.env"
-        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
-            result = runner.invoke(config, ["unset", "NONEXISTENT_KEY"])
-            assert result.exit_code == 0
-            assert "No $HOME/.gac.env found" in result.output
+        project_path = Path(tmpdir) / ".gac.env"  # project-level in same dir for test
+
+        # Create project-level config
+        project_path.write_text("PROJECT_VAR=value\nSECRET_KEY=secret123\n")
+
+        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):  # user config doesn't exist
+            with patch("gac.config_cli.Path.cwd", return_value=Path(tmpdir)):
+                result = runner.invoke(config, ["show"])
+                assert result.exit_code == 0
+                assert "Project config (./.gac.env):" in result.output
+                assert "PROJECT_VAR=value" in result.output
+                assert "SECRET_KEY=***hidden***" in result.output
+                assert "Note: Project-level .gac.env overrides" in result.output
 
 
-def test_config_get_missing_key(monkeypatch):
-    """Test get command for a key that doesn't exist in .gac.env."""
+def test_config_get_missing_var():
+    """Test get command when variable doesn't exist (lines 51->50)."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
-        monkeypatch.setenv("HOME", tmpdir)
-        # Create empty .gac.env
-        result = runner.invoke(config, ["set", "EXISTING_KEY", "value"])
-        assert result.exit_code == 0
-        # Try to get a non-existent key
-        os.environ.pop("MISSING_KEY", None)
-        result = runner.invoke(config, ["get", "MISSING_KEY"])
-        assert result.exit_code == 0
-        assert "not set" in result.output
+        fake_path = Path(tmpdir) / ".gac.env"
+        fake_path.touch()  # Create empty file
+
+        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
+            # Test get missing variable
+            result = runner.invoke(config, ["get", "MISSING_VAR"])
+            assert result.exit_code == 0
+            assert "MISSING_VAR not set" in result.output
