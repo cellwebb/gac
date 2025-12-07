@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.12] - 2025-12-06
+
+### Improvements
+
+- Better validation and error handling for grouped file operations
+- More robust interactive workflow with improved exception handling
+
 ## [3.10.11] - 2025-12-06
 
 ### Improvements
