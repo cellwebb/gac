@@ -102,6 +102,19 @@ class TestLMStudioEdgeCases:
 
             assert "missing content" in str(exc_info.value).lower()
 
+    def test_lmstudio_empty_content(self):
+        """Test handling of empty content (line 77)."""
+        with patch("gac.providers.base.httpx.post") as mock_post:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {"choices": [{"message": {"content": ""}}]}
+            mock_response.raise_for_status = MagicMock()
+            mock_post.return_value = mock_response
+
+            with pytest.raises(AIError) as exc_info:
+                call_lmstudio_api("local-model", [], 0.7, 1000)
+
+            assert "empty content" in str(exc_info.value).lower()
+
     def test_lmstudio_text_field_fallback(self):
         """Test fallback to text field when message.content not present."""
         with patch("gac.providers.base.httpx.post") as mock_post:

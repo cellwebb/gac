@@ -329,6 +329,31 @@ class TestAzureOpenAIURLConstruction:
                 expected_url = "https://test-resource.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2025-01-01-preview"
                 assert called_url == expected_url
 
+    def test_azure_get_api_url_without_model(self):
+        """Test _get_api_url method with model=None (line 41)."""
+        from gac.providers.azure_openai import AzureOpenAIProvider
+        from gac.providers.base import ProviderConfig
+
+        with patch.dict(
+            "os.environ",
+            {
+                "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com",
+                "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
+            },
+        ):
+            config = ProviderConfig(
+                name="Azure OpenAI",
+                api_key_env="AZURE_OPENAI_API_KEY",
+                base_url="https://test.openai.azure.com",
+            )
+            provider = AzureOpenAIProvider(config)
+
+        # Test with model=None to hit the first branch
+        url_without_model = provider._get_api_url(None)
+        # Should call parent implementation
+        assert url_without_model is not None
+        assert isinstance(url_without_model, str)
+
     def test_azure_endpoint_trailing_slash_handling(self):
         """Test that trailing slashes in Azure endpoint are handled correctly."""
         with patch.dict(

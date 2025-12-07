@@ -87,6 +87,40 @@ class TestGeminiEdgeCases:
 
                 assert "missing candidates" in str(exc_info.value).lower()
 
+    def test_gemini_get_api_url(self):
+        """Test _get_api_url method builds correct URLs (line 21)."""
+        from gac.providers.gemini import GeminiProvider
+
+        # Use the class-level config
+        provider = GeminiProvider(GeminiProvider.config)
+
+        # Test with model specified
+        url_with_model = provider._get_api_url("gemini-2.5-flash-lite")
+        expected_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
+        assert url_with_model == expected_url
+
+        # Test without model (calls parent)
+        url_without_model = provider._get_api_url(None)
+        # Should call parent implementation
+        assert "generativelanguage.googleapis.com" in url_without_model
+
+    def test_gemini_build_headers(self):
+        """Test _build_headers method builds correct headers (line 29)."""
+        from gac.providers.gemini import GeminiProvider
+
+        # Mock the API key since we're testing headers, not authentication
+        with patch.object(GeminiProvider, "api_key", new_callable=lambda: "test-key"):
+            provider = GeminiProvider(GeminiProvider.config)
+            headers = provider._build_headers()
+
+            # Should have x-goog-api-key instead of Authorization
+            assert "x-goog-api-key" in headers
+            assert headers["x-goog-api-key"] == "test-key"
+            # Should not have Authorization header
+            assert "Authorization" not in headers
+            # Should have other common headers from parent
+            assert "Content-Type" in headers
+
     def test_gemini_empty_candidates(self):
         """Test handling of empty candidates array."""
         with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):

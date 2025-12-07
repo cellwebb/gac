@@ -294,6 +294,27 @@ class TestCustomAnthropicEdgeCases:
                 called_url = mock_post.call_args[0][0]
                 assert called_url == "https://proxy.example.com/anthropic/v1/messages"
 
+    def test_base_url_already_ends_with_messages(self):
+        """Test that base URL ending with /messages uses the URL as-is (line 44)."""
+        with patch.dict(
+            "os.environ",
+            {
+                "CUSTOM_ANTHROPIC_API_KEY": "test-key",
+                "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com/messages",
+            },
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"content": [{"text": "test"}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                called_url = mock_post.call_args[0][0]
+                # Should use the URL as-is, not add any suffix
+                assert called_url == "https://api.example.com/messages"
+
     def test_custom_anthropic_system_message_handling(self):
         """Test system message extraction and formatting."""
         with patch.dict(
