@@ -225,7 +225,7 @@ class TestGenerateContextualQuestions:
                 hint="test hint",
                 temperature=0.7,
                 max_tokens=100,
-                max_retries=3,
+                max_retries=1,  # Reduced from 3 to 1 for faster test
                 quiet=False,
             )
 
@@ -248,7 +248,7 @@ class TestGenerateContextualQuestions:
                 hint="test hint",
                 temperature=0.7,
                 max_tokens=100,
-                max_retries=3,
+                max_retries=1,  # Reduced from 3 to 1 for consistency
                 quiet=True,  # Test quiet mode
             )
 
@@ -257,10 +257,11 @@ class TestGenerateContextualQuestions:
 
     def test_generate_contextual_questions_empty_response(self):
         """Test handling of empty AI response."""
-        # Mock dependencies
+        # Mock dependencies including time.sleep for speed optimization
         with (
             patch("gac.prompt.build_question_generation_prompt") as mock_build_prompt,
             patch("gac.ai.generate_commit_message") as mock_generate,
+            patch("gac.ai_utils.time.sleep", return_value=None),
         ):
             mock_build_prompt.return_value = ("system_prompt", "question_prompt")
             mock_generate.return_value = ""  # Empty response
@@ -275,7 +276,7 @@ class TestGenerateContextualQuestions:
                 hint="test hint",
                 temperature=0.7,
                 max_tokens=100,
-                max_retries=3,
+                max_retries=1,  # Reduced from 3 to 1 for faster test
                 quiet=False,
             )
 
