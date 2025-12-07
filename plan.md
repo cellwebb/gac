@@ -28,41 +28,51 @@ exist in `GACConfig` (dead code).
 
 ---
 
-## 2. Refactor `main()` to Use Context Dataclass
+## 2. Refactor `main()` to Use Context Dataclass ✅ COMPLETED
 
 **Priority:** High | **Effort:** Medium | **Impact:** Maintainability
 
 **Problem:**
-`main.py:main()` accepts 17 parameters:
+`main.py:main()` accepted 18 individual parameters, causing parameter explosion and
+making the function difficult to maintain and test.
 
-```python
-def main(
-    stage_all, group, interactive, model, hint, one_liner,
-    show_prompt, infer_scope, require_confirmation, push,
-    quiet, dry_run, message_only, verbose, no_verify,
-    skip_secret_scan, language, hook_timeout
-) -> int:
-```
-
-**Solution:**
-Create `CLIContext` dataclass similar to existing `WorkflowContext`:
+**Solution Applied:**
+Created `CLIOptions` frozen dataclass to bundle all CLI parameters:
 
 ```python
 @dataclass(frozen=True)
-class CLIContext:
+class CLIOptions:
     stage_all: bool = False
+    push: bool = False
+    no_verify: bool = False
+    hook_timeout: int = 120
     group: bool = False
     interactive: bool = False
+    require_confirmation: bool = True
+    dry_run: bool = False
     model: str | None = None
     hint: str = ""
-    # ... etc
+    one_liner: bool = False
+    infer_scope: bool = False
+    verbose: bool = False
+    language: str | None = None
+    quiet: bool = False
+    message_only: bool = False
+    show_prompt: bool = False
+    skip_secret_scan: bool = False
 ```
 
-**Files to modify:**
+**Files modified:**
 
-- `src/gac/workflow_context.py` - Add `CLIContext`
-- `src/gac/main.py` - Refactor `main()` signature
-- `src/gac/cli.py` - Update call site to construct context
+- `src/gac/workflow_context.py` - Added `CLIOptions` dataclass
+- `src/gac/main.py` - Refactored `main(opts: CLIOptions)` signature
+- `src/gac/cli.py` - Updated to construct `CLIOptions` and pass to `main()`
+- `tests/test_cli.py` - Updated mock to capture `CLIOptions` via `dataclasses.asdict()`
+- `tests/test_always_include_scope.py` - Updated to access `CLIOptions` attributes
+- `tests/test_group_staged_vs_unstaged.py` - Updated calls to use `CLIOptions`
+- `tests/test_group_workflow.py` - Updated calls to use `CLIOptions`
+- `tests/test_main.py` - Updated calls to use `CLIOptions`
+- `tests/test_scope_flag.py` - Updated calls to use `CLIOptions`
 
 ---
 
@@ -163,7 +173,7 @@ The following were removed as irrelevant for a single-run CLI tool:
 ## Completion Checklist
 
 - [x] 1. Standardize configuration access pattern
-- [ ] 2. Refactor `main()` to use context dataclass
+- [x] 2. Refactor `main()` to use context dataclass
 - [ ] 3. Add model validation per provider
 - [ ] 4. Validate OAuth token file permissions
 - [ ] 5. Clean up lazy imports in ai_utils.py

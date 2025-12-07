@@ -17,6 +17,44 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
+class CLIOptions:
+    """Options passed from CLI to main workflow.
+
+    Bundles all command-line arguments to reduce parameter explosion in main().
+    """
+
+    # Git workflow options
+    stage_all: bool = False
+    push: bool = False
+    no_verify: bool = False
+    hook_timeout: int = 120
+
+    # Workflow mode
+    group: bool = False
+    interactive: bool = False
+    require_confirmation: bool = True
+    dry_run: bool = False
+
+    # AI/Model config
+    model: str | None = None
+
+    # Prompt/output format config
+    hint: str = ""
+    one_liner: bool = False
+    infer_scope: bool = False
+    verbose: bool = False
+    language: str | None = None
+
+    # Output config
+    quiet: bool = False
+    message_only: bool = False
+    show_prompt: bool = False
+
+    # Security
+    skip_secret_scan: bool = False
+
+
+@dataclass(frozen=True)
 class GenerationConfig:
     """Configuration for AI message generation.
 
