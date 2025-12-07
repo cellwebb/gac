@@ -522,3 +522,30 @@ def test_language_select_non_rtl_no_warning(clean_env_state):
             mock_rtl_warning.assert_not_called()
             assert "✓ Set language to Español" in result.output
             assert "GAC_LANGUAGE=Spanish" in result.output
+
+
+def test_language_with_existing_env_file(clean_env_state):
+    """Test language selection when .gac.env file already exists (lines 34-35)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        with patch("gac.language_cli.GAC_ENV_PATH", fake_path):
+            # Create the env file first to test the existing file path
+            fake_path.write_text("# Existing config\nGAC_EXISTING=true\n")
+
+            with patch("questionary.select") as mock_select:
+                mock_select.return_value.ask.side_effect = [
+                    "Français",  # Language selection
+                    "Keep prefixes in English (feat:, fix:, etc.)",  # Prefix choice
+                ]
+                result = runner.invoke(language)
+
+                assert result.exit_code == 0
+                assert "✓ Set language to Français" in result.output
+                assert "GAC_LANGUAGE=French" in result.output
+                assert fake_path.exists()
+
+                # Verify the file contents include both old and new content
+                content = fake_path.read_text()
+                assert "GAC_EXISTING=true" in content
+                assert "GAC_LANGUAGE=French" in content or "GAC_LANGUAGE='French'" in content
