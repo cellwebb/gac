@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.10.10] - 2025-12-06
+
+### Bug Fixes
+
+- Fixed issues where interrupted commits could leave your changes in an inconsistent state
+
+### Improvements
+
+- Better error handling and cleanup when commits or pushes fail
+- Streamlined internal command processing for improved performance
+
 ## [3.10.9] - 2025-12-06
 
 ### Changed
