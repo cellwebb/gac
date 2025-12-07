@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.11] - 2025-12-06
+
+### Improvements
+
+- More reliable and accurate question handling in interactive mode
+- Better preview functionality for commit operations
+
 ## [3.10.10] - 2025-12-06
 
 ### Bug Fixes
