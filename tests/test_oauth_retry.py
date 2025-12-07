@@ -319,3 +319,21 @@ class TestOAuthRetry:
 
             # Verify no browsers were opened
             assert not mock_open.called
+
+    def test_handle_oauth_retry_calls_execute_single_commit_workflow(self):
+        """Test that handle_oauth_retry calls _execute_single_commit_workflow (lines 157-158)."""
+        error = AIError("Token expired")
+        error.error_type = "authentication"
+
+        ctx = Mock()
+        ctx.model = "claude-code:claude-3-haiku"
+        ctx.quiet = True
+
+        with patch("gac.main._execute_single_commit_workflow") as mock_retry:
+            mock_retry.return_value = 0  # Success
+
+            result = handle_oauth_retry(error, ctx)
+            assert result == 0
+
+            # Verify the retry workflow was called
+            mock_retry.assert_called_once_with(ctx)
