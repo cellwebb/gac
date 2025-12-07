@@ -249,6 +249,14 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         headers["anthropic-version"] = "2023-06-01"
         return headers
 
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get Anthropic API URL with /messages endpoint."""
+        if self.config.base_url.endswith("messages"):
+            return self.config.base_url
+        if self.config.base_url.endswith("/"):
+            return f"{self.config.base_url}messages"
+        return f"{self.config.base_url}/messages"
+
     def _build_request_body(
         self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
     ) -> dict[str, Any]:

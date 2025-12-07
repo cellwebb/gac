@@ -17,7 +17,7 @@ class ClaudeCodeProvider(AnthropicCompatibleProvider):
     config = ProviderConfig(
         name="Claude Code",
         api_key_env="CLAUDE_CODE_ACCESS_TOKEN",
-        base_url="https://api.anthropic.com/v1/messages",
+        base_url="https://api.anthropic.com/v1",
     )
 
     def _get_api_key(self) -> str:
