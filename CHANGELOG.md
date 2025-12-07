@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.9] - 2025-12-06
+
+### Changed
+
+- Improved how commit messages are processed and cleaned for better readability
+- Reorganized internal structure to make future updates easier to maintain
+
 ## [3.10.8] - 2025-12-06
 
 ### Bug Fixes
