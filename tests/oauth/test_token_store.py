@@ -123,3 +123,36 @@ class TestTokenStore:
 
         token_file = tmp_path / "test_provider.json"
         assert token_file.exists()
+
+    def test_get_invalid_token_format(self, tmp_path):
+        """Test getting token when file exists but has invalid format (line 69)."""
+        store = TokenStore(tmp_path)
+
+        # Create a token file with invalid content (no access_token)
+        token_file = tmp_path / "invalid_provider.json"
+        token_file.write_text('{"invalid": "data"}')
+
+        result = store.get_token("invalid_provider")
+        assert result is None  # This hits line 69 return None
+
+    def test_get_token_not_a_dict(self, tmp_path):
+        """Test getting token when file contains non-dict data (line 69)."""
+        store = TokenStore(tmp_path)
+
+        # Create a token file with string content instead of dict
+        token_file = tmp_path / "string_provider.json"
+        token_file.write_text('"not a valid token"')
+
+        result = store.get_token("string_provider")
+        assert result is None  # This hits line 69 return None
+
+    def test_list_providers_nonexistent_directory(self, tmp_path):
+        """Test listing providers when base directory doesn't exist (line 80)."""
+        # Create a store
+        store = TokenStore(tmp_path)
+
+        # Delete the base directory to simulate it not existing
+        tmp_path.rmdir()
+
+        providers = store.list_providers()
+        assert providers == []  # This hits line 80 return []
