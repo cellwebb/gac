@@ -146,7 +146,7 @@ def cli(
         resolved_language = Languages.resolve_code(language) if language else None
 
         try:
-            main(
+            exit_code = main(
                 stage_all=add_all,
                 group=group,
                 interactive=interactive,
@@ -166,6 +166,7 @@ def cli(
                 language=resolved_language,
                 hook_timeout=hook_timeout if hook_timeout > 0 else int(config.get("hook_timeout", 120) or 120),
             )
+            sys.exit(exit_code)
         except Exception as e:
             handle_error(e, exit_program=True)
     else:

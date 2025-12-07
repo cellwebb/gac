@@ -7,7 +7,6 @@ across different providers (Claude Code, Qwen, etc.).
 from __future__ import annotations
 
 import logging
-import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -103,14 +102,17 @@ def _find_oauth_provider(model: str, error: AIError) -> OAuthProviderConfig | No
 def _attempt_reauth_and_retry(
     provider: OAuthProviderConfig,
     quiet: bool,
-    retry_workflow: Callable[[], None],
-) -> None:
+    retry_workflow: Callable[[], int],
+) -> int:
     """Attempt re-authentication and retry the workflow.
 
     Args:
         provider: The OAuth provider configuration
         quiet: Whether to suppress output
         retry_workflow: Callable that retries the workflow on success
+
+    Returns:
+        Exit code: 0 for success, 1 for failure
     """
     console.print(f"[yellow]⚠ {provider.display_name} OAuth token has expired[/yellow]")
     console.print("[cyan]🔐 Starting automatic re-authentication...[/cyan]")
@@ -119,18 +121,18 @@ def _attempt_reauth_and_retry(
         if provider.authenticate(quiet):
             console.print("[green]✓ Re-authentication successful![/green]")
             console.print("[cyan]Retrying commit...[/cyan]\n")
-            retry_workflow()
+            return retry_workflow()
         else:
             console.print("[red]Re-authentication failed.[/red]")
             console.print(f"[yellow]{provider.manual_auth_hint}[/yellow]")
-            sys.exit(1)
+            return 1
     except (AIError, ConfigError, OSError) as auth_error:
         console.print(f"[red]Re-authentication error: {auth_error}[/red]")
         console.print(f"[yellow]{provider.manual_auth_hint}[/yellow]")
-        sys.exit(1)
+        return 1
 
 
-def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> None:
+def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> int:
     """Handle OAuth retry logic for expired tokens.
 
     Checks if the error is an OAuth-related authentication error for a known
@@ -139,6 +141,9 @@ def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> None:
     Args:
         e: The AIError that triggered this handler
         ctx: WorkflowContext containing all workflow configuration and state
+
+    Returns:
+        Exit code: 0 for success, 1 for failure
     """
     logger.error(str(e))
 
@@ -146,11 +151,11 @@ def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> None:
 
     if provider is None:
         console.print(f"[red]Failed to generate commit message: {e!s}[/red]")
-        sys.exit(1)
+        return 1
 
-    def retry_workflow() -> None:
+    def retry_workflow() -> int:
         from gac.main import _execute_single_commit_workflow
 
-        _execute_single_commit_workflow(ctx)
+        return _execute_single_commit_workflow(ctx)
 
-    _attempt_reauth_and_retry(provider, ctx.quiet, retry_workflow)
+    return _attempt_reauth_and_retry(provider, ctx.quiet, retry_workflow)

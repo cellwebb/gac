@@ -4,7 +4,6 @@ prompt building, AI generation, and commit/push operations. This module contains
 """
 
 import logging
-import sys
 
 from rich.console import Console
 
@@ -30,11 +29,14 @@ config: GACConfig = load_config()
 console = Console()  # Initialize console globally to prevent undefined access
 
 
-def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
+def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     """Execute single commit workflow using extracted components.
 
     Args:
         ctx: WorkflowContext containing all configuration, flags, and state
+
+    Returns:
+        Exit code: 0 for success, non-zero for failure/abort
     """
     conversation_messages: list[dict[str, str]] = []
     if ctx.system_prompt:
@@ -65,7 +67,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
                 raise ConfigError("warning_limit_tokens configuration missing")
             warning_limit = int(warning_limit_val)
             if not check_token_warning(prompt_tokens, warning_limit, ctx.flags.require_confirmation):
-                sys.exit(0)
+                return 0  # User declined due to token warning
         first_iteration = False
 
         raw_commit_message = generate_commit_message(
@@ -83,7 +85,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
 
         if ctx.message_only:
             print(commit_message)
-            sys.exit(0)
+            return 0
 
         # Display commit message panel (always show, regardless of confirmation mode)
         if not ctx.quiet:
@@ -102,7 +104,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
                 break
             elif decision == "no":
                 console.print("[yellow]Commit aborted.[/yellow]")
-                sys.exit(0)
+                return 0  # User aborted
             # decision == "regenerate": continue the loop
         else:
             break
@@ -119,7 +121,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> None:
         logger.info(commit_message)
         if ctx.flags.push:
             logger.info("Changes pushed to remote.")
-    sys.exit(0)
+    return 0
 
 
 def main(
@@ -141,8 +143,12 @@ def main(
     skip_secret_scan: bool = False,
     language: str | None = None,
     hook_timeout: int = 120,
-) -> None:
-    """Main application logic for gac."""
+) -> int:
+    """Main application logic for gac.
+
+    Returns:
+        Exit code: 0 for success, non-zero for failure
+    """
     # Initialize components
     git_validator = GitStateValidator(config)
     prompt_builder = PromptBuilder(config)
@@ -191,23 +197,30 @@ def main(
         language=language,
     )
 
+    # No staged changes found
+    if git_state is None:
+        return 0
+
     # Run pre-commit hooks
     if not no_verify and not dry_run:
         if not run_lefthook_hooks(hook_timeout):
             console.print("[red]Lefthook hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
-            sys.exit(1)
+            return 1
 
         if not run_pre_commit_hooks(hook_timeout):
             console.print("[red]Pre-commit hooks failed. Please fix the issues and try again.[/red]")
             console.print("[yellow]You can use --no-verify to skip pre-commit and lefthook hooks.[/yellow]")
-            sys.exit(1)
+            return 1
 
     # Handle secret detection
     if git_state.has_secrets:
-        should_continue = git_validator.handle_secret_detection(git_state.secrets, quiet)
-        if not should_continue:
-            # If secrets were removed, we need to refresh the git state
+        secret_decision = git_validator.handle_secret_detection(git_state.secrets, quiet)
+        if secret_decision is None:
+            # User chose to abort
+            return 0
+        if not secret_decision:
+            # Secrets were removed, we need to refresh the git state
             git_state = git_validator.get_git_state(
                 stage_all=False,
                 dry_run=dry_run,
@@ -220,6 +233,9 @@ def main(
                 verbose=verbose,
                 language=language,
             )
+            # After removing secret files, no staged changes may remain
+            if git_state is None:
+                return 0
 
     # Adjust max_output_tokens for grouped mode
     if group:
@@ -246,7 +262,7 @@ def main(
     try:
         if group:
             # Execute grouped workflow
-            grouped_workflow.execute_workflow(
+            return grouped_workflow.execute_workflow(
                 system_prompt=prompts.system_prompt,
                 user_prompt=prompts.user_prompt,
                 model=model,
@@ -294,7 +310,7 @@ def main(
             ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
 
             # Execute single commit workflow
-            _execute_single_commit_workflow(ctx)
+            return _execute_single_commit_workflow(ctx)
     except AIError as e:
         # Build context for retry
         gen_config = GenerationConfig(
@@ -322,8 +338,8 @@ def main(
             interactive_mode=interactive_mode,
         )
         ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
-        handle_oauth_retry(e=e, ctx=ctx)
+        return handle_oauth_retry(e=e, ctx=ctx)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

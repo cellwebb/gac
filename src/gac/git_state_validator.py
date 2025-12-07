@@ -3,7 +3,6 @@
 
 import logging
 import subprocess
-import sys
 from typing import Any, NamedTuple
 
 from rich.console import Console
@@ -67,8 +66,12 @@ class GitStateValidator:
         infer_scope: bool = False,
         verbose: bool = False,
         language: str | None = None,
-    ) -> GitState:
-        """Get complete git state including validation and processing."""
+    ) -> GitState | None:
+        """Get complete git state including validation and processing.
+
+        Returns:
+            GitState if staged changes exist, None if no staged changes found.
+        """
         from gac.constants import Utility
 
         # Validate repository
@@ -84,7 +87,7 @@ class GitStateValidator:
             console.print(
                 "[yellow]No staged changes found. Stage your changes with git add first or use --add-all.[/yellow]"
             )
-            sys.exit(0)
+            return None
 
         # Get git status and diffs
         status = get_staged_status()
@@ -117,8 +120,14 @@ class GitStateValidator:
             secrets=secrets,
         )
 
-    def handle_secret_detection(self, secrets: list[Any], quiet: bool = False) -> bool:
-        """Handle secret detection and user interaction. Returns True if commit should continue."""
+    def handle_secret_detection(self, secrets: list[Any], quiet: bool = False) -> bool | None:
+        """Handle secret detection and user interaction.
+
+        Returns:
+            True: Continue with commit
+            False: Re-get git state (files were removed)
+            None: Abort workflow
+        """
         if not secrets:
             return True
 
@@ -154,11 +163,11 @@ class GitStateValidator:
             )
         except (EOFError, KeyboardInterrupt):
             console.print("\n[red]Aborted by user.[/red]")
-            sys.exit(0)
+            return None
 
         if choice == "a":
             console.print("[yellow]Commit aborted.[/yellow]")
-            sys.exit(0)
+            return None
         elif choice == "c":
             console.print("[bold yellow]⚠️  Continuing with potential secrets in commit...[/bold yellow]")
             logger.warning("User chose to continue despite detected secrets")
@@ -176,7 +185,7 @@ class GitStateValidator:
             remaining_staged = get_staged_files(existing_only=False)
             if not remaining_staged:
                 console.print("[yellow]No files remain staged. Commit aborted.[/yellow]")
-                sys.exit(0)
+                return None
 
             console.print(f"[green]Continuing with {len(remaining_staged)} staged file(s)...[/green]")
             return False

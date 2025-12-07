@@ -349,7 +349,7 @@ Evaluate whether these need to be classes or could be modules with functions. Cl
 | 1.4 Split constants.py          | 45 min | [x]    |
 | 2.1 Create WorkflowContext      | 2 hr   | [x]    |
 | 2.1b Fix test git mocking leaks | 15 min | [x]    |
-| 2.2 Move sys.exit() to CLI      | 1.5 hr | [ ]    |
+| 2.2 Move sys.exit() to CLI      | 1.5 hr | [x]    |
 | 2.3 Externalize templates       | 1 hr   | [ ]    |
 | 3.1 Jinja2 templates            | 3 hr   | [ ]    |
 | 3.2 Lazy config loading         | 1 hr   | [ ]    |

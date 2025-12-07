@@ -27,9 +27,8 @@ def test_group_with_no_staged_changes(tmp_path, monkeypatch):
         patch("gac.git_state_validator.get_staged_files", return_value=[]),
         patch("gac.main.console.print"),
     ):
-        with pytest.raises(SystemExit) as exc:
-            main(group=True, model="openai:gpt-4", require_confirmation=False)
-        assert exc.value.code == 0
+        exit_code = main(group=True, model="openai:gpt-4", require_confirmation=False)
+        assert exit_code == 0
         # The message is printed to stdout (visible in test output above)
 
 
@@ -68,12 +67,14 @@ def test_group_validation_errors(invalid_data):
     with (
         patch("gac.git.run_git_command", return_value="/fake/repo"),
         patch("gac.git.get_staged_files", return_value=["file.py"]),
+        patch("gac.git_state_validator.get_staged_files", return_value=["file.py"]),
         patch("gac.ai.generate_grouped_commits", return_value=invalid_data),
+        patch("gac.grouped_commit_workflow.generate_grouped_commits", return_value=invalid_data),
         patch("gac.main.console.print"),
+        patch("gac.grouped_commit_workflow.console.print"),
     ):
-        with pytest.raises(SystemExit) as exc:
-            main(group=True, model="openai:gpt-4", require_confirmation=False)
-        assert exc.value.code == 1
+        exit_code = main(group=True, model="openai:gpt-4", require_confirmation=False)
+        assert exit_code == 1
 
 
 def test_group_dry_run():

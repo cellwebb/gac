@@ -2,7 +2,6 @@
 """Commit execution logic for gac."""
 
 import logging
-import sys
 
 from rich.console import Console
 
@@ -38,25 +37,23 @@ class CommitExecutor:
             execute_commit(commit_message, self.no_verify, self.hook_timeout)
 
     def push_to_remote(self) -> None:
-        """Push changes to remote repository."""
-        try:
-            if self.dry_run:
-                staged_files = get_staged_files(existing_only=False)
-                logger.info("Dry run: Would push changes")
-                logger.info(f"Would push {len(staged_files)} files")
-                console.print("[yellow]Dry run: Would push changes[/yellow]")
-                console.print(f"Would push {len(staged_files)} files")
-                sys.exit(0)
+        """Push changes to remote repository.
 
-            if push_changes():
-                logger.info("Changes pushed successfully")
-                if not self.quiet:
-                    console.print("[green]Changes pushed successfully[/green]")
-            else:
-                console.print(
-                    "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
-                )
-                sys.exit(1)
-        except (GitError, OSError) as e:
-            console.print(f"[red]Error pushing changes: {e}[/red]")
-            sys.exit(1)
+        Raises:
+            GitError: If push fails or remote is not configured.
+        """
+        if self.dry_run:
+            staged_files = get_staged_files(existing_only=False)
+            logger.info("Dry run: Would push changes")
+            logger.info(f"Would push {len(staged_files)} files")
+            console.print("[yellow]Dry run: Would push changes[/yellow]")
+            console.print(f"Would push {len(staged_files)} files")
+            return
+
+        if push_changes():
+            logger.info("Changes pushed successfully")
+            if not self.quiet:
+                console.print("[green]Changes pushed successfully[/green]")
+        else:
+            console.print("[red]Failed to push changes. Check your remote configuration and network connection.[/red]")
+            raise GitError("Failed to push changes")

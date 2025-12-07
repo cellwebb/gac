@@ -278,18 +278,16 @@ class TestScopeIntegration:
             monkeypatch.setattr("gac.main.clean_commit_message", spy_clean_commit_message)
 
             # Test with scope inference enabled (first call)
-            with pytest.raises(SystemExit) as exc_info:
-                main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
-            assert exc_info.value.code == 0
+            exit_code = main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
+            assert exit_code == 0
             assert git_spy.commit_message == "feat(auth): add login functionality"
 
             # Reset spy and call_count for the next test
             git_spy.commit_message = None
 
             # Test with AI-determined scope (second call)
-            with pytest.raises(SystemExit) as exc_info:
-                main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
-            assert exc_info.value.code == 0
+            exit_code = main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
+            assert exit_code == 0
             assert git_spy.commit_message == "fix(api): handle null response"
 
             # Reset spy for the next test
@@ -300,9 +298,8 @@ class TestScopeIntegration:
 
             # Test without scope - the mock returns "feat: add new feature" when
             # "inferred scope" is not in the prompt text
-            with pytest.raises(SystemExit) as exc_info:
-                main(infer_scope=False, dry_run=True)  # Use dry_run to avoid actual git calls
-            assert exc_info.value.code == 0
+            exit_code = main(infer_scope=False, dry_run=True)  # Use dry_run to avoid actual git calls
+            assert exit_code == 0
             assert git_spy.commit_message == "feat: add new feature"
 
 

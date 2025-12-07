@@ -70,10 +70,10 @@ class TestGitStateValidator:
         """Test get_git_state when no files are staged."""
         mock_get_staged.return_value = []
 
-        with patch("gac.git_state_validator.sys.exit") as mock_exit:
-            validator.get_git_state(model="openai:gpt-4o-mini")
+        with patch.object(validator, "validate_repository", return_value="/repo"):
+            result = validator.get_git_state(model="openai:gpt-4o-mini")
 
-            mock_exit.assert_called_once_with(0)
+        assert result is None  # Returns None when no files staged
 
     @patch("gac.git_state_validator.scan_staged_diff")
     def test_get_git_state_with_secrets(self, mock_scan, validator):
@@ -110,10 +110,9 @@ class TestGitStateValidator:
         )
         mock_prompt.return_value = "a"
 
-        with patch("gac.git_state_validator.sys.exit") as mock_exit:
-            validator.handle_secret_detection([mock_secret])
+        result = validator.handle_secret_detection([mock_secret])
 
-            mock_exit.assert_called_once_with(0)
+        assert result is None  # Returns None when user aborts
 
     @patch("gac.git_state_validator.console.print")
     @patch("click.prompt")

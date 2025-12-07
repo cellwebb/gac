@@ -68,6 +68,8 @@ def test_normal_mode_uses_staged_status():
         patch("gac.git.run_git_command", return_value="/fake/repo"),
         patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.git.get_staged_status", return_value=status),
+        patch("gac.git_state_validator.get_staged_files", return_value=["file1.py"]),
+        patch("gac.git_state_validator.get_staged_status", return_value=status),
         patch("gac.prompt.build_prompt", return_value=("system", "user")),
         patch("gac.main.generate_commit_message", return_value="feat: update"),
         patch("gac.prompt.clean_commit_message", return_value="feat: update"),
@@ -76,6 +78,5 @@ def test_normal_mode_uses_staged_status():
         patch("click.prompt", return_value="y"),
         patch("gac.main.count_tokens", return_value=10),
     ):
-        with pytest.raises(SystemExit):
-            main(group=False, stage_all=False, model="openai:gpt-4", require_confirmation=True)
-        # Test passes if main completes successfully
+        exit_code = main(group=False, stage_all=False, model="openai:gpt-4", require_confirmation=True)
+        assert exit_code == 0  # Test passes if main completes successfully

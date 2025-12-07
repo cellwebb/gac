@@ -4,7 +4,6 @@
 import json
 import logging
 import subprocess
-import sys
 from collections import Counter
 from typing import Any, NamedTuple
 
@@ -141,8 +140,12 @@ class GroupedCommitWorkflow:
         quiet: bool,
         staged_files_set: set[str],
         require_confirmation: bool = True,
-    ) -> GroupedCommitResult:
-        """Generate grouped commits with validation and retry logic."""
+    ) -> GroupedCommitResult | int:
+        """Generate grouped commits with validation and retry logic.
+
+        Returns:
+            GroupedCommitResult on success, or int exit code on early exit/failure.
+        """
         first_iteration = True
         content_retry_budget = max(3, int(max_retries))
         attempts = 0
@@ -157,7 +160,7 @@ class GroupedCommitWorkflow:
 
             if first_iteration:
                 if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
-                    sys.exit(0)
+                    return 0  # User declined due to token warning
             first_iteration = False
 
             raw_response = generate_grouped_commits(
@@ -186,7 +189,7 @@ class GroupedCommitWorkflow:
                     quiet,
                     "Structure validation failed, asking model to fix...",
                 ):
-                    sys.exit(1)
+                    return 1  # Validation failed after retries
                 continue
 
             # Assert parsed is not None for mypy - ValueError would have been raised earlier
@@ -205,7 +208,7 @@ class GroupedCommitWorkflow:
                     quiet,
                     "File coverage mismatch, asking model to fix...",
                 ):
-                    sys.exit(1)
+                    return 1  # File validation failed after retries
                 continue
 
             conversation_messages.append({"role": "assistant", "content": raw_response})
@@ -235,8 +238,14 @@ class GroupedCommitWorkflow:
                 f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
             )
 
-    def handle_grouped_commit_confirmation(self, result: GroupedCommitResult) -> bool:
-        """Handle user confirmation for grouped commits. Returns True if accepted."""
+    def handle_grouped_commit_confirmation(self, result: GroupedCommitResult) -> str:
+        """Handle user confirmation for grouped commits.
+
+        Returns:
+            "accept": User accepted commits
+            "reject": User rejected commits
+            "regenerate": User wants to regenerate
+        """
         num_commits = len(result.commits)
         while True:
             response = click.prompt(
@@ -247,15 +256,15 @@ class GroupedCommitWorkflow:
             response_lower = response.lower()
 
             if response_lower in ["y", "yes"]:
-                return True
+                return "accept"
             if response_lower in ["n", "no"]:
                 console.print("[yellow]Commits not accepted. Exiting...[/yellow]")
-                sys.exit(0)
+                return "reject"
             if response == "":
                 continue
             if response_lower in ["r", "reroll"]:
                 console.print("[cyan]Regenerating commit groups...[/cyan]")
-                return False  # Signal to regenerate
+                return "regenerate"
 
     def execute_grouped_commits(
         self,
@@ -264,8 +273,12 @@ class GroupedCommitWorkflow:
         push: bool,
         no_verify: bool,
         hook_timeout: int,
-    ) -> None:
-        """Execute the grouped commits by creating multiple individual commits."""
+    ) -> int:
+        """Execute the grouped commits by creating multiple individual commits.
+
+        Returns:
+            Exit code: 0 for success, non-zero for failure.
+        """
         num_commits = len(result.commits)
 
         if dry_run:
@@ -304,18 +317,18 @@ class GroupedCommitWorkflow:
                             console.print("[yellow]Restoring original staging area...[/yellow]")
                             restore_staging(original_staged_files, original_staged_diff)
                             console.print("[green]Original staging area restored.[/green]")
-                        sys.exit(1)
+                        return 1
             except KeyboardInterrupt:
                 console.print("\n[yellow]Interrupted by user. Restoring original staging area...[/yellow]")
                 restore_staging(original_staged_files, original_staged_diff)
                 console.print("[green]Original staging area restored.[/green]")
-                sys.exit(1)
+                return 1
 
         if push:
             try:
                 if dry_run:
                     console.print("[yellow]Dry run: Would push changes[/yellow]")
-                    sys.exit(0)
+                    return 0
                 from gac.git import push_changes
 
                 if push_changes():
@@ -325,12 +338,12 @@ class GroupedCommitWorkflow:
                     console.print(
                         "[red]Failed to push changes. Check your remote configuration and network connection.[/red]"
                     )
-                    sys.exit(1)
+                    return 1
             except (GitError, OSError) as e:
                 console.print(f"[red]Error pushing changes: {e}[/red]")
-                sys.exit(1)
+                return 1
 
-        sys.exit(0)
+        return 0
 
     def execute_workflow(
         self,
@@ -351,8 +364,12 @@ class GroupedCommitWorkflow:
         git_state: GitState,
         hint: str,
         hook_timeout: int = 120,
-    ) -> None:
-        """Execute the complete grouped commit workflow."""
+    ) -> int:
+        """Execute the complete grouped commit workflow.
+
+        Returns:
+            Exit code: 0 for success, non-zero for failure.
+        """
         if show_prompt:
             full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
             console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
@@ -395,27 +412,34 @@ class GroupedCommitWorkflow:
                 require_confirmation=require_confirmation,
             )
 
+            # Check if generation returned an exit code
+            if isinstance(result, int):
+                return result
+
             # Display results
             prompt_tokens = count_tokens(conversation_messages, model)
             self.display_grouped_commits(result, model, prompt_tokens, quiet)
 
             # Handle confirmation
             if require_confirmation:
-                if self.handle_grouped_commit_confirmation(result):
+                decision = self.handle_grouped_commit_confirmation(result)
+                if decision == "accept":
                     # User accepted, execute commits
-                    self.execute_grouped_commits(
+                    return self.execute_grouped_commits(
                         result=result,
                         dry_run=dry_run,
                         push=push,
                         no_verify=no_verify,
                         hook_timeout=hook_timeout,
                     )
+                elif decision == "reject":
+                    return 0  # User rejected, clean exit
                 else:
                     # User wants to regenerate, continue loop
                     continue
             else:
                 # No confirmation required, execute directly
-                self.execute_grouped_commits(
+                return self.execute_grouped_commits(
                     result=result,
                     dry_run=dry_run,
                     push=push,

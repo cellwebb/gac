@@ -148,13 +148,10 @@ class TestSingleCommitWorkflow:
             commit_executor, interactive_mode, git_state, require_confirmation=False, quiet=False
         )
 
-        with (
-            patch("gac.main.display_commit_message") as mock_display,
-            pytest.raises(SystemExit) as exc,
-        ):
-            _execute_single_commit_workflow(ctx)
+        with patch("gac.main.display_commit_message") as mock_display:
+            exit_code = _execute_single_commit_workflow(ctx)
 
-        assert exc.value.code == 0
+        assert exit_code == 0
         mock_display.assert_called_once()
         commit_executor.create_commit.assert_called_once_with("feat: test commit message")
 
@@ -169,13 +166,10 @@ class TestSingleCommitWorkflow:
 
         ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=False, quiet=True)
 
-        with (
-            patch("gac.main.display_commit_message") as mock_display,
-            pytest.raises(SystemExit) as exc,
-        ):
-            _execute_single_commit_workflow(ctx)
+        with patch("gac.main.display_commit_message") as mock_display:
+            exit_code = _execute_single_commit_workflow(ctx)
 
-        assert exc.value.code == 0
+        assert exit_code == 0
         mock_display.assert_not_called()
 
     @patch("gac.main.generate_commit_message")
@@ -192,13 +186,10 @@ class TestSingleCommitWorkflow:
 
         ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
 
-        with (
-            patch("gac.workflow_utils.display_commit_message"),
-            pytest.raises(SystemExit) as exc,
-        ):
-            _execute_single_commit_workflow(ctx)
+        with patch("gac.workflow_utils.display_commit_message"):
+            exit_code = _execute_single_commit_workflow(ctx)
 
-        assert exc.value.code == 0
+        assert exit_code == 0
         mock_console.print.assert_called_with("[yellow]Commit aborted.[/yellow]")
         commit_executor.create_commit.assert_not_called()
 
@@ -218,13 +209,10 @@ class TestSingleCommitWorkflow:
 
         ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
 
-        with (
-            patch("gac.workflow_utils.display_commit_message"),
-            pytest.raises(SystemExit) as exc,
-        ):
-            _execute_single_commit_workflow(ctx)
+        with patch("gac.workflow_utils.display_commit_message"):
+            exit_code = _execute_single_commit_workflow(ctx)
 
-        assert exc.value.code == 0
+        assert exit_code == 0
         assert mock_generate.call_count == 2
         assert interactive_mode.handle_single_commit_confirmation.call_count == 2
         commit_executor.create_commit.assert_called_once_with("feat: second message")
@@ -242,13 +230,10 @@ class TestSingleCommitWorkflow:
 
         ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=True, quiet=False)
 
-        with (
-            patch("gac.workflow_utils.display_commit_message"),
-            pytest.raises(SystemExit) as exc,
-        ):
-            _execute_single_commit_workflow(ctx)
+        with patch("gac.workflow_utils.display_commit_message"):
+            exit_code = _execute_single_commit_workflow(ctx)
 
-        assert exc.value.code == 0
+        assert exit_code == 0
         commit_executor.create_commit.assert_called_once_with("feat: edited message")
 
 
