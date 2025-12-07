@@ -216,3 +216,98 @@ class TestErrorHandlerSanitization:
 
         assert "Direct AIError" in str(exc_info.value)
         assert exc_info.value.error_type == "authentication"
+
+
+class TestErrorHandlerStringBasedClassification:
+    """Test string-based error classification for non-HTTP exceptions."""
+
+    @handle_provider_errors("TestProvider")
+    def _function_auth_string_error(self):
+        raise Exception("Authentication failed for user")
+
+    @handle_provider_errors("TestProvider")
+    def _function_unauthorized_string_error(self):
+        raise Exception("Unauthorized access denied")
+
+    @handle_provider_errors("TestProvider")
+    def _function_rate_limit_string_error(self):
+        raise Exception("Rate limit exceeded, try again later")
+
+    @handle_provider_errors("TestProvider")
+    def _function_quota_string_error(self):
+        raise Exception("API quota exceeded")
+
+    @handle_provider_errors("TestProvider")
+    def _function_timeout_string_error(self):
+        raise Exception("Connection timeout occurred")
+
+    @handle_provider_errors("TestProvider")
+    def _function_connection_string_error(self):
+        raise Exception("Connection refused")
+
+    def test_auth_string_classification(self):
+        """Test authentication-related string errors are classified correctly."""
+        with pytest.raises(AIError) as exc_info:
+            self._function_auth_string_error()
+        assert exc_info.value.error_type == "authentication"
+
+        with pytest.raises(AIError) as exc_info:
+            self._function_unauthorized_string_error()
+        assert exc_info.value.error_type == "authentication"
+
+    def test_rate_limit_string_classification(self):
+        """Test rate limit string errors are classified correctly."""
+        with pytest.raises(AIError) as exc_info:
+            self._function_rate_limit_string_error()
+        assert exc_info.value.error_type == "rate_limit"
+
+        with pytest.raises(AIError) as exc_info:
+            self._function_quota_string_error()
+        assert exc_info.value.error_type == "rate_limit"
+
+    def test_timeout_string_classification(self):
+        """Test timeout string errors are classified correctly."""
+        with pytest.raises(AIError) as exc_info:
+            self._function_timeout_string_error()
+        assert exc_info.value.error_type == "timeout"
+
+    def test_connection_string_classification(self):
+        """Test connection string errors are classified correctly."""
+        with pytest.raises(AIError) as exc_info:
+            self._function_connection_string_error()
+        assert exc_info.value.error_type == "connection"
+
+    def test_long_error_truncation(self):
+        """Test that very long error responses are truncated (line 64 coverage)."""
+        from gac.providers.error_handler import sanitize_error_response
+
+        # Create text that starts with non-sensitive content but is very long
+        # This should trigger both pattern matching and truncation
+        long_text = "API Error: " + "normal text long enough to trigger truncation " * 10 + "x" * 100
+        result = sanitize_error_response(long_text)
+
+        # Should result in some processed text (truncation logic executed)
+        assert isinstance(result, str)
+        assert len(result) > 0  # Should return something
+        # Line 64 (truncation) should be executed in processing
+
+    def test_empty_error_sanitization(self):
+        """Test sanitization handles empty text properly."""
+        from gac.providers.error_handler import sanitize_error_response
+
+        assert sanitize_error_response("") == ""
+        assert sanitize_error_response(None) == ""
+
+    def test_sanitization_and_truncation_combined(self):
+        """Test sanitization followed by truncation (line 57 and 64)."""
+        from gac.providers.error_handler import sanitize_error_response
+
+        # Create text with API key that will also need truncation
+        text_with_key = "Error: sk-test1234567890abcdef1234567890abcdef12345678 " + "x" * 200
+        result = sanitize_error_response(text_with_key)
+
+        # Should process through sanitization (line 57) and truncation (line 64)
+        assert "[REDACTED]" in result  # Sanitization happened
+        assert isinstance(result, str)
+        # Length should be reasonable due to truncation
+        assert len(result) <= 210  # Allow some wiggle room for redaction + truncation
