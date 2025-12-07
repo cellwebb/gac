@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.10.8] - 2025-12-06
+
+### Bug Fixes
+
+- Fixed crashes when pre-commit hooks fail, now shows clearer error messages
+
+### Improvements
+
+- Better overall stability with improved error handling throughout the app
+
 ## [3.10.7] - 2025-12-06
 
 ### Added
