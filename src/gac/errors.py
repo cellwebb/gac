@@ -113,6 +113,12 @@ class SecurityError(GacError):
     exit_code = 6
 
 
+class HookError(GacError):
+    """Error when pre-commit or lefthook hooks fail."""
+
+    exit_code = 1
+
+
 # Simplified error hierarchy - we use a single AIError class with error codes
 # instead of multiple subclasses for better maintainability
 
