@@ -88,6 +88,49 @@ class TestOpenAIEdgeCases:
 
                 assert "null content" in str(exc_info.value).lower()
 
+    def test_openai_optional_parameters(self):
+        """Test optional OpenAI-specific parameters in request body."""
+        from gac.providers.openai import OpenAIProvider
+
+        provider = OpenAIProvider(OpenAIProvider.config)
+        messages = [{"role": "user", "content": "test"}]
+
+        # Test with response_format parameter
+        request_body = provider._build_request_body(
+            messages=messages, temperature=0.7, max_tokens=1000, model="gpt-4", response_format={"type": "json_object"}
+        )
+
+        assert "max_completion_tokens" in request_body  # Should be converted from max_tokens
+        assert request_body["response_format"] == {"type": "json_object"}
+
+        # Test with stop parameter
+        request_body = provider._build_request_body(
+            messages=messages, temperature=0.7, max_tokens=1000, model="gpt-4", stop=["\n", "User:"]
+        )
+
+        assert "max_completion_tokens" in request_body
+        assert request_body["stop"] == ["\n", "User:"]
+
+        # Test with both optional parameters
+        request_body = provider._build_request_body(
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1000,
+            model="gpt-4",
+            response_format={"type": "json_object"},
+            stop=["END"],
+        )
+
+        assert request_body["response_format"] == {"type": "json_object"}
+        assert request_body["stop"] == ["END"]
+
+        # Test without optional parameters (baseline)
+        request_body = provider._build_request_body(messages=messages, temperature=0.7, max_tokens=1000, model="gpt-4")
+
+        assert "max_completion_tokens" in request_body
+        assert "response_format" not in request_body
+        assert "stop" not in request_body
+
 
 @pytest.mark.integration
 class TestOpenAIIntegration:
