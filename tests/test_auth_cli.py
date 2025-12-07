@@ -35,6 +35,24 @@ class TestAuthCli:
         assert "Claude Code: ✗ Not authenticated" in result.output
         assert "Qwen:        ✗ Not authenticated" in result.output
 
+    @mock.patch("gac.auth_cli.TokenStore")
+    def test_auth_status_with_auth(self, mock_token_store):
+        """Test auth status when providers are authenticated (lines 52, 59)."""
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.side_effect = [
+            {"access_token": "claude_token", "token_type": "Bearer"},
+            {"access_token": "qwen_token", "token_type": "Bearer"},
+        ]
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth)
+
+        assert result.exit_code == 0
+        # These are lines 52 and 59 - the ✓ Authenticated messages
+        assert "Claude Code: ✓ Authenticated" in result.output
+        assert "Qwen:        ✓ Authenticated" in result.output
+
 
 class TestClaudeCodeAuthCli:
     """Test the Claude Code auth CLI commands."""
