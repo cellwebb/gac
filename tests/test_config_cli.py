@@ -82,3 +82,60 @@ def test_config_get_missing_var():
             result = runner.invoke(config, ["get", "MISSING_VAR"])
             assert result.exit_code == 0
             assert "MISSING_VAR not set" in result.output
+
+
+def test_config_show_both_user_and_project_exist_with_sensitivity():
+    """Test show command with both user and project configs, covering sensitivity filtering (lines 28-30)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        user_path = Path(tmpdir) / ".gac.user.env"
+        project_path = Path(tmpdir) / "project.env"  # Use different name to avoid conflicts
+
+        # Create user config with sensitive data
+        user_path.write_text("USER=value\nAPI_KEY=secret123\nTOKEN=abc123\n")
+        # Create project config with some data
+        project_path.write_text("PROJECT=test\nPASSWORD=hidden\n")
+
+        with patch("gac.config_cli.GAC_ENV_PATH", user_path):
+            # Mock project_env_path to point to our separate file
+            with patch("gac.config_cli.Path") as mock_path:
+                mock_path.side_effect = lambda arg: project_path if str(arg) == ".gac.env" else user_path
+                with patch("gac.config_cli.Path.cwd", return_value=Path(tmpdir)):
+                    result = runner.invoke(config, ["show"])
+                    assert result.exit_code == 0
+                    assert "User config" in result.output
+                    assert "Project config" in result.output
+                    # Just check that the output contains sensitivity filtering
+                    assert "***hidden***" in result.output
+
+
+def test_config_unset_no_file():
+    """Test unset command when .gac.env doesn't exist (lines 90-91)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        # Don't create the file
+
+        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
+            result = runner.invoke(config, ["unset", "TEST_VAR"])
+            assert result.exit_code == 0
+            assert "No $HOME/.gac.env found." in result.output
+
+
+def test_config_set_creates_file_if_missing():
+    """Test set command creates .gac.env if missing (line 60)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_path = Path(tmpdir) / ".gac.env"
+        # Ensure file doesn't exist initially
+        assert not fake_path.exists()
+
+        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
+            result = runner.invoke(config, ["set", "NEW_VAR", "new_value"])
+            assert result.exit_code == 0
+            assert "Set NEW_VAR" in result.output
+            # Verify file was created and content was set
+            assert fake_path.exists()
+            content = fake_path.read_text()
+            # The set_key function might wrap value in quotes
+            assert "NEW_VAR" in content and "new_value" in content
