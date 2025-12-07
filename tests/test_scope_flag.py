@@ -7,6 +7,7 @@ from click.testing import CliRunner
 
 from gac.cli import cli
 from gac.prompt import build_prompt
+from gac.workflow_context import CLIOptions
 
 
 class TestScopeFlag:
@@ -280,7 +281,7 @@ class TestScopeIntegration:
             monkeypatch.setattr("gac.main.clean_commit_message", spy_clean_commit_message)
 
             # Test with scope inference enabled (first call)
-            exit_code = main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
+            exit_code = main(CLIOptions(infer_scope=True, dry_run=True))  # Use dry_run to avoid actual git calls
             assert exit_code == 0
             assert git_spy.commit_message == "feat(auth): add login functionality"
 
@@ -288,7 +289,7 @@ class TestScopeIntegration:
             git_spy.commit_message = None
 
             # Test with AI-determined scope (second call)
-            exit_code = main(infer_scope=True, dry_run=True)  # Use dry_run to avoid actual git calls
+            exit_code = main(CLIOptions(infer_scope=True, dry_run=True))  # Use dry_run to avoid actual git calls
             assert exit_code == 0
             assert git_spy.commit_message == "fix(api): handle null response"
 
@@ -300,7 +301,7 @@ class TestScopeIntegration:
 
             # Test without scope - the mock returns "feat: add new feature" when
             # "inferred scope" is not in the prompt text
-            exit_code = main(infer_scope=False, dry_run=True)  # Use dry_run to avoid actual git calls
+            exit_code = main(CLIOptions(infer_scope=False, dry_run=True))  # Use dry_run to avoid actual git calls
             assert exit_code == 0
             assert git_spy.commit_message == "feat: add new feature"
 

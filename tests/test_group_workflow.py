@@ -6,6 +6,7 @@ import pytest
 
 from gac.errors import GitError
 from gac.main import main
+from gac.workflow_context import CLIOptions
 
 
 @pytest.fixture(autouse=True)
@@ -27,7 +28,7 @@ def test_group_with_no_staged_changes(tmp_path, monkeypatch):
         patch("gac.git_state_validator.get_staged_files", return_value=[]),
         patch("gac.main.console.print"),
     ):
-        exit_code = main(group=True, model="openai:gpt-4", require_confirmation=False)
+        exit_code = main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=False))
         assert exit_code == 0
         # The message is printed to stdout (visible in test output above)
 
@@ -47,7 +48,7 @@ def test_group_json_parsing_success():
         patch("click.prompt", return_value="y"),
         patch("gac.workflow_utils.execute_commit"),
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
 
         # Verify the workflow was called
         mock_workflow.assert_called_once()
@@ -73,7 +74,7 @@ def test_group_validation_errors(invalid_data):
         patch("gac.main.console.print"),
         patch("gac.grouped_commit_workflow.console.print"),
     ):
-        exit_code = main(group=True, model="openai:gpt-4", require_confirmation=False)
+        exit_code = main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=False))
         assert exit_code == 1
 
 
@@ -88,7 +89,7 @@ def test_group_dry_run():
         patch("gac.main.console.print"),
         patch("gac.workflow_utils.execute_commit"),
     ):
-        main(group=True, dry_run=True, require_confirmation=False, model="openai:gpt-4")
+        main(CLIOptions(group=True, dry_run=True, require_confirmation=False, model="openai:gpt-4"))
         # Verify the workflow was called with dry_run=True
         mock_workflow.assert_called_once()
 
@@ -105,7 +106,7 @@ def test_group_retries_when_files_missing():
         patch("gac.workflow_utils.execute_commit"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
 
         # Verify the workflow was called
         mock_workflow.assert_called_once()
@@ -124,7 +125,7 @@ def test_group_restores_staging_on_first_commit_failure():
         patch("gac.workflow_utils.restore_staging"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
 
         # Verify the workflow was called
         mock_workflow.assert_called_once()
@@ -143,7 +144,7 @@ def test_group_does_not_restore_staging_on_later_commit_failure():
         patch("gac.workflow_utils.restore_staging"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
         # Verify the workflow was called
         mock_workflow.assert_called_once()
 
@@ -162,7 +163,7 @@ def test_group_displays_file_lists():
         patch("gac.workflow_utils.execute_commit"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
 
         # Verify the workflow was called
         mock_workflow.assert_called_once()
@@ -203,7 +204,7 @@ def test_group_token_scaling(num_files, expected_multiplier):
         patch("gac.main.config", mock_config),
         patch("gac.grouped_commit_workflow.GroupedCommitWorkflow.execute_workflow") as mock_exec,
     ):
-        main(group=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))
 
         # Check that the workflow was called with the correct max_output_tokens
         call_args = mock_exec.call_args

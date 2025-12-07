@@ -77,8 +77,8 @@ class TestAlwaysIncludeScopeCLI:
 
         # Check that main was called with infer_scope=True (which triggers inference)
         mock_main.assert_called_once()
-        call_kwargs = mock_main.call_args[1]
-        assert call_kwargs["infer_scope"] is True
+        opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
+        assert opts.infer_scope is True
 
     @patch("gac.cli.main")
     def test_cli_uses_scope_flag_when_provided(self, mock_main, monkeypatch):
@@ -105,8 +105,8 @@ class TestAlwaysIncludeScopeCLI:
 
         # Check that main was called with infer_scope=True (which triggers inference)
         mock_main.assert_called_once()
-        call_kwargs = mock_main.call_args[1]
-        assert call_kwargs["infer_scope"] is True
+        opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
+        assert opts.infer_scope is True
 
     @patch("gac.cli.main")
     def test_cli_does_not_apply_scope_when_disabled(self, mock_main, monkeypatch):
@@ -133,5 +133,5 @@ class TestAlwaysIncludeScopeCLI:
 
         # Check that main was called with infer_scope=False (no scope)
         mock_main.assert_called_once()
-        call_kwargs = mock_main.call_args[1]
-        assert call_kwargs["infer_scope"] is False
+        opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
+        assert opts.infer_scope is False

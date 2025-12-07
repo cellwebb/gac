@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from gac.main import main
+from gac.workflow_context import CLIOptions
 
 
 @pytest.fixture(autouse=True)
@@ -30,7 +31,7 @@ def test_group_without_add_all_only_shows_staged():
         patch("gac.workflow_utils.execute_commit"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, stage_all=False, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, stage_all=False, model="openai:gpt-4", require_confirmation=True))
         # Test passes if main completes without exception
 
 
@@ -57,7 +58,7 @@ def test_group_with_add_all_stages_everything():
         patch("gac.workflow_utils.execute_commit"),
         patch("click.prompt", return_value="y"),
     ):
-        main(group=True, stage_all=True, model="openai:gpt-4", require_confirmation=True)
+        main(CLIOptions(group=True, stage_all=True, model="openai:gpt-4", require_confirmation=True))
         # Test passes if main completes without exception
 
 
@@ -78,5 +79,5 @@ def test_normal_mode_uses_staged_status():
         patch("click.prompt", return_value="y"),
         patch("gac.main.count_tokens", return_value=10),
     ):
-        exit_code = main(group=False, stage_all=False, model="openai:gpt-4", require_confirmation=True)
+        exit_code = main(CLIOptions(group=False, stage_all=False, model="openai:gpt-4", require_confirmation=True))
         assert exit_code == 0  # Test passes if main completes successfully

@@ -6,7 +6,7 @@ import pytest
 
 from gac.errors import ConfigError
 from gac.main import _execute_single_commit_workflow, main
-from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
+from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 
 
 class TestMainIntegration:
@@ -54,7 +54,7 @@ class TestMainIntegration:
             patch("gac.main.run_pre_commit_hooks", return_value=True),
             patch("gac.main._execute_single_commit_workflow") as mock_workflow,
         ):
-            main(dry_run=True, quiet=True, require_confirmation=False)
+            main(CLIOptions(dry_run=True, quiet=True, require_confirmation=False))
 
             # Verify all components were initialized
             mock_git_validator.assert_called_once()
