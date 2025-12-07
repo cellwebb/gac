@@ -47,7 +47,7 @@ class TestMessageOnlyFlag:
             return "mock git output"
 
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command)
         monkeypatch.setattr(
             "gac.git.get_staged_status", lambda: "On branch main\nChanges to be committed:\n  modified:   test.py"
         )
@@ -164,7 +164,7 @@ class TestMessageOnlyFlag:
             return ""
 
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_empty)
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_empty)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command_empty)
 
         def mock_get_staged_files(**kwargs):
             return []

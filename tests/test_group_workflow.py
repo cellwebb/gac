@@ -14,6 +14,7 @@ def skip_git_hooks(monkeypatch):
     monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.git.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+    monkeypatch.setattr("gac.git_state_validator.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
 
 
 def test_group_with_no_staged_changes(tmp_path, monkeypatch):

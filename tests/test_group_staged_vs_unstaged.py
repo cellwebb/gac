@@ -9,10 +9,11 @@ from gac.main import main
 
 @pytest.fixture(autouse=True)
 def skip_git_hooks(monkeypatch):
-    """Ensure group staging tests don't call real git hooks."""
+    """Ensure group staging tests don't call real git hooks or git commands."""
     monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.git.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+    monkeypatch.setattr("gac.git_state_validator.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
 
 
 def test_group_without_add_all_only_shows_staged():
@@ -47,6 +48,7 @@ def test_group_with_add_all_stages_everything():
 
     with (
         patch("gac.git.run_git_command", side_effect=mock_git_cmd),
+        patch("gac.git_state_validator.run_git_command", side_effect=mock_git_cmd),
         patch("gac.git.get_staged_files", return_value=["file1.py", "file2.py"]),
         patch("gac.git_state_validator.get_staged_files", return_value=["file1.py", "file2.py"]),
         patch("gac.git.get_staged_status", return_value=staged_status),
