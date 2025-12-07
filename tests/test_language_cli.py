@@ -549,3 +549,46 @@ def test_language_with_existing_env_file(clean_env_state):
                 content = fake_path.read_text()
                 assert "GAC_EXISTING=true" in content
                 assert "GAC_LANGUAGE=French" in content or "GAC_LANGUAGE='French'" in content
+
+
+def test_center_text_function(clean_env_state):
+    """Test the center_text function (helps cover line 245)."""
+    from gac.language_cli import center_text
+
+    # Test basic centering - text should be padded with spaces
+    result = center_text("test", width=20)
+    assert "test" in result
+    assert result.startswith(" ")  # Should start with spaces for centering
+
+    # Test with odd width
+    result = center_text("x", width=10)
+    assert "x" in result
+    assert result.startswith(" ")  # Should be centered
+
+    # Test with default width
+    result = center_text("hello")
+    assert "hello" in result
+    assert result.startswith(" ")  # Should be centered in default 80-width
+
+    # Test with longer text than width
+    result = center_text("very long text", width=10)
+    assert "very long text" in result
+    # Should not be overly centered when text is longer than width
+
+
+def test_is_rtl_text_edge_cases(clean_env_state):
+    """Test edge cases for RTL detection (covers more RTL logic)."""
+    from gac.language_cli import is_rtl_text
+
+    # Test with empty string
+    assert not is_rtl_text("")
+
+    # Test with special characters that are RTL
+    assert is_rtl_text("فارسی")  # Persian
+    assert is_rtl_text("اردو")  # Urdu
+
+    # Test mixed text (should be RTL if any character is RTL)
+    assert is_rtl_text("Hello العربية World")
+
+    # Test with script detection
+    assert is_rtl_text("יִידיש")  # Yiddish
