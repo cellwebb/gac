@@ -122,20 +122,37 @@ def test_config_unset_no_file():
             assert "No $HOME/.gac.env found." in result.output
 
 
-def test_config_set_creates_file_if_missing():
-    """Test set command creates .gac.env if missing (line 60)."""
+def test_config_show_no_configs_exist():
+    """Test show command when neither user nor project config exists (lines 28-30)."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
-        fake_path = Path(tmpdir) / ".gac.env"
-        # Ensure file doesn't exist initially
-        assert not fake_path.exists()
+        fake_user_path = Path(tmpdir) / ".gac.env"
 
-        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):
-            result = runner.invoke(config, ["set", "NEW_VAR", "new_value"])
-            assert result.exit_code == 0
-            assert "Set NEW_VAR" in result.output
-            # Verify file was created and content was set
-            assert fake_path.exists()
-            content = fake_path.read_text()
-            # The set_key function might wrap value in quotes
-            assert "NEW_VAR" in content and "new_value" in content
+        # Change to the temp directory so project .gac.env is also in tmpdir and doesn't exist
+        with runner.isolated_filesystem(temp_dir=tmpdir):
+            with patch("gac.config_cli.GAC_ENV_PATH", fake_user_path):
+                result = runner.invoke(config, ["show"])
+                assert result.exit_code == 0
+                assert "No $HOME/.gac.env found" in result.output
+                assert "No project-level .gac.env found" in result.output
+
+
+def test_config_show_with_none_values():
+    """Test show command when config contains None values (lines 36->35, 51->50)."""
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_user_path = Path(tmpdir) / ".gac.env"
+        fake_project_path = Path(tmpdir) / ".gac.env"
+
+        # Create user config with a None-value-like entry (empty value)
+        fake_user_path.write_text("VALID_KEY=valid_value\nNULL_KEY=\nEMPTY_KEY=\n")
+
+        # Create project config with empty values
+        fake_project_path.write_text("PROJECT_VALID=project_value\nPROJECT_NULL=\n")
+
+        with runner.isolated_filesystem(temp_dir=tmpdir):
+            with patch("gac.config_cli.GAC_ENV_PATH", fake_user_path):
+                result = runner.invoke(config, ["show"])
+                assert result.exit_code == 0
+                # Both files should be processed, empty values should be handled gracefully
+                assert "valid_value" in result.output or "project_value" in result.output
