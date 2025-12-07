@@ -370,3 +370,49 @@ class TestErrors(unittest.TestCase):
         self.assertEqual(error.suggestion, "Try this instead")
         self.assertEqual(error.exit_code, 42)
         self.assertEqual(str(error), "Test message")
+
+    @patch("gac.errors.logger")
+    def test_handle_error_git_error_specific_logging(self, mock_logger):
+        """Test handle_error logs specific message for Git errors (line 147)."""
+        error = GitError("Repository not found")
+        handle_error(error, exit_program=False, quiet=False)
+
+        # Should log Git-specific message
+        mock_logger.error.assert_any_call("Git operation failed. Please check your repository status.")
+
+    @patch("gac.errors.logger")
+    def test_handle_error_generic_exception_logging(self, mock_logger):
+        """Test handle_error logs generic message for non-GacErrors (line 147)."""
+        error = ValueError("Some random error")
+        handle_error(error, exit_program=False, quiet=False)
+
+        # Should log generic message
+        mock_logger.error.assert_any_call("An unexpected error occurred.")
+
+    def test_format_error_for_user_unknown_error_type_fallback(self):
+        """Test format_error_for_user fallback for unknown error types (line 205)."""
+
+        class CustomError(Exception):
+            pass
+
+        error = CustomError("Custom error message")
+        message = format_error_for_user(error)
+
+        # Should return base message for unknown error types
+        self.assertIn("Custom error message", message)
+        # Should include the generic advice
+        self.assertIn("please report it as a bug", message.lower())
+
+    def test_format_error_for_user_completely_unknown_error(self):
+        """Test format_error_for_user with error that doesn't match any known class (line 205)."""
+
+        class UnknownError(Exception):
+            pass
+
+        error = UnknownError("Something went terribly wrong")
+        message = format_error_for_user(error)
+
+        # Should fall back to base message since UnknownError doesn't match any keys
+        self.assertIn("Something went terribly wrong", message)
+        # Should include the fallback remediation advice
+        self.assertIn("please report it as a bug", message.lower())
