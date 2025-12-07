@@ -1,0 +1,28 @@
+<hint>
+Additional context provided by the user: <hint_text></hint_text>
+</hint>
+
+<git_diff>
+<diff></diff>
+</git_diff>
+
+<git_diff_stat>
+<diff_stat></diff_stat>
+</git_diff_stat>
+
+<git_status>
+<status></status>
+</git_status>
+
+<language_instructions>
+IMPORTANT: You MUST write the entire commit message in <language_name></language_name>.
+All text in the commit message, including the summary line and body, must be in <language_name></language_name>.
+<prefix_instruction></prefix_instruction>
+</language_instructions>
+
+<format_instructions>
+IMMEDIATELY AFTER ANALYZING THE CHANGES, RESPOND WITH ONLY THE COMMIT MESSAGE.
+DO NOT include any preamble, reasoning, explanations or anything other than the commit message itself.
+DO NOT use markdown formatting, headers, or code blocks.
+The entire response will be passed directly to 'git commit -m'.
+</format_instructions>
