@@ -14,7 +14,6 @@ from rich.panel import Panel
 from gac.ai import generate_grouped_commits
 from gac.ai_utils import count_tokens
 from gac.config import GACConfig
-from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
@@ -150,10 +149,7 @@ class GroupedCommitWorkflow:
         content_retry_budget = max(3, int(max_retries))
         attempts = 0
 
-        warning_limit_val = self.config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
-        if warning_limit_val is None:
-            raise ConfigError("warning_limit_tokens configuration missing")
-        warning_limit = int(warning_limit_val)
+        warning_limit = self.config["warning_limit_tokens"]
 
         while True:
             prompt_tokens = count_tokens(conversation_messages, model)

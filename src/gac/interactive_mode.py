@@ -174,9 +174,6 @@ class InteractiveMode:
 
         Decision is one of: "yes", "no", "regenerate"
         """
-        if not self.config.get("require_confirmation", True):
-            return commit_message, "yes"
-
         decision, final_message, _ = handle_confirmation_loop(commit_message, conversation_messages, quiet, model)
 
         return final_message, decision

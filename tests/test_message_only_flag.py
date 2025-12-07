@@ -23,6 +23,7 @@ class TestMessageOnlyFlag:
             "max_output_tokens": 150,
             "max_retries": 2,
             "log_level": "ERROR",
+            "warning_limit_tokens": 10000,
         }
         monkeypatch.setattr(
             "gac.main.load_config",

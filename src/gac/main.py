@@ -11,7 +11,6 @@ from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens
 from gac.commit_executor import CommitExecutor
 from gac.config import GACConfig, load_config
-from gac.constants import EnvDefaults
 from gac.errors import AIError, ConfigError, handle_error
 from gac.git import run_lefthook_hooks, run_pre_commit_hooks
 from gac.git_state_validator import GitStateValidator
@@ -62,10 +61,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     while True:
         prompt_tokens = count_tokens(conversation_messages, ctx.model)
         if first_iteration:
-            warning_limit_val = config.get("warning_limit_tokens", EnvDefaults.WARNING_LIMIT_TOKENS)
-            if warning_limit_val is None:
-                raise ConfigError("warning_limit_tokens configuration missing")
-            warning_limit = int(warning_limit_val)
+            warning_limit = config["warning_limit_tokens"]
             if not check_token_warning(prompt_tokens, warning_limit, ctx.flags.require_confirmation):
                 return 0  # User declined due to token warning
         first_iteration = False

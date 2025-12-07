@@ -125,7 +125,7 @@ def cli(
         logger.info("Starting gac")
 
         # Set SSL verification environment variable if flag is used or config is set
-        if no_verify_ssl or config.get("no_verify_ssl", False):
+        if no_verify_ssl or config["no_verify_ssl"]:
             os.environ["GAC_NO_VERIFY_SSL"] = "true"
             logger.info("SSL certificate verification disabled")
 
@@ -137,10 +137,10 @@ def cli(
             sys.exit(1)
 
         # Determine if we should infer scope based on -s flag or always_include_scope setting
-        infer_scope = bool(scope or config.get("always_include_scope", False))
+        infer_scope = bool(scope or config["always_include_scope"])
 
         # Determine if verbose mode should be enabled based on -v flag or verbose config setting
-        use_verbose = bool(verbose or config.get("verbose", False))
+        use_verbose = bool(verbose or config["verbose"])
 
         # Resolve language code to full name if provided
         resolved_language = Languages.resolve_code(language) if language else None
@@ -162,16 +162,16 @@ def cli(
                 message_only=message_only,
                 verbose=use_verbose,
                 no_verify=no_verify,
-                skip_secret_scan=skip_secret_scan or bool(config.get("skip_secret_scan", False)),
+                skip_secret_scan=skip_secret_scan or config["skip_secret_scan"],
                 language=resolved_language,
-                hook_timeout=hook_timeout if hook_timeout > 0 else int(config.get("hook_timeout", 120) or 120),
+                hook_timeout=hook_timeout if hook_timeout > 0 else config["hook_timeout"],
             )
             sys.exit(exit_code)
         except Exception as e:
             handle_error(e, exit_program=True)
     else:
         # Determine if we should infer scope based on -s flag or always_include_scope setting
-        infer_scope = bool(scope or config.get("always_include_scope", False))
+        infer_scope = bool(scope or config["always_include_scope"])
 
         ctx.obj = {
             "add_all": add_all,

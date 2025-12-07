@@ -60,7 +60,15 @@ class TestAlwaysIncludeScopeCLI:
         from gac.cli import cli
 
         # Mock the config to return always_include_scope=True
-        mock_config = {"log_level": "ERROR", "model": "test:model", "always_include_scope": True}
+        mock_config = {
+            "log_level": "ERROR",
+            "model": "test:model",
+            "always_include_scope": True,
+            "no_verify_ssl": False,
+            "verbose": False,
+            "skip_secret_scan": False,
+            "hook_timeout": 120,
+        }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
 
@@ -80,7 +88,15 @@ class TestAlwaysIncludeScopeCLI:
         from gac.cli import cli
 
         # Mock the config to return always_include_scope=True
-        mock_config = {"log_level": "ERROR", "model": "test:model", "always_include_scope": True}
+        mock_config = {
+            "log_level": "ERROR",
+            "model": "test:model",
+            "always_include_scope": True,
+            "no_verify_ssl": False,
+            "verbose": False,
+            "skip_secret_scan": False,
+            "hook_timeout": 120,
+        }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
 
@@ -100,7 +116,15 @@ class TestAlwaysIncludeScopeCLI:
         from gac.cli import cli
 
         # Mock the config to return always_include_scope=False
-        mock_config = {"log_level": "ERROR", "model": "test:model", "always_include_scope": False}
+        mock_config = {
+            "log_level": "ERROR",
+            "model": "test:model",
+            "always_include_scope": False,
+            "no_verify_ssl": False,
+            "verbose": False,
+            "skip_secret_scan": False,
+            "hook_timeout": 120,
+        }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
 

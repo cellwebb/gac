@@ -26,6 +26,7 @@ class TestTokenUsageDisplay:
             "max_output_tokens": 150,
             "max_retries": 2,
             "log_level": "ERROR",
+            "warning_limit_tokens": 10000,
         }
         monkeypatch.setattr("gac.main.load_config", lambda: mocked_config)
         monkeypatch.setattr("gac.main.config", mocked_config)
