@@ -187,11 +187,16 @@ def silence_httpx_and_groq_loggers():
 
 @pytest.fixture(autouse=True, scope="session")
 def isolate_oauth_tokens():
-    """Isolate OAuth token storage during testing to prevent interference with real credentials."""
+    """Isolate OAuth token storage during testing to prevent interference with real credentials.
+
+    This fixture patches TokenStore in ALL modules that import it directly, because Python's
+    import system creates a local reference in each module's namespace. If we only patch
+    gac.oauth.token_store.TokenStore, modules that did `from gac.oauth.token_store import TokenStore`
+    would still use the original class from their local namespace.
+    """
     import tempfile
     from pathlib import Path
 
-    import gac.oauth.qwen_oauth
     import gac.oauth.token_store
 
     # Store original TokenStore class
@@ -207,13 +212,47 @@ def isolate_oauth_tokens():
                 base_dir = temp_dir
             super().__init__(base_dir)
 
-    # Replace TokenStore with isolated version
+    # Replace TokenStore with isolated version in the source module
     gac.oauth.token_store.TokenStore = IsolatedTokenStore
+
+    # Also patch TokenStore in ALL modules that import it directly
+    # Python's import creates local references, so we must patch each one
+    modules_to_patch = [
+        "gac.oauth.qwen_oauth",
+        "gac.oauth.claude_code",
+        "gac.auth_cli",
+        "gac.ai_utils",
+        "gac.oauth_retry",
+        "gac.oauth",  # The __init__.py re-exports TokenStore
+    ]
+
+    import importlib
+    import sys
+
+    patched_modules = []
+    for module_name in modules_to_patch:
+        if module_name in sys.modules:
+            module = sys.modules[module_name]
+            if hasattr(module, "TokenStore"):
+                module.TokenStore = IsolatedTokenStore
+                patched_modules.append(module_name)
+        else:
+            # Module not yet imported, import it and patch
+            try:
+                module = importlib.import_module(module_name)
+                if hasattr(module, "TokenStore"):
+                    module.TokenStore = IsolatedTokenStore
+                    patched_modules.append(module_name)
+            except ImportError:
+                pass  # Module doesn't exist or can't be imported
 
     yield temp_dir
 
-    # Restore original TokenStore
+    # Restore original TokenStore in all patched modules
     gac.oauth.token_store.TokenStore = original_token_store
+    for module_name in patched_modules:
+        if module_name in sys.modules:
+            sys.modules[module_name].TokenStore = original_token_store
 
     # Clean up temp directory
     import shutil
