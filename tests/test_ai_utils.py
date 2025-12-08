@@ -245,3 +245,18 @@ class TestGenerateWithRetries:
         with pytest.raises(AIError) as e:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
         assert e.value.error_type == "model"
+
+    def test_final_unknown_error(self):
+        """Test unknown error handling path (line 241)."""
+
+        def raise_unknown_error(**kw):
+            # Create an AIError with no specific type
+            error = AIError("Something went wrong")
+            error.error_type = "something_else"  # Unknown type
+            raise error
+
+        funcs = {"openai": raise_unknown_error}
+        with pytest.raises(AIError) as e:
+            ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
+        assert e.value.error_type == "unknown"
+        assert "Failed to generate" in str(e.value) and "after 2 retries" in str(e.value)
