@@ -183,3 +183,39 @@ def silence_httpx_and_groq_loggers():
     """Silence httpx and groq loggers to suppress noisy shutdown errors."""
     for name in ("httpx", "httpcore", "groq"):
         logging.getLogger(name).disabled = True
+
+
+@pytest.fixture(autouse=True, scope="session")
+def isolate_oauth_tokens():
+    """Isolate OAuth token storage during testing to prevent interference with real credentials."""
+    import tempfile
+    from pathlib import Path
+
+    import gac.oauth.qwen_oauth
+    import gac.oauth.token_store
+
+    # Store original TokenStore class
+    original_token_store = gac.oauth.token_store.TokenStore
+
+    # Create temp directory for test tokens
+    temp_dir = Path(tempfile.mkdtemp(prefix="gac_test_oauth_"))
+
+    # Create isolated TokenStore class for tests
+    class IsolatedTokenStore(original_token_store):
+        def __init__(self, base_dir=None):
+            if base_dir is None:
+                base_dir = temp_dir
+            super().__init__(base_dir)
+
+    # Replace TokenStore with isolated version
+    gac.oauth.token_store.TokenStore = IsolatedTokenStore
+
+    yield temp_dir
+
+    # Restore original TokenStore
+    gac.oauth.token_store.TokenStore = original_token_store
+
+    # Clean up temp directory
+    import shutil
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
