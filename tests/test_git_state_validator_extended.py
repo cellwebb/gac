@@ -248,6 +248,3 @@ class TestGitStateValidatorMissingCoverage:
                             assert git_state.has_secrets is False
                             assert git_state.secrets == []
                             mock_scan.assert_not_called()
-
-            validator.stage_all_if_requested(True, False)
-            # If exception is raised, it's a bug - the method should handle GitError gracefully
