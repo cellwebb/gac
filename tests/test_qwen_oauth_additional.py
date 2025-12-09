@@ -225,7 +225,7 @@ class TestQwenOAuthMissingCoverage:
         # Test that browser launch failure is handled gracefully
         with mock.patch.object(provider.device_flow, "initiate_device_flow", return_value=mock_response):
             with mock.patch("gac.oauth.qwen_oauth.webbrowser.open", side_effect=Exception("Browser failed")):
-                with mock.patch("gac.oauth.qwen_oauth.print") as mock_print:
+                with mock.patch("builtins.print") as mock_print:
                     with mock.patch("gac.oauth.qwen_oauth.time.sleep"):
                         # Just test that the method starts without error (mock the token polling)
                         with mock.patch.object(
