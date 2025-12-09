@@ -54,14 +54,16 @@ def test_config_show_project_level_file():
     """Test show command with project-level .gac.env (lines 28-30, 36->35, 38)."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
-        fake_path = Path(tmpdir) / ".gac.env"
-        project_path = Path(tmpdir) / ".gac.env"  # project-level in same dir for test
+        # Use a non-existent user config path so it won't be found
+        fake_user_path = Path(tmpdir) / "nonexistent_user" / ".gac.env"
 
-        # Create project-level config
-        project_path.write_text("PROJECT_VAR=value\nSECRET_KEY=secret123\n")
+        # Use isolated_filesystem to change the actual working directory
+        with runner.isolated_filesystem(temp_dir=tmpdir):
+            # Create project-level config in the current working directory
+            project_path = Path(".gac.env")
+            project_path.write_text("PROJECT_VAR=value\nSECRET_KEY=secret123\n")
 
-        with patch("gac.config_cli.GAC_ENV_PATH", fake_path):  # user config doesn't exist
-            with patch("gac.config_cli.Path.cwd", return_value=Path(tmpdir)):
+            with patch("gac.config_cli.GAC_ENV_PATH", fake_user_path):  # user config doesn't exist
                 result = runner.invoke(config, ["show"])
                 assert result.exit_code == 0
                 assert "Project config (./.gac.env):" in result.output
