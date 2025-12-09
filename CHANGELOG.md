@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.10.17] - 2025-12-09
+
+### Improvements
+
+- Improved browser authentication test reliability
+
 ## [3.10.16] - 2025-12-09
 
 ### Improvements
