@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.10.16] - 2025-12-09
+
+### Improvements
+
+- Improved test reliability for OAuth and configuration features
+
 ## [3.10.15] - 2025-12-09
 
 ### Improvements
