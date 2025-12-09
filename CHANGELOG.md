@@ -4,1893 +4,1611 @@
 
 ### Improvements
 
-- Improved browser authentication test reliability
+- Enhanced browser launch testing for better reliability
+
+### Bug Fixes
+
+- Fixed test coverage for browser launch failure handling
 
 ## [3.10.16] - 2025-12-09
 
 ### Improvements
 
-- Improved test reliability for OAuth and configuration features
+- Improved test reliability for OAuth and configuration commands
+
+### Bug Fixes
+
+- Fixed mock target for print statements in Qwen OAuth tests
 
 ## [3.10.15] - 2025-12-09
 
 ### Improvements
 
-- Updated Mistral model to work with the latest naming convention
+- Updated Mistral model identifier for better compatibility
 
 ## [3.10.14] - 2025-12-08
 
 ### Improvements
 
-- Enhanced OAuth token handling for better security during authentication
-- Improved test coverage for AI utilities and token counting functionality
-- Better error handling and validation for model configurations
-- More reliable secret detection with improved user interaction handling
-- Enhanced preprocessing logic for better content analysis and filtering
+- Enhanced test coverage across all components for better reliability
+- Improved OAuth token isolation during testing to protect your credentials
+- Better secret detection and validation during commit process
 
 ### Bug Fixes
 
-- Fixed test interference with real OAuth credentials
-- Resolved issues with token storage during authentication flows
-- Fixed edge cases in preprocessing for minified content detection
+- Fixed test interference with real authentication tokens
+- Resolved issues with quiet mode behavior in validation tests
 
 ## [3.10.13] - 2025-12-07
 
 ### Improvements
 
-- Better support for Anthropic-compatible providers with automatic URL handling
-- Improved authentication retry process for better reliability
-- Enhanced error detection and classification for clearer messages
-- More robust handling of large files and token limits
-- Better support for right-to-left languages in text display
-- Improved configuration management with better error handling
-
-### Bug Fixes
-
-- Fixed crashes when working with certain provider configurations
-- Resolved issues with OAuth token refresh failures
-- Fixed problems with minified content detection at boundary conditions
+- Better URL handling for Anthropic-compatible AI providers
+- More comprehensive test coverage for better reliability
+- Improved error handling and authentication flows
+- Enhanced configuration management and validation
+- Faster test execution with optimized mocking
 
 ## [3.10.12] - 2025-12-06
 
 ### Improvements
 
-- Better validation and error handling for grouped file operations
-- More robust interactive workflow with improved exception handling
+- Better reliability when working with grouped commits
+- More comprehensive testing for interactive and grouped commit workflows
+- Enhanced error handling with better debugging information
 
 ## [3.10.11] - 2025-12-06
 
 ### Improvements
 
-- More reliable and accurate question handling in interactive mode
-- Better preview functionality for commit operations
+- More reliable dry-run functionality with better testing coverage
+- Enhanced question parsing in interactive mode for better accuracy
+- Comprehensive test coverage improvements for commit execution
+
+### Bug Fixes
+
+- Fixed edge cases in parsing numbered list responses from AI
 
 ## [3.10.10] - 2025-12-06
 
-### Bug Fixes
-
-- Fixed issues where interrupted commits could leave your changes in an inconsistent state
-
 ### Improvements
 
-- Better error handling and cleanup when commits or pushes fail
-- Streamlined internal command processing for improved performance
+- Better error handling and cleanup when commits fail
+- Cleaner internal code structure for improved reliability
+- More consistent parameter handling throughout the app
+
+### Bug Fixes
+
+- Fixed staging area restoration issues during failed commits
+- Fixed interrupted commits leaving staging area in inconsistent state
 
 ## [3.10.9] - 2025-12-06
 
-### Changed
+### Improvements
 
-- Improved how commit messages are processed and cleaned for better readability
-- Reorganized internal structure to make future updates easier to maintain
+- Cleaner commit messages by removing AI reasoning blocks
+- Better organization of internal code structure
+- More maintainable template system for generating prompts
 
 ## [3.10.8] - 2025-12-06
 
-### Bug Fixes
-
-- Fixed crashes when pre-commit hooks fail, now shows clearer error messages
-
 ### Improvements
 
-- Better overall stability with improved error handling throughout the app
+- Better error handling when git hooks fail
+- More reliable app exit behavior throughout the interface
 
 ## [3.10.7] - 2025-12-06
 
-### Added
+### Improvements
 
-- New workflow system to make commits more reliable and consistent
+- Better internal code organization for improved reliability
+- More accurate test execution with improved git command mocking
+- Simplified workflow system with cleaner function signatures
 
-### Fixed
+### Bug Fixes
 
-- Resolved test failures that could cause inconsistent behavior during commit operations
+- Fixed test issues that could cause unexpected git operations
 
 ## [3.10.6] - 2025-12-06
 
 ### Improvements
 
-- Better organization of settings for easier maintenance
-- Improved error messages when something goes wrong
-- Faster and more reliable overall performance
+- Better organization of internal code structure for improved maintainability
+- More reliable OAuth authentication with unified retry handling
+- Enhanced model string parsing with better error handling
+- Simplified release process for smoother updates
 
 ### Bug Fixes
 
-- Fixed crashes when working with certain model configurations
-- Resolved issues with workflow interruptions due to expired sessions
-
-## [3.10.5] - 2025-12-06
-
-### Changed
-
-- Streamlined release workflow by implementing kittylog tool for improved changelog management and automated version tracking
+- Fixed test compatibility issues with updated prompt templates
+- Improved error messages when model configuration is invalid
 
 ## [3.10.4] - 2025-12-06
 
-### Fixed
+### Improvements
 
-- Resolved CI test failures by improving configuration mocking, ensuring continuous integration stability
+- Enhanced test reliability to prevent failures in automated testing
 
 ## [3.10.3] - 2025-12-06
 
-### Highlights
+### Improvements
 
-- Achieved 100% mypy type safety compliance across entire codebase
-- Enhanced code quality through comprehensive refactoring and dead code removal
-- Strengthened development workflow with automated strict type checking
-
-### Platform Improvements
-
-- Implemented strict mypy type checking in CI and pre-commit hooks for improved code reliability
-- Resolved 51 type annotation errors across 22 files, achieving zero type errors
-- Eliminated dead code and unused functions to reduce maintenance overhead
+- Enhanced code quality with strict type checking and error handling
+- Cleaned up unused code throughout the application for better performance
 
 ## [3.10.2] - 2025-12-06
 
-### Highlights
+### Improvements
 
-- Improved commit workflow reliability with enhanced confirmation flow and comprehensive test coverage
-- Streamlined documentation by relocating provider implementation guide for better maintainability
-
-### Customer Impact
-
-- More predictable commit process with clearer confirmation prompts and consistent panel display
-- Reduced ambiguity in user interactions with explicit handling for all workflow responses
-
-### Platform Improvements
-
-- Strengthened test coverage for single commit workflow, reducing risk of regression issues
-- Enhanced system stability through refactored confirmation logic and streamlined code structure
+- Better confirmation flow for commit messages with improved display options
+- Reorganized documentation for easier provider implementation
+- Enhanced testing coverage for commit workflow scenarios
 
 ## [3.10.1] - 2025-12-06
 
-### Highlights
+### Improvements
 
-- Launched comprehensive system refactoring, improving code maintainability and testability
-- Introduced new GroupedCommitWorkflow to handle multi-file commit operations efficiently
-- Enhanced repository state management with advanced secret detection capabilities
-
-### Customer Impact
-
-- Improved commit workflow for users working with multiple files through intelligent grouping
-- Added interactive contextual question generation for more precise commit message creation
-- Strengthened data security with proactive secret detection in repository changes
-
-### Platform Improvements
-
-- Standardized AI provider URL construction for better API consistency and flexibility
-- Centralized request body building in OpenAI-compatible providers to reduce code duplication
-- Enhanced error handling and validation across git operations for improved reliability
+- Better organization with cleaner internal code structure
+- More reliable git operations and commit handling
+- Enhanced interactive mode with improved question flow
+- Better error handling and validation throughout the app
+- More comprehensive secret detection for security
+- Improved provider URL handling for better consistency
+- Enhanced testing coverage for more reliable operation
 
 ## [3.10.0] - 2025-12-05
 
-### Highlights
+### Improvements
 
-- Enhanced security with automatic API key redaction across all error responses
-- Centralized error handling improving system reliability and maintainability
-- Simplified provider architecture reducing maintenance overhead by 40%
+- Better protection of your sensitive information in error messages
+- Cleaner and more reliable AI provider system
+- More consistent error handling across all AI providers
+- Simplified internal code structure for better reliability
 
-### Customer Impact
+### Bug Fixes
 
-- Cleaner error messages with sensitive data automatically removed, improving troubleshooting experience
-
-### Platform Improvements
-
-- Implemented comprehensive sanitization covering 9 sensitive data patterns
-- Achieved 100% test coverage with all 1105 tests passing after refactoring
+- Fixed error handling in retry logic for more reliable AI responses
+- Removed duplicate error handling that could cause inconsistent messages
 
 ## [3.9.3] - 2025-12-05
 
-### Platform Improvements
+### Improvements
 
-- Enhanced system reliability by implementing specific exception handling, reducing silent failures and improving error diagnostics
-- Strengthened code quality with comprehensive type definitions for configuration, preventing runtime errors
-- Improved maintainability with 100% test coverage passing, ensuring robust performance in production environments
+- Better error handling with specific exception types instead of generic errors
+- Enhanced configuration system with improved type checking
+- Cleaner code structure with more reliable error messages
 
 ## [3.9.2] - 2025-12-05
 
-### Highlights
+### Improvements
 
-- Improved input validation to prevent errors from malformed model configurations
-- Enhanced internal documentation and type safety for better code maintainability
-
-### Fixed
-
-- Added robust validation for model inputs with missing provider or model name components
-- Ensures proper error messages and graceful failure for edge cases like 'openai:' or ':gpt-4'
-
-### Changed
-
-- Refactored error classification logic with comprehensive documentation for improved developer experience
-- Updated test suite to align with current CLI behavior for configuration variables
+- Better error handling and validation for model format inputs
+- Improved test reliability with consistent variable naming
+- Enhanced error classification documentation and type safety
 
 ## [3.9.1] - 2025-12-05
 
-### Security
+### Improvements
 
-- Enhanced data security by preventing accidental exposure of sensitive
+- Sensitive information like API keys and tokens are now hidden when displaying configuration settings
+
+### Bug Fixes
+
+- Fixed configuration display to properly parse environment files and handle key-value pairs correctly
 
 ## [3.9.0] - 2025-12-05
 
-### Highlights
+### Improvements
 
-- Completed provider architecture migration achieving 96.7% test coverage
-- Enhanced authentication security with OAuth token store integration for Claude Code
-- Improved system performance through lazy initialization across all AI providers
+- Improved performance with lazy initialization for AI providers
+- Better authentication with OAuth token integration for Claude Code and Qwen
+- Enhanced provider architecture for better maintainability
+- Improved test coverage and reliability across all providers
+- Better URL handling for custom Anthropic endpoints
 
-### Customer Impact
+### Bug Fixes
 
-- Streamlined provider support reduces integration complexity for enterprise customers
-- OAuth authentication provides more secure token management for Claude Code users
-- Faster application startup with deferred provider initialization
-
-### Platform Improvements
-
-- Centralized error handling improves debugging and reduces support tickets
-- Simplified provider hierarchy enhances maintainability and future development
-- Enhanced URL normalization ensures robust endpoint handling across providers
+- Fixed connection error handling for LM Studio
+- Fixed SSL verification for Qwen API calls
+- Fixed authentication failures from expired OAuth tokens
+- Fixed crashes when configuration values are missing
 
 ## [3.8.2] - 2025-12-04
 
-### Security
+### Improvements
 
-- Enhanced security for Qwen provider by implementing SSL verification on all API communications, ensuring encrypted data transmission for OAuth and API calls.
+- Added SSL verification for Qwen API calls to ensure secure connections
+- Updated to version 3.8.2 with latest improvements
 
 ## [3.8.1] - 2025-12-04
 
-### Highlights
+### Improvements
 
-- Enhanced system stability with standardized provider timeouts and comprehensive config validation
-- Improved debugging capabilities across all AI providers with new logging infrastructure
+- Better error messages when settings are invalid
+- More reliable SSL certificate handling for all AI providers
+- Enhanced configuration validation with clearer error messages
 
-### Customer Impact
+### Bug Fixes
 
-- Added flexible SSL certificate verification options for enterprise environments
-- Clearer error messages now guide users when resolving configuration issues
-
-### Platform Improvements
-
-- Replaced 20+ provider-specific timeouts with a unified standard, reducing complexity by 90%
-- Implemented robust configuration validation to prevent runtime errors in production
+- Fixed crashes when configuration values are missing
+- Resolved issues with assert statements not working in optimized Python
 
 ## [3.8.0] - 2025-12-04
 
-### Added
+### What's New
 
-- New `--no-verify-ssl` flag enables operation in corporate proxy environments with SSL interception
+- New --no-verify-ssl flag for corporate proxy environments
 
-### Changed
+### Improvements
 
-- Updated AI agent command guidelines with clearer usage examples and non-negotiable `uv run` prefix requirements
-- Standardized OAuth import paths and improved test coverage across all provider implementations
+- Better SSL certificate handling for all AI providers
+- Updated documentation with clearer command usage examples
+- Improved code organization with consistent import paths
+
+### Bug Fixes
+
+- Fixed authentication issues with expired OAuth tokens
 
 ## [3.7.1] - 2025-12-04
 
-### Highlights
+### Improvements
 
-- Implemented automatic Qwen re-authentication to prevent workflow interruptions from token expiry
-- Improved user experience with seamless token refresh and clear process feedback
+- Qwen OAuth tokens now refresh automatically to prevent authentication failures
+- Better authentication management with automatic retry when tokens expire
+- Clear user feedback during Qwen re-authentication process
 
-### Customer Impact
+### Bug Fixes
 
-- Eliminates manual re-login requirements for Qwen integration, ensuring continuous workflow operation
-- Provides transparent status messages during automatic re-authentication for improved user confidence
-
-### Platform Improvements
-
-- Enhanced system stability with robust error handling for OAuth token failures
-- Improved authentication reliability with automatic retry mechanisms after successful re-authentication
+- Fixed authentication failures from expired Qwen tokens
 
 ## [3.7.0] - 2025-12-04
 
-### Highlights
+### What's New
 
-- Added Qwen.ai OAuth authentication support, expanding our AI provider ecosystem
-- Implemented automatic token refresh for Claude Code, preventing service interruptions
-- Centralized token management through secure TokenStore, improving authentication reliability
+- Generate commit messages using Qwen.ai with OAuth authentication
 
-### Customer Impact
+### Improvements
 
-- Users can now authenticate with Qwen.ai using browser-based OAuth flow
-- Claude Code users experience seamless AI generation without manual token refreshes
-- Enhanced authentication commands provide clearer status and login guidance
+- Claude Code tokens now refresh automatically to prevent authentication failures
+- Better authentication management with login/logout/status commands for OAuth providers
+- Enhanced token storage system for improved security and reliability
 
-### Platform Improvements
+### Bug Fixes
 
-- Eliminated authentication failures from expired tokens through automatic refresh
-- Improved system stability with centralized, secure token storage
-- Reduced authentication errors by 50% through proactive token management
+- Fixed authentication failures from expired Claude Code tokens
+- Improved Qwen API URL construction from OAuth tokens
 
 ## [3.6.4] - 2025-12-02
 
-### Fixed
+### Improvements
 
-- Resolved an issue where commit messages contained unintended leading/trailing whitespace, improving data hygiene and consistency.
+- Cleaner commit messages by removing extra whitespace
 
 ## [3.6.3] - 2025-12-01
 
-### Changed
+### Improvements
 
-- Expanded test coverage across core workflows, including model provider configuration, initialization processes, error handling, and utility functions
-- Enhanced robustness of configuration workflows with comprehensive testing for Azure OpenAI, Claude Code, and custom providers
-- Strengthened system reliability through extensive edge case testing, including subprocess operations, encoding scenarios, and platform-specific behavior
+- Enhanced test coverage for utility functions, provider configurations, and error handling scenarios
+- Improved reliability of initialization workflows with better input validation and configuration management
+- Cleaned up test modules for more consistent and maintainable test structure
 
 ## [3.6.2] - 2025-12-01
 
-### Fixed
+### Improvements
 
-- Resolved cursor navigation limitation in interactive input, significantly improving user experience during text entry
-- Replaced input prompt system to enable advanced line editing capabilities including arrow key movement
-- Updated error handling for better consistency and more intuitive user interruption response
+- Use arrow keys to navigate when answering interactive questions
 
 ## [3.6.1] - 2025-11-30
 
-### Changed
+### Improvements
 
-- Implemented adaptive question generation (1-5 questions) based on change complexity to improve user efficiency and reduce cognitive load
-- Reduced question count for small changes (<50 lines) to 1-3 questions, addressing user feedback on excessive prompts
-- Increased question count for large changes to 3-5 questions for better context gathering
+- Interactive mode now asks fewer questions for small changes and more questions for complex changes
+- Better question scaling based on file count and line modifications for improved user experience
 
 ## [3.6.0] - 2025-11-30
 
-### Highlights
+### What's New
 
-- Launched interactive mode enabling users to provide contextual information for more accurate commit messages, addressing key developer workflow enhancement
-- Expanded global documentation to 15 languages with comprehensive interactive mode guidance, strengthening international market penetration
-- Improved developer experience with clearer token warning messages, reducing user confusion and support inquiries
+- Interactive mode with context-aware questions for more accurate commit messages
+- Use --interactive/-i flag to provide additional context through Q&A
 
-### Customer Impact
+### Improvements
 
-- Interactive mode allows developers to answer targeted questions about changes, resulting in higher quality, context-rich commit messages for complex projects
-- Localized documentation now uses proper AI terminology ("KI" for German, "IA" for French), improving clarity for international users
-- Simplified dependency management by removing unused packages, ensuring faster installation and more stable builds
-
-### Platform Improvements
-
-- Enhanced user understanding with refined warning messages that distinguish between "warning threshold" and "token limits"
-- Strengthened test coverage with comprehensive interactive mode validation, ensuring reliable feature performance
-- Replaced Halo with Rich Status for consistent UI experience across the application
+- clearer token warning messages about thresholds instead of limits
+- Updated German and French documentation with proper AI terminology
+- Enhanced documentation with interactive mode guides in 15 languages
+- Simplified dependencies by removing unused halo package
+- Better UI consistency with Rich status instead of Halo spinners
 
 ## [3.5.0] - 2025-11-29
 
-### Highlights
+### What's New
 
-- Expanded provider ecosystem to 26+ supported AI services including Azure OpenAI
-- Streamlined CLI workflow with dedicated model and language configuration modules
-- Enhanced platform stability with comprehensive test infrastructure improvements
+- New 'model' command to quickly update AI provider settings without changing other preferences
+- Better documentation with provider lists formatted for easier reading in 15+ languages
 
-### Customer Impact
+### Improvements
 
-- Users now have access to Azure OpenAI alongside 25+ other AI providers
-- Simplified onboarding with interactive provider selection and intelligent defaults
-- Improved setup reliability with reduced CLI complexity and clearer messaging
+- Simplified initialization workflow for cleaner setup experience
+- Enhanced model configuration with support for 26+ AI providers including OpenAI, Anthropic, Azure, and custom endpoints
+- Better test coverage and reliability for CLI commands and provider integrations
 
-### Platform Improvements
+### Bug Fixes
 
-- Refactored CLI architecture to separate model and language configuration logic
-- Strengthened test suite with proper isolation preventing cross-test contamination
-- Enhanced RTL warning handling and OAuth flow support for Claude Code
+- Fixed test isolation issues to prevent cross-test contamination
+- Corrected model name references in provider tests for better accuracy
 
 ## [3.4.3] - 2025-11-29
 
-### Fixed
+### Improvements
 
-- Normalized provider key format for Kimi to "kimi-coding" to ensure consistent configuration and prevent initialization errors.
+- Fixed Kimi Coding provider key format for consistent configuration
+
+### Bug Fixes
+
+- Fixed provider key transformation in CLI initialization
 
 ## [3.4.2] - 2025-11-29
 
-### Changed
+### Improvements
 
-- Updated default AI models for OpenAI and Azure OpenAI configurations to use the latest "gpt-5-mini" model, ensuring access to current capabilities and improved performance.
+- Updated OpenAI default model to gpt-5-mini
+- Updated Azure OpenAI default model to gpt-5-mini
 
 ## [3.4.1] - 2025-11-29
 
-### Fixed
+### Improvements
 
-- Improved error handling for the Azure OpenAI provider to better manage JSON decoding failures and ensure more reliable API response processing
+- Better error handling for Azure OpenAI provider with more comprehensive test coverage
+
+### Bug Fixes
+
+- Fixed version number update for 3.4.1 release
 
 ## [3.4.0] - 2025-11-29
 
-### Highlights
+### What's New
 
-- Expanded AI provider ecosystem with three new integrations (Azure OpenAI, Kimi Coding, Moonshot AI)
-- Streamlined provider configuration process, reducing setup complexity for enterprise customers
-- Enhanced documentation consistency across 16 languages, improving global accessibility
+- Generate commit messages using Azure OpenAI provider
+- Generate commit messages using Kimi Coding provider
+- Generate commit messages using Moonshot AI provider
 
-### Added
+### Improvements
 
-- Added native Azure OpenAI provider with comprehensive endpoint and API version handling
-- Integrated Kimi Coding and Moonshot AI providers to expand AI service options
-- Implemented robust test suites for all new providers ensuring reliability and performance
-
-### Changed
-
-- Simplified CLI provider registration and API key configuration logic for faster onboarding
-- Updated provider registry system to standardize integration workflow
-- Streamlined contributing documentation reducing implementation steps from 9 to 7
+- Simplified provider setup with cleaner API key handling
+- Updated documentation to include new providers and clearer setup instructions
+- Streamlined provider registration process for better consistency
 
 ## [3.3.0] - 2025-11-15
 
-### Highlights
+### What's New
 
-- Launched new `--message-only` flag enabling integration with external tools and CI/CD pipelines
-- Enhanced file rename handling in grouped commits, preserving file history integrity
-- Strengthened code organization by centralizing git operations for improved maintainability
+- Generate commit messages without committing using --message-only flag for script integration
 
-### Customer Impact
+### Improvements
 
-- Developers can now generate commit messages without performing git operations, enabling seamless integration with external workflows and AI agents
-- Improved reliability when handling file renames in batch commits, preventing history fragmentation
-- Expanded multi-language documentation supports global development teams with consistent guidance
-
-### Platform Improvements
-
-- Centralized git-related utilities to improve code maintainability and reduce technical debt
-- Added comprehensive test coverage for new message-only functionality and rename detection
-- Enhanced system stability through better separation of concerns between git operations and main workflow logic
+- Better handling of file renames in grouped commits to preserve file history
+- Comprehensive documentation in 16 languages for new --message-only functionality and script integration examples
 
 ## [3.2.0] - 2025-11-13
 
-### Added
+### What's New
 
-- Integrated Replicate API as a new AI provider, expanding options for async predictions with comprehensive test coverage
+- Generate commit messages using Replicate AI provider
 
-### Changed
+### Improvements
 
-- Updated default OpenAI model to gpt-5-mini for improved performance and cost efficiency
+- Updated OpenAI default model to gpt-5-mini
+- Enhanced documentation with Replicate provider information across all languages
 
 ## [3.1.0] - 2025-11-12
 
-### Changed
+### Improvements
 
-- Refactored AI provider management to a centralized registry, reducing technical debt and improving system stability for future integrations.
+- Better reliability with improved AI provider management
+- Enhanced system architecture for easier maintenance
 
 ## [3.0.0] - 2025-11-10
 
-### Added
+### What's New
 
-- Added support for project-level configuration files (.gac.env) to enable team-specific settings while maintaining user-level configurations
+- Add support for project-level configuration files
+- View both user-level and project-level settings with config show command
 
-### Changed
+### Improvements
 
-- Simplified configuration loading to use only .gac.env files, removing support for generic .env files to improve clarity and reduce configuration errors
+- Simplified configuration loading to only use .gac.env files
+- Clear separation and labeling for different configuration sources
 
 ## [2.7.5] - 2025-11-08
 
-### Added
+### Improvements
 
-- Enhanced test coverage for CLI functionality including RTL language support, provider normalization, and user interaction flows
-
-### Changed
-
-- Version updated to 2.7.5 for release deployment
+- Better right-to-left language support with warning system
+- Improved provider name handling for MiniMax.io and Synthetic.new models
+- Enhanced reliability of interactive prompts and cancellations
 
 ## [2.7.4] - 2025-11-08
 
-### Changed
+### Improvements
 
-- Updated provider names in CLI to align with official URLs (MiniMax.io, Synthetic.new), ensuring seamless integration and accurate configuration.
+- Added Thai language support to documentation
+- Improved provider name formatting to match official URLs
+- Enhanced documentation formatting for supported providers list
 
 ## [2.7.3] - 2025-11-06
 
-### Highlights
+### Improvements
 
-- Added new offline mode to support customers with restricted internet access
-- Expanded documentation reach to 14 languages, improving global accessibility
-
-### Customer Impact
-
-- Users can now operate completely offline using the GAC_NO_TIKTOKEN environment variable
-- Enhanced documentation readability for supported AI providers across all language variants
-
-### Platform Improvements
-
-- Simplified token counting logic reduces complexity and improves system stability
-- Comprehensive test coverage added for offline functionality, ensuring reliable performance
+- Stay completely offline with new GAC_NO_TIKTOKEN setting
+- Better documentation formatting for provider lists in all languages
 
 ## [2.7.2] - 2025-11-06
 
-### Fixed
+### Improvements
 
-- Improved AI token counting accuracy and reliability for local providers, preventing unnecessary network requests and adding robust fallback handling for enhanced system stability.
+- Better token counting for local AI providers
+- More reliable processing when network issues occur
+- Enhanced error handling for unknown AI models
+
+### Bug Fixes
+
+- Fixed crashes when counting tokens for certain local providers
 
 ## [2.7.1] - 2025-11-06
 
-### Added
+### Improvements
 
-- Enhanced CLI interactions with keyboard shortcuts for faster navigation across setup and configuration workflows
-
-### Changed
-
-- Improved authentication documentation with clearer troubleshooting steps, reducing support tickets for token expiration issues
+- Use arrow keys and shortcuts in interactive prompts for easier navigation
+- Improved Claude Code troubleshooting guide with clearer steps for expired tokens
 
 ## [2.7.0] - 2025-11-06
 
-### Highlights
+### What's New
 
-- Streamlined user authentication workflow with new dedicated `gac auth` command, reducing friction for Claude Code access
+- New dedicated 'gac auth' command for Claude Code OAuth authentication
 
-### Customer Impact
+### Improvements
 
-- Simplified re-authentication process, eliminating complex navigation through model settings
-- Enhanced global support with updated documentation and authentication guidance across 8 languages
-- Improved user experience with clearer OAuth messaging and automatic browser launch
-
-### Platform Improvements
-
-- Strengthened authentication system with 132 new test cases ensuring robust token management
-- Increased system stability with comprehensive test coverage for success, failure, and edge cases
+- Simplified Claude Code re-authentication workflow
+- Updated authentication instructions across all language documentation
 
 ## [2.6.1] - 2025-11-05
 
-### Highlights
+### What's New
 
-- Implemented automatic OAuth token refresh for seamless Claude Code integration
-- Streamlined user experience by removing redundant 'model' command from documentation
-- Enhanced authentication reliability with comprehensive test coverage
+- Claude Code automatically refreshes expired tokens
 
-### Customer Impact
+### Improvements
 
-- Eliminated workflow interruptions by automatically handling expired OAuth tokens
-- Simplified onboarding process with clearer, consolidated documentation across 16 languages
-- Improved system reliability with robust error handling during authentication flows
+- Better documentation with simplified installation instructions
+- More reliable Claude Code authentication with comprehensive test coverage
 
-### Platform Improvements
+### Bug Fixes
 
-- Strengthened authentication security with comprehensive OAuth flow testing
-- Reduced support burden by providing clear user feedback during re-authentication
-- Ensured consistent behavior across all authentication scenarios with expanded test coverage
+- Fixed authentication flow issues with proper error handling
 
 ## [2.6.0] - 2025-11-05
 
-### Added
+### What's New
 
-- Introduced Claude Code OAuth provider with secure PKCE authentication flow, expanding supported AI services
-- Added comprehensive multilingual documentation (16 languages) for Claude Code setup, usage, and troubleshooting
-- Implemented automated browser-based authentication with local callback server and token management
+- Use Claude Code AI provider with secure OAuth authentication
+- Comprehensive multilingual documentation for Claude Code setup
 
-### Changed
+### Improvements
 
-- Updated all README files across 16 supported languages to include Claude Code as a supported provider
-- Enhanced documentation discoverability with cross-references between usage guides and OAuth setup instructions
-- Integrated Claude Code configuration into existing model setup wizards for seamless user experience
+- Enhanced documentation with Claude Code cross-references across all languages
+- Comprehensive OAuth test coverage for reliable authentication
 
 ## [2.5.2] - 2025-11-04
 
-### Highlights
+### What's New
 
-- Expanded global market reach by adding support for 4 new languages (Vietnamese, Norwegian, Swedish, Italian), covering 40M+ additional speakers
-- Enhanced operational flexibility with configurable git hook timeouts, reducing workflow failures in complex enterprise environments
-- Strengthened product quality with 791 new automated tests, improving test coverage by 25% for critical CLI workflows
+- Added Norwegian, Swedish, Italian, and Vietnamese language support with complete documentation
 
-### Customer Impact
+### Improvements
 
-- Users can now experience full product documentation and interfaces in their native language for Vietnamese, Norwegian, Swedish, and Italian
-- Developers working with large codebases or slow CI/CD pipelines can now customize git hook execution timeouts to prevent timeouts and failures
-- Improved reliability for international users through automated language link verification ensuring consistent navigation across all documentation
+- Configure timeout for git hooks with new --hook-timeout option
+- Added localized screenshots for better user experience in new languages
+- Improved test coverage with 791 new tests for CLI and language features
 
-### Platform Improvements
+### Bug Fixes
 
-- Added comprehensive CI automation to validate documentation consistency across 17 languages, reducing maintenance overhead
-- Enhanced test infrastructure with better isolation and organization, increasing confidence in releases
-- Improved system stability for git operations in enterprise environments with new timeout configuration capabilities
+- Fixed duplicate markdownlint directives in documentation files
+- Fixed crash when hook timeout configuration was not set
 
 ## [2.5.1] - 2025-11-04
 
-### Fixed
+### Bug Fixes
 
-- Resolved a TypeError in CLI configuration to ensure stable operation when hook_timeout is unset, defaulting to a safe 120-second timeout for uninterrupted workflows.
+- Fixed crash when hook timeout configuration was not set
+- Hook timeout now properly defaults to 120 seconds when not specified
 
 ## [2.5.0] - 2025-11-04
 
-### Highlights
+### What's New
 
-- Added configurable hook timeout to enhance system reliability for large-scale projects
-- Reorganized international documentation to improve global user accessibility and developer experience
+- Configure timeout for pre-commit and lefthook hooks with --hook-timeout option or GAC_HOOK_TIMEOUT environment variable
 
-### Customer Impact
+### Improvements
 
-- Users can now configure hook timeouts via environment variable or CLI option, preventing failures on long-running operations
-- Multilingual documentation is now properly organized and displays correctly across 10+ languages
+- Fixed broken image paths in multilingual documentation
+- Updated release process documentation with clearer make commands
+- Reorganized documentation structure for better internationalization
 
-### Platform Improvements
+### Bug Fixes
 
-- Improved documentation structure with standardized release process using make commands
-- Enhanced developer experience with clearer contribution guidelines and corrected file references
+- Corrected path references in Chinese documentation
+- Fixed formatting placeholders in release documentation
 
 ## [2.4.1] - 2025-11-03
 
-### Changed
+### Improvements
 
-- Improved type safety and error handling clarity in Git operations, enhancing system stability and maintainability.
+- Better type safety for error handling
+- Improved internal code reliability
 
 ## [2.4.0] - 2025-11-03
 
-### Highlights
+### What's New
 
-- Expanded global market reach with comprehensive multilingual support in 9 languages, covering 60% of world developer population
-- Enhanced RTL language handling for Arabic and Hebrew markets, unlocking previously inaccessible user segments
-- Resolved critical compatibility issues on non-UTF-8 systems, eliminating crashes for international users
+- Generate commit messages in your preferred language with new multilingual support
+- New 'model' command to quickly update AI provider settings without changing other preferences
 
-### Customer Impact
+### Improvements
 
-- Users can now experience the product fully localized in German, Spanish, French, Hindi, Japanese, Korean, Dutch, Portuguese, and Russian
-- Simplified configuration with new dedicated model command, reducing setup time by 50%
-- Improved international user experience with language-specific screenshots and examples
+- Better compatibility with international systems using different character encodings
+- Right-to-left language support with helpful warnings and confirmation preferences
+- Expanded documentation with translations in German, Korean, Dutch, Spanish, Portuguese, and Hindi
+- Better organized project structure with all examples moved to dedicated directory
+- Simplified version management process for cleaner updates
 
-### Platform Improvements
+### Bug Fixes
 
-- Eliminated application crashes on systems with non-UTF-8 locales, increasing stability for global users
-- Reduced build dependencies by removing bump-my-version, simplifying release process
-- Enhanced CLI navigation consistency across all selection interfaces
+- Fixed crashes when working with non-English character sets on some systems
+- Resolved language navigation issues by fixing broken documentation links
+- Fixed filtering of empty configuration values during initialization
+- Improved keyboard navigation in language selection menus
 
 ## [2.3.0] - 2025-11-03
 
-### Added
+### What's New
 
-- New grouped commit workflow with `--group` flag to intelligently organize related file changes into multiple logical commits
-- Enhanced initialization with preserve/replace options for API keys, preventing accidental overwrites during re-configuration
-- Model identifier validation to ensure proper 'provider:model' format with clear error messaging
+- Group your changes into multiple commits with the --group flag
 
-### Changed
+### Improvements
 
-- Increased default token limit from 1,024 to 4,096, enabling more detailed commit message generation for complex changes
-- Implemented dynamic token scaling (2x-5x) based on file count in grouped mode, ensuring adequate allocation for varying change sizes
-- Improved language configuration management to respect and preserve existing user settings during initialization
+- Better handling of large changes with increased token limits from 1024 to 4096
+- Show file lists for each commit when using grouped commits
+- Dynamic token scaling based on file count (2x-5x) for grouped commits
+- Enhanced initialization with options to preserve existing API keys and language settings
 
-### Fixed
+### Bug Fixes
 
-- Resolved staging preservation issues where partially staged files were not properly restored when grouped workflow failed
-- Fixed English language selection bug during initialization to ensure settings persist correctly
-
-### Security
-
-- Enhanced Bearer token pattern matching to properly detect tokens at line boundaries, reducing false negatives in authentication
+- Fixed staged changes preservation in grouped commit workflow
+- Fixed English language selection to properly save configuration
+- Improved security token detection for better pattern matching
+- Fixed model identifier validation with clear error messages for 'provider:model' format
 
 ## [2.2.0] - 2025-11-02
 
-### Highlights
+### What's New
 
-- Launched interactive in-place commit message editing, addressing top developer workflow request
-- Increased token capacity by 100% to handle larger codebases and complex commits
-- Enhanced editor with dual submission methods (Ctrl+S, Esc+Enter) and vi/emacs key bindings
+- Edit commit messages directly with new 'e' command
+- Interactive terminal editor with vi/emacs key bindings
 
-### Customer Impact
+### Improvements
 
-- Developers can now edit commit messages directly in-terminal using the new 'e' command, streamlining the commit workflow
-- Improved UX with scrollbar support and hint bar for better navigation of longer messages
-- Reduced context switching by keeping editing within the existing interactive session
-
-### Platform Improvements
-
-- Upgraded default token limits from 16K to 32K (warning) and 128K (max), enabling processing of more substantial code changes
-- Simplified core editing logic by removing unused context parameters, improving maintainability
-- Enhanced test coverage with new cursor positioning and vi mode validation for better reliability
+- Better cursor positioning and editor controls for editing
+- Increased token limits to handle larger code changes
+- Cleaner commit message editing with simplified interface
 
 ## [2.1.0] - 2025-10-31
 
-### Highlights
+### What's New
 
-- Added Mistral AI as a new provider, expanding customer choice for AI-powered commit messages
-- Enhanced platform reliability with comprehensive test coverage improvements to 99%
-- Improved user experience with new CLI shortcuts and clearer getting started documentation
+- Generate commit messages using Mistral AI provider
+- New 'lang' command as a shortcut for setting commit message language
 
-### Customer Impact
+### Improvements
 
-- Added 'lang' command as a shortcut for 'language', reducing typing effort for frequent users
-- Upgraded Cerebras default model to "zai-glm-4.6" for improved performance and accuracy
-- Simplified onboarding with enhanced getting started guide and clearer setup instructions
-
-### Platform Improvements
-
-- Achieved 99% test coverage across critical modules, reducing production bugs and improving system stability
-- Enhanced error handling and edge case coverage for Gemini and Mistral AI providers
-- Centralized language configuration management, ensuring consistency across the platform
+- Updated Cerebras AI model to zai-glm-4.6 for better performance
+- Enhanced getting started guide with clearer installation instructions and screenshots
+- More reliable testing with comprehensive edge case coverage
+- Better language management with centralized language list
 
 ## [2.0.0] - 2025-10-30
 
-### Changed
+### Improvements
 
-- Simplified interactive feedback mechanism by removing prefix requirements, allowing users to type feedback directly and reducing cognitive overhead
-- Enhanced commit message formatting with clearer guidelines and removed character restrictions for a more user-friendly experience
-- Improved CLI confirmation prompt with multi-line formatting and clearer instructions for custom message input
+- Easier feedback system for commit messages - just type your thoughts directly
+- Clearer prompts when reviewing and confirming commit messages
+- More flexible commit message formatting without character limits
+- Better documentation reflects the simplified feedback workflow
 
 ## [1.15.0] - 2025-10-30
 
-### Highlights
+### What's New
 
-- Expanded global market reach with multilingual commit message support for 25+ languages
-- Enhanced developer productivity with flexible language configuration options
-- Improved tool compatibility while maintaining localization capabilities
+- Generate commit messages in 25+ languages using language codes or full names
+- Choose to translate conventional commit prefixes or keep them in English
 
-### Customer Impact
+### Improvements
 
-- Developers can now generate commit messages in their native language, improving adoption in international teams
-- Interactive language selector provides intuitive setup with native script display
-- Flexible prefix translation maintains compatibility with existing git workflows
-
-### Platform Improvements
-
-- Robust language code resolution system with comprehensive ISO 639-1 standard support
-- Enhanced configuration management for persistent language and prefix preferences
-- Comprehensive test coverage ensuring stability across all language features
+- New language command for interactive language selection
+- Flexible language configuration with environment variables and CLI flags
 
 ## [1.14.0] - 2025-10-29
 
-### Highlights
+### What's New
 
-- Introduced customizable system prompts, enabling organizations to tailor AI behavior to their specific standards and workflows
+- Create custom system prompts to personalize how commit messages are generated
 
-### Customer Impact
+### Improvements
 
-- Teams can now implement custom commit message guidelines by setting the GAC_SYSTEM_PROMPT_PATH environment variable
-- Enhanced output formatting improves readability of generated commit messages
-- Maintains full backward compatibility with existing configurations
-
-### Platform Improvements
-
-- Refactored prompt handling into maintainable components without affecting existing functionality
-- Strengthened enforcement of conventional commit standards through configurable message cleaning
+- Cleaner output formatting for better readability
+- Better organization of prompt templates with separate system and user components
 
 ## [1.13.1] - 2025-10-28
 
-### Changed
+### Improvements
 
-- Improved AI-generated commit message clarity by removing distracting reasoning tags and formatting artifacts, enhancing output consistency and readability.
+- Cleaner commit messages by removing AI reasoning blocks
+- Fixed grammar in provider list documentation
 
 ## [1.13.0] - 2025-10-28
 
-### Added
+### What's New
 
-- Integrated support for custom Anthropic and OpenAI-compatible endpoints, including Azure OpenAI Service and self-hosted solutions, expanding provider flexibility and customer choice
-- Enhanced CLI initialization to guide users through custom provider setup with streamlined base URL and API key configuration
+- Connect to custom Anthropic-compatible and OpenAI-compatible endpoints for more AI provider options
 
-### Changed
+### Improvements
 
-- Updated documentation assets with optimized dark mode screenshots, reducing file size by 48% for faster loading and improved user experience
+- Updated documentation screenshot to dark mode for better visibility and faster loading
 
 ## [1.12.1] - 2025-10-28
 
-### Fixed
+### Improvements
 
-- Resolved API role validation errors for Gemini by implementing the correct `systemInstruction` field, improving service stability for all Gemini users
-- Enhanced response parsing to reliably extract content from the Gemini provider, preventing data loss from empty text parts in API responses
+- Enhanced Gemini AI provider with better system instruction handling and improved response parsing
+
+### Bug Fixes
+
+- Fixed Gemini API errors by using the correct system instruction format
+- Fixed empty text handling in Gemini responses
 
 ## [1.12.0] - 2025-10-27
 
-### Added
+### What's New
 
-- Integrated DeepSeek API provider, expanding AI model options for customers and enabling access to new generative AI capabilities.
+- Generate commit messages using DeepSeek AI provider
+
+### Improvements
+
+- Updated to version 1.12.0 with latest improvements
 
 ## [1.11.1] - 2025-10-27
 
-### Added
+### Improvements
 
-- Added Together AI as a new provider option in the CLI initialization with a default model for immediate use.
-
-### Changed
-
-- Standardized MiniMax branding across the codebase and documentation for consistency.
-- Updated test suite to align with the new Together AI model identifier.
+- Generate commit messages using Together AI provider
+- Standardized MiniMax branding throughout the application
 
 ## [1.11.0] - 2025-10-27
 
-### Highlights
+### What's New
 
-- Added Minimax AI provider support, expanding AI options for automated commit messages
-- Enhanced developer experience with comprehensive contribution guide for AI provider integration
+- Generate commit messages using Minimax AI provider
 
-### Customer Impact
+### Improvements
 
-- Users can now leverage Minimax's MiniMax-M2 model for generating high-quality commit messages
-- Streamlined onboarding for new AI providers through detailed documentation and reference implementation
-
-### Platform Improvements
-
-- Strengthened error handling across AI providers, reducing failures by addressing authentication, rate limiting, and timeout scenarios
-- Improved system extensibility with a standardized testing framework for new AI provider implementations
+- Enhanced documentation with comprehensive guide for adding new AI providers
 
 ## [1.10.3] - 2025-10-27
 
-### Highlights
+### What's New
 
-- Added Together AI as a new provider, expanding our AI model ecosystem and customer choice
-- Improved documentation clarity to accelerate user onboarding and feature adoption
+- Generate commit messages using Together AI provider
 
-### Customer Impact
+### Improvements
 
-- Users can now leverage Together AI models, providing access to advanced AI capabilities and flexibility in model selection
-- Streamlined documentation with clearer command examples reduces learning curve and improves user experience
-
-### Changed
-
-- Refined project descriptions and command documentation to better articulate product value and improve user guidance
+- Improved project description to better highlight benefits
+- Enhanced command descriptions and examples for clearer usage
 
 ## [1.10.2] - 2025-10-25
 
-### Changed
+### Improvements
 
-- Enhanced test reliability for Groq and ZAI providers with improved API key handling, ensuring consistent test execution and reducing false failures.
+- Enhanced testing reliability for AI providers with better edge case handling
 
 ## [1.10.1] - 2025-10-25
 
-### Changed
+### Improvements
 
-- Upgraded development tooling from pre-commit to Lefthook for faster parallel hook execution, improving developer productivity and build times
+- Faster git hook execution with new system
+- Updated documentation for development setup
 
 ## [1.10.0] - 2025-10-24
 
-### Highlights
+### What's New
 
-- Added Fireworks AI provider integration expanding LLM options for customers
-- Implemented conversational context for AI message generation improving accuracy
-- Enhanced test coverage by 40% ensuring more reliable AI provider interactions
+- Generate commit messages using Fireworks AI provider
 
-### Customer Impact
+### Improvements
 
-- Users can now select Fireworks AI as an additional LLM provider for commit message generation
-- Improved AI message quality through conversational context enabling iterative refinement
-- Streamlined documentation with visual enhancements improves developer onboarding experience
-
-### Platform Improvements
-
-- Increased system reliability through comprehensive edge case testing across all AI providers
-- Enhanced error handling provides clearer feedback for API authentication and connection issues
-- Robust provider validation prevents processing failures from malformed API responses
+- Better conversation context for AI-generated commit messages
+- Enhanced README with visual emoji icons and streamlined installation
+- More reliable AI provider handling with comprehensive edge case testing
 
 ## [1.9.5] - 2025-10-23
 
-### Highlights
+### Improvements
 
-- Improved token usage accuracy for better cost tracking and budget management
-- Streamlined dependency management, reducing package size and complexity
-- Updated documentation and terminology to align with LLM technology focus
-
-### Customer Impact
-
-- Fixed token calculation bug during prompt rerolls, ensuring accurate usage reporting and billing transparency
-- Enhanced documentation clarity with improved visual hierarchy and practical examples
-- Updated product terminology from "AI" to "LLM" for more precise technical understanding
-
-### Platform Improvements
-
-- Removed unused dependencies (anthropic, sumy) to optimize performance and reduce security surface
-- Strengthened test coverage for token usage calculations, improving system reliability
+- Better documentation with clearer instructions and visual improvements
+- More accurate token usage tracking when regenerating commit messages
+- Cleaned up unused dependencies for faster installation
+- Updated terminology throughout app for better clarity
 
 ## [1.9.4] - 2025-10-23
 
-### Changed
+### Improvements
 
-- Increased default output token limit from 512 to 1024 to support advanced reasoning models
-- Updated test cases for GLM-4.5-Air and GLM-4.6 models to validate enhanced token handling capabilities
+- Increased token limit for AI models that need extra reasoning space
+- Better compatibility with advanced AI models that require more processing tokens
 
 ## [1.9.3] - 2025-10-23
 
-### Changed
+### Improvements
 
-- Enhanced code reliability by implementing comprehensive static type checking across the core application
-- Updated OpenAI integration tests to use gpt-5-nano model with increased token allocation for successful test execution
-- Improved Synthetic provider validation with extensive test coverage for API keys, authentication, and error handling
-
-### Fixed
-
-- Resolved CI pipeline failures by fixing mypy dependency resolution in the type checking workflow
-- Corrected token limit errors in OpenAI integration tests by increasing max_tokens threshold for model requirements
+- Added type checking for better code quality and reliability
+- Updated OpenAI test model to gpt-5-nano for current compatibility
+- Enhanced Synthetic provider with comprehensive test coverage
+- Improved CI pipeline with better dependency management
 
 ## [1.9.2] - 2025-10-23
 
-### Fixed
+### Improvements
 
-- Corrected provider name normalization to ensure consistent AI provider handling
-- Resolved API key authentication issues for LM Studio integration
-- Fixed provider key replacement logic that was affecting provider selection
+- Fixed provider name display from 'Chutes.ai' to 'Chutes'
+
+### Bug Fixes
+
+- Fixed API key handling for LM Studio provider
+- Fixed provider key normalization to work consistently across all providers
 
 ## [1.9.1] - 2025-10-23
 
-### Highlights
+### Improvements
 
-- Enhanced AI provider ecosystem with new integrations, expanding customer choice
-- Added verbose messaging capability to improve commit transparency and debugging
-- Improved provider compatibility to ensure broader integration support
-
-### Customer Impact
-
-- Users can now generate detailed, structured commit messages with the new `--verbose` flag for better project documentation
-- Expanded AI provider options now include support for LM Studio and Chutes platforms
-- Clearer documentation helps teams leverage customization features for improved workflow efficiency
-
-### Platform Improvements
-
-- Corrected provider configuration for LM Studio, ensuring reliable AI integration
-- Strengthened system stability through compatibility fixes for AI providers
+- Fixed LM Studio provider name for correct recognition
+- Added Chutes.ai provider to supported AI options
+- Updated documentation to include verbose flag for detailed commit messages
 
 ## [1.9.0] - 2025-10-23
 
-### Highlights
+### What's New
 
-- Introduced comprehensive verbose commit message generation to improve code documentation and review processes
-- Enhanced user productivity with configurable verbose mode, eliminating need for repeated flag usage
+- Generate detailed commit messages with structured sections using verbose mode
+- Set verbose mode preference through environment variable for persistent use
 
-### Customer Impact
+### Improvements
 
-- Developers can now generate structured commit messages with detailed sections for motivation, architecture, and affected components
-- Verbose mode can be set persistently via environment variable, streamlining workflow for power users
-
-### Platform Improvements
-
-- Maintained full backward compatibility with existing commit message formats
-- Added comprehensive test coverage ensuring reliability of new verbose functionality
+- Better commit message organization with sections for motivation and architecture
+- More flexible configuration options for verbose output preferences
 
 ## [1.8.0] - 2025-10-23
 
-### Added
+### What's New
 
-- Integrated new Chutes.ai provider, expanding AI service options for customers with GLM-4.6-FP8 model support
+- Generate commit messages using Chutes.ai provider
 
-### Changed
+### Improvements
 
-- Updated Anthropic model identifier to claude-haiku-4-5 for API compatibility
-- Corrected LM Studio provider name in provider list to ensure proper selection
+- Updated Anthropic model to claude-haiku-4-5 for better compatibility
+
+### Bug Fixes
+
+- Fixed LM Studio provider name in provider list
 
 ## [1.7.0] - 2025-10-23
 
-### Highlights
+### What's New
 
-- Expanded Git integration to support Lefthook hooks, enhancing compatibility with modern development workflows
-- Improved development experience with streamlined setup process and unified tooling
-- Enhanced platform stability and future-proofing through Python 3.14 compatibility updates
+- Support for Lefthook hooks alongside pre-commit
 
-### Customer Impact
+### Improvements
 
-- Developers can now seamlessly use both pre-commit and Lefthook hooks for code quality automation
-- New contributors benefit from simplified onboarding with comprehensive setup documentation and `make dev` command
-- Extended Python 3.10+ support broadens the user base and adoption potential
+- Better compatibility with Python 3.14
+- Updated development setup with unified formatting tools
+- Enhanced documentation for contributors
 
-### Platform Improvements
+### Bug Fixes
 
-- Resolved Python 3.14 compatibility by adding httpcore dependency and removing conflicting packages
-- Upgraded development toolchain to use ruff for consistent formatting and linting
-- Strengthened infrastructure with updated core dependencies (anyio, certifi, h11, httpcore, idna)
+- Fixed Synthetic provider model name handling
 
 ## [1.6.0] - 2025-10-22
 
-### Added
+### What's New
 
-- Integrated new Synthetic API provider with OpenAI-compatible interface and GLM-4.6 model support
+- Generate commit messages using Synthetic AI provider
 
-### Changed
+### Improvements
 
-- Enhanced error handling across all AI providers with specific categorization for rate limits, authentication, and timeouts
-- Updated project dependencies and added Python 3.14 support for future compatibility
-
-### Fixed
-
-- Improved error classification to enable more precise retry logic and better debugging for API failures
+- Added support for Python 3.14
+- Better error handling when AI services are busy or unavailable
+- More precise error messages for authentication and timeout issues
 
 ## [1.5.2] - 2025-10-10
 
-### Highlights
+### What's New
 
-- Added StreamLake AI provider, expanding our ecosystem to 10 supported providers
-- Improved new user onboarding with clearer error messages and enhanced CLI setup flow
-- Streamlined test infrastructure, reducing code duplication by 514 lines while maintaining full coverage
+- Add StreamLake AI provider for commit message generation
 
-### Customer Impact
+### Improvements
 
-- StreamLake (Vanchin) provider now available with endpoint ID-based configuration and backward compatibility for existing API keys
-- New users receive actionable guidance when GAC isn't initialized, reducing setup friction and support tickets
-- Enhanced Ollama and LM Studio setup with optional API keys and flexible URL configuration
+- Better error message when GAC isn't initialized
+- Enhanced Ollama and LM Studio setup with API key support
+- Cleaned up and improved developer documentation
 
-### Platform Improvements
+### Bug Fixes
 
-- Reorganized provider tests into individual files, improving maintainability and enabling faster provider-specific development
-- Cleaned public API by removing internal provider functions, reducing complexity and improving clarity
-- Renamed test markers from 'providers' to 'integration' for better semantic clarity and alignment with industry standards
+- Fixed configuration initialization guidance for new users
 
 ## [1.5.1] - 2025-10-10
 
-### Platform Improvements
+### Improvements
 
-- Updated Gemini provider integration to comply with 2025 API standards, ensuring service continuity
-- Enhanced error handling and response validation to improve system reliability for AI-powered features
-- Added support for system instructions through contents array, expanding AI configuration capabilities
+- Updated Gemini AI provider with improved API compatibility
+- Enhanced error handling and response validation for Gemini
+- Better error messages for easier debugging
 
 ## [1.5.0] - 2025-10-10
 
-### Added
+### What's New
 
-- Expanded AI ecosystem with support for Gemini and LM Studio providers, increasing customer choice and integration flexibility
-- Enhanced provider capabilities with API key validation, comprehensive error handling, and OpenAI-compatible API support
-- Strengthened reliability through improved error handling across all providers and expanded test coverage
+- Generate commit messages using Google's Gemini AI
+- Use LM Studio as an AI provider for local processing
 
-### Fixed
+### Improvements
 
-- Simplified Gemini provider setup by removing redundant URL configuration, reducing customer implementation complexity
+- Simplified Gemini setup with automatic configuration
+- Enhanced error handling for all AI providers
+- Added API key support for Ollama provider
 
-### Removed
+### Bug Fixes
 
-- Cleaned up documentation by removing completed implementation plan, ensuring clarity for development teams
+- Fixed empty response handling across all AI providers
 
 ## [1.4.2] - 2025-10-09
 
-### Changed
+### Improvements
 
-- Refined prompt template processing for improved maintainability and consistency
-- Updated documentation to include Ollama as a supported AI provider
+- Simplified commit message scope handling for more reliable generation
+- Updated documentation to include Ollama AI provider
+- Corrected version information for v1.4.1 release
 
 ## [1.4.1] - 2025-10-04
 
-### Highlights
+### Improvements
 
-- Released version 1.4.1 with updated AI provider capabilities
-- Enhanced Z.AI provider integration with improved generation utilities
-- Streamlined configuration by removing deprecated environment variable
-
-### Changed
-
-- Refactored Z.AI provider implementation for improved performance and reliability
-- Updated generation utilities to fix zai AI provider support issues
-- Simplified configuration by removing GAC_ZAI_USE_CODING_PLAN environment variable
-
-### Added
-
-- New zai-coding AI provider feature to expand AI service options
+- Updated Z.AI provider support with streamlined configuration
+- Cleaner changelog documentation for version 1.4.0 release
 
 ## [1.4.0] - 2025-10-04
 
-### Added
+### Improvements
 
-- New `zai-coding` provider for direct access to Z.AI coding API, expanding AI service options
-
-### Changed
-
-- Simplified Z.AI provider configuration by consolidating API key usage and removing environment variable dependencies
-- Enhanced CLI setup flow to include "Z.AI Coding" as a selectable option for improved user experience
+- New Z.AI Coding provider option for commit message generation
+- Simplified Z.AI provider configuration with shared API implementation
+- Better support for Z.AI coding API without environment variables
 
 ## [1.3.1] - 2025-10-03
 
-### Added
+### Improvements
 
-- Expanded AI capabilities with support for the new ZAI provider, increasing customer choice for AI services.
+- Added support for Z.AI provider for commit message generation
+- Updated changelog with comprehensive release history
 
 ## [1.3.0] - 2025-10-03
 
-### Highlights
+### What's New
 
-- Launched comprehensive security scanning with AI-powered secret detection, preventing accidental credential exposure in commits
-- Expanded AI provider support with new Z.AI coding API endpoint integration
-- Enhanced error handling and service reliability across major AI providers
+- AI-powered secret detection scans your code before committing
+- New Z.AI coding API endpoint support for better code generation
 
-### Added
+### Improvements
 
-- Implemented security scanning feature that detects sensitive information (API keys, tokens, credentials) in staged files before commit
-- Added support for Z.AI coding API endpoint with configurable toggle for enhanced code generation capabilities
-- Introduced interactive secret remediation with user choice options to block, continue, or review detected secrets
+- Better secret detection with fewer false positives
+- Enhanced error handling for rate limits and service issues
+- Improved warning messages and user choices
+- Better display formatting throughout the app
 
-### Changed
+### Bug Fixes
 
-- Improved secret detection accuracy with enhanced pattern matching and false positive filtering
-- Updated error handling for better rate limit management and service availability across OpenRouter provider
-- Refactored console initialization and option display formatting for improved user experience and consistency
-
-### Security
-
-- Enhanced secret scanning with expanded pattern detection for access_key, secret_key, and improved bearer token matching
-- Added configurable security warnings with quiet mode option and improved message formatting
-- Implemented comprehensive line tracking accuracy in diff parsing for precise secret location identification
+- Fixed OpenAI token limit handling for large code changes
+- Fixed crash issues when testing with outdated models
 
 ## [1.2.6] - 2025-10-01
 
-### Changed
+### Improvements
 
-- Restructured AI provider test suite into unit, mocked, and integration categories to improve maintainability and coverage
+- Better organized test suite for improved reliability
+- Enhanced test coverage with more comprehensive testing
+- Updated to version 1.2.6 with latest improvements
 
 ## [1.2.5] - 2025-10-01
 
-### Added
+### What's New
 
-- Integrated Z.AI as a new AI provider for enhanced commit message generation capabilities
+- New Z.AI provider option for generating commit messages
 
-### Changed
+### Improvements
 
-- Updated documentation and configuration examples to include support for the Z.AI provider
+- Updated list of supported AI providers in documentation
 
 ## [1.2.4] - 2025-09-29
 
-### Added
+### What's New
 
-- Implemented comprehensive integration tests for AI providers to ensure reliability and consistency of AI-driven features across all supported platforms.
+- Enhanced testing for all AI providers to ensure more reliable commit message generation
 
-### Changed
+### Improvements
 
-- Updated project version to 1.2.4 for continued release cycle management.
+- Better testing coverage for AI provider integrations
+- Updated development documentation with clearer testing guidelines
 
 ## [1.2.3] - 2025-09-28
 
-### Fixed
+### Improvements
 
-- Corrected OpenAI API parameter for token limits to ensure proper request handling
+- Updated to version 1.2.3 with latest improvements and fixes
+
+### Bug Fixes
+
+- Fixed OpenAI token limit handling to prevent errors when processing large changes
 
 ## [1.2.2] - 2025-09-28
 
-### Changed
+### Improvements
 
-- Simplified OpenRouter integration by removing optional site URL and name headers, streamlining API configuration.
+- Simplified OpenRouter AI provider configuration by removing optional site settings
+- Updated documentation to reflect cleaner configuration options
 
 ## [1.2.1] - 2025-09-28
 
-### Changed
+### Improvements
 
-- Improved AI generation reliability with enhanced error handling and fallback mechanisms across all providers.
-- Strengthened token counting robustness and unified API approach for more consistent AI operations.
+- More reliable AI message generation with better error handling
+- Improved token counting accuracy for all AI providers
+- Better error messages when AI operations fail
+- Enhanced logging for easier troubleshooting
 
 ## [1.2.0] - 2025-09-28
 
-### Changed
+### Improvements
 
-- Refactored AI provider architecture to centralize retry logic, improving system reliability and reducing code duplication for enhanced maintainability.
+- More reliable AI connections with better retry handling
+- Cleaner and more consistent AI provider responses
 
 ## [1.1.0] - 2025-09-27
 
-### Highlights
+### What's New
 
-- Added OpenRouter provider support, expanding AI model options for customers
-- Restructured AI provider architecture for enhanced maintainability and scalability
-- Improved error handling and token counting accuracy across all AI providers
+- Added OpenRouter provider support for commit message generation
 
-### Customer Impact
+### Improvements
 
-- Users can now configure OpenRouter for commit message generation, accessing a broader range of AI models
-- More reliable commit message generation with standardized error handling and improved token counting
-
-### Platform Improvements
-
-- Enhanced system stability with consistent retry logic and HTTP client usage across all providers
-- Streamlined codebase structure reducing technical debt and improving future development velocity
+- Better organization with modular AI provider implementations
+- More accurate token counting for Anthropic AI models
+- Enhanced error handling with standardized error type classification
 
 ## [1.0.1] - 2025-09-26
 
-### Changed
+### Improvements
 
-- Replaced Anthropic SDK with direct HTTP API calls for token counting, improving reliability and reducing dependency overhead
-- Added intelligent fallback to heuristic estimation when API credentials are unavailable, ensuring service continuity
-- Enhanced error handling and logging for Anthropic API interactions, improving system observability
+- More accurate token counting for Anthropic AI models
+- Better reliability when counting tokens with fallback estimation
 
 ## [1.0.0] - 2025-09-26
 
-### Highlights
+### Improvements
 
-- Reached production-ready milestone with version 1.0.0 launch
-- Replaced third-party AI abstraction with direct API integration for improved reliability
-- Enhanced error handling with retry logic and structured error classification
-
-### Changed
-
-- Replaced aisuite library with direct HTTP API calls to AI providers (OpenAI, Anthropic, Groq, Cerebras, Ollama) for better control and reduced dependencies
-- Refactored test structure with improved provider validation coverage and streamlined test dependencies
-- Updated project documentation with comprehensive development guidelines and coding standards
-
-### Customer Impact
-
-- More reliable AI commit message generation with built-in retry logic and exponential backoff
-- Improved error transparency with provider and model details in failure messages
-- Faster response times by eliminating abstraction layer overhead
+- More reliable AI connections with direct API calls
+- Better error handling and retry logic for all AI providers
+- Enhanced test coverage for AI provider interactions
 
 ## [0.19.1] - 2025-09-22
 
-### Changed
+### Improvements
 
-- Upgraded core dependencies including AI provider SDKs, Pydantic v2.11.9 for enhanced data validation, and CLI libraries for improved user experience.
+- Upgraded AI providers and core components for better performance and reliability
+- Enhanced data validation and CLI formatting with updated dependencies
 
 ## [0.19.0] - 2025-09-21
 
-### Highlights
+### Improvements
 
-- Simplified CLI scope handling to improve user experience and reduce complexity
-- Streamlined development toolchain for faster, more consistent builds
-- Enhanced automation with automatic scope inference for commit messages
-
-### Changed
-
-- Refactored scope flag from value-accepting to boolean trigger for automatic inference
-- Modernized build system by consolidating linting tools and implementing reproducible builds
-
-### Platform Improvements
-
-- Improved system stability with enhanced testing coverage for scope handling
-- Optimized development workflow with unified formatting and deterministic dependency resolution
+- Simplified scope flag to now automatically infer scope from your changes
+- Updated build system with modern tools for better consistency
+- Improved documentation to reflect new automatic scope behavior
 
 ## [0.18.1] - 2025-09-21
 
-### Added
+### Improvements
 
-- Added advanced usage screenshot to documentation for enhanced user guidance
-
-### Changed
-
-- Streamlined development workflow by replacing multiple linting tools with unified ruff formatter for improved efficiency
-- Standardized code formatting across markdown files using Prettier for consistent documentation quality
+- Streamlined development tools with unified formatting system
+- Added advanced usage screenshot to documentation
+- Better code quality checks with modern linting tools
 
 ## [0.18.0] - 2025-09-15
 
-### Changed
+### Improvements
 
-- Refined token counting mechanism for improved interaction with Anthropic's AI, enhancing cost predictability for AI features.
-- Added dependency lock file to ensure consistent build environments across development and production deployments.
+- More accurate token counting for Anthropic AI models
+- Updated to version 0.18.0 with latest improvements and fixes
 
 ## [0.17.7] - 2025-09-15
 
-### Changed
+### Improvements
 
-- Enhanced AI token counting with dynamic model detection for Anthropic integration
+- More accurate token counting for Anthropic AI models
 
 ## [0.17.6] - 2025-09-15
 
-### Fixed
+### Improvements
 
-- Corrected Anthropic token counting to ensure accurate usage metrics and billing calculations
+- More accurate token counting for Anthropic AI models
 
 ## [0.17.5] - 2025-09-14
 
-### Added
+### Improvements
 
-- Split prompt generation into system and user components for improved AI interaction and better LLM response quality
-
-### Changed
-
-- Modernized CI/CD workflows with faster dependency management using uv and separate lint/test jobs for parallel execution
-- Enhanced version management by migrating configuration to modern TOML format and improving bump safety checks
-- Expanded test coverage across multiple Python versions (3.10-3.13) for better cross-platform compatibility
+- More accurate commit message generation with improved AI prompt structure
+- Better testing across multiple Python versions for improved reliability
+- Modernized build system with safer version management
 
 ## [0.17.4] - 2025-09-14
 
-### Added
+### Improvements
 
-- Implemented dual-prompt system architecture that splits prompts into system and user components for better LLM interaction and improved response quality
-
-### Changed
-
-- Migrated build configuration from .cfg to .toml format for modern version management with enhanced safety checks and output formatting
-- Improved CI/CD pipeline by splitting quality job into separate lint and test jobs with faster uv dependency management and multi-Python version testing matrix
-- Enhanced documentation with detailed technical architecture explaining the new prompt separation logic and AI provider message structuring
+- Better organization for AI prompts with separate system and user components
+- Improved CI testing with separate lint and test jobs
+- More reliable version management with modern configuration format
+- Enhanced version bump safety with better error checking
 
 ## [0.17.3] - 2025-09-14
 
-### Fixed
+### Improvements
 
-- Improved error handling for git push operations with the `-p` flag, providing accurate failure reporting and troubleshooting hints
+- Better control over releases with tag-based publishing system
+- Enhanced version management and release workflow
 
-### Changed
+### Bug Fixes
 
-- Migrated to tag-based release process for enhanced PyPI publish control and release management
+- Fixed push failure reporting when using -p flag
+- Improved error messages when git operations fail
 
 ## [0.17.0] - 2025-09-14
 
-### Added
+### What's New
 
-- Introduced `GAC_ALWAYS_INCLUDE_SCOPE` configuration for automatic commit scope inference
-- Enhanced reroll functionality to accept user-provided feedback for precise commit message regeneration
-- Added comprehensive documentation for new interactive feedback capabilities and configuration options
+- New setting to automatically include scope in commit messages
+- Provide feedback when regenerating commit messages with 'r \<feedback\>'
 
-### Changed
+### Improvements
 
-- Improved CI/CD pipeline reliability with Python-based version detection logic
-- Updated terminology from "hint" to "feedback" throughout the reroll feature for consistency
-- Enhanced user prompts with clearer instructions and improved console output formatting
+- Better documentation for interactive reroll feature
+- More reliable version bump detection during releases
 
 ## [0.16.3] - 2025-09-14
 
-### Fixed
+### What's New
 
-- Corrected commit type detection to properly prioritize code changes over documentation updates
-- Enhanced pre-commit hook error reporting with detailed output for better debugging
-- Improved subprocess error handling and logging consistency across the platform
+- Better commit message generation with improved focus and scope guidance
 
-### Changed
+### Improvements
 
-- Enhanced commit message generation with focus guidance and improved handling of mixed code/documentation changes
+- Enhanced test coverage for git operations and file staging
+- Improved subprocess error handling and logging reliability
+
+### Bug Fixes
+
+- Fixed documentation commit type detection to prioritize code changes
+- Better error messages when pre-commit hooks fail
+- Resolved issues with project configuration file loading
 
 ## [0.16.2] - 2025-09-14
 
-### Fixed
+### Improvements
 
-- Resolved CI version management issues to prevent inconsistent versioning across configuration files
-- Improved release process reliability by ensuring version files remain synchronized during automated deployments
+- Better version management to prevent conflicts during updates
+- More reliable release process with automatic version syncing
 
 ## [0.16.1] - 2025-09-14
 
-### Changed
+### Improvements
 
-- Updated internal version number to 0.16.1
+- Updated to version 0.16.1 with latest improvements and fixes
 
 ## [0.16.0] - 2025-09-14
 
-### Added
+### What's New
 
-- Integrated Cerebras AI provider support, expanding AI model options with qwen-3-coder-480b as default
-- Added project-level configuration support with .gac.env file for team-specific settings
+- Added support for Cerebras AI provider with qwen-3-coder-480b model
+- New project-specific configuration using .gac.env files
 
-### Changed
+### Improvements
 
-- Improved configuration loading precedence to ensure consistent overrides (user config → project config → environment variables)
-- Enhanced error handling with proper console reinitialization and error code reporting for AI failures
+- Better configuration loading order: user settings, then project settings, then environment variables
+- Updated Groq default model to llama-4-maverick-17b-128e-instruct
+- Simplified token counting for Anthropic models for better performance
 
-### Fixed
+### Bug Fixes
 
-- Resolved token counting accuracy for Anthropic models by streamlining the counting method
+- Fixed error message display when AI operations fail
+- Fixed issue where project configuration files weren't being loaded correctly
 
 ## [0.15.4] - 2025-09-14
 
-### Changed
+### What's New
 
-- Simplified installation process by making `gac` available on PyPI with `pipx install gac`
-- Enhanced documentation with quick-try instructions using `uvx` for risk-free evaluation
-- Fixed build configuration to ensure proper package distribution
+- Try gac without installing using uvx for quick testing
 
-### Added
+### Improvements
 
-- Alternative installation methods allowing users to test gac without committing to full installation
+- Simplified installation with direct pipx command
+- Better README organization with clearer installation instructions
+- Updated project badges for improved visual presentation
+
+### Bug Fixes
+
+- Fixed build configuration to include all source files in the package
 
 ## [0.15.1] - 2025-09-14
 
-### Changed
+### Improvements
 
-- Updated version to 0.15.1 for release.
+- Updated to version 0.15.1 with latest improvements and fixes
 
 ## [0.15.0] - 2025-09-14
 
-### Highlights
+### What's New
 
-- Established bulletproof CI/CD pipeline with 73 passing tests and 74% coverage
-- Streamlined release process enabling automated PyPI publishing
-- Modernized codebase with ruff replacing 3 separate linting tools
+- Automated releases to PyPI when pushing to main branch
 
-### Customer Impact
+### Improvements
 
-- Improved developer experience with faster, more reliable quality checks
-- Simplified contribution process by removing CLA requirements
-- Enhanced project discoverability with updated documentation and metadata
+- Better and faster code quality checks with modern tools
+- More reliable version management for cleaner releases
+- Simplified repository structure with cleaner URLs
+- Improved test coverage and faster test execution
+- Better file staging logic for more reliable commits
 
-### Platform Improvements
+### Bug Fixes
 
-- Fixed PyPI versioning to ensure clean release numbers
-- Refactored file staging logic for improved code maintainability
-- Upgraded to modern Python tooling with uv dependency groups
+- Fixed CI failures during package publishing
+- Resolved version number issues that PyPI rejected
+- Fixed test mocks after code cleanup
 
 ## [0.14.7] - 2025-06-07
 
-### Added
+### Improvements
 
-- Diff statistics now included in commit prompts to provide richer context for AI-generated commit messages
-
-### Changed
-
-- Refactored commit message generation process for improved code organization and preprocessing efficiency
-- Updated documentation to accurately reflect current product capabilities and usage instructions
+- Commit messages now include a summary of file changes for better context
+- Simplified and improved the way commit messages are generated
+- Updated documentation to better describe current features and removed outdated information
 
 ## [0.14.6] - 2025-06-06
 
-### Highlights
+### What's New
 
-- Integrated pre-commit hooks to automatically validate code quality before AI operations, reducing failed commits and improving development workflow efficiency
+- Automatic pre-commit hook checks before committing changes
 
-### Customer Impact
+### Improvements
 
-- Enhanced error messaging provides clearer guidance when validation fails, decreasing user frustration and support requests
-- Added --no-verify flag option gives users flexibility to bypass checks when needed, maintaining productivity
+- Better error messages when pre-commit hooks fail
+- Enhanced test coverage and reliability
 
-### Platform Improvements
+### Bug Fixes
 
-- Improved system reliability with 30% better test coverage for edge cases and error scenarios
-- Centralized hook management reduces technical debt and improves maintainability
-- Enhanced subprocess error handling ensures consistent behavior across all operations
+- Graceful handling when pre-commit is not installed
 
 ## [0.14.5] - 2025-06-06
 
-### Added
+### Improvements
 
-- Added documentation for `--no-verify` flag to improve workflow options discoverability
-
-### Fixed
-
-- Fixed prompt processing to properly handle whitespace-filled blank lines, improving input reliability
+- Better handling of empty lines in prompts
+- Added --no-verify flag documentation to usage guide
 
 ## [0.14.4] - 2025-06-02
 
-### Highlights
+### What's New
 
-- Added pre-commit integration to enhance code quality and prevent integration issues
-- Introduced `--no-verify` flag for flexibility in bypassing pre-commit hooks when needed
+- Add pre-commit hook to check if your branch is behind the remote
+- Skip pre-commit hooks with new --no-verify flag
 
-### Added
+### Improvements
 
-- Pre-commit hook system to automatically check upstream branch status before commits
-- `--no-verify` flag allowing developers to skip pre-commit hooks when necessary
-
-### Changed
-
-- Updated documentation to clarify pre-commit hook usage and improve readability
-- Removed unused `file_matches_pattern` function to streamline the codebase
+- Updated documentation for better clarity and consistency
+- Removed unused code to simplify the application
 
 ## [0.14.3] - 2025-05-30
 
-### Added
+### What's New
 
-- Introduced reroll capability to regenerate AI-generated commit messages, enhancing user control over output quality
-- Improved token usage tracking and display for better cost visibility and user feedback
+- You can now regenerate commit messages by typing 'r' or 'reroll' when asked to confirm
+- See token usage estimates for AI-generated commit messages
+- Warning when your changes are too large for AI processing
 
-### Changed
+### Improvements
 
-- Enhanced confirmation prompt to accept 'y', 'n', and 'r' options for more intuitive user interaction
-- Adjusted AI temperature settings for more varied and creative commit message generation
-- Updated documentation and test coverage to support new reroll functionality and improved prompt handling
+- Better commit message generation with more varied AI responses
+- Improved token usage tracking and display
+- Increased limit for processing larger code changes
+- Enhanced documentation with clearer setup and usage instructions
 
 ## [0.14.2] - 2025-05-30
 
-### Added
+### What's New
 
-- Implemented token usage tracking with transparency features for AI-powered commit message generation
-- Added configurable warning threshold for token usage to prevent unexpected overages
+- See estimated token usage for AI-generated commit messages
+- Warning when your changes are too large for AI processing
 
-### Changed
+### Improvements
 
-- Increased diff processing capacity by raising token limit to 15,000 for larger codebases
-- Enhanced test infrastructure with mocking capabilities for improved reliability
-
-### Fixed
-
-- Removed redundant code comments to improve maintainability without affecting functionality
+- Increased limit for processing larger code changes
+- Cleaner code comments for better maintenance
 
 ## [0.14.1] - 2025-05-27
 
-### Changed
+### Improvements
 
-- Streamlined documentation structure by consolidating installation guides into README.md, reducing redundancy and improving clarity
-- Optimized prompt generation process to reduce token usage and improve efficiency, enhancing performance for large codebases
-- Updated test suite to reflect changes in prompt building and ensure continued reliability of core functionality
+- Cleaner documentation structure by removing redundant files
+- Better commit message formatting with improved processing
+- More efficient prompt generation with streamlined context
+- Updated documentation with clearer installation and usage instructions
 
 ## [0.14.0] - 2025-05-27
 
-### Changed
+### Improvements
 
-- Simplified core functionality by removing file formatting, backup model, and preview features to streamline user experience and reduce complexity.
-- Updated AI provider integrations, removing Mistral support and shifting focus to OpenRouter for improved reliability and performance.
-- Standardized project naming conventions from "GAC" to "gac" across all components for better consistency and brand alignment.
+- Simplified by removing code formatting, backup model, and preview features
+- Removed Mistral AI provider and added OpenRouter support
+- Cleaned up project structure and removed unnecessary dependencies
 
-### Removed
+### Bug Fixes
 
-- Eliminated all formatting-related code, configuration options, and CLI flags to focus on core commit message generation.
-- Discontinued backup model functionality and the associated `--backup-model` CLI option to simplify the codebase.
-- Removed the `--preview` command and related scripts to streamline the user workflow.
+- Fixed inconsistent naming by changing GAC to gac throughout the app
 
 ## [0.13.1] - 2025-05-26
 
-### Added
+### Improvements
 
-- Implemented Contributor License Agreement (CLA) workflow to secure legal rights for all contributions and enable future licensing flexibility.
-
-### Changed
-
-- Enhanced file filtering to display summaries for binary, generated, and minified files instead of hiding them, improving visibility of all changes for users and LLM processing.
+- Binary files, lockfiles, and minified files now show helpful summaries instead of being hidden
+- Added Contributor License Agreement for better project collaboration
 
 ## [0.13.0] - 2025-05-25
 
-### Highlights
+### What's New
 
-- Introduced new `diff` command enabling developers to view and analyze git changes with advanced filtering options
-- Added `--scope` flag to improve commit message precision and contextual relevance
-- Enhanced documentation with comprehensive usage examples and testing guidelines
+- New diff command to view staged and unstaged changes
+- Add --scope flag to better organize your commit messages
 
-### Customer Impact
+### Improvements
 
-- Developers can now efficiently review staged/unstaged changes and compare commits directly through the CLI
-- Commit message generation is more accurate with customizable scope options, improving code maintainability
-- Simplified onboarding with updated README and clear usage examples, reducing learning curve by 40%
-
-### Platform Improvements
-
-- Strengthened test coverage with comprehensive scripts for diff and scope functionality
-- Improved error handling and logging for better debugging experience
-- Updated repository metadata to reflect new ownership, ensuring long-term project stability
+- Better organized command line options for easier use
+- More informative documentation with updated examples and guides
 
 ## [0.12.0] - 2025-05-07
 
-### Highlights
+### What's New
 
-- Launched new `preview` command, enabling users to generate commit messages without committing
-- Improved documentation structure for enhanced maintainability and user onboarding
-- Expanded test coverage to ensure reliability of new preview functionality
+- Preview your commit messages before committing with the new preview command
 
-### Customer Impact
+### Improvements
 
-- Users can now generate and review AI-powered commit message previews before finalizing commits
-- Streamlined documentation structure makes it easier for new users to find setup and usage information
-- Enhanced installation instructions reduce onboarding friction for new customers
+- Better organized documentation in a dedicated docs directory
+- Updated installation instructions for easier setup
 
-### Platform Improvements
+### Bug Fixes
 
-- Strengthened error handling for non-git repository scenarios
-- Reorganized project documentation into a dedicated `docs/` directory
-- Removed obsolete configuration files to reduce maintenance overhead
+- Fixed documentation links to point to correct locations
+- Improved error handling for preview functionality
 
 ## [0.11.0] - 2025-04-18
 
-### Added
+### What's New
 
-- Launched new `gac init` command providing interactive guided setup for provider/model/API key configuration, including backup model support
+- New interactive setup command to guide you through initial configuration
 
-### Changed
+### Improvements
 
-- Simplified project configuration by removing bump-my-version dependency to enable more flexible version management strategies
-- Updated documentation across installation, usage, and troubleshooting to reflect new setup process and provider access information
+- Simplified project by removing unused version management tool
+- Enhanced documentation with clearer setup and troubleshooting guides
 
 ## [0.10.0] - 2025-04-18
 
-### Highlights
+### What's New
 
-- Launched a new configuration CLI to streamline user-level settings management
-- Introduced comprehensive test coverage for both CLI and sandboxed environments
-- Enhanced user experience with simplified configuration commands
+- New config commands for managing settings
+- Dedicated configuration management system
 
-### Customer Impact
+### Improvements
 
-- Users can now easily manage configuration with dedicated `gac config` subcommands (show, set, get, unset)
-- Simplified setup process through improved configuration precedence between user and project levels
-- Reduced complexity for power users with unified CLI supporting both flags and subcommands
-
-### Platform Improvements
-
-- Improved system reliability with new automated test scripts validating CLI functionality
-- Enhanced maintainability with refactored configuration management architecture
-- Streamlined project structure by removing obsolete workflow files and example scripts
+- Better organization with unified command structure
+- Enhanced configuration with user-level settings support
 
 ## [0.9.3] - 2025-04-17
 
-### Changed
+### Improvements
 
-- Improved CI workflow efficiency by optimizing file processing, reducing build times and resource consumption
-- Updated roadmap documentation to better reflect current development priorities and completed milestones for enhanced project transparency
-- Bumped version to v0.9.3 to align with latest feature delivery
+- Faster and cleaner system checks with improved workflow
+- Updated project roadmap for better visibility into future plans
 
 ## [0.9.2] - 2025-04-17
 
-### Highlights
+### What's New
 
-- Expanded Windows compatibility, unlocking new enterprise market segment
-- Strengthened platform reliability with 30% improved test coverage
-- Streamlined CLI experience with clearer version display
+- Better support for Windows users
 
-### Customer Impact
+### Improvements
 
-- Windows users can now deploy and run the application with native support
-- Simplified setup process reduces installation friction for broader customer base
-- Improved error handling provides clearer feedback during configuration
-
-### Platform Improvements
-
-- Enhanced system stability through comprehensive test suite expansion
-- Modernized Python support to version 3.10+ for better performance
-- Optimized release workflow for faster, more reliable deployments
+- Improved documentation with clearer setup instructions
+- Enhanced error handling and logging
+- Better version display when checking updates
 
 ## [0.9.1] - 2025-04-17
 
-### Changed
+### Improvements
 
-- Refactored CLI entry point to improve code organization and maintainability by separating CLI-specific logic from core business logic
+- Improved code organization for better maintainability
 
 ## [0.9.0] - 2025-04-17
 
-### Highlights
+### Improvements
 
-- Introduced hierarchical configuration management with environment variable support
-- Enhanced logging capabilities with customizable levels and verbose debugging options
-- Improved operational stability and user experience through better system feedback
-
-### Customer Impact
-
-- Users gain flexible configuration options for different deployment environments
-- Enhanced troubleshooting with improved logging and verbose mode for issue resolution
-- Better user feedback during operations provides clearer status updates
-
-### Platform Improvements
-
-- Improved codebase maintainability with refactored configuration loading
-- Enhanced system observability with configurable logging infrastructure
-- Reduced operational complexity through streamlined configuration management
+- Enhanced configuration management with environment file support
+- Better logging options with quiet mode and customizable levels
+- Improved documentation with clearer setup instructions and examples
 
 ## [0.8.0] - 2025-04-14
 
-### Highlights
+### Improvements
 
-- Introduced MIT licensing to enable broader adoption and commercial use
-- Enhanced user experience with comprehensive documentation suite
-- Improved system performance with dynamic worker allocation
+- Better code organization and cleaner internal structure
+- Improved documentation with comprehensive guides and troubleshooting
+- More informative feedback during dry runs and push operations
 
-### Customer Impact
+### Bug Fixes
 
-- Complete documentation overhaul including installation guide, usage instructions, and troubleshooting to reduce support tickets
-- Added verbose logging option for better debugging and transparency
-- Clearer feedback messages when pushing changes, improving user confidence
-
-### Platform Improvements
-
-- Dynamic worker count allocation based on system CPU cores for optimal performance
-- Legacy code cleanup removing compatibility aliases, improving maintainability
-- Enhanced error handling in AI model parsing for increased stability
+- Fixed issue with worker count calculation for better performance
+- Clearer success messages when pushing changes
 
 ## [0.7.5] - 2025-04-14
 
-### Changed
+### What's New
 
-- Enhanced commit workflow with improved message formatting, pre-commit confirmation prompts, and more informative dry run mode to increase user control and transparency.
-- Added robust handling for scenarios with no staged or unstaged changes, providing clear user feedback and preventing unnecessary processing.
+- See your commit message in a cleaner, more readable format before confirming
+
+### Improvements
+
+- Dry run mode now shows more details about what will be committed
+- Better handling when no files have changes staged or ready to commit
+
+### Bug Fixes
+
+- Fixed crashes when trying to commit without any file changes
 
 ## [0.7.4] - 2025-04-13
 
-### Changed
+### Improvements
 
-- Improved code coverage accuracy by adding branch coverage and expanding source paths for more comprehensive testing insights
-- Streamlined version management process by removing redundant configuration, simplifying future releases
-- Optimized test execution performance with parallel processing and updated code style guidelines for better developer productivity
+- More accurate code coverage tracking
+- Faster testing with parallel execution
+- Simplified version management process
 
 ## [0.7.3] - 2025-04-13
 
-### Changed
+### Improvements
 
-- Improved error handling and logging consistency, enhancing system reliability and debugging capabilities
-- Replaced inconsistent print statements with structured logging for better operational visibility
-- Refactored version configuration to simplify maintenance and build processes
+- Better error messages with more helpful context
+- Consistent logging throughout the app for clearer output
+- Simplified version management behind the scenes
 
 ## [0.7.2] - 2025-04-13
 
-### Highlights
+### Improvements
 
-- Launched intelligent repository context extraction to improve AI-generated commit message quality
-- Enhanced diff preprocessing with smart truncation and section scoring for optimal AI model performance
-- Added verification to ensure all changes are committed, preventing incomplete operations
+- Better verification to ensure all changes are committed properly
+- Cleaner and more reliable error handling throughout the app
+- Simplified template handling for generating commit messages
+- More robust configuration loading with better defaults
+- Improved handling of AI-generated commit messages
 
-### Customer Impact
+### Bug Fixes
 
-- AI-generated commit messages now include relevant file purposes and recent commit history for better context
-- Improved reliability with automatic detection of uncommitted staged files after failed operations
-- Reduced processing time for large repositories through optimized diff filtering and token management
-
-### Platform Improvements
-
-- Streamlined configuration loading with hierarchical environment variable support
-- Simplified template handling by removing redundant files and embedding default template
-- Enhanced error handling with centralized model failure logic and better exit codes
+- Fixed issue with incomplete commits when files remained staged
+- Removed redundant configuration files to prevent confusion
 
 ## [0.7.1] - 2025-04-07
 
-### Added
+### Improvements
 
-- New environment-based configuration support with `.gac.env` file for flexible AI model selection
-- Comprehensive documentation updates including installation guide, changelog, and roadmap
-- Extended test coverage for AI functionality, error handling, and utility functions
+- Better configuration management with cleaner settings and improved error handling
+- Enhanced documentation with updated installation guide and clearer setup instructions
+- Improved code quality with better test coverage and simplified test structure
 
-### Changed
+### Bug Fixes
 
-- Simplified configuration management with improved error handling and 120-character line length standard
-- Updated release workflow to use semantic versioning and centralized version source
-- Refactored test cases for better maintainability by removing redundancy and focusing on essential scenarios
-
-### Removed
-
-- Eliminated references to non-existent configuration wizard and outdated documentation files
+- Fixed crashes when checking git repositories
+- Removed references to non-existent config wizard to prevent errors
 
 ## [0.7.0] - 2025-04-06
 
-### Highlights
+### What's New
 
-- Launched flexible multi-level configuration system supporting environment, project, user, and package-level settings
-- Enhanced AI model reliability with backup model support and improved error handling
-- Simplified codebase through major consolidation, reducing technical debt and improving maintainability
+- Add support for Ollama AI provider
+- New environment file configuration with multiple location support
 
-### Customer Impact
+### Improvements
 
-- Users can now manually input model names in the configuration wizard for greater flexibility
-- Improved remote push validation provides more accurate status reporting and reduces false positives
-- Enhanced configuration wizard allows selecting save location for better control over settings
+- Better error handling throughout the application
+- Simplified AI model configuration with manual input
+- Enhanced configuration wizard with save location options
+- Improved remote push validation and status reporting
+- Cleaner code structure with consolidated AI functionality
 
-### Platform Improvements
+### Bug Fixes
 
-- Consolidated AI functionality into a single cohesive module, reducing complexity
-- Standardized error handling throughout the application with improved error messages
-- Simplified Git operations with better documentation and consistent error handling patterns
+- Fixed staging issues during dry run mode
+- Resolved crashes when checking git repositories
+- Fixed false positives in remote push status
 
 ## [0.6.1] - 2025-04-04
 
-### Added
+### What's New
 
-- Introduced `--version` flag to display current tool version and `--format` flag for explicit file formatting control
-- Implemented persistent configuration support with `.gac.env` file for improved user experience
-- Enhanced semantic-aware diff truncation algorithm with intelligent file and hunk importance scoring
+- Check the current version with --version flag
+- Persistent configuration saved to home directory
+- Optional --format flag for explicit file formatting
 
-### Changed
+### Improvements
 
-- Simplified CLI options with intuitive `--yes` flag replacing `--force` and consolidated option groupings
-- Streamlined AI token handling and diff processing logic for improved performance and reliability
-- Refactored configuration wizard with robust loading priority and optional environment file saving
+- Better diff truncation that preserves important context
+- Simplified command line options with clearer naming
+- Enhanced configuration wizard with environment file support
+- Improved performance with optimized token counting
+- Cleaner output formatting and message display
 
-### Fixed
+### Bug Fixes
 
-- Resolved config wizard TypeError by correcting attribute access for environment variable setup
-- Fixed missing API key parameters in test configurations for accurate testing scenarios
-
-### Removed
-
-- Cleaned up deprecated functions and unused code across multiple modules to reduce technical debt
-- Removed redundant `smart_truncate_file_diff` function and simplified spinner implementation
+- Fixed config wizard error when saving settings
+- Resolved test failures with missing API keys
+- Fixed CLI flag conflicts between format options
 
 ## [0.5.0] - 2025-04-01
 
-### Highlights
+### Improvements
 
-- Simplified CLI interface by removing subcommands, reducing user complexity
-- Introduced customizable prompt template system for enhanced flexibility
-- Improved system stability through comprehensive code cleanup and error handling
+- Simplified command structure with unified interface
+- Better visual feedback with improved spinner and message formatting
+- More reliable file staging and commit handling
+- Cleaner error messages and logging output
 
-### Customer Impact
+### Bug Fixes
 
-- Streamlined user experience with single-command interface instead of multiple subcommands
-- Users can now customize AI prompts via CLI flags or environment variables
-- Faster dependency installation with new uv-based CI pipeline
-
-### Platform Improvements
-
-- Replaced dataclass configuration with Pydantic for better validation
-- Enhanced error handling with structured exception management
-- Removed caching layer to reduce system complexity and improve reliability
+- Fixed missing dependency that prevented installation
+- Resolved issues with prompt template loading
+- Fixed crashes when working with empty repositories
 
 ## [0.4.3] - 2025-03-30
 
-### Added
+### What's New
 
-- Expanded language support with new code formatters for JavaScript, TypeScript, Markdown, HTML, CSS, JSON, YAML, Rust, and Go
+- Code formatting now supports JavaScript, TypeScript, Markdown, HTML, CSS, JSON, YAML, Rust, and Go files
 
-### Changed
+### Improvements
 
-- Enhanced simulation and test modes with clearer all-caps labeling for improved user visibility
-- Improved formatting system with optimized file detection and integrated formatter support
-- Streamlined AI utilities and git module imports for better maintainability and performance
-- Increased test coverage to 94% for enhanced code reliability and quality assurance
+- Better simulation and test mode with clear ALL-CAPS labeling
+- Improved file detection and formatting system for all supported file types
 
 ## [0.4.2] - 2025-03-30
 
-### Highlights
+### What's New
 
-- Upgraded to advanced token counting with tiktoken integration, improving accuracy and model compatibility
-- Enhanced large file handling capabilities for better performance with complex codebases
-- Improved subprocess execution and error handling for increased system reliability
+- Added support for different AI model token counting methods
 
-### Customer Impact
+### Improvements
 
-- More accurate token estimation reduces API costs and prevents request failures
-- Better handling of large repositories enables smoother workflow for enterprise-scale projects
-- Configurable token limits provide flexible control for different AI models and use cases
+- Better handling of large files when processing changes
+- More accurate token counting for different AI models
+- Enhanced error handling and validation for settings
+- Improved subprocess reliability for git operations
 
-### Platform Improvements
+### Bug Fixes
 
-- Strengthened configuration validation with robust error reporting mechanisms
-- Optimized git operations with improved diff processing and error recovery
-- Enhanced test coverage with comprehensive mocking for better code quality assurance
+- Fixed issues with token limit validation
+- Resolved git stash pop errors
+- Fixed formatting logic to handle files correctly
 
 ## [0.4.1] - 2025-03-29
 
-### Changed
+### Improvements
 
-- Updated release workflow to ensure proper installation of development dependencies, improving build reliability and deployment consistency
+- Updated release process for more reliable updates
 
 ## [0.4.0] - 2025-03-29
 
-### Added
+### What's New
 
-- Optional hint context for commit message generation, allowing users to provide additional context like JIRA ticket numbers
-- Project description feature that extracts repository information to improve commit message relevance
-- Enhanced test mode with real diff support and simulation capabilities for comprehensive testing scenarios
+- Add extra context like JIRA ticket numbers to commit messages
+- Better test mode with real file changes and simulation options
 
-### Changed
+### Improvements
 
-- Improved git staged files detection to handle added, deleted, and renamed files more accurately
-- Refactored code formatting functions into dedicated module with enhanced error handling
-- Reduced default max output tokens from 8192 to 512 for optimized performance and cost efficiency
+- Better detection of staged files including deleted and renamed
+- Cleaner error messages when settings are invalid
+- Improved code formatting process
+- More reliable git operations
 
-### Fixed
+### Bug Fixes
 
-- Enhanced token validation with positive integer checks and improved error messaging
-- Improved LLM commit message generation process with separated prompt building function
-- Removed trailing colons from commit confirmation prompts for cleaner user experience
+- Fixed token limit validation error handling
+- Removed extra colons from commit prompts
+- Fixed staging issues with certain file types
 
 ## [0.3.0] - 2025-03-26
 
-### Highlights
+### What's New
 
-- Simplified model configuration logic to reduce complexity and improve user experience
-- Added logging verbosity controls and model override options for enhanced customization
-- Automated release process with pre-release test validation to ensure deployment reliability
+- Control logging with quiet and verbose options
+- Override AI model settings for single commands
+- Added safety checks before releasing new versions
 
-### Customer Impact
+### Improvements
 
-- Users can now control output verbosity with quiet/verbose flags for better debugging and clean operation
-- Model override capability allows on-the-fly switching between different AI models without config changes
-- Streamlined configuration reduces setup complexity and potential user errors
+- Updated minimum Python version to 3.10 for better performance
+- Simplified model configuration to use single setting
+- Better code quality and test coverage tracking
 
-### Platform Improvements
+### Bug Fixes
 
-- Upgraded to Python 3.10+ support, improving performance and accessing modern language features
-- Enhanced CI/CD pipeline with Python 3.13 testing and automated release validation
-- Improved code quality monitoring with dynamic Codecov integration and updated linting standards
+- Fixed model configuration handling when provider is specified
+- Improved reliability of git operations
 
 ## [0.2.0] - 2025-03-25
 
-### Highlights
+### What's New
 
-- Introduced multi-provider AI support, expanding market reach to include OpenAI, Groq, Mistral, AWS, Azure, and Google customers
-- Implemented comprehensive CI/CD pipeline with automated testing and coverage reporting, improving release reliability
-- Achieved 95%+ test coverage across core modules, significantly reducing production risks
+- Support for multiple AI providers including OpenAI, Groq, Mistral, AWS, Azure and Google
 
-### Customer Impact
+### Improvements
 
-- Customers can now use their preferred AI provider through simple environment variable configuration or --model flag
-- Backward compatibility ensures existing Claude workflows continue without disruption
-- Enhanced file staging logic prevents errors after Python formatting, improving developer experience
+- Added automatic testing and code quality checks
+- Better file handling after code formatting
+- More flexible configuration options
 
-### Platform Improvements
+### Bug Fixes
 
-- Automated changelog generation reduces manual documentation overhead by approximately 80%
-- Streamlined dependency management with optional provider groups reduces installation footprint
-- Enforced 100-character line length standard across codebase for improved maintainability
-
-## [0.1.0] - 2025-03-24
-
-### Added
-
-- Introduced new development workflow with Makefile and `bump2version` for streamlined operations
-- Created comprehensive DEVELOPMENT.md guide to accelerate developer onboarding and productivity
-- Added verbose (`-v`) and quiet (`-q`) logging controls for enhanced operational flexibility
-
-### Changed
-
-- Migrated package management from Hatch to UV, improving build performance and dependency resolution
-- Enhanced error handling with detailed subprocess error messages to improve debugging and user feedback
-- Improved code readability through refactored logging and updated variable naming conventions
-
-### Fixed
-
-- Resolved version handling inconsistencies in package initialization for reliable deployment tracking
+- Fixed issue with re-staging files after Python formatting
+- Corrected output formatting alignment
 
 ## [0.1.0a1] - 2024-12-12
 
-### Highlights
+### Improvements
 
-- Initial alpha release establishing the foundation for the gac CLI tool
-- Implemented core functionality for streamlined Git workflow automation
-- Established project structure and development standards for future releases
+- Simplified command output with clearer logging
+- Better reliability when running git operations
+- Streamlined internal code for cleaner performance
 
-### Customer Impact
+### Bug Fixes
 
-- Users gain access to a new CLI tool designed to simplify Git operations and improve developer productivity
-- Default verbose output provides clear visibility into command execution, enhancing transparency
+- Fixed issues with command return values
 
-### Platform Improvements
+## [0.1.0] - 2025-03-24
 
-- Simplified logging and subprocess handling improves system reliability and maintainability
-- Consolidated project configuration in pyproject.toml for better dependency management
+### Improvements
+
+- Better control over logging with new verbose and quiet options
+- Improved error messages when operations fail
+- Cleaner and more readable output formatting
