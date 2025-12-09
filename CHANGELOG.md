@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.10.15] - 2025-12-09
+
+### Improvements
+
+- Updated Mistral model to work with the latest naming convention
+
 ## [3.10.14] - 2025-12-08
 
 ### Improvements
