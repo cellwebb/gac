@@ -83,7 +83,7 @@ bump:
 	OLD_VERSION=$$(echo "$$RESULT" | awk '{print $$1}') && \
 	NEW_VERSION=$$(echo "$$RESULT" | awk '{print $$2}') && \
 	echo "Version bumped from $$OLD_VERSION to $$NEW_VERSION" && \
-	uvx kittylog release $$NEW_VERSION --audience users && \
+	uvx kittylog release $$NEW_VERSION --audience users --include-diff && \
 	git add -A && \
 	git commit -m "chore(version): bump version from $$OLD_VERSION to $$NEW_VERSION" && \
 	git tag -a "v$$NEW_VERSION" -m "Release version $$NEW_VERSION" && \
