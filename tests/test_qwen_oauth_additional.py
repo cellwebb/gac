@@ -224,18 +224,20 @@ class TestQwenOAuthMissingCoverage:
 
         # Test that browser launch failure is handled gracefully
         with mock.patch.object(provider.device_flow, "initiate_device_flow", return_value=mock_response):
-            with mock.patch("gac.oauth.qwen_oauth.webbrowser.open", side_effect=Exception("Browser failed")):
-                with mock.patch("builtins.print") as mock_print:
-                    with mock.patch("gac.oauth.qwen_oauth.time.sleep"):
-                        # Just test that the method starts without error (mock the token polling)
-                        with mock.patch.object(
-                            provider.device_flow, "poll_for_token", return_value={"access_token": "test"}
-                        ):
-                            with mock.patch.object(provider.token_store, "save_token"):
-                                provider.initiate_auth(open_browser=True)
+            # Mock _should_launch_browser to return True (so we actually test the browser code path)
+            with mock.patch.object(provider, "_should_launch_browser", return_value=True):
+                with mock.patch("gac.oauth.qwen_oauth.webbrowser.open", side_effect=Exception("Browser failed")):
+                    with mock.patch("builtins.print") as mock_print:
+                        with mock.patch("gac.oauth.qwen_oauth.time.sleep"):
+                            # Just test that the method starts without error (mock the token polling)
+                            with mock.patch.object(
+                                provider.device_flow, "poll_for_token", return_value={"access_token": "test"}
+                            ):
+                                with mock.patch.object(provider.token_store, "save_token"):
+                                    provider.initiate_auth(open_browser=True)
 
-                        # Verify fallback message was printed
-                        assert any("Failed to open browser" in str(call) for call in mock_print.call_args_list)
+                            # Verify fallback message was printed
+                            assert any("Failed to open browser" in str(call) for call in mock_print.call_args_list)
 
     def test_refresh_if_needed_no_token(self):
         """Test refresh when no token exists."""
