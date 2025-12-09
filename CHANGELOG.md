@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.10.14] - 2025-12-08
+
+### Improvements
+
+- Enhanced OAuth token handling for better security during authentication
+- Improved test coverage for AI utilities and token counting functionality
+- Better error handling and validation for model configurations
+- More reliable secret detection with improved user interaction handling
+- Enhanced preprocessing logic for better content analysis and filtering
+
+### Bug Fixes
+
+- Fixed test interference with real OAuth credentials
+- Resolved issues with token storage during authentication flows
+- Fixed edge cases in preprocessing for minified content detection
+
 ## [3.10.13] - 2025-12-07
 
 ### Improvements
