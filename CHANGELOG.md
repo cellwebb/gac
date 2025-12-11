@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.11.0] - 2025-12-10
+
+### What's New
+
+- Manage custom AI instructions with new prompt commands - set, edit, show, and clear your own system prompts
+
+### Improvements
+
+- Better test coverage for all AI providers and configuration flows
+- Cleaner code structure for improved reliability
+
 ## [3.10.17] - 2025-12-09
 
 ### Improvements
