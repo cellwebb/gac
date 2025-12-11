@@ -47,7 +47,7 @@ def get_active_custom_prompt() -> tuple[str | None, str | None]:
 
 
 @click.group()
-def prompt():
+def prompt() -> None:
     """Manage custom system prompts."""
     pass
 
@@ -83,7 +83,7 @@ def _edit_text_interactive(initial_text: str) -> str | None:
     from prompt_toolkit.buffer import Buffer
     from prompt_toolkit.document import Document
     from prompt_toolkit.enums import EditingMode
-    from prompt_toolkit.key_binding import KeyBindings
+    from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
     from prompt_toolkit.layout import HSplit, Layout, Window
     from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
     from prompt_toolkit.layout.margins import ScrollbarMargin
@@ -136,17 +136,17 @@ def _edit_text_interactive(initial_text: str) -> str | None:
         kb = KeyBindings()
 
         @kb.add("c-s")
-        def _(event):
+        def _(event: KeyPressEvent) -> None:
             submitted["value"] = True
             event.app.exit()
 
         @kb.add("c-c")
-        def _(event):
+        def _(event: KeyPressEvent) -> None:
             cancelled["value"] = True
             event.app.exit()
 
         @kb.add("escape", "enter")
-        def _(event):
+        def _(event: KeyPressEvent) -> None:
             submitted["value"] = True
             event.app.exit()
 
