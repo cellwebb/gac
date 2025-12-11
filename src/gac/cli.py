@@ -24,6 +24,7 @@ from gac.init_cli import init as init_cli
 from gac.language_cli import language as language_cli
 from gac.main import main
 from gac.model_cli import model as model_cli
+from gac.prompt_cli import prompt as prompt_cli
 from gac.utils import setup_logging
 from gac.workflow_context import CLIOptions
 
@@ -206,6 +207,7 @@ cli.add_command(diff_cli)
 cli.add_command(init_cli)
 cli.add_command(language_cli)
 cli.add_command(model_cli)
+cli.add_command(prompt_cli)
 
 
 @click.command(context_settings=language_cli.context_settings)
