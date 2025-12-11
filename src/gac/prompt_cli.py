@@ -55,13 +55,14 @@ def prompt():
 @prompt.command()
 def show() -> None:
     """Show the active custom system prompt."""
-    from gac.prompt import DEFAULT_SYSTEM_TEMPLATE
+    from gac.prompt import _load_default_system_template
 
     content, source = get_active_custom_prompt()
 
     if content is None:
         console.print("[dim]No custom prompt configured. Showing default:[/dim]\n")
-        console.print(Panel(DEFAULT_SYSTEM_TEMPLATE.strip(), title="Default System Prompt", border_style="green"))
+        default_template = _load_default_system_template()
+        console.print(Panel(default_template.strip(), title="Default System Prompt", border_style="green"))
         return
 
     # Determine title based on source
