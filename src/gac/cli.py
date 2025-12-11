@@ -12,7 +12,6 @@ from typing import Any
 
 import click
 from rich.console import Console
-from rich.panel import Panel
 
 from gac import __version__
 from gac.auth_cli import auth as auth_cli
@@ -25,7 +24,6 @@ from gac.init_cli import init as init_cli
 from gac.language_cli import language as language_cli
 from gac.main import main
 from gac.model_cli import model as model_cli
-from gac.prompt_cli import get_active_custom_prompt
 from gac.prompt_cli import prompt as prompt_cli
 from gac.utils import setup_logging
 from gac.workflow_context import CLIOptions
@@ -92,7 +90,6 @@ console = Console()
 )
 # Other options
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (gac) tool")
-@click.option("--show-system-prompt", is_flag=True, help="Show the active custom system prompt and exit")
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -110,7 +107,6 @@ def cli(
     model: str | None = None,
     language: str | None = None,
     version: bool = False,
-    show_system_prompt: bool = False,
     dry_run: bool = False,
     message_only: bool = False,
     verbose: bool = False,
@@ -123,22 +119,6 @@ def cli(
     if ctx.invoked_subcommand is None:
         if version:
             print(f"Git Auto Commit (gac) version: {__version__}")
-            sys.exit(0)
-        if show_system_prompt:
-            from gac.prompt import DEFAULT_SYSTEM_TEMPLATE
-
-            content, source = get_active_custom_prompt()
-            if content is None:
-                console.print("[dim]No custom prompt configured. Showing default:[/dim]\n")
-                console.print(
-                    Panel(DEFAULT_SYSTEM_TEMPLATE.strip(), title="Default System Prompt", border_style="green")
-                )
-            else:
-                if source and source.startswith("GAC_SYSTEM_PROMPT_PATH="):
-                    title = f"Custom System Prompt (from {source})"
-                else:
-                    title = f"Custom System Prompt ({source})"
-                console.print(Panel(content.strip(), title=title, border_style="green"))
             sys.exit(0)
         effective_log_level = log_level
         if quiet:
@@ -211,7 +191,6 @@ def cli(
             "model": model,
             "language": language,
             "version": version,
-            "show_system_prompt": show_system_prompt,
             "dry_run": dry_run,
             "message_only": message_only,
             "verbose": verbose,
