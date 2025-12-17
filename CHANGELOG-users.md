@@ -1,5 +1,34 @@
 # Changelog
 
+## [2025-12-17] - v1.1.0
+
+### What's New
+
+- OpenRouter is now supported for AI-generated commit messages
+
+### Improvements
+
+- AI features now show clearer messages when something goes wrong
+- Word counting is more accurate, helping keep AI suggestions within limits
+
+---
+
+## [2025-12-17] - v0.18.1
+
+
+
+---
+
+## [2025-12-17] - v1.0.1
+
+### Improvements
+
+- AI word count now uses an online service for more accurate results
+- Counting still works even without a key by using a backup method
+- Clearer messages appear if counting encounters a problem
+
+---
+
 ## [2025-12-17] - v0.18.1
 
 
