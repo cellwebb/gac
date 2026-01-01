@@ -296,7 +296,6 @@ gac --no-verify-ssl  # 跳過此次提交的 SSL 驗證
 - `GAC_TRANSLATE_PREFIXES=true` - 將常規提交前綴（feat、fix 等）翻譯為目標語言（預設值：false，保持前綴為英語）
 - `GAC_SKIP_SECRET_SCAN=true` - 停用暫存變更中的密鑰自動安全掃描（謹慎使用）
 - `GAC_NO_VERIFY_SSL=true` - 跳過 API 調用的 SSL 證書驗證（適用於攔截 SSL 流量的企業代理）
-- `GAC_NO_TIKTOKEN=true` - 透過繞過 `tiktoken` 下載步驟並使用內建的粗略令牌估算器來保持完全離線
 
 檢視 `.gac.env.example` 了解完整的設定範本。
 

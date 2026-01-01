@@ -296,7 +296,6 @@ U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 - `GAC_TRANSLATE_PREFIXES=true` - Vertaal conventionele commit prefixen (feat, fix, etc.) naar de doeltaal (standaard: false, houdt prefixen in Engels)
 - `GAC_SKIP_SECRET_SCAN=true` - Schakel automatische security scanning voor geheimen in staged wijzigingen uit (gebruik met voorzichtigheid)
 - `GAC_NO_VERIFY_SSL=true` - Sla SSL-certificaatverificatie over voor API-aanroepen (nuttig voor bedrijfsproxies die SSL-verkeer onderscheppen)
-- `GAC_NO_TIKTOKEN=true` - Blijf volledig offline door de `tiktoken` downloadstap over te slaan en de ingebouwde ruwe token-schatter te gebruiken
 
 Zie `.gac.env.example` voor een complete configuratiesjabloon.
 

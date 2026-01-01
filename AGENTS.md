@@ -168,7 +168,6 @@ docs: update examples
 
 ## Critical Dependencies
 
-- `tiktoken>=0.12.0` - OpenAI's tokenizer (for token counting)
 - `httpx>=0.28.0` - HTTP client with async support and proper connection pooling
 - `pydantic>=2.12.0` - Data validation and serialization for provider configs
 - `click>=8.3.0` - CLI framework with rich formatting integration

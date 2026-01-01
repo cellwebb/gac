@@ -345,7 +345,6 @@ Você pode personalizar o comportamento do gac com estas variáveis de ambiente 
 - `GAC_TRANSLATE_PREFIXES=true` - Traduzir prefixos de commit convencionais (feat, fix, etc.) para o idioma alvo (padrão: false, mantém prefixos em inglês)
 - `GAC_SKIP_SECRET_SCAN=true` - Desativar varredura de segurança automática para segredos nas alterações em stage (use com cautela)
 - `GAC_NO_VERIFY_SSL=true` - Ignorar verificação de certificado SSL para chamadas de API (útil para proxies corporativos que interceptam tráfego SSL)
-- `GAC_NO_TIKTOKEN=true` - Permanecer completamente offline ignorando a etapa de download do `tiktoken` e usando o estimador de tokens aproximado integrado
 
 Veja `.gac.env.example` para um modelo de configuração completo.
 

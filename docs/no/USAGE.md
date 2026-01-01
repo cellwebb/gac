@@ -296,7 +296,6 @@ Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 - `GAC_TRANSLATE_PREFIXES=true` - Oversett konvensjonelle commit-prefikser (feat, fix, etc.) til målspråket (default: false, beholder prefikser på engelsk)
 - `GAC_SKIP_SECRET_SCAN=true` - Deaktiver automatisk sikkerhetsskanning for hemmeligheter i staged endringer (bruk med forsiktighet)
 - `GAC_NO_VERIFY_SSL=true` - Hopp over SSL-sertifikatverifisering for API-kall (nyttig for bedriftsproxyer som avlytter SSL-trafikk)
-- `GAC_NO_TIKTOKEN=true` - Hold deg helt offline ved å hoppe over `tiktoken` nedlastingssteg og bruke den innebygde grove token-estimatoren
 
 Se `.gac.env.example` for en komplett konfigurasjonsmal.
 

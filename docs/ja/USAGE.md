@@ -346,7 +346,6 @@ gac --no-verify-ssl  # このコミットのSSL検証をスキップ
 - `GAC_TRANSLATE_PREFIXES=true` - 従来のコミットプレフィックス（feat, fix など）を対象言語に翻訳（デフォルト: false、プレフィックスは英語のまま）
 - `GAC_SKIP_SECRET_SCAN=true` - ステージされた変更での秘密の自動セキュリティスキャンを無効化（注意して使用）
 - `GAC_NO_VERIFY_SSL=true` - API呼び出しのSSL証明書検証をスキップ（SSLトラフィックを傍受する企業プロキシに便利）
-- `GAC_NO_TIKTOKEN=true` - `tiktoken`ダウンロードステップをバイパスし、組み込みの大まかなトークン推定器を使用して完全にオフラインで維持
 
 完全な設定テンプレートについては `.gac.env.example` を参照。
 

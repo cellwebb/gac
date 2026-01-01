@@ -140,12 +140,8 @@ class TestAIUtilsMissingCoverage:
         actual = count_tokens(text, "openai:gpt-4")
         assert actual == expected
 
-        # Test with various env vars that used to affect tiktoken behavior
-        with mock.patch.dict(os.environ, {"GAC_NO_TIKTOKEN": "true"}):
-            actual = count_tokens(text, "openai:gpt-4")
-            assert actual == expected
-
-        with mock.patch.dict(os.environ, {"GAC_NO_TIKTOKEN": "false"}):
+        # Test with various env vars that don't affect token counting anymore
+        with mock.patch.dict(os.environ, {"SOME_OTHER_VAR": "true"}):
             actual = count_tokens(text, "openai:gpt-4")
             assert actual == expected
 

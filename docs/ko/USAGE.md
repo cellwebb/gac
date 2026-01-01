@@ -339,7 +339,6 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 - `GAC_TRANSLATE_PREFIXES=true` - 전통적인 커밋 접두사 (feat, fix 등)를 대상 언어로 번역 (기본값: false, 접두사를 영어로 유지)
 - `GAC_SKIP_SECRET_SCAN=true` - 스테이징된 변경 사항의 비밀에 대한 자동 보안 스캔 비활성화 (주의해서 사용)
 - `GAC_NO_VERIFY_SSL=true` - API 호출의 SSL 인증서 검증 건너뛰기 (SSL 트래픽을 가로채는 기업 프록시에 유용)
-- `GAC_NO_TIKTOKEN=true` - `tiktoken` 다운로드 단계를 우회하고 내장된 대략적인 토큰 추정기를 사용하여 완전히 오프라인으로 유지
 
 전체 구성 템플릿은 `.gac.env.example`을 참조하세요.
 

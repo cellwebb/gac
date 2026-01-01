@@ -345,7 +345,6 @@ Puedes personalizar el comportamiento de gac con estas variables de entorno opci
 - `GAC_TRANSLATE_PREFIXES=true` - Traducir prefijos de commit convencionales (feat, fix, etc.) al idioma de destino (default: false, mantiene prefijos en inglés)
 - `GAC_SKIP_SECRET_SCAN=true` - Deshabilitar escaneo de seguridad automático para secretos en cambios staged (usa con precaución)
 - `GAC_NO_VERIFY_SSL=true` - Omitir verificación de certificado SSL para llamadas API (útil para proxies corporativos que interceptan tráfico SSL)
-- `GAC_NO_TIKTOKEN=true` - Mantenerse completamente offline omitiendo el paso de descarga de `tiktoken` y usando el estimador de tokens aproximado incorporado
 
 Consulta `.gac.env.example` para una plantilla de configuración completa.
 

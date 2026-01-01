@@ -296,7 +296,6 @@ Bạn có thể tùy chỉnh hành vi của gac với các biến môi trường
 - `GAC_TRANSLATE_PREFIXES=true` - Dịch các tiền tố commit tiêu chuẩn (feat, fix, v.v.) vào ngôn ngữ đích (mặc định: false, giữ tiền tố bằng tiếng Anh)
 - `GAC_SKIP_SECRET_SCAN=true` - Vô hiệu hóa quét bảo mật tự động cho các bí mật trong các thay đổi đã staged (sử dụng cẩn thận)
 - `GAC_NO_VERIFY_SSL=true` - Bỏ qua xác minh chứng chỉ SSL cho các cuộc gọi API (hữu ích cho proxy doanh nghiệp chặn lưu lượng SSL)
-- `GAC_NO_TIKTOKEN=true` - Hoàn toàn offline bằng cách bỏ qua bước tải xuống `tiktoken` và sử dụng trình ước lượng token thô tích hợp
 
 Xem `.gac.env.example` cho mẫu cấu hình hoàn chỉnh.
 

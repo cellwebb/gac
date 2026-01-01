@@ -451,7 +451,6 @@
 
 ### Improvements
 
-- Stay completely offline with new GAC_NO_TIKTOKEN setting
 - Better documentation formatting for provider lists in all languages
 
 ## [2.7.2] - 2025-11-06
