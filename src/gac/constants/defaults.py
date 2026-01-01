@@ -13,7 +13,6 @@ class EnvDefaults:
     ALWAYS_INCLUDE_SCOPE: bool = False
     SKIP_SECRET_SCAN: bool = False
     VERBOSE: bool = False
-    NO_TIKTOKEN: bool = False
     NO_VERIFY_SSL: bool = False  # Skip SSL certificate verification (for corporate proxies)
     HOOK_TIMEOUT: int = 120  # Timeout for pre-commit and lefthook hooks in seconds
 
@@ -34,7 +33,6 @@ class Logging:
 class Utility:
     """General utility constants."""
 
-    DEFAULT_ENCODING: str = "cl100k_base"  # llm encoding
     DEFAULT_DIFF_TOKEN_LIMIT: int = 15000  # Maximum tokens for diff processing
     MAX_WORKERS: int = os.cpu_count() or 4  # Maximum number of parallel workers
     MAX_DISPLAYED_SECRET_LENGTH: int = 50  # Maximum length for displaying secrets

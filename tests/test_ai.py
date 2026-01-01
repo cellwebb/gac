@@ -3,13 +3,11 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-import tiktoken
 
 from gac.ai import generate_commit_message, generate_grouped_commits
 from gac.ai_utils import (
     count_tokens,
     extract_text_content,
-    get_encoding,
 )
 from gac.errors import AIError
 from gac.providers import PROVIDER_REGISTRY, SUPPORTED_PROVIDERS
@@ -34,46 +32,40 @@ class TestAiUtils:
         # Test empty input
         assert extract_text_content({}) == ""
 
-    def test_get_encoding_known_model(self):
-        """Test getting encoding for known models with optimized mocking."""
-        # Create a mock encoding to avoid slow tiktoken loading
-        mock_encoding = MagicMock(spec=tiktoken.Encoding)
-        mock_encoding.name = "cl100k_base"
-        mock_encoding.encode.return_value = [9906, 1917]  # Tokens for "Hello world"
-        mock_encoding.decode.return_value = "Hello world"
+    def test_character_based_counting_simple(self):
+        """Test simple character-based counting without external dependencies."""
+        # Test basic functionality
+        text = "Hello world"
+        result = count_tokens(text, "any:model")
+        expected = round(len(text) / 3.4)
+        assert result == expected
 
-        with patch("tiktoken.encoding_for_model", return_value=mock_encoding):
-            # Test with a well-known OpenAI model that should map to cl100k_base
-            encoding = get_encoding("openai:gpt-4")
-            assert isinstance(encoding, tiktoken.Encoding)
-            assert encoding.name == "cl100k_base"
+        # Test with empty string
+        assert count_tokens("", "any:model") == 0
 
-            # Verify encoding behavior
-            tokens = encoding.encode("Hello world")
-            assert len(tokens) > 0
-            assert isinstance(tokens[0], int)
-
-            # Decode should round-trip correctly
-            decoded = encoding.decode(tokens)
-            assert decoded == "Hello world"
+        # Test with single character
+        assert count_tokens("a", "any:model") == 1
 
     def test_count_tokens(self):
         """Test token counting functionality."""
         # Test with string content
         text = "Hello, world!"
         token_count = count_tokens(text, "openai:gpt-4")
-        assert token_count > 0
+        expected = round(len(text) / 3.4)
+        assert token_count == expected
         assert isinstance(token_count, int)
 
-    @patch("gac.ai_utils.count_tokens")
-    def test_count_tokens_anthropic_mock(self, mock_count_tokens):
-        """Test that anthropic models are handled correctly."""
-        # This tests the code path, not the actual implementation
-        mock_count_tokens.return_value = 5
+    def test_count_tokens_all_models_same(self):
+        """Test that all models work the same with character-based counting."""
+        text = "Test message"
+        expected = round(len(text) / 3.4)
 
-        # Test that anthropic model strings are recognized
-        model = "anthropic:claude-3-haiku"
-        assert model.startswith("anthropic")
+        # Test that all providers give same result
+        models = ["anthropic:claude-3-haiku", "openai:gpt-4", "groq:llama3", "gemini:gemini-pro"]
+
+        for model in models:
+            result = count_tokens(text, model)
+            assert result == expected, f"Model {model} should give {expected}, got {result}"
 
     def test_count_tokens_empty_content(self):
         """Test token counting with empty content."""
@@ -84,55 +76,54 @@ class TestAiUtils:
         # Test with list of messages
         messages = [{"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi there!"}]
         token_count = count_tokens(messages, "openai:gpt-4")
-        assert token_count > 0
+        expected = round(len("Hello\nHi there!") / 3.4)
+        assert token_count == expected
 
         # Test with dict content
         message = {"role": "user", "content": "Test message"}
         token_count = count_tokens(message, "openai:gpt-4")
-        assert token_count > 0
+        expected = round(len("Test message") / 3.4)
+        assert token_count == expected
 
-    def test_get_encoding_unknown_model(self):
-        """Test getting encoding for unknown models falls back to default."""
-        # Create a mock default encoding to avoid slow tiktoken loading
-        mock_encoding = MagicMock(spec=tiktoken.Encoding)
-        mock_encoding.name = "cl100k_base"
+    def test_character_based_all_providers_same(self):
+        """Test that character-based counting works the same for all providers."""
+        text = "Sample test message"
+        expected = round(len(text) / 3.4)
 
-        with patch("tiktoken.get_encoding", return_value=mock_encoding):
-            # Clear the cache first to ensure fresh test
-            get_encoding.cache_clear()
+        providers = ["openai:gpt-4", "anthropic:claude-3", "groq:llama3-70b", "gemini:gemini-pro"]
 
-            # Test with unknown model should fall back to default encoding
-            encoding = get_encoding("unknown:model-xyz")
-            assert isinstance(encoding, tiktoken.Encoding)
-            # Should use the default cl100k_base encoding
-            assert encoding.name == "cl100k_base"
+        for provider in providers:
+            result = count_tokens(text, provider)
+            assert result == expected, f"Provider {provider} should give {expected}, got {result}"
 
-    def test_count_tokens_error_handling(self):
-        """Test error handling in count_tokens function."""
-        # Test with a model that will cause encoding error
-        with patch("gac.ai_utils.get_encoding") as mock_encoding:
-            mock_encoding.side_effect = ValueError("Encoding error")
+    def test_character_based_no_errors(self):
+        """Test that character-based counting never raises errors."""
+        # Various inputs that should always work
+        test_cases = [
+            "",
+            "Simple text",
+            "Unicode: café résumé",
+            "Emoji: 🎉🚀",
+            "New\nline\tand tabs",
+        ]
 
-            # Should fall back to character-based estimation (len/4)
-            token_count = count_tokens("Hello world", "test:model")
-            assert token_count == len("Hello world") // 4
+        for text in test_cases:
+            result = count_tokens(text, "any:model")
+            assert isinstance(result, int)
+            assert result >= 0
 
     def test_count_tokens_with_various_content_types(self):
         """Test count_tokens with different content formats."""
-        # Mock encoding to avoid slow tiktoken loading
-        mock_encoding = MagicMock(spec=tiktoken.Encoding)
-        mock_encoding.encode.return_value = [1, 2, 3, 4, 5]  # Mock tokens
-
-        with patch("gac.ai_utils.get_encoding", return_value=mock_encoding):
-            # Test with list containing invalid items
-            messages = [
-                {"role": "user", "content": "Valid message"},
-                {"role": "assistant"},  # Missing content
-                "invalid",  # Not a dict
-                {"content": "No role"},  # Has content
-            ]
-            token_count = count_tokens(messages, "openai:gpt-4")
-            assert token_count == 5  # Should return mock token count
+        # Test with list containing various items
+        messages = [
+            {"role": "user", "content": "Valid message"},
+            {"role": "assistant"},  # Missing content
+            "invalid",  # Not a dict
+            {"content": "No role"},  # Has content
+        ]
+        token_count = count_tokens(messages, "openai:gpt-4")
+        expected = round(len("Valid message\nNo role") / 3.4)
+        assert token_count == expected
 
 
 class TestGenerateCommitMessage:

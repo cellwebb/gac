@@ -27,7 +27,6 @@ class GACConfig(TypedDict, total=False):
     warning_limit_tokens: int
     always_include_scope: bool
     skip_secret_scan: bool
-    no_tiktoken: bool
     no_verify_ssl: bool
     verbose: bool
     system_prompt_path: str | None
@@ -110,7 +109,6 @@ def load_config() -> GACConfig:
         in ("true", "1", "yes", "on"),
         "skip_secret_scan": os.getenv("GAC_SKIP_SECRET_SCAN", str(EnvDefaults.SKIP_SECRET_SCAN)).lower()
         in ("true", "1", "yes", "on"),
-        "no_tiktoken": os.getenv("GAC_NO_TIKTOKEN", str(EnvDefaults.NO_TIKTOKEN)).lower() in ("true", "1", "yes", "on"),
         "no_verify_ssl": os.getenv("GAC_NO_VERIFY_SSL", str(EnvDefaults.NO_VERIFY_SSL)).lower()
         in ("true", "1", "yes", "on"),
         "verbose": os.getenv("GAC_VERBOSE", str(EnvDefaults.VERBOSE)).lower() in ("true", "1", "yes", "on"),

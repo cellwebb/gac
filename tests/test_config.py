@@ -19,14 +19,12 @@ def test_load_config_env(tmp_path, monkeypatch):
         monkeypatch.setenv("GAC_MAX_OUTPUT_TOKENS", "1234")
         monkeypatch.setenv("GAC_RETRIES", "7")
         monkeypatch.setenv("GAC_LOG_LEVEL", "DEBUG")
-        monkeypatch.setenv("GAC_NO_TIKTOKEN", "true")
         config = load_config()
         assert config["model"] == "env-model"
         assert config["temperature"] == 0.5
         assert config["max_output_tokens"] == 1234
         assert config["max_retries"] == 7
         assert config["log_level"] == "DEBUG"
-        assert config["no_tiktoken"] is True
 
 
 def test_load_config_project_gac_env(tmp_path, monkeypatch):

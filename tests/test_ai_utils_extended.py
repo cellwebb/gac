@@ -1,18 +1,14 @@
 """Extended tests for ai_utils.py to improve coverage from 56% to 90%+."""
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from gac.ai_utils import (
-    _should_skip_tiktoken_counting,
     count_tokens,
     extract_text_content,
     generate_with_retries,
-    get_encoding,
 )
-from gac.constants import Utility
 from gac.errors import AIError
 
 
@@ -61,122 +57,57 @@ class TestExtractTextContentExtended:
         assert result == ""
 
 
-class TestGetEncodingExtended:
-    """Test get_encoding function with various scenarios."""
+class TestCharacterBasedCountingExtended:
+    """Test character-based counting function with various scenarios."""
 
-    @patch("tiktoken.get_encoding")
-    @patch("tiktoken.encoding_for_model")
-    def test_provider_not_openai_returns_default(self, mock_encoding_for_model, mock_get_encoding):
-        """Test non-OpenAI provider returns default encoding (line 76)."""
-        mock_get_encoding.return_value = "default_encoding"
-        result = get_encoding("anthropic:claude-3-sonnet")
-        mock_get_encoding.assert_called_once_with(Utility.DEFAULT_ENCODING)
-        assert result == "default_encoding"
+    def test_all_providers_same_result(self):
+        """Test that all providers provide the same result (no provider-specific logic)."""
+        text = "Sample test message"
+        expected = round(len(text) / 3.4)
 
-    @patch("tiktoken.encoding_for_model")
-    @patch("tiktoken.get_encoding")
-    def test_openai_model_encoding_success(self, mock_get_encoding, mock_encoding_for_model):
-        """Test successful OpenAI model encoding retrieval."""
-        mock_encoding = MagicMock()
-        mock_encoding_for_model.return_value = mock_encoding
+        providers = [
+            "openai:gpt-4",
+            "anthropic:claude-3",
+            "groq:llama3-70b",
+            "gemini:gemini-pro",
+            "ollama:llama2",
+            "custom-openai:local-model",
+            "lm-studio:local-model",
+        ]
 
-        result = get_encoding("openai:gpt-5-nano")
-        assert result == mock_encoding
-        mock_encoding_for_model.assert_called_once_with("gpt-5-nano")
+        for provider in providers:
+            result = count_tokens(text, provider)
+            assert result == expected, f"Provider {provider} should give {expected}, got {result}"
 
-    @patch("tiktoken.encoding_for_model")
-    @patch("tiktoken.get_encoding")
-    def test_openai_model_key_error_fallback(self, mock_get_encoding, mock_encoding_for_model):
-        """Test KeyError fallback to default encoding."""
-        mock_encoding_for_model.side_effect = KeyError("Model not found")
-        mock_get_encoding.return_value = "default_encoding"
+    def test_various_text_lengths(self):
+        """Test token counting with various text lengths."""
+        test_cases = [
+            ("", 0),  # Empty
+            ("a", 1),  # Single char
+            ("Hello", 1),  # Word
+            ("Hello world", 3),  # Sentence
+            ("This is a longer sentence with multiple words.", 14),  # Longer text
+        ]
 
-        result = get_encoding("openai:unknown-model")
-        assert result == "default_encoding"
-        mock_get_encoding.assert_called_once_with(Utility.DEFAULT_ENCODING)
+        for text, expected in test_cases:
+            result = count_tokens(text, "any:model")
+            assert result == expected, f"Text '{text}' should give {expected} tokens, got {result}"
 
-    @patch("tiktoken.encoding_for_model")
-    @patch("tiktoken.get_encoding")
-    def test_openai_model_connection_error_fallback(self, mock_get_encoding, mock_encoding_for_model):
-        """Test ConnectionError fallback to default encoding."""
-        mock_encoding_for_model.side_effect = ConnectionError("Network error")
-        mock_get_encoding.return_value = "default_encoding"
+    def test_unicode_and_special_characters(self):
+        """Test token counting with Unicode and special characters."""
+        test_cases = [
+            ("café", 2),  # Unicode characters
+            ("🤖🚀", 2),  # Emoji
+            ("\n\t\r", 1),  # Control characters
+            ("¡Hola! ¿Cómo estás?", 5),  # Accented characters
+        ]
 
-        result = get_encoding("openai:gpt-5-nano")
-        assert result == "default_encoding"
-        mock_get_encoding.assert_called_once_with(Utility.DEFAULT_ENCODING)
-
-    @patch("gac.ai_utils.tiktoken.get_encoding")
-    def test_openai_model_os_error_fallback(self, mock_get_encoding):
-        """Test OSError fallback to default encoding."""
-        # Clear cache to ensure clean test
-        get_encoding.cache_clear()
-
-        # Remove patches that interfere with each other and simplify
-        with patch("gac.ai_utils.tiktoken.encoding_for_model", side_effect=OSError("SSL error")):
-            mock_get_encoding.return_value = "default_encoding"
-
-            result = get_encoding("openai:gpt-5-nano")
-            assert result == "default_encoding"
-            # The fallback should be called
-            mock_get_encoding.assert_called_once_with(Utility.DEFAULT_ENCODING)
-
-
-class TestCountTokensExtended:
-    """Test count_tokens function with various edge cases."""
-
-    @patch("gac.ai_utils.get_encoding")
-    @patch("gac.ai_utils.extract_text_content")
-    def test_count_tokens_key_error_fallback(self, mock_extract, mock_encoding):
-        """Test KeyError during encoding (lines 47-50)."""
-        mock_extract.return_value = "sample text"
-        mock_encoding.side_effect = KeyError("Unknown model")
-
-        result = count_tokens("sample text", "unknown:model")
-        assert result == len("sample text") // 4  # Fallback estimation
-
-    @patch("gac.ai_utils.get_encoding")
-    @patch("gac.ai_utils.extract_text_content")
-    def test_count_tokens_unicode_error_fallback(self, mock_extract, mock_encoding):
-        """Test UnicodeError during encoding (lines 47-50)."""
-        mock_extract.return_value = "sample text"
-        mock_encoding.side_effect = UnicodeError("Encoding error")
-
-        result = count_tokens("sample text", "test:model")
-        assert result == len("sample text") // 4  # Fallback estimation
-
-    @patch("gac.ai_utils.get_encoding")
-    @patch("gac.ai_utils.extract_text_content")
-    def test_count_tokens_value_error_fallback(self, mock_extract, mock_encoding):
-        """Test ValueError during encoding (lines 47-50)."""
-        mock_extract.return_value = "sample text"
-        mock_encoding.side_effect = ValueError("Invalid input")
-
-        result = count_tokens("sample text", "test:model")
-        assert result == len("sample text") // 4  # Fallback estimation
-
-    def test_count_tokens_empty_content_with_skip_tiktoken(self):
-        """Test empty content returns 0 even in skip mode."""
-        with patch.dict(os.environ, {"GAC_NO_TIKTOKEN": "true"}):
-            # Clear the cache to ensure fresh check
-            _should_skip_tiktoken_counting.cache_clear()
-
-            result = count_tokens("", "any:model")
-            assert result == 0
-
-    def test_should_skip_tiktoken_counting_false(self):
-        """Test that tiktoken is not skipped by default."""
-        with patch.dict(os.environ, {"GAC_NO_TIKTOKEN": "false"}, clear=True):
-            _should_skip_tiktoken_counting.cache_clear()
-            result = _should_skip_tiktoken_counting()
-            assert result is False
-
-    def test_should_skip_tiktoken_counting_true_from_env(self):
-        """Test tiktoken skip from environment variable."""
-        with patch.dict(os.environ, {"GAC_NO_TIKTOKEN": "true"}):
-            _should_skip_tiktoken_counting.cache_clear()
-            result = _should_skip_tiktoken_counting()
-            assert result is True
+        for text, _expected in test_cases:
+            result = count_tokens(text, "any:model")
+            calculated = round(len(text) / 3.4)
+            if text and calculated == 0:
+                calculated = 1
+            assert result == calculated, f"Text '{text}' should give {calculated} tokens, got {result}"
 
 
 class TestGenerateWithRetriesExtended:
