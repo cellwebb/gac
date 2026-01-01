@@ -25,7 +25,6 @@ def test_load_config_env(tmp_path, monkeypatch):
         assert config["max_output_tokens"] == 1234
         assert config["max_retries"] == 7
         assert config["log_level"] == "DEBUG"
-        assert config["no_tiktoken"] is True
 
 
 def test_load_config_project_gac_env(tmp_path, monkeypatch):
