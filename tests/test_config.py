@@ -19,7 +19,6 @@ def test_load_config_env(tmp_path, monkeypatch):
         monkeypatch.setenv("GAC_MAX_OUTPUT_TOKENS", "1234")
         monkeypatch.setenv("GAC_RETRIES", "7")
         monkeypatch.setenv("GAC_LOG_LEVEL", "DEBUG")
-        monkeypatch.setenv("GAC_NO_TIKTOKEN", "true")
         config = load_config()
         assert config["model"] == "env-model"
         assert config["temperature"] == 0.5

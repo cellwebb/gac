@@ -8,14 +8,11 @@ import logging
 import os
 import time
 from collections.abc import Callable
-from functools import lru_cache
 from typing import Any, cast
 
-import tiktoken
 from rich.console import Console
 from rich.status import Status
 
-from gac.constants import EnvDefaults, Utility
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, refresh_token_if_expired
 from gac.oauth.token_store import TokenStore
@@ -25,29 +22,16 @@ logger = logging.getLogger(__name__)
 console = Console()
 
 
-@lru_cache(maxsize=1)
-def _should_skip_tiktoken_counting() -> bool:
-    """Return True when token counting should avoid tiktoken calls entirely."""
-    value = os.getenv("GAC_NO_TIKTOKEN", str(EnvDefaults.NO_TIKTOKEN))
-    return value.lower() in ("true", "1", "yes", "on")
-
-
 def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
-    """Count tokens in content using the model's tokenizer."""
+    """Count tokens in content using character-based estimation (1 token per 3.4 characters)."""
     text = extract_text_content(content)
     if not text:
         return 0
 
-    if _should_skip_tiktoken_counting():
-        return len(text) // 4
-
-    try:
-        encoding = get_encoding(model)
-        return len(encoding.encode(text))
-    except (KeyError, UnicodeError, ValueError) as e:
-        logger.error(f"Error counting tokens: {e}")
-        # Fallback to rough estimation (4 chars per token on average)
-        return len(text) // 4
+    # Use simple character-based estimation: 1 token per 3.4 characters (rounded)
+    result = round(len(text) / 3.4)
+    # Ensure at least 1 token for non-empty text
+    return result if result > 0 else 1
 
 
 def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -> str:
@@ -59,24 +43,6 @@ def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -
     elif isinstance(content, dict) and "content" in content:
         return cast(str, content["content"])
     return ""
-
-
-@lru_cache(maxsize=1)
-def get_encoding(model: str) -> tiktoken.Encoding:
-    """Get the appropriate encoding for a given model."""
-    provider, model_name = model.split(":", 1) if ":" in model else (None, model)
-
-    if provider != "openai":
-        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
-
-    try:
-        return tiktoken.encoding_for_model(model_name)
-    except KeyError:
-        # Fall back to default encoding if model not found
-        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
-    except (OSError, ConnectionError):
-        # If there are any network/SSL issues, fall back to default encoding
-        return tiktoken.get_encoding(Utility.DEFAULT_ENCODING)
 
 
 def generate_with_retries(

@@ -29,8 +29,7 @@ dependencies = [
     "httpx>=0.28.0",
     "httpcore>=1.0.9",  # Required for Python 3.14 compatibility
 
-    # Token counting (OpenAI models)
-    "tiktoken>=0.12.0",
+
 
     # Core functionality
     "pydantic>=2.12.0",

@@ -35,9 +35,12 @@ class TestConstants:
         assert "ERROR" in Logging.LEVELS
         assert len(Logging.LEVELS) == 4  # Ensure no unexpected levels
 
-    def test_encoding_constants(self):
-        """Test encoding constants."""
-        assert Utility.DEFAULT_ENCODING == "cl100k_base"  # Verify base encoding for tokenization
+    def test_token_constants(self):
+        """Test token-related constants."""
+        # Since we removed tiktoken, we don't have encoding constants anymore
+        # Just test that Utility exists and has expected attributes
+        assert hasattr(Utility, "DEFAULT_DIFF_TOKEN_LIMIT")
+        assert Utility.DEFAULT_DIFF_TOKEN_LIMIT > 0
 
     def test_languages_code_map(self):
         """Test the language code mapping dictionary."""
