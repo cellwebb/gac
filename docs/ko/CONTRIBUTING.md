@@ -2,7 +2,7 @@
 
 [English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | **한국어** | [हिन्दी](../hi/CONTRIBUTING.md) | [Tiếng Việt](../vi/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [Norsk](../no/CONTRIBUTING.md) | [Svenska](../sv/CONTRIBUTING.md) | [Deutsch](../de/CONTRIBUTING.md) | [Nederlands](../nl/CONTRIBUTING.md) | [Italiano](../it/CONTRIBUTING.md)
 
-이 프로젝트에 기여해 주셔서 관심을 가져주셔서 감사합니다! 여러분의 도움은 감사합니다. 모든 분들을 위해 과정을 원활하게 만들기 위해 다음 가이드라인을 따라주세요.
+이 프로젝트에 관심을 갖고 기여해 주셔서 감사합니다! 여러분의 도움에 감사드립니다. 모두에게 원활한 기여 경험을 제공하기 위해 다음 가이드라인을 따라주세요.
 
 ## 목차
 
@@ -180,7 +180,7 @@ git commit --no-verify -m "Your commit message"
 
 프로젝트는 테스트를 위해 pytest를 사용합니다. 새로운 기능을 추가하거나 버그를 수정할 때, 변경 사항을 포함하는 테스트를 포함해주세요.
 
-`scripts/` 디렉토리에는 pytest로 쉽게 테스트할 수 없는 기능에 대한 테스트 스크립트가 포함되어 있습니다. 복잡한 시나리오나 표준 pytest 프레임워크로 구현하기 어려운 통합 테스트를 여기에 추가해 자유롭게 추가하세요.
+`scripts/` 디렉토리에는 pytest로 쉽게 테스트할 수 없는 기능에 대한 테스트 스크립트가 포함되어 있습니다. 복잡한 시나리오나 표준 pytest 프레임워크로 구현하기 어려운 통합 테스트는 여기에 추가해도 좋습니다.
 
 ### 테스트 실행
 

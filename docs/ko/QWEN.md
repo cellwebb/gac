@@ -1,6 +1,6 @@
-[English](../en/QWEN.md) | [简体中文](../zh-CN/QWEN.md) | [繁體中文](../zh-TW/QWEN.md) | [日本語](../ja/QWEN.md) | **한국어** | [हिन्दी](../hi/QWEN.md) | [Tiếng Việt](../vi/QWEN.md) | [Français](../fr/QWEN.md) | [Русский](../ru/QWEN.md) | [Español](../es/QWEN.md) | [Português](../pt/QWEN.md) | [Norsk](../no/QWEN.md) | [Svenska](../sv/QWEN.md) | [Deutsch](../de/QWEN.md) | [Nederlands](../nl/QWEN.md) | [Italiano](../it/QWEN.md)
-
 # GAC와 함께 Qwen.ai 사용하기
+
+[English](../en/QWEN.md) | [简体中文](../zh-CN/QWEN.md) | [繁體中文](../zh-TW/QWEN.md) | [日本語](../ja/QWEN.md) | **한국어** | [हिन्दी](../hi/QWEN.md) | [Tiếng Việt](../vi/QWEN.md) | [Français](../fr/QWEN.md) | [Русский](../ru/QWEN.md) | [Español](../es/QWEN.md) | [Português](../pt/QWEN.md) | [Norsk](../no/QWEN.md) | [Svenska](../sv/QWEN.md) | [Deutsch](../de/QWEN.md) | [Nederlands](../nl/QWEN.md) | [Italiano](../it/QWEN.md)
 
 GAC는 Qwen.ai OAuth를 통한 인증을 지원하여 Qwen.ai 계정을 사용하여 커밋 메시지를 생성할 수 있도록 합니다. 이는 원활한 로그인 경험을 위해 OAuth 디바이스 흐름 인증을 사용합니다.
 
@@ -63,7 +63,7 @@ gac auth qwen login
 2. Qwen.ai 인증 페이지로 브라우저 열기
 3. 인증 후 토큰이 자동으로 저장됨
 
-### GAC 정상 사용
+### GAC를 평소대로 사용하기
 
 인증되면 평소와 같이 GAC를 사용하세요:
 

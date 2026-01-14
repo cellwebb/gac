@@ -48,7 +48,7 @@ gac model
 3. 토큰이 `~/.gac.env`에 저장됩니다
 4. 모델이 자동으로 설정됩니다
 
-### GAC 정상적으로 사용
+### GAC를 평소대로 사용하기
 
 인증되면 평소처럼 GAC를 사용할 수 있습니다:
 
@@ -93,7 +93,7 @@ gac auth claude-code login
 gac auth claude-code status
 ```
 
-또는 모든 공급자를 한번에 확인:
+또는 모든 공급자를 한 번에 확인:
 
 ```bash
 gac auth
