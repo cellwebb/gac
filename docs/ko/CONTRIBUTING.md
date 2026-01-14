@@ -2,7 +2,7 @@
 
 [English](../en/CONTRIBUTING.md) | [简体中文](../zh-CN/CONTRIBUTING.md) | [繁體中文](../zh-TW/CONTRIBUTING.md) | [日本語](../ja/CONTRIBUTING.md) | **한국어** | [हिन्दी](../hi/CONTRIBUTING.md) | [Tiếng Việt](../vi/CONTRIBUTING.md) | [Français](../fr/CONTRIBUTING.md) | [Русский](../ru/CONTRIBUTING.md) | [Español](../es/CONTRIBUTING.md) | [Português](../pt/CONTRIBUTING.md) | [Norsk](../no/CONTRIBUTING.md) | [Svenska](../sv/CONTRIBUTING.md) | [Deutsch](../de/CONTRIBUTING.md) | [Nederlands](../nl/CONTRIBUTING.md) | [Italiano](../it/CONTRIBUTING.md)
 
-이 프로젝트에 기여해 주셔서 관심을 가져주셔서 감사합니다! 여러분의 도움은 감사합니다. 모든 분들을 위해 과정을 원활하게 만들기 위해 다음 가이드라인을 따라주세요.
+이 프로젝트에 관심을 갖고 기여해 주셔서 감사합니다! 여러분의 도움에 감사드립니다. 모두에게 원활한 기여 경험을 제공하기 위해 다음 가이드라인을 따라주세요.
 
 ## 목차
 
@@ -17,9 +17,9 @@
     - [릴리즈 프로세스](#릴리즈-프로세스)
     - [bump-my-version 사용 (선택사항)](#bump-my-version-사용-선택사항)
   - [코딩 표준](#코딩-표준)
-  - [Git Hooks (Lefthook)](#git-hooks-lefthook)
+  - [Git hooks (Lefthook)](#git-hooks-lefthook)
     - [설정](#설정)
-    - [Git Hooks 건너뛰기](#git-hooks-건너뛰기)
+    - [Git hooks 건너뛰기](#git-hooks-건너뛰기)
   - [테스트 가이드라인](#테스트-가이드라인)
     - [테스트 실행](#테스트-실행)
       - [프로바이더 통합 테스트](#프로바이더-통합-테스트)
@@ -79,8 +79,8 @@ lefthook run pre-commit --all
 1. `src/gac/__version__.py`를 편집하고 버전 번호를 증가시킵니다
 2. [Semantic Versioning](https://semver.org/)을 따르세요:
    - **Patch** (1.6.X): 버그 수정, 작은 개선사항
-   - **Minor** (1.X.0): 새로운 기능, 호환성 있는 변경사항 (예: 새로운 프로바이더 추가)
-   - **Major** (X.0.0): 호환성 깨지는 변경사항
+   - **Minor** (1.X.0): 새로운 기능, 호환되는 변경 사항 (예: 새로운 프로바이더 추가)
+   - **Major** (X.0.0): 호환성 깨지는 변경 사항
 
 ### 릴리즈 프로세스
 
@@ -123,9 +123,9 @@ bump-my-version bump major
 - 포맷팅은 `ruff`로 처리 (린트, 포맷팅, 임포트 정렬을 한 도구로; 최대 라인 길이: 120)
 - `pytest`로 최소한의 효과적인 테스트 작성
 
-## Git Hooks (Lefthook)
+## Git hooks (Lefthook)
 
-이 프로젝트는 코드 품질 검사를 빠르고 일관되게 유지하기 위해 [Lefthook](https://github.com/evilmartians/lefthook)를 사용합니다. 구성된 hooks는 이전 pre-commit 설정을 미러링합니다:
+이 프로젝트는 코드 품질 검사를 빠르고 일관되게 유지하기 위해 [Lefthook](https://github.com/evilmartians/lefthook)를 사용합니다. 구성된 hooks는 이전 pre-commit 설정을 그대로 반영합니다:
 
 - `ruff` - Python 린트 및 포맷팅 (black, isort, flake8 대체)
 - `markdownlint-cli2` - Markdown 린트
@@ -166,7 +166,7 @@ make dev
 
 이제 hooks가 각 커밋마다 자동으로 실행됩니다. 검사가 실패하면 커밋하기 전에 문제를 수정해야 합니다.
 
-### Git Hooks 건너뛰기
+### Git hooks 건너뛰기
 
 Lefthook 검사를 일시적으로 건너뛰어야 하는 경우, `--no-verify` 플래그 사용:
 
@@ -180,7 +180,7 @@ git commit --no-verify -m "Your commit message"
 
 프로젝트는 테스트를 위해 pytest를 사용합니다. 새로운 기능을 추가하거나 버그를 수정할 때, 변경 사항을 포함하는 테스트를 포함해주세요.
 
-`scripts/` 디렉토리에는 pytest로 쉽게 테스트할 수 없는 기능에 대한 테스트 스크립트가 포함되어 있습니다. 복잡한 시나리오나 표준 pytest 프레임워크로 구현하기 어려운 통합 테스트를 여기에 추가해 자유롭게 추가하세요.
+`scripts/` 디렉터리에는 pytest로 쉽게 테스트할 수 없는 기능에 대한 테스트 스크립트가 포함되어 있습니다. 복잡한 시나리오나 표준 pytest 프레임워크로 구현하기 어려운 통합 테스트는 여기에 추가해도 좋습니다.
 
 ### 테스트 실행
 
@@ -208,7 +208,7 @@ uv run -- pytest tests/test_prompt.py::TestExtractRepositoryContext::test_extrac
 
 프로바이더 통합 테스트는 프로바이더 구현이 실제 API와 올바르게 작동하는지 확인하기 위해 실제 API 호출을 수행합니다. 이 테스트들은 `@pytest.mark.integration`으로 마크되어 있으며 기본적으로 건너뜁니다:
 
-- 정기 개발 중 API 크레디트 소비 방지
+- 정기 개발 중 API 크레딧 소비 방지
 - API 키가 구성되지 않은 경우 테스트 실패 방지
 - 빠른 반복을 위해 테스트 실행 속도 유지
 
