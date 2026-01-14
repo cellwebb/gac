@@ -35,7 +35,7 @@
 
 ```sh
 gac init
-# 그런 다음 프롬프트를 따라 제공자, 모델 및 API 키를 대화형으로 구성하세요
+# 그런 다음 프롬프트를 따라 프로바이더, 모델 및 API 키를 대화형으로 구성하세요
 gac
 ```
 
@@ -90,7 +90,7 @@ gac
 
 | 플래그 / 옵션         | 단축 | 설명                                         |
 | --------------------- | ---- | -------------------------------------------- |
-| `--quiet`             | `-q` | 에러를 제외한 모든 출력 억제                 |
+| `--quiet`             | `-q` | 오류를 제외한 모든 출력 억제                 |
 | `--log-level <level>` |      | 로그 레벨 설정 (debug, info, warning, error) |
 | `--show-prompt`       |      | 커밋 메시지 생성에 사용된 LLM 프롬프트 출력  |
 
@@ -214,7 +214,7 @@ gac
 ## 고급
 
 - 더 강력한 워크플로우를 위해 플래그 결합 (예: `gac -ayp`로 스테이징, 자동 확인 및 푸시)
-- LLM에 보낸 프롬프트를 디버그하거나 검토하려면 `--show-prompt` 사용
+- LLM에 보낸 프롬프트를 디버깅하거나 검토하려면 `--show-prompt` 사용
 - `--log-level` 또는 `--quiet`로 상세 수준 조정
 - 스크립트 통합 및 자동화된 워크플로우를 위해 `--message-only` 사용
 
@@ -321,7 +321,7 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 - 이미 언어가 구성되었고 프로바이더나 모델만 전환해야 하나요? 언어 질문 없이 설정을 반복하려면 `gac model`을 실행하세요.
 - **Claude Code를 사용하시나요?** OAuth 인증 지침은 [Claude Code 설정 가이드](CLAUDE_CODE.md)를 참조하세요.
 - **Qwen.ai를 사용 중이신가요?** [Qwen.ai 설정 가이드](QWEN.md)에서 OAuth 인증 지침을 확인하세요.
-- gac는 다음 우선순위 순서로 구성을 로드합니다:
+- gac는 다음 우선순위로 구성을 로드합니다:
   1. CLI 플래그
   2. 환경 변수
   3. 프로젝트 레벨 `.gac.env`
@@ -331,14 +331,14 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 
 선택적 환경 변수로 gac의 동작을 커스터마이즈할 수 있습니다:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 커밋 메시지에 스코프를 자동으로 추론하고 포함 (예: `feat(auth):` 대신 `feat:`)
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 커밋 메시지에 스코프를 자동으로 추론하고 포함 (예: `feat(auth):`처럼 스코프를 포함해 `feat:` 대신 사용)
 - `GAC_VERBOSE=true` - 동기, 아키텍처 및 영향 섹션으로 상세한 커밋 메시지 생성
 - `GAC_TEMPERATURE=0.7` - LLM 창의성 제어 (0.0-1.0, 낮을수록 더 집중됨)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 생성된 메시지용 최대 토큰 (`--group` 사용 시 파일 수에 따라 자동으로 2-5배 조정됨; 더 높거나 낮게 설정하려면 재정의)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - 프롬프트가 이 토큰 수를 초과하면 경고
 - `GAC_SYSTEM_PROMPT_PATH=/path/to/custom_prompt.txt` - 커밋 메시지 생성을 위해 커스텀 시스템 프롬프트 사용
 - `GAC_LANGUAGE=Spanish` - 특정 언어로 커밋 메시지 생성 (예: Spanish, French, Japanese, German). 전체 이름 또는 ISO 코드 지원 (es, fr, ja, de, zh-CN). 대화형 선택을 위해 `gac language` 사용
-- `GAC_TRANSLATE_PREFIXES=true` - 전통적인 커밋 접두사 (feat, fix 등)를 대상 언어로 번역 (기본값: false, 접두사를 영어로 유지)
+- `GAC_TRANSLATE_PREFIXES=true` - 컨벤셔널 커밋 접두사 (feat, fix 등)를 대상 언어로 번역 (기본값: false, 접두사를 영어로 유지)
 - `GAC_SKIP_SECRET_SCAN=true` - 스테이징된 변경 사항의 비밀에 대한 자동 보안 스캔 비활성화 (주의해서 사용)
 - `GAC_NO_VERIFY_SSL=true` - API 호출의 SSL 인증서 검증 건너뛰기 (SSL 트래픽을 가로채는 기업 프록시에 유용)
 
@@ -350,13 +350,13 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 
 다음 하위 명령을 사용할 수 있습니다:
 
-- `gac init` — 공급자, 모델, 언어 구성을 위한 대화형 설정 마법사
-- `gac model` — 언어 프롬프트 없는 공급자/모델/API 키 설정 (빠른 전환에 이상적)
+- `gac init` — 프로바이더, 모델, 언어 구성을 위한 대화형 설정 마법사
+- `gac model` — 언어 프롬프트 없는 프로바이더/모델/API 키 설정 (빠른 전환에 이상적)
 - `gac auth` — 모든 프로바이더의 OAuth 인증 상태 표시
 - `gac auth claude-code login` — OAuth를 사용하여 Claude Code에 로그인 (브라우저 열림)
 - `gac auth claude-code logout` — Claude Code에서 로그아웃하고 저장된 토큰 제거
 - `gac auth claude-code status` — Claude Code 인증 상태 확인
-- `gac auth qwen login` — OAuth 장치 흐름을 사용하여 Qwen에 로그인 (브라우저 열림)
+- `gac auth qwen login` — OAuth를 사용하여 Qwen에 로그인 (브라우저 열림)
 - `gac auth qwen logout` — Qwen에서 로그아웃하고 저장된 토큰 제거
 - `gac auth qwen status` — Qwen 인증 상태 확인
 - `gac config show` — 현재 구성 표시
@@ -377,7 +377,7 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 - **이 변경들의 주요 목적은 무엇입니까?** - 고수준 목표를 이해하는 데 도움이 됩니다
 - **어떤 문제를 해결하고 있습니까?** - 동기에 대한 컨텍스트를 제공합니다
 - **언급할 가치가 있는 구현 세부사항이 있습니까?** - 기술적 세부사항을 캡처합니다
-- **파괴적인 변경이 있습니까?** - 잠재적인 영향 문제를 식별합니다
+- **호환성 깨지는 변경이 있습니까?** - 잠재적인 영향 문제를 식별합니다
 - **이것이 이슈나 티켓과 관련이 있습니까?** - 프로젝트 관리와 연결합니다
 
 ### 대화형 모드를 사용해야 할 때

@@ -20,7 +20,7 @@ GAC에는 디바이스 흐름을 사용하는 Qwen.ai용 내장 OAuth 인증이 
 
 ### 옵션 1: 초기 설정 중 (권장)
 
-`gac init`을 실행할 때 공급자 목록에서 "Qwen.ai (OAuth)"를 선택하기만 하면 됩니다:
+`gac init`을 실행할 때 프로바이더 목록에서 "Qwen.ai (OAuth)"를 선택하기만 하면 됩니다:
 
 ```bash
 gac init
@@ -28,7 +28,7 @@ gac init
 
 마법사는 다음을 수행합니다:
 
-1. 공급자 목록에서 "Qwen.ai (OAuth)"를 선택하도록 요청
+1. 프로바이더 목록에서 "Qwen.ai (OAuth)"를 선택하도록 요청
 2. 디바이스 코드를 표시하고 브라우저 열기
 3. Qwen.ai에서 인증하고 코드 입력
 4. 액세스 토큰을 안전하게 저장
@@ -36,7 +36,7 @@ gac init
 
 ### 옵션 2: 나중에 Qwen.ai로 전환
 
-이미 다른 공급자로 GAC를 구성했고 Qwen.ai로 전환하려는 경우:
+이미 다른 프로바이더로 GAC를 구성했고 Qwen.ai로 전환하려는 경우:
 
 ```bash
 gac model
@@ -44,7 +44,7 @@ gac model
 
 그런 다음:
 
-1. 공급자 목록에서 "Qwen.ai (OAuth)" 선택
+1. 프로바이더 목록에서 "Qwen.ai (OAuth)" 선택
 2. 디바이스 코드 인증 흐름 따르기
 3. 토큰이 `~/.gac/oauth/qwen.json`에 안전하게 저장됨
 4. 모델이 자동으로 구성됨
@@ -84,7 +84,7 @@ Qwen.ai OAuth 통합은 다음을 사용합니다:
 
 - `qwen3-coder-plus` - 코딩 작업에 최적화됨 (기본값)
 
-이는 portal.qwen.ai OAuth 엔드포인트를 통해 사용할 수 있는 모델입니다. 다른 Qwen 모델의 경우 추가 Qwen 모델 옵션을 제공하는 OpenRouter 공급자를 사용하는 것을 고려해 보세요.
+이는 portal.qwen.ai OAuth 엔드포인트를 통해 사용할 수 있는 모델입니다. 다른 Qwen 모델의 경우 추가 Qwen 모델 옵션을 제공하는 OpenRouter 프로바이더를 사용하는 것을 고려해 보세요.
 
 ## 인증 명령
 
@@ -100,7 +100,7 @@ gac auth qwen status
 # 로그아웃 및 저장된 토큰 제거
 gac auth qwen logout
 
-# 모든 OAuth 공급자 상태 확인
+# 모든 OAuth 프로바이더 상태 확인
 gac auth
 ```
 
@@ -137,7 +137,7 @@ gac auth qwen login
 gac auth qwen status
 ```
 
-또는 모든 공급자를 한 번에 확인하세요:
+또는 모든 프로바이더를 한 번에 확인하세요:
 
 ```bash
 gac auth
@@ -159,7 +159,7 @@ gac auth qwen logout
 gac auth qwen login
 ```
 
-또는 `gac model`을 실행하고 공급자 목록에서 "Qwen.ai (OAuth)"를 선택하세요.
+또는 `gac model`을 실행하고 프로바이더 목록에서 "Qwen.ai (OAuth)"를 선택하세요.
 
 ### "Authentication failed" (인증 실패)
 
