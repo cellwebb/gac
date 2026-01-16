@@ -132,6 +132,7 @@ gac
 | `gac -h "hint"` | Lägg till kontext för LLM (t.ex., `gac -h "bug fix"`)              |
 | `gac -s`        | Inkludera scope (t.ex., feat(auth):)                               |
 | `gac -i`        | Ställ frågor om ändringar för bättre kontext                       |
+| `gac -g`        | Gruppera ändringar i flera logiska commits                         |
 | `gac -p`        | Commit och push                                                    |
 
 ### Exempel för Avancerade Användare

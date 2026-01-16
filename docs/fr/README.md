@@ -132,6 +132,7 @@ gac
 | `gac -h "indice"` | Ajouter du contexte pour l'IA (ex: `gac -h "correction de bug"`)        |
 | `gac -s`          | Inclure une portée (ex: feat(auth):)                                    |
 | `gac -i`          | Poser des questions sur les changements pour un meilleur contexte       |
+| `gac -g`          | Grouper les changements en plusieurs commits logiques                   |
 | `gac -p`          | Commiter et pousser                                                     |
 
 ### Exemples pour utilisateurs avancés

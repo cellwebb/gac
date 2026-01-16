@@ -132,6 +132,7 @@ gac
 | `gac -h "hinweis"` | Kontext für KI hinzufügen (z.B. `gac -h "bug fix"`)                                  |
 | `gac -s`           | Scope einschließen (z.B. feat(auth):)                                                |
 | `gac -i`           | Fragen zu Änderungen stellen für besseren Kontext                                    |
+| `gac -g`           | Änderungen in mehrere logische Commits gruppieren                                    |
 | `gac -p`           | Commit und push                                                                      |
 
 ### Power-User-Beispiele

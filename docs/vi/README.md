@@ -132,6 +132,7 @@ gac
 | `gac -h "gợi ý"` | Thêm ngữ cảnh cho LLM (ví dụ, `gac -h "sửa lỗi"`)                             |
 | `gac -s`         | Bao gồm phạm vi (ví dụ, feat(auth):)                                          |
 | `gac -i`         | Hỏi về các thay đổi để có ngữ cảnh tốt hơn                                    |
+| `gac -g`         | Nhóm các thay đổi thành nhiều commit logic                                    |
 | `gac -p`         | Commit và push                                                                |
 
 ### Ví Dụ Người Dùng Nâng Cao

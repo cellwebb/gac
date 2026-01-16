@@ -132,6 +132,7 @@ gac
 | `gac -h "hint"` | Add context for LLM (e.g., `gac -h "bug fix"`)                          |
 | `gac -s`        | Include scope (e.g., feat(auth):)                                       |
 | `gac -i`        | Ask questions about changes for better context                          |
+| `gac -g`        | Group changes into multiple logical commits                             |
 | `gac -p`        | Commit and push                                                         |
 
 ### Power User Examples

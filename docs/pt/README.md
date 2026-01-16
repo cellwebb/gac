@@ -132,6 +132,7 @@ gac
 | `gac -h "hint"` | Adicionar contexto para LLM (ex: `gac -h "bug fix"`)                  |
 | `gac -s`        | Incluir escopo (ex: feat(auth):)                                      |
 | `gac -i`        | Fazer perguntas sobre alterações para melhor contexto                 |
+| `gac -g`        | Agrupar alterações em múltiplos commits lógicos                       |
 | `gac -p`        | Fazer commit e push                                                   |
 
 ### Exemplos para Usuários Avançados
