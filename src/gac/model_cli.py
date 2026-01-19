@@ -83,7 +83,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     providers = [
         ("Anthropic", "claude-haiku-4-5"),
         ("Azure OpenAI", "gpt-5-mini"),
-        ("Cerebras", "zai-glm-4.6"),
+        ("Cerebras", "zai-glm-4.7"),
         ("Chutes", "zai-org/GLM-4.7-TEE"),
         ("Claude Code (OAuth)", "claude-sonnet-4-5"),
         ("Custom (Anthropic)", ""),
@@ -105,7 +105,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7"),
         ("Together AI", "openai/gpt-oss-120B"),
-        ("Z.AI", "glm-47"),
+        ("Z.AI", "glm-4.7"),
         ("Z.AI Coding", "glm-4.7"),
     ]
     provider_names = [p[0] for p in providers]
