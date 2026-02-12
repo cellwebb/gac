@@ -84,12 +84,12 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Anthropic", "claude-haiku-4-5"),
         ("Azure OpenAI", "gpt-5-mini"),
         ("Cerebras", "zai-glm-4.7"),
-        ("Chutes", "zai-org/GLM-4.7-TEE"),
+        ("Chutes", "zai-org/GLM-5-TEE"),
         ("Claude Code (OAuth)", "claude-sonnet-4-5"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
-        ("Fireworks", "fireworks/glm-4p7"),
+        ("Fireworks", "fireworks/glm-5"),
         ("Gemini", "gemini-3-flash-preview"),
         ("Groq", "openai/gpt-oss-120b"),
         ("Kimi for Coding", "kimi-for-coding"),
@@ -105,8 +105,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7"),
         ("Together AI", "openai/gpt-oss-120B"),
-        ("Z.AI", "glm-4.7"),
-        ("Z.AI Coding", "glm-4.7"),
+        ("Z.AI", "glm-5"),
+        ("Z.AI Coding", "glm-5"),
     ]
     provider_names = [p[0] for p in providers]
     provider = questionary.select(
