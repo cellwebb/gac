@@ -53,6 +53,9 @@ class CLIOptions:
     # Security
     skip_secret_scan: bool = False
 
+    # Formatting
+    fifty_seventy_two: bool = False
+
 
 @dataclass(frozen=True)
 class GenerationConfig:
@@ -83,6 +86,7 @@ class WorkflowFlags:
     show_prompt: bool
     interactive: bool
     hook_timeout: int = 120
+    fifty_seventy_two: bool = False
 
 
 @dataclass

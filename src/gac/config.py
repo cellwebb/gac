@@ -34,6 +34,7 @@ class GACConfig(TypedDict, total=False):
     translate_prefixes: bool
     rtl_confirmed: bool
     hook_timeout: int
+    use_50_72_rule: bool
 
 
 def validate_config(config: GACConfig) -> None:
@@ -117,6 +118,8 @@ def load_config() -> GACConfig:
         "translate_prefixes": os.getenv("GAC_TRANSLATE_PREFIXES", "false").lower() in ("true", "1", "yes", "on"),
         "rtl_confirmed": os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on"),
         "hook_timeout": int(os.getenv("GAC_HOOK_TIMEOUT", EnvDefaults.HOOK_TIMEOUT)),
+        "use_50_72_rule": os.getenv("GAC_USE_50_72_RULE", str(EnvDefaults.USE_50_72_RULE)).lower()
+        in ("true", "1", "yes", "on"),
     }
 
     validate_config(config)

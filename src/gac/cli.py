@@ -88,12 +88,19 @@ console = Console()
     default=0,
     help="Timeout for pre-commit and lefthook hooks in seconds (0 to use configuration)",
 )
+@click.option(
+    "--50-72",
+    "fifty_seventy_two",
+    is_flag=True,
+    help="Enforce the 50/72 rule: subject line max 50 chars, body lines max 72 chars",
+)
 # Other options
 @click.option("--version", is_flag=True, help="Show the version of the Git Auto Commit (gac) tool")
 @click.pass_context
 def cli(
     ctx: click.Context,
     add_all: bool = False,
+    fifty_seventy_two: bool = False,
     group: bool = False,
     interactive: bool = False,
     log_level: str = str(config["log_level"]),
@@ -144,6 +151,9 @@ def cli(
         # Determine if verbose mode should be enabled based on -v flag or verbose config setting
         use_verbose = bool(verbose or config["verbose"])
 
+        # Determine if 50/72 rule should be applied based on --50-72 flag or config setting
+        use_fifty_seventy_two = bool(fifty_seventy_two or config["use_50_72_rule"])
+
         # Resolve language code to full name if provided
         resolved_language = Languages.resolve_code(language) if language else None
 
@@ -167,6 +177,7 @@ def cli(
                 skip_secret_scan=skip_secret_scan or config["skip_secret_scan"],
                 language=resolved_language,
                 hook_timeout=hook_timeout if hook_timeout > 0 else config["hook_timeout"],
+                fifty_seventy_two=use_fifty_seventy_two,
             )
             exit_code = main(opts)
             sys.exit(exit_code)
@@ -198,6 +209,7 @@ def cli(
             "skip_secret_scan": skip_secret_scan,
             "no_verify_ssl": no_verify_ssl,
             "hook_timeout": hook_timeout,
+            "fifty_seventy_two": fifty_seventy_two,
         }
 
 
