@@ -37,8 +37,6 @@ class TestConstants:
 
     def test_token_constants(self):
         """Test token-related constants."""
-        # Since we removed tiktoken, we don't have encoding constants anymore
-        # Just test that Utility exists and has expected attributes
         assert hasattr(Utility, "DEFAULT_DIFF_TOKEN_LIMIT")
         assert Utility.DEFAULT_DIFF_TOKEN_LIMIT > 0
 

@@ -102,7 +102,6 @@ class TestAIUtilsMissingCoverage:
 
     def test_character_based_no_external_dependencies(self):
         """Test that character-based counting has no external dependencies."""
-        # This test ensures we don't import tiktoken or make any network calls
         text = "Simple test text"
         expected = round(len(text) / 3.4)
 
@@ -387,8 +386,6 @@ class TestAIUtilsMissingCoverage:
 
     def test_character_based_no_fallback_needed(self):
         """Test that character-based counting never needs fallback."""
-        # Since we removed tiktoken, there's no fallback needed
-        # Just test that it works consistently
         text = "Hello world"
         expected = round(len(text) / 3.4)
 
