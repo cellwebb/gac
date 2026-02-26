@@ -82,6 +82,14 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--model <model>`   | `-m` | Specificeer het model dat voor deze commit moet worden gebruikt               |
 | `--language <taal>` | `-l` | Overschrijf de taal (naam of code: 'Spanish', 'es', 'zh-CN', 'ja')            |
 | `--scope`           | `-s` | Stel een passende scope voor de commit vast                                   |
+| `--50-72`           |      | De 50/72-regel toepassen voor commitberichtopmaak                             |
+
+**Let op:** De `--50-72` vlag past de [50/72-regel](https://www.conventionalcommits.org/en/v1.0.0/#summary) toe waarbij:
+- Onderwerpregel: maximaal 50 tekens
+- Body-regels: maximaal 72 tekens per regel
+- Dit houdt commitberichten leesbaar in `git log --oneline` en GitHub's UI
+
+U kunt ook `GAC_USE_50_72_RULE=true` instellen in uw `.gac.env` bestand om deze regel altijd toe te passen.
 
 **Let op:** U kunt interactief feedback geven door het gewoon op de bevestigingsprompt te typen - geen prefix met 'r' nodig. Typ `r` voor een eenvoudige reroll, `e` om ter plaatse te bewerken met vi/emacs keybindings, of typ uw feedback direct zoals `maak het korter`.
 
@@ -288,6 +296,7 @@ U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Stel automatisch een scope en voeg deze toe aan commitberichten (bv., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Genereer gedetailleerde commitberichten met motivatie, architectuur en impact secties
+- `GAC_USE_50_72_RULE=true` - De 50/72-regel altijd toepassen voor commitberichten (onderwerp ≤50 tekens, body-regels ≤72 tekens)
 - `GAC_TEMPERATURE=0.7` - Controleer LLM creativiteit (0.0-1.0, lager = meer gefocust)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximale tokens voor gegenereerde berichten (automatisch geschaald 2-5x bij gebruik van `--group` op basis van bestandsaantal; overschrijf om hoger of lager te gaan)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Waarschuw wanneer prompts dit tokenaantal overschrijden

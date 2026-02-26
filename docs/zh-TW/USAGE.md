@@ -82,6 +82,14 @@ gac
 | `--model <model>`   | `-m` | 指定用於此次提交的模型                                 |
 | `--language <lang>` | `-l` | 覆蓋語言（名稱或代碼：'Spanish'、'es'、'zh-CN'、'ja'） |
 | `--scope`           | `-s` | 為提交推斷適當的範圍                                   |
+| `--50-72`           |      | 對提交訊息格式應用 50/72 規則                         |
+
+**注意：**`--50-72` 標誌應用 [50/72 規則](https://www.conventionalcommits.org/en/v1.0.0/#summary)，其中：
+- 主題行：最多 50 個字符
+- 正文行：每行最多 72 個字符
+- 這使得提交訊息在 `git log --oneline` 和 GitHub 的 UI 中保持可讀性
+
+你還可以在 `.gac.env` 文件中設置 `GAC_USE_50_72_RULE=true` 以始終應用此規則。
 
 **注意：**你可以透過在確認提示符處簡單地輸入來互動式提供回饋 - 無需前綴 'r'。輸入 `r` 進行簡單的重新生成，`e` 使用 vi/emacs 鍵繫結就地編輯，或直接輸入你的回饋，如 `讓它更短`。
 
@@ -288,6 +296,7 @@ gac --no-verify-ssl  # 跳過此次提交的 SSL 驗證
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自動推斷並在提交訊息中包含範圍（例如，`feat(auth):` vs `feat:`）
 - `GAC_VERBOSE=true` - 生成包含動機、架構和影響部分的詳細提交訊息
+- `GAC_USE_50_72_RULE=true` - 始終對提交訊息應用 50/72 規則（主題 ≤50 字符，正文行 ≤72 字符）
 - `GAC_TEMPERATURE=0.7` - 控制 LLM 創造力（0.0-1.0，較低 = 更專注）
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 生成訊息的最大權杖數（使用 `--group` 時根據檔案數量自動縮放 2-5 倍；覆蓋以提高或降低）
 - `GAC_WARNING_LIMIT_TOKENS=4096` - 當提示超過此權杖數時發出警告

@@ -83,6 +83,14 @@ Genera un messaggio di commit basato su LLM per le modifiche in staging e richie
 | `--model <model>`   | `-m`  | Specifica il modello da usare per questo commit                               |
 | `--language <lang>` | `-l`  | Sovrascrivi la lingua (nome o codice: 'Italian', 'it', 'zh-CN', 'ja')         |
 | `--scope`           | `-s`  | Deduci uno scope appropriato per il commit                                    |
+| `--50-72`           |       | Applica la regola 50/72 per la formattazione dei messaggi di commit          |
+
+**Nota:** Il flag `--50-72` applica la [regola 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) dove:
+- Linea oggetto: massimo 50 caratteri
+- Linee del corpo: massimo 72 caratteri per riga
+- Questo mantiene i messaggi di commit leggibili in `git log --oneline` e nell'interfaccia di GitHub
+
+Puoi anche impostare `GAC_USE_50_72_RULE=true` nel tuo file `.gac.env` per applicare sempre questa regola.
 
 **Nota:** Puoi fornire feedback in modo interattivo digitandolo semplicemente al prompt di conferma - non è necessario prefissare con 'r'. Digita `r` per un semplice reroll, `e` per modificare sul posto con binding vi/emacs, o digita il tuo feedback direttamente come `rendilo più breve`.
 
@@ -333,6 +341,7 @@ Puoi personalizzare il comportamento di gac con queste variabili ambiente opzion
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Deduci automaticamente e includi scope nei messaggi di commit (es. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Genera messaggi di commit dettagliati con sezioni motivazione, architettura e impatto
+- `GAC_USE_50_72_RULE=true` - Applica sempre la regola 50/72 per i messaggi di commit (oggetto ≤50 caratteri, righe corpo ≤72 caratteri)
 - `GAC_TEMPERATURE=0.7` - Controlla creatività LLM (0.0-1.0, più basso = più focalizzato)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Token massimi per messaggi generati (scalato automaticamente 2-5x quando usi `--group` in base al numero di file; sovrascrivi per andare più alto o più basso)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Avvisa quando i prompt superano questo numero di token

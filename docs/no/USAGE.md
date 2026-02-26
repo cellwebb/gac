@@ -82,6 +82,14 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | `--model <modell>`   | `-m` | Spesifiser modellen som skal brukes for denne commit                        |
 | `--language <språk>` | `-l` | Overstyr språket (navn eller kode: 'Norsk', 'nb', 'sv', 'da')               |
 | `--scope`            | `-s` | Utled et passende scope for commiten                                        |
+| `--50-72`            |      | Anvende 50/72-regelen for commit-meldingformatering                         |
+
+**Merknad:** `--50-72` flagget anvender [50/72-regelen](https://www.conventionalcommits.org/en/v1.0.0/#summary) hvor:
+- Emnelinje: maksimum 50 tegn
+- Brødtekstlinjer: maksimum 72 tegn per linje
+- Dette holder commit-meldinger lesbare i `git log --oneline` og GitHub's UI
+
+Du kan også sette `GAC_USE_50_72_RULE=true` i `.gac.env` filen din for å alltid anvende denne regelen.
 
 **Merknad:** Du kan gi feedback interaktivt ved å skrive det direkte i bekreftelsesprompten - ingen 'r'-prefiks nødvendig. Skriv `r` for en enkel reroll, `e` for å redigere på stedet med vi/emacs-tastebindinger, eller skriv feedbacken din direkte som `gjør det kortere`.
 
@@ -288,6 +296,7 @@ Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Utled automatisk og inkluder scope i commit-meldinger (f.eks. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generer detaljerte commit-meldinger med motivasjon, arkitektur og påvirkningseksjoner
+- `GAC_USE_50_72_RULE=true` - Alltid anvende 50/72-regelen for commit-meldinger (emne ≤50 tegn, brødtekstlinjer ≤72 tegn)
 - `GAC_TEMPERATURE=0.7` - Kontroller LLM-kreativitet (0.0-1.0, lavere = mer fokusert)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maksimum tokens for genererte meldinger (automatisk skalert 2-5x når du bruker `--group` basert på filantall; overstyr for å gå høyere eller lavere)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Varsel når prompter overstiger dette tokenantallet

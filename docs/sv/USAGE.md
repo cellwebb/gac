@@ -82,6 +82,14 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | `--model <modell>`   | `-m` | Specificera modellen att använda för denna commit                             |
 | `--language <språk>` | `-l` | Åsidosätt språket (namn eller kod: 'Spanish', 'es', 'sv', 'ja')               |
 | `--scope`            | `-s` | Härled ett lämpligt scope för commiten                                        |
+| `--50-72`            |      | Använd 50/72-regeln för formatering av commit-meddelanden                    |
+
+**Obs:** Flaggan `--50-72` tillämpar [50/72-regeln](https://www.conventionalcommits.org/en/v1.0.0/#summary) där:
+- Ämnesrad: maximalt 50 tecken
+- Brödtextlinjer: maximalt 72 tecken per rad
+- Detta håller commit-meddelanden läsbara i `git log --oneline` och GitHub:s UI
+
+Du kan också ställa in `GAC_USE_50_72_RULE=true` i din `.gac.env` fil för att alltid tillämpa denna regel.
 
 **Obs:** Du kan ge feedback interaktivt genom att helt enkelt skriva den vid bekräftelseprompten - inget behov att prefixa med 'r'. Skriv `r` för en enkel regenerering, `e` för att redigera på plats med vi/emacs tangentbindningar, eller skriv din feedback direkt som `gör det kortare`.
 
@@ -288,6 +296,7 @@ Du kan anpassa gacs beteende med dessa valfria miljövariabler:
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Härled automatiskt och inkludera scope i commit-meddelanden (t.ex. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generera detaljerade commit-meddelanden med motivation, arkitektur och påverkanssektioner
+- `GAC_USE_50_72_RULE=true` - Tillämpa alltid 50/72-regeln för commit-meddelanden (ämne ≤50 tecken, brödtextlinjer ≤72 tecken)
 - `GAC_TEMPERATURE=0.7` - Kontrollera LLM:s kreativitet (0.0-1.0, lägre = mer fokuserad)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximalt antal tokens för genererade meddelanden (automatiskt skalat 2-5x vid användning av `--group` baserat på filantal; åsidosätt för att gå högre eller lägre)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Varna när prompter överskrider denna tokenräkning

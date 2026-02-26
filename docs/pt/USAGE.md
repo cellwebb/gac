@@ -83,6 +83,14 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 | `--model <model>`   | `-m`  | Especificar o modelo para usar para este commit                           |
 | `--language <lang>` | `-l`  | Sobrescrever o idioma (nome ou código: 'Spanish', 'es', 'zh-CN', 'ja')    |
 | `--scope`           | `-s`  | Inferir um escopo apropriado para o commit                                |
+| `--50-72`           |       | Aplicar a regra 50/72 para formatação de mensagens de commit              |
+
+**Nota:** O flag `--50-72` aplica a [regra 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) onde:
+- Linha de assunto: máximo 50 caracteres
+- Linhas do corpo: máximo 72 caracteres por linha
+- Isso mantém as mensagens de commit legíveis em `git log --oneline` e na UI do GitHub
+
+Você também pode definir `GAC_USE_50_72_RULE=true` no seu arquivo `.gac.env` para sempre aplicar esta regra.
 
 **Nota:** Você pode fornecer feedback interativamente simplesmente digitando-o no prompt de confirmação - não há necessidade de prefixar com 'r'. Digite `r` para um reroll simples, `e` para editar in-place com keybindings vi/emacs, ou digite seu feedback diretamente como `torne mais curto`.
 
@@ -337,6 +345,7 @@ Você pode personalizar o comportamento do gac com estas variáveis de ambiente 
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inferir e incluir automaticamente escopo nas mensagens de commit (ex: `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Gerar mensagens de commit detalhadas com seções de motivação, arquitetura e impacto
+- `GAC_USE_50_72_RULE=true` - Sempre aplicar a regra 50/72 para mensagens de commit (assunto ≤50 caracteres, linhas do corpo ≤72 caracteres)
 - `GAC_TEMPERATURE=0.7` - Controlar criatividade do LLM (0.0-1.0, menor = mais focado)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Máximo de tokens para mensagens geradas (automaticamente escalado 2-5x ao usar `--group` com base no número de arquivos; substitua para ir mais alto ou mais baixo)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Avisar quando prompts excederem esta contagem de tokens

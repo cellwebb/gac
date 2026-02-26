@@ -83,6 +83,14 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--model <model>`   | `-m`  | Spécifier le modèle à utiliser pour ce commit                                    |
 | `--language <lang>` | `-l`  | Remplacer la langue (nom ou code : 'Spanish', 'es', 'zh-CN', 'ja')               |
 | `--scope`           | `-s`  | Inférer une portée appropriée pour le commit                                     |
+| `--50-72`           |       | Appliquer la règle 50/72 pour le formatage des messages de commit                |
+
+**Note :** Le flag `--50-72` applique la [règle 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) où :
+- Ligne de sujet : maximum 50 caractères
+- Lignes du corps : maximum 72 caractères par ligne
+- Cela garde les messages de commit lisibles dans `git log --oneline` et l'interface de GitHub
+
+Vous pouvez aussi définir `GAC_USE_50_72_RULE=true` dans votre fichier `.gac.env` pour toujours appliquer cette règle.
 
 **Note :** Vous pouvez fournir un feedback de manière interactive en le tapant simplement à l'invite de confirmation - pas besoin de préfixer avec 'r'. Tapez `r` pour une relance simple, `e` pour éditer sur place avec les bindings vi/emacs, ou tapez votre feedback directement comme "rends-le plus court".
 
@@ -337,6 +345,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inférer et inclure automatiquement la portée dans les messages de commit (ex: `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Générer des messages de commit détaillés avec sections motivation, architecture et impact
+- `GAC_USE_50_72_RULE=true` - Toujours appliquer la règle 50/72 pour les messages de commit (sujet ≤50 caractères, lignes du corps ≤72 caractères)
 - `GAC_TEMPERATURE=0.7` - Contrôler la créativité de l'IA (0.0-1.0, plus bas = plus focus)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Tokens maximum pour les messages générés (automatiquement mis à l'échelle 2-5x lors de l'utilisation de `--group` basé sur le nombre de fichiers ; remplacer pour aller plus haut ou plus bas)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Avertir quand les prompts dépassent ce nombre de tokens
