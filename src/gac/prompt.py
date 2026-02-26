@@ -167,6 +167,39 @@ def _select_format_section(template: str, verbose: bool, one_liner: bool) -> str
     return template
 
 
+def _insert_fifty_seventy_two_rule(template: str, fifty_seventy_two: bool) -> str:
+    """Insert 50/72 rule instructions into the template if enabled.
+
+    The 50/72 rule states:
+    - First line (subject): max 50 characters
+    - Subsequent lines (body): max 72 characters
+
+    Args:
+        template: The template string
+        fifty_seventy_two: Whether to enforce the 50/72 rule
+
+    Returns:
+        Template with 50/72 rule instructions inserted if enabled
+    """
+    if not fifty_seventy_two:
+        # Remove the placeholder if not using 50/72
+        template = re.sub(r"<fifty_seventy_two>.*?</fifty_seventy_two>\n?", "", template, flags=re.DOTALL)
+        return template
+
+    # Replace placeholder with active rule
+    rule_text = """<fifty_seventy_two>
+CRITICAL: You MUST follow the 50/72 rule for this commit message:
+- First line (subject/summary): MAXIMUM 50 characters
+- Line 2: Must be BLANK
+- All subsequent lines (body): MAXIMUM 72 characters per line
+
+The subject line should be concise and fit within 50 characters.
+Body lines must be wrapped to 72 characters maximum.
+</fifty_seventy_two>"""
+    template = template.replace("<fifty_seventy_two></fifty_seventy_two>", rule_text)
+    return template
+
+
 def _select_examples_section(template: str, verbose: bool, infer_scope: bool) -> str:
     """Select the appropriate examples section based on verbosity and scope settings.
 
@@ -221,6 +254,7 @@ def build_prompt(
     system_template_path: str | None = None,
     language: str | None = None,
     translate_prefixes: bool = False,
+    fifty_seventy_two: bool = False,
 ) -> tuple[str, str]:
     """Build system and user prompts for the AI model using the provided templates and git information.
 
@@ -245,6 +279,7 @@ def build_prompt(
     system_template = _select_conventions_section(system_template, infer_scope)
     system_template = _select_format_section(system_template, verbose, one_liner)
     system_template = _select_examples_section(system_template, verbose, infer_scope)
+    system_template = _insert_fifty_seventy_two_rule(system_template, fifty_seventy_two)
     system_template = re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", system_template)
 
     user_template = user_template.replace("<status></status>", status)
@@ -301,6 +336,7 @@ def build_group_prompt(
     system_template_path: str | None,
     language: str | None,
     translate_prefixes: bool,
+    fifty_seventy_two: bool = False,
 ) -> tuple[str, str]:
     """Build prompt for grouped commit generation (JSON output with multiple commits)."""
     system_prompt, user_prompt = build_prompt(
@@ -314,6 +350,7 @@ def build_group_prompt(
         system_template_path=system_template_path,
         language=language,
         translate_prefixes=translate_prefixes,
+        fifty_seventy_two=fifty_seventy_two,
     )
 
     user_prompt = _remove_template_section(user_prompt, "format_instructions")

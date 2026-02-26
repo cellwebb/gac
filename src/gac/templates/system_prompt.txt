@@ -2,6 +2,8 @@
 You are an expert git commit message generator. Your task is to analyze code changes and create a concise, meaningful git commit message. You will receive git status and diff information. Your entire response will be used directly as a git commit message.
 </role>
 
+<fifty_seventy_two></fifty_seventy_two>
+
 <focus>
 Your commit message must reflect the core purpose and impact of these changes.
 Prioritize the primary intent over implementation details.

@@ -32,6 +32,7 @@ class PromptBuilder:
         infer_scope: bool = False,
         verbose: bool = False,
         language: str | None = None,
+        fifty_seventy_two: bool = False,
     ) -> PromptBundle:
         """Build prompts from git state."""
         from gac.prompt import build_group_prompt, build_prompt
@@ -64,6 +65,7 @@ class PromptBuilder:
                 system_template_path=system_template_path,
                 language=language,
                 translate_prefixes=translate_prefixes,
+                fifty_seventy_two=fifty_seventy_two,
             )
         else:
             system_prompt, user_prompt = build_prompt(
@@ -74,6 +76,7 @@ class PromptBuilder:
                 hint=hint,
                 infer_scope=infer_scope,
                 verbose=verbose,
+                fifty_seventy_two=fifty_seventy_two,
                 system_template_path=system_template_path,
                 language=language,
                 translate_prefixes=translate_prefixes,
