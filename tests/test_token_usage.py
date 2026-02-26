@@ -58,7 +58,7 @@ class TestTokenUsageDisplay:
         monkeypatch.setattr("gac.git.get_staged_files", mock_get_staged_files)
 
         # Mock clean_commit_message to return the message as-is
-        monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)
+        monkeypatch.setattr("gac.main.clean_commit_message", lambda msg, **kwargs: msg)
 
         # Mock confirm to always return True
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
@@ -69,7 +69,7 @@ class TestTokenUsageDisplay:
     def test_estimated_token_usage_displayed(self, runner, mock_dependencies, monkeypatch):
         """Test that estimated token usage is displayed."""
         # Mock generate_commit_message
-        monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: "feat: add new feature")
+        monkeypatch.setattr("gac.main.generate_commit_message", lambda *args, **kwargs: "feat: add new feature")
 
         # Mock count_tokens to return predictable values
         def mock_count_tokens(content, model):
@@ -139,7 +139,7 @@ class TestTokenUsageDisplay:
         # Track build_prompt calls and return distinct prompts per generation
         prompt_history: list[tuple[str, str]] = []
 
-        def fake_build_prompt(**kwargs):
+        def fake_build_prompt(*args, **kwargs):
             system_prompt = f"system-prompt-{len(prompt_history)}"
             user_prompt = f"user-prompt-{len(prompt_history)}"
             prompt_history.append((system_prompt, user_prompt))

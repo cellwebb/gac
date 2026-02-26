@@ -50,8 +50,8 @@ class TestScopeFlag:
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
         # Mock both generate_commit_message and clean_commit_message to handle the new flow
-        monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: "feat(test): mock commit")
-        monkeypatch.setattr("gac.main.clean_commit_message", lambda msg: msg)
+        monkeypatch.setattr("gac.main.generate_commit_message", lambda *args, **kwargs: "feat(test): mock commit")
+        monkeypatch.setattr("gac.main.clean_commit_message", lambda msg, **kwargs: msg)
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
         monkeypatch.setattr("click.confirm", lambda *args, **kwargs: True)
         # Mock click.prompt to return 'y' for the new confirmation prompt
@@ -101,12 +101,13 @@ class TestScopeFlag:
         """Test that --scope flag always triggers scope inference."""
         captured_prompt = None
 
-        def capture_prompt(**kwargs):
+        def capture_prompt(*args, **kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
             return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.prompt.build_prompt", capture_prompt)
+        monkeypatch.setattr("gac.prompt.build_group_prompt", capture_prompt)
 
         result = runner.invoke(cli, flag + ["--no-verify"])
 
@@ -118,12 +119,13 @@ class TestScopeFlag:
         """Test --scope flag combined with other flags."""
         captured_prompt = None
 
-        def capture_prompt(**kwargs):
+        def capture_prompt(*args, **kwargs):
             nonlocal captured_prompt
             captured_prompt = kwargs
             return ("system prompt", "user prompt")
 
         monkeypatch.setattr("gac.prompt.build_prompt", capture_prompt)
+        monkeypatch.setattr("gac.prompt.build_group_prompt", capture_prompt)
 
         result = runner.invoke(cli, ["--one-liner", "--scope", "--hint", "Update documentation", "--no-verify"])
 
@@ -273,7 +275,7 @@ class TestScopeIntegration:
 
             original_clean = clean_commit_message
 
-            def spy_clean_commit_message(message):
+            def spy_clean_commit_message(message, **kwargs):
                 result = original_clean(message)
                 git_spy.commit_message = result
                 return result

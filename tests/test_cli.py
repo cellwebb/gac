@@ -53,6 +53,7 @@ class TestMainCommand:
             "verbose": False,
             "skip_secret_scan": False,
             "hook_timeout": 120,
+            "use_50_72_rule": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
         monkeypatch.setattr("gac.cli.config", mock_config)
@@ -98,7 +99,6 @@ class TestInteractiveFlag:
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
-
     def test_interactive_flag_long_form(self, mock_config_and_console, mock_main_function):
         """Test --interactive flag is properly recognized and passed."""
         runner = CliRunner()
