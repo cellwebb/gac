@@ -119,10 +119,17 @@ def generate_with_retries(
     else:
         message_type = task_description
 
+    # Calculate estimated token count for display
+    total_tokens = sum(count_tokens(msg.get("content", ""), model_name) for msg in messages)
+    # Format with comma separator for readability
+    formatted_tokens = f"{total_tokens:,}"
+
     if quiet:
         spinner = None
     else:
-        spinner = Status(f"Generating {message_type} with {provider} {model_name}...")
+        spinner = Status(
+            f"Generating {message_type} with {formatted_tokens} est. tokens using {provider} {model_name}..."
+        )
         spinner.start()
 
     last_exception: Exception | None = None
