@@ -19,6 +19,7 @@ from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
+from gac.postprocess import clean_commit_message
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -285,6 +286,7 @@ class GroupedCommitWorkflow:
         push: bool,
         no_verify: bool,
         hook_timeout: int,
+        fifty_seventy_two: bool = False,
     ) -> int:
         """Execute the grouped commits by creating multiple individual commits.
 
@@ -324,7 +326,11 @@ class GroupedCommitWorkflow:
                                 run_git_command(["add", "-A", file_path])
                             else:
                                 run_git_command(["add", "-A", file_path])
-                        execute_commit(commit["message"].strip(), no_verify, hook_timeout)
+                        cleaned_message = clean_commit_message(
+                            commit["message"].strip(),
+                            fifty_seventy_two=fifty_seventy_two,
+                        )
+                        execute_commit(cleaned_message, no_verify, hook_timeout)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except (AIError, ConfigError, GitError, subprocess.SubprocessError, OSError) as e:
                         restore_needed = True
@@ -390,6 +396,7 @@ class GroupedCommitWorkflow:
         git_state: GitState,
         hint: str,
         hook_timeout: int = 120,
+        fifty_seventy_two: bool = False,
     ) -> int:
         """Execute the complete grouped commit workflow.
 
@@ -457,6 +464,7 @@ class GroupedCommitWorkflow:
                         push=push,
                         no_verify=no_verify,
                         hook_timeout=hook_timeout,
+                        fifty_seventy_two=fifty_seventy_two,
                     )
                 elif decision == "reject":
                     return 0  # User rejected, clean exit
@@ -471,4 +479,5 @@ class GroupedCommitWorkflow:
                     push=push,
                     no_verify=no_verify,
                     hook_timeout=hook_timeout,
+                    fifty_seventy_two=fifty_seventy_two,
                 )

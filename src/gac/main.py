@@ -74,7 +74,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
             max_retries=ctx.max_retries,
             quiet=ctx.quiet or ctx.message_only,
         )
-        commit_message = clean_commit_message(raw_commit_message)
+        commit_message = clean_commit_message(raw_commit_message, fifty_seventy_two=ctx.flags.fifty_seventy_two)
         logger.info("Generated commit message:")
         logger.info(commit_message)
         conversation_messages.append({"role": "assistant", "content": commit_message})
@@ -236,6 +236,7 @@ def main(opts: CLIOptions) -> int:
         infer_scope=opts.infer_scope,
         verbose=opts.verbose,
         language=opts.language,
+        fifty_seventy_two=opts.fifty_seventy_two,
     )
 
     # Display prompts if requested
@@ -263,6 +264,7 @@ def main(opts: CLIOptions) -> int:
                 hook_timeout=opts.hook_timeout,
                 git_state=git_state,
                 hint=opts.hint,
+                fifty_seventy_two=opts.fifty_seventy_two,
             )
         else:
             # Build workflow context
@@ -282,6 +284,7 @@ def main(opts: CLIOptions) -> int:
                 show_prompt=opts.show_prompt,
                 interactive=opts.interactive,
                 hook_timeout=opts.hook_timeout,
+                fifty_seventy_two=opts.fifty_seventy_two,
             )
             state = WorkflowState(
                 prompts=prompts,
@@ -312,6 +315,7 @@ def main(opts: CLIOptions) -> int:
             show_prompt=opts.show_prompt,
             interactive=opts.interactive,
             hook_timeout=opts.hook_timeout,
+            fifty_seventy_two=opts.fifty_seventy_two,
         )
         state = WorkflowState(
             prompts=prompts,
