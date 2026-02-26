@@ -93,6 +93,7 @@ class TestInteractiveFlag:
             "verbose": False,
             "skip_secret_scan": False,
             "hook_timeout": 120,
+            "use_50_72_rule": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
         monkeypatch.setattr("gac.cli.config", mock_config)

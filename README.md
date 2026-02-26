@@ -83,6 +83,7 @@ uv tool upgrade gac
 - **One-liner** (-o flag): Single-line commit message following conventional commit format
 - **Standard** (default): Summary with bullet points explaining implementation details
 - **Verbose** (-v flag): Comprehensive explanations including motivation, technical approach, and impact analysis
+- **50/72 rule** (--50-72 flag): Enforce the classic commit message format for optimal readability in git log and GitHub UI
 
 ### 🌍 **Multilingual Support**
 

@@ -83,6 +83,14 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | `--model <model>`   | `-m`  | Specify the model to use for this commit                                  |
 | `--language <lang>` | `-l`  | Override the language (name or code: 'Spanish', 'es', 'zh-CN', 'ja')      |
 | `--scope`           | `-s`  | Infer an appropriate scope for the commit                                 |
+| `--50-72`           |       | Enforce the 50/72 rule for commit message formatting                      |
+
+**Note:** The `--50-72` flag enforces the [50/72 rule](https://www.conventionalcommits.org/en/v1.0.0/#summary) where:
+- Subject line: maximum 50 characters
+- Body lines: maximum 72 characters per line
+- This keeps commit messages readable in `git log --oneline` and GitHub's UI
+
+You can also set `GAC_USE_50_72_RULE=true` in your `.gac.env` file to always apply this rule.
 
 **Note:** You can provide feedback interactively by simply typing it at the confirmation prompt - no need to prefix with 'r'. Type `r` for a simple reroll, `e` to edit in-place with vi/emacs keybindings, or type your feedback directly like `make it shorter`.
 
@@ -335,6 +343,7 @@ You can customize gac's behavior with these optional environment variables:
 
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
+- `GAC_USE_50_72_RULE=true` - Always enforce the 50/72 rule for commit messages (subject ≤50 chars, body lines ≤72 chars)
 - `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count; override to go higher or lower)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
