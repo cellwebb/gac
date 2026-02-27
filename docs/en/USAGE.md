@@ -86,6 +86,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | `--50-72`           |       | Enforce the 50/72 rule for commit message formatting                      |
 
 **Note:** The `--50-72` flag enforces the [50/72 rule](https://www.conventionalcommits.org/en/v1.0.0/#summary) where:
+
 - Subject line: maximum 50 characters
 - Body lines: maximum 72 characters per line
 - This keeps commit messages readable in `git log --oneline` and GitHub's UI

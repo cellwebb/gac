@@ -86,6 +86,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--50-72`           |       | Appliquer la règle 50/72 pour le formatage des messages de commit                |
 
 **Note :** Le flag `--50-72` applique la [règle 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) où :
+
 - Ligne de sujet : maximum 50 caractères
 - Lignes du corps : maximum 72 caractères par ligne
 - Cela garde les messages de commit lisibles dans `git log --oneline` et l'interface de GitHub

@@ -86,6 +86,7 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 | `--50-72`           |       | Aplicar la regla 50/72 para el formato del mensaje de commit                 |
 
 **Nota:** El flag `--50-72` aplica la [regla 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) donde:
+
 - Línea de asunto: máximo 50 caracteres
 - Líneas del cuerpo: máximo 72 caracteres por línea
 - Esto mantiene los mensajes de commit legibles en `git log --oneline` y la interfaz de GitHub

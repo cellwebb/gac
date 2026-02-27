@@ -85,6 +85,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--50-72`           |      | De 50/72-regel toepassen voor commitberichtopmaak                             |
 
 **Let op:** De `--50-72` vlag past de [50/72-regel](https://www.conventionalcommits.org/en/v1.0.0/#summary) toe waarbij:
+
 - Onderwerpregel: maximaal 50 tekens
 - Body-regels: maximaal 72 tekens per regel
 - Dit houdt commitberichten leesbaar in `git log --oneline` en GitHub's UI

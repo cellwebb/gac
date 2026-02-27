@@ -83,9 +83,10 @@ Genera un messaggio di commit basato su LLM per le modifiche in staging e richie
 | `--model <model>`   | `-m`  | Specifica il modello da usare per questo commit                               |
 | `--language <lang>` | `-l`  | Sovrascrivi la lingua (nome o codice: 'Italian', 'it', 'zh-CN', 'ja')         |
 | `--scope`           | `-s`  | Deduci uno scope appropriato per il commit                                    |
-| `--50-72`           |       | Applica la regola 50/72 per la formattazione dei messaggi di commit          |
+| `--50-72`           |       | Applica la regola 50/72 per la formattazione dei messaggi di commit           |
 
 **Nota:** Il flag `--50-72` applica la [regola 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) dove:
+
 - Linea oggetto: massimo 50 caratteri
 - Linee del corpo: massimo 72 caratteri per riga
 - Questo mantiene i messaggi di commit leggibili in `git log --oneline` e nell'interfaccia di GitHub

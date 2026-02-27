@@ -86,6 +86,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 | `--50-72`           |      | Die 50/72-Regel für Commit-Nachrichten-Formatierung erzwingen                         |
 
 **Hinweis:** Das `--50-72` Flag erzwingt die [50/72-Regel](https://www.conventionalcommits.org/en/v1.0.0/#summary), wobei:
+
 - Betreffzeile: maximal 50 Zeichen
 - Body-Zeilen: maximal 72 Zeichen pro Zeile
 - Dies hält Commit-Nachrichten in `git log --oneline` und GitHub's UI lesbar

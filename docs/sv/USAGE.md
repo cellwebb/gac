@@ -82,9 +82,10 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | `--model <modell>`   | `-m` | Specificera modellen att använda för denna commit                             |
 | `--language <språk>` | `-l` | Åsidosätt språket (namn eller kod: 'Spanish', 'es', 'sv', 'ja')               |
 | `--scope`            | `-s` | Härled ett lämpligt scope för commiten                                        |
-| `--50-72`            |      | Använd 50/72-regeln för formatering av commit-meddelanden                    |
+| `--50-72`            |      | Använd 50/72-regeln för formatering av commit-meddelanden                     |
 
 **Obs:** Flaggan `--50-72` tillämpar [50/72-regeln](https://www.conventionalcommits.org/en/v1.0.0/#summary) där:
+
 - Ämnesrad: maximalt 50 tecken
 - Brödtextlinjer: maximalt 72 tecken per rad
 - Detta håller commit-meddelanden läsbara i `git log --oneline` och GitHub:s UI

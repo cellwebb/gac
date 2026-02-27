@@ -86,6 +86,7 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 | `--50-72`           |       | Aplicar a regra 50/72 para formatação de mensagens de commit              |
 
 **Nota:** O flag `--50-72` aplica a [regra 50/72](https://www.conventionalcommits.org/en/v1.0.0/#summary) onde:
+
 - Linha de assunto: máximo 50 caracteres
 - Linhas do corpo: máximo 72 caracteres por linha
 - Isso mantém as mensagens de commit legíveis em `git log --oneline` e na UI do GitHub

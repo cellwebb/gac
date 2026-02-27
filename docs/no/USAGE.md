@@ -85,6 +85,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | `--50-72`            |      | Anvende 50/72-regelen for commit-meldingformatering                         |
 
 **Merknad:** `--50-72` flagget anvender [50/72-regelen](https://www.conventionalcommits.org/en/v1.0.0/#summary) hvor:
+
 - Emnelinje: maksimum 50 tegn
 - Brødtekstlinjer: maksimum 72 tegn per linje
 - Dette holder commit-meldinger lesbare i `git log --oneline` og GitHub's UI
