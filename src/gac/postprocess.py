@@ -129,6 +129,37 @@ def _normalize_whitespace(message: str) -> str:
     return re.sub(r"\n(?:[ \t]*\n){2,}", "\n\n", message).strip()
 
 
+def _truncate_at_word_boundary(text: str, max_len: int, suffix: str = "...") -> str:
+    """Truncate text at a word boundary, not mid-word.
+
+    Args:
+        text: The text to truncate
+        max_len: Maximum length including suffix
+        suffix: The suffix to add when truncating (default: "...")
+
+    Returns:
+        Truncated text with suffix if needed
+    """
+    if len(text) <= max_len:
+        return text
+
+    # Account for suffix length
+    available = max_len - len(suffix)
+    if available < 1:
+        return text[:max_len]
+
+    # Find the last space before the cutoff
+    truncated = text[:available]
+    last_space = truncated.rfind(" ")
+
+    # Only break at word boundary if it gives us a reasonable chunk
+    # (at least 50% of available space, otherwise hard truncate)
+    if last_space > available * 0.5:
+        return text[:last_space] + suffix
+    else:
+        return truncated + suffix
+
+
 def enforce_fifty_seventy_two(message: str) -> str:
     """Enforce the 50/72 rule on a commit message.
 
@@ -149,21 +180,23 @@ def enforce_fifty_seventy_two(message: str) -> str:
     if not lines:
         return message
 
-    # Handle subject line (first line) - truncate to 50 chars if needed
+    # Handle subject line (first line) - truncate to 50 chars at word boundary
     subject = lines[0]
     if len(subject) > 50:
-        # Try to find a good breaking point
-        if ": " in subject:
-            # Keep the prefix, wrap the rest
-            prefix, rest = subject.split(": ", 1)
-            prefix_len = len(prefix) + 2  # +2 for ": "
-            available = 50 - prefix_len
-            if available > 10:  # Only wrap if we have reasonable space
-                subject = f"{prefix}: {rest[:available-3]}..."
+        # Check for conventional commit prefix: type(scope): description
+        prefix_match = re.match(r"^([\w]+(?:\([^)]+\))?: )(.+)$", subject)
+        if prefix_match:
+            prefix = prefix_match.group(1)
+            description = prefix_match.group(2)
+            available = 50 - len(prefix)
+            if available > 10:  # Only truncate if we have reasonable space
+                subject = prefix + _truncate_at_word_boundary(description, available)
             else:
-                subject = subject[:47] + "..."
+                # Prefix is too long, truncate whole thing
+                subject = _truncate_at_word_boundary(subject, 50)
         else:
-            subject = subject[:47] + "..."
+            # No prefix, truncate at word boundary
+            subject = _truncate_at_word_boundary(subject, 50)
     lines[0] = subject
 
     # Ensure blank line after subject
