@@ -85,7 +85,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Azure OpenAI", "gpt-5-mini"),
         ("Cerebras", "zai-glm-4.7"),
         ("Chutes", "zai-org/GLM-5-TEE"),
-        ("Claude Code (OAuth)", "claude-sonnet-4-5"),
+        ("Claude Code (OAuth)", "claude-sonnet-4-6"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
