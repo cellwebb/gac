@@ -96,7 +96,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("LM Studio", "gemma3"),
         ("MiniMax.io", "MiniMax-M2.5"),
         ("Mistral", "devstral-2512"),
-        ("Moonshot AI", "kimi-k2-thinking-turbo"),
+        ("Moonshot AI", "kimi-k2.5"),
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-5-mini"),
         ("OpenRouter", "openrouter/auto"),
