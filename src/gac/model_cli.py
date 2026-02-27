@@ -94,7 +94,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Groq", "openai/gpt-oss-120b"),
         ("Kimi for Coding", "kimi-for-coding"),
         ("LM Studio", "gemma3"),
-        ("MiniMax.io", "MiniMax-M2.1"),
+        ("MiniMax.io", "MiniMax-M2.5"),
         ("Mistral", "devstral-2512"),
         ("Moonshot AI", "kimi-k2-thinking-turbo"),
         ("Ollama", "gemma3"),
