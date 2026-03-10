@@ -210,8 +210,7 @@ class StatusResult(BaseModel):
     # Formatted output (primary for agents)
     summary: str = Field(
         default="",
-        description="Human-readable formatted summary of repository state. "
-        "Use this field for clean output in agents.",
+        description="Human-readable formatted summary of repository state. Use this field for clean output in agents.",
     )
 
     # Core status

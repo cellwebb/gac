@@ -141,9 +141,7 @@ def _get_diff_stats(diff_output: str) -> DiffStats:
 
     # Save last file
     if current_file:
-        file_stats.append(
-            FileStat(file=current_file, insertions=file_insertions, deletions=file_deletions)
-        )
+        file_stats.append(FileStat(file=current_file, insertions=file_insertions, deletions=file_deletions))
 
     return DiffStats(
         files_changed=files_changed,
@@ -312,9 +310,7 @@ def _format_status_summary(
         lines.append("")
         lines.append("📊 CHANGES:")
         lines.append(
-            f"  {diff_stats.files_changed} file(s), "
-            f"+{diff_stats.insertions} lines, "
-            f"-{diff_stats.deletions} lines"
+            f"  {diff_stats.files_changed} file(s), +{diff_stats.insertions} lines, -{diff_stats.deletions} lines"
         )
         if format_type == "detailed" and diff_stats.file_stats:
             lines.append("  Per file:")
@@ -420,12 +416,7 @@ def gac_status(request: StatusRequest) -> StatusResult:
         conflicts = file_status["conflicts"]
 
         # Determine if clean
-        is_clean = (
-            not staged
-            and not unstaged
-            and (not untracked or not request.include_untracked)
-            and not conflicts
-        )
+        is_clean = not staged and not unstaged and (not untracked or not request.include_untracked) and not conflicts
 
         # Get diff if requested
         diff_output: str | None = None
@@ -654,9 +645,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # Collect warnings
         warnings: list[str] = []
         if git_state.has_secrets and not request.skip_secret_scan:
-            warnings.append(
-                "⚠️ Potential secrets detected in staged changes. Review carefully before committing."
-            )
+            warnings.append("⚠️ Potential secrets detected in staged changes. Review carefully before committing.")
 
         # Get generation config
         temperature = config.get("temperature", 0.7)
