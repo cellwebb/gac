@@ -41,6 +41,9 @@ dependencies = [
     "rich>=14.1.0",
     "prompt_toolkit>=3.0.36",
 
+    # MCP support for agent integration
+    "mcp[cli]>=1.0.0",
+
 ]
 
 [project.scripts]
