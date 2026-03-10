@@ -8,8 +8,8 @@ Two primary tools:
     - gac_status: Get repository status and diff information
 
 Usage:
-    gac-mcp              # Start MCP server (stdio transport)
-    gac-mcp --help       # Show help
+    gac serve            # Start MCP server (stdio transport)
+    uvx gac serve        # Same, via uvx
 """
 
 from __future__ import annotations

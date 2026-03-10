@@ -48,7 +48,6 @@ dependencies = [
 
 [project.scripts]
 gac = "gac.cli:cli"
-gac-mcp = "gac.mcp.server:main"
 
 [project.optional-dependencies]
 dev = [

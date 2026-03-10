@@ -231,5 +231,22 @@ def lang(ctx: Any) -> None:
 
 cli.add_command(lang)  # Add the lang alias
 
+
+@click.command()
+def serve() -> None:
+    """Start the GAC MCP server (stdio transport).
+
+    Exposes gac_status and gac_commit as MCP tools for AI agents.
+
+    Usage in MCP client config:
+        {"command": "uvx", "args": ["gac", "serve"]}
+    """
+    from gac.mcp.server import main as _mcp_main
+
+    _mcp_main()
+
+
+cli.add_command(serve)
+
 if __name__ == "__main__":
     cli()
