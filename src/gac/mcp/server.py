@@ -15,7 +15,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -25,7 +24,6 @@ from gac.mcp.models import (
     CommitResult,
     DiffStats,
     FileStat,
-    GroupedCommit,
     StatusRequest,
     StatusResult,
 )
@@ -181,6 +179,133 @@ def _get_recent_commits(count: int) -> list[CommitInfo]:
         return []
 
 
+def _truncate_diff(diff: str, max_lines: int) -> tuple[str, bool]:
+    """Truncate diff to max_lines, returning (truncated_diff, was_truncated)."""
+    if max_lines <= 0:
+        return diff, False
+
+    lines = diff.splitlines()
+    if len(lines) <= max_lines:
+        return diff, False
+
+    truncated = "\n".join(lines[:max_lines])
+    return truncated, True
+
+
+def _format_status_summary(
+    branch: str,
+    is_clean: bool,
+    staged: list[str],
+    unstaged: list[str],
+    untracked: list[str],
+    conflicts: list[str],
+    diff_stats: DiffStats | None,
+    recent_commits: list[CommitInfo] | None,
+    format_type: str,
+) -> str:
+    """Generate a human-readable summary of repository status."""
+    lines = []
+
+    # Header with branch and state
+    if is_clean:
+        lines.append(f"✓ Repository is clean (branch: {branch})")
+    else:
+        lines.append(f"Branch: {branch}")
+
+    # Conflict warning (always show first if present)
+    if conflicts:
+        lines.append("")
+        lines.append(f"⚠️  MERGE CONFLICTS ({len(conflicts)} files):")
+        for f in conflicts[:10]:
+            lines.append(f"  • {f}")
+        if len(conflicts) > 10:
+            lines.append(f"  ... and {len(conflicts) - 10} more")
+
+    # Staged files
+    if staged:
+        lines.append("")
+        lines.append(f"📦 STAGED ({len(staged)} files):")
+        if format_type == "detailed":
+            for f in staged:
+                lines.append(f"  • {f}")
+        else:
+            # Group by directory for summary
+            dirs: dict[str, list[str]] = {}
+            for f in staged:
+                d = f.split("/")[0] if "/" in f else "."
+                dirs[d] = dirs.get(d, []) + [f]
+            for d, files in sorted(dirs.items())[:5]:
+                if d == ".":
+                    lines.append(f"  • {len(files)} file(s) in root")
+                else:
+                    lines.append(f"  • {d}/ ({len(files)} file(s))")
+            if len(dirs) > 5:
+                lines.append(f"  ... and {len(dirs) - 5} more directories")
+
+    # Unstaged files
+    if unstaged:
+        lines.append("")
+        lines.append(f"📝 UNSTAGED ({len(unstaged)} files):")
+        if format_type == "detailed":
+            for f in unstaged:
+                lines.append(f"  • {f}")
+        else:
+            for f in unstaged[:5]:
+                lines.append(f"  • {f}")
+            if len(unstaged) > 5:
+                lines.append(f"  ... and {len(unstaged) - 5} more")
+
+    # Untracked files
+    if untracked:
+        lines.append("")
+        lines.append(f"❓ UNTRACKED ({len(untracked)} files):")
+        if format_type == "detailed":
+            for f in untracked:
+                lines.append(f"  • {f}")
+        else:
+            for f in untracked[:5]:
+                lines.append(f"  • {f}")
+            if len(untracked) > 5:
+                lines.append(f"  ... and {len(untracked) - 5} more")
+
+    # Diff stats
+    if diff_stats and diff_stats.files_changed > 0:
+        lines.append("")
+        lines.append("📊 CHANGES:")
+        lines.append(
+            f"  {diff_stats.files_changed} file(s), "
+            f"+{diff_stats.insertions} lines, "
+            f"-{diff_stats.deletions} lines"
+        )
+        if format_type == "detailed" and diff_stats.file_stats:
+            lines.append("  Per file:")
+            for fs in diff_stats.file_stats[:10]:
+                lines.append(f"    {fs.file}: +{fs.insertions}/-{fs.deletions}")
+            if len(diff_stats.file_stats) > 10:
+                lines.append(f"    ... and {len(diff_stats.file_stats) - 10} more")
+
+    # Recent commits
+    if recent_commits:
+        lines.append("")
+        lines.append(f"📜 RECENT COMMITS ({len(recent_commits)}):")
+        for c in recent_commits:
+            lines.append(f"  {c.hash} {c.message[:50]}{'...' if len(c.message) > 50 else ''}")
+            lines.append(f"    by {c.author}, {c.date}")
+
+    # Action hint
+    lines.append("")
+    if is_clean:
+        lines.append("No changes to commit.")
+    elif staged and not unstaged and not conflicts:
+        lines.append("Ready to commit. Use gac_commit to create a commit.")
+    elif conflicts:
+        lines.append("Resolve conflicts before committing.")
+    else:
+        lines.append("Stage changes with git add, or use gac_commit(stage_all=True)")
+
+    return "\n".join(lines)
+
+
 # =============================================================================
 # MCP TOOLS
 # =============================================================================
@@ -201,11 +326,16 @@ def gac_status(request: StatusRequest) -> StatusResult:
     - To review diff content before committing
 
     PARAMETERS:
-    - include_diff: Set True to see the full diff content (useful for understanding changes)
+    - format: Output format ('summary', 'detailed', 'json')
+        - 'summary': Clean human-readable output (default)
+        - 'detailed': Shows all file names and per-file stats
+        - 'json': Raw data for programmatic use
+    - include_diff: Set True to see the full diff content
     - include_stats: Set True to see line change statistics
     - include_history: Set N > 0 to include N most recent commits
     - staged_only: Set True to only show staged changes in diff
     - include_untracked: Set False to exclude untracked files
+    - max_diff_lines: Maximum diff lines to include (default 500)
 
     WORKFLOW:
     1. Call gac_status() to see what files changed
@@ -213,7 +343,8 @@ def gac_status(request: StatusRequest) -> StatusResult:
     3. Call gac_commit() with appropriate parameters
 
     RETURNS:
-    StatusResult with branch, file lists, optional diff/stats/history
+    StatusResult with 'summary' field containing formatted output.
+    Use the summary field for clean, readable output in agents.
 
     EXAMPLE:
         # Basic status check
@@ -233,10 +364,7 @@ def gac_status(request: StatusRequest) -> StatusResult:
             branch="",
             is_clean=False,
             is_repo=False,
-            staged_files=[],
-            unstaged_files=[],
-            untracked_files=[],
-            conflicts=[],
+            summary=f"❌ Not in a git repository: {error}",
             error=f"Not in a git repository: {error}",
         )
 
@@ -247,26 +375,24 @@ def gac_status(request: StatusRequest) -> StatusResult:
         branch = get_current_branch()
         file_status = _get_file_status()
 
+        staged = file_status["staged"]
+        unstaged = file_status["unstaged"]
+        untracked = file_status["untracked"] if request.include_untracked else []
+        conflicts = file_status["conflicts"]
+
         # Determine if clean
         is_clean = (
-            not file_status["staged"]
-            and not file_status["unstaged"]
-            and (not file_status["untracked"] or not request.include_untracked)
-            and not file_status["conflicts"]
+            not staged
+            and not unstaged
+            and (not untracked or not request.include_untracked)
+            and not conflicts
         )
 
-        # Build result
-        result = StatusResult(
-            branch=branch,
-            is_clean=is_clean,
-            is_repo=True,
-            staged_files=file_status["staged"],
-            unstaged_files=file_status["unstaged"],
-            untracked_files=file_status["untracked"] if request.include_untracked else [],
-            conflicts=file_status["conflicts"],
-        )
+        # Get diff if requested
+        diff_output: str | None = None
+        diff_stats: DiffStats | None = None
+        diff_truncated = False
 
-        # Include diff if requested
         if request.include_diff:
             diff_args = ["diff"]
             if request.staged_only:
@@ -274,18 +400,51 @@ def gac_status(request: StatusRequest) -> StatusResult:
             else:
                 diff_args.append("HEAD")
 
-            diff_output = run_git_command(diff_args)
-            result.diff = diff_output
+            raw_diff = run_git_command(diff_args)
+            diff_output, diff_truncated = _truncate_diff(raw_diff, request.max_diff_lines)
 
             # Include stats
             if request.include_stats:
-                result.diff_stats = _get_diff_stats(diff_output)
+                diff_stats = _get_diff_stats(raw_diff)
 
-        # Include history if requested
+        # Get history if requested
+        recent_commits = None
         if request.include_history > 0:
-            result.recent_commits = _get_recent_commits(request.include_history)
+            recent_commits = _get_recent_commits(request.include_history)
 
-        return result
+        # Generate formatted summary
+        summary = _format_status_summary(
+            branch=branch,
+            is_clean=is_clean,
+            staged=staged,
+            unstaged=unstaged,
+            untracked=untracked,
+            conflicts=conflicts,
+            diff_stats=diff_stats,
+            recent_commits=recent_commits,
+            format_type=request.format,
+        )
+
+        # Add diff to summary if included
+        if diff_output:
+            summary += f"\n\n{'─' * 40}\nDIFF:\n{'─' * 40}\n{diff_output}"
+            if diff_truncated:
+                summary += f"\n\n... (diff truncated at {request.max_diff_lines} lines)"
+
+        return StatusResult(
+            branch=branch,
+            is_clean=is_clean,
+            is_repo=True,
+            summary=summary,
+            staged_files=staged,
+            unstaged_files=unstaged,
+            untracked_files=untracked,
+            conflicts=conflicts,
+            diff=diff_output,
+            diff_stats=diff_stats,
+            recent_commits=recent_commits,
+            diff_truncated=diff_truncated,
+        )
 
     except Exception as e:
         logger.exception("Error getting git status")
@@ -293,10 +452,7 @@ def gac_status(request: StatusRequest) -> StatusResult:
             branch="",
             is_clean=False,
             is_repo=True,
-            staged_files=[],
-            unstaged_files=[],
-            untracked_files=[],
-            conflicts=[],
+            summary=f"❌ Error getting git status: {e}",
             error=str(e),
         )
 
@@ -324,7 +480,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
     KEY PARAMETERS:
     - stage_all: Stage all changes (equivalent to git add -A)
     - dry_run: Preview what would happen without committing
-    - message_only: Generate message without committing
+    - message_only: Generate message without committing (NO commit is made!)
     - push: Push to remote after successful commit
     - hint: Additional context for better commit messages
     - auto_confirm: Skip confirmation prompts (REQUIRED for agents)
@@ -339,7 +495,8 @@ def gac_commit(request: CommitRequest) -> CommitResult:
     - no_verify: Skip pre-commit hooks
 
     RETURNS:
-    CommitResult with success status, message, hash, and files changed
+    CommitResult with success status, message, hash, and files changed.
+    When message_only=True or dry_run=True, commit_hash will be None.
 
     EXAMPLES:
         # Preview a commit
@@ -355,7 +512,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             auto_confirm=True
         ))
 
-        # Get message only for review
+        # Get message only for review (NO commit is made)
         result = gac_commit(CommitRequest(
             message_only=True
         ))
@@ -377,8 +534,6 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
     try:
         from gac.ai import generate_commit_message
-        from gac.ai_utils import count_tokens
-        from gac.commit_executor import CommitExecutor
         from gac.config import load_config
         from gac.git import get_staged_files, run_git_command
         from gac.git_state_validator import GitStateValidator
@@ -397,7 +552,8 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 error="No model configured. Run 'gac init' or provide model parameter.",
             )
 
-        # Stage files if requested (even for dry_run in MCP - we want to preview)
+        # Stage files if requested
+        # NOTE: We stage even for dry_run/message_only to see what WOULD be committed
         if request.stage_all:
             run_git_command(["add", "--all"])
 
@@ -415,8 +571,8 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # Get git state for prompt building
         validator = GitStateValidator(config)
         git_state = validator.get_git_state(
-            stage_all=request.stage_all,
-            dry_run=request.dry_run,
+            stage_all=False,  # Already staged above
+            dry_run=True,  # Always dry run for state collection
             skip_secret_scan=request.skip_secret_scan,
             quiet=True,
             model=model,
@@ -439,8 +595,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         warnings: list[str] = []
         if git_state.has_secrets and not request.skip_secret_scan:
             warnings.append(
-                "Potential secrets detected in staged changes. "
-                "Review carefully before committing."
+                "⚠️ Potential secrets detected in staged changes. Review carefully before committing."
             )
 
         # Build prompt
@@ -483,25 +638,35 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 error="Failed to generate commit message. Check AI model configuration.",
             )
 
-        # If message_only, return without committing
+        # =====================================================================
+        # EARLY RETURN: message_only mode - DO NOT COMMIT
+        # =====================================================================
         if request.message_only:
             return CommitResult(
                 success=True,
                 commit_message=commit_message,
+                commit_hash=None,  # No commit was made
                 files_changed=staged_files,
-                warnings=warnings,
+                warnings=warnings + ["ℹ️ message_only=True: No commit was created."],
             )
 
-        # If dry_run, return without committing
+        # =====================================================================
+        # EARLY RETURN: dry_run mode - DO NOT COMMIT
+        # =====================================================================
         if request.dry_run:
             return CommitResult(
                 success=True,
                 commit_message=commit_message,
+                commit_hash=None,  # No commit was made
                 files_changed=staged_files,
-                warnings=warnings,
+                warnings=warnings + ["ℹ️ dry_run=True: No commit was created."],
             )
 
-        # Execute the commit
+        # =====================================================================
+        # EXECUTE COMMIT (only if NOT message_only and NOT dry_run)
+        # =====================================================================
+        from gac.commit_executor import CommitExecutor
+
         executor = CommitExecutor(
             dry_run=False,
             quiet=True,
@@ -539,7 +704,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 # =============================================================================
 
 
-def main():
+def main() -> None:
     """Main entry point for the GAC MCP server."""
     # Run the FastMCP server with stdio transport (default for agents)
     mcp.run()

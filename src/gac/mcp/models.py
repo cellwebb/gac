@@ -10,7 +10,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 # =============================================================================
 # COMMIT TOOL MODELS
 # =============================================================================
@@ -159,6 +158,13 @@ class StatusRequest(BaseModel):
     Use this tool before gac_commit to understand what will be committed.
     """
 
+    # Output format
+    format: Literal["summary", "detailed", "json"] = Field(
+        default="summary",
+        description="Output format: 'summary' (clean human-readable), "
+        "'detailed' (includes file lists), 'json' (raw data for programmatic use).",
+    )
+
     # What to include
     include_diff: bool = Field(
         default=False,
@@ -183,18 +189,35 @@ class StatusRequest(BaseModel):
         description="Include untracked files in the status.",
     )
 
+    # Diff size limits
+    max_diff_lines: int = Field(
+        default=500,
+        description="Maximum lines to include in diff output. 0 = no limit. "
+        "Prevents overwhelming output for large changes.",
+    )
+
 
 class StatusResult(BaseModel):
     """Response model for gac_status tool.
 
     Provides a complete view of the repository state, including branch info,
     file status, and optionally diffs and commit history.
+
+    When format='summary' or 'detailed', the 'summary' field contains the
+    human-readable formatted output. When format='json', use the individual fields.
     """
 
+    # Formatted output (primary for agents)
+    summary: str = Field(
+        default="",
+        description="Human-readable formatted summary of repository state. "
+        "Use this field for clean output in agents.",
+    )
+
     # Core status
-    branch: str = Field(description="Current git branch name.")
-    is_clean: bool = Field(description="True if no staged, unstaged, or untracked files.")
-    is_repo: bool = Field(description="True if inside a git repository.")
+    branch: str = Field(default="", description="Current git branch name.")
+    is_clean: bool = Field(default=False, description="True if no staged, unstaged, or untracked files.")
+    is_repo: bool = Field(default=True, description="True if inside a git repository.")
 
     # File status
     staged_files: list[str] = Field(
@@ -226,6 +249,10 @@ class StatusResult(BaseModel):
     recent_commits: list[CommitInfo] | None = Field(
         default=None,
         description="Recent commits if include_history > 0.",
+    )
+    diff_truncated: bool = Field(
+        default=False,
+        description="True if diff was truncated due to max_diff_lines.",
     )
 
     error: str | None = Field(
