@@ -200,6 +200,37 @@ def _extract_scope(message: str) -> str:
     return match.group(1) if match else ""
 
 
+def _stderr_console_redirect():
+    """Context manager that redirects all Rich console output to stderr.
+
+    MCP communicates over stdio (stdin/stdout).  Any writes to stdout from
+    Rich's Console instances corrupt the JSON-RPC framing.  This patches the
+    module-level ``console`` objects in every GAC module that prints during
+    commit execution so their output goes to stderr instead.
+    """
+    import contextlib
+
+    from rich.console import Console as RichConsole
+
+    @contextlib.contextmanager
+    def _ctx():
+        import gac.commit_executor as _ce
+        import gac.grouped_commit_workflow as _gcw
+        import gac.workflow_utils as _wu
+
+        stderr_con = RichConsole(stderr=True)
+        saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}
+        for mod in saved:
+            mod.console = stderr_con
+        try:
+            yield
+        finally:
+            for mod, orig in saved.items():
+                mod.console = orig
+
+    return _ctx()
+
+
 def _format_status_summary(
     branch: str,
     is_clean: bool,
@@ -715,13 +746,14 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 )
 
             # ── execute all grouped commits ──────────────────────────────────
-            exit_code = workflow.execute_grouped_commits(
-                result=group_result,
-                dry_run=False,
-                push=request.push,
-                no_verify=request.no_verify,
-                hook_timeout=120,
-            )
+            with _stderr_console_redirect():
+                exit_code = workflow.execute_grouped_commits(
+                    result=group_result,
+                    dry_run=False,
+                    push=request.push,
+                    no_verify=request.no_verify,
+                    hook_timeout=120,
+                )
 
             if exit_code != 0:
                 return CommitResult(
@@ -806,14 +838,16 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             no_verify=request.no_verify,
             hook_timeout=120,
         )
-        executor.create_commit(commit_message)
+        with _stderr_console_redirect():
+            executor.create_commit(commit_message)
 
         # Get commit hash
         commit_hash = run_git_command(["rev-parse", "HEAD"])[:7]
 
         # Push if requested
         if request.push:
-            executor.push_to_remote()
+            with _stderr_console_redirect():
+                executor.push_to_remote()
 
         return CommitResult(
             success=True,
