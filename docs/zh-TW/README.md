@@ -223,7 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## 獲取協助
 
 - **完整文件**：[USAGE.md](docs/zh-TW/USAGE.md) - 完整的 CLI 參考
-- **MCP 伺服器**：[MCP.md](docs/zh-TW/MCP.md) - 將 GAC 用作 AI 代理的 MCP 伺服器
+- **MCP 伺服器**：[MCP.md](MCP.md) - 將 GAC 用作 AI 代理的 MCP 伺服器
 - **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-TW/CLAUDE_CODE.md) - Claude Code 設定與驗證
 - **Qwen.ai OAuth**：[docs/QWEN.md](docs/zh-TW/QWEN.md) - Qwen.ai 設定與驗證
 - **自訂提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-TW/CUSTOM_SYSTEM_PROMPTS.md) - 自訂提交訊息風格

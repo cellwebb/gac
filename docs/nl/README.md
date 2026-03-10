@@ -223,7 +223,7 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 ## Hulp Krijgen
 
 - **Volledige documentatie**: [docs/USAGE.md](docs/nl/USAGE.md) - Volledige CLI-referentie
-- **MCP-server**: [docs/MCP.md](docs/nl/MCP.md) - Gebruik GAC als MCP-server voor AI-agents
+- **MCP-server**: [docs/MCP.md](MCP.md) - Gebruik GAC als MCP-server voor AI-agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/nl/CLAUDE_CODE.md) - Claude Code installatie en authenticatie
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/nl/QWEN.md) - Qwen.ai installatie en authenticatie
 - **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan

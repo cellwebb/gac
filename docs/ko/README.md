@@ -223,7 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## 도움말 얻기
 
 - **전체 문서**: [docs/USAGE.md](docs/ko/USAGE.md) - 완전한 CLI 참조
-- **MCP 서버**: [docs/MCP.md](docs/ko/MCP.md) - AI 에이전트를 위한 MCP 서버로 GAC 사용
+- **MCP 서버**: [docs/MCP.md](MCP.md) - AI 에이전트를 위한 MCP 서버로 GAC 사용
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ko/CLAUDE_CODE.md) - Claude Code 설정 및 인증
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ko/QWEN.md) - Qwen.ai 설정 및 인증
 - **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의

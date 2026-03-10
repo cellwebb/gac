@@ -222,7 +222,7 @@ Verfolgen Sie Echtzeit-Installationsmetriken und Paket-Download-Statistiken.
 ## Hilfe erhalten
 
 - **Vollständige Dokumentation**: [docs/USAGE.md](docs/de/USAGE.md) - Vollständige CLI-Referenz
-- **MCP-Server**: [docs/MCP.md](docs/de/MCP.md) - GAC als MCP-Server für KI-Agenten verwenden
+- **MCP-Server**: [docs/MCP.md](MCP.md) - GAC als MCP-Server für KI-Agenten verwenden
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/de/CLAUDE_CODE.md) - Claude Code Einrichtung und Authentifizierung
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/de/QWEN.md) - Qwen.ai Einrichtung und Authentifizierung
 - **Benutzerdefinierte Prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/de/CUSTOM_SYSTEM_PROMPTS.md) - Commit-Nachrichten-Stil anpassen

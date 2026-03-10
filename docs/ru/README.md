@@ -223,7 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## Получение помощи
 
 - **Полная документация**: [USAGE.md](docs/ru/USAGE.md) - Полное справочное руководство по CLI
-- **MCP-сервер**: [docs/MCP.md](docs/ru/MCP.md) - Использование GAC в качестве MCP-сервера для ИИ-агентов
+- **MCP-сервер**: [docs/MCP.md](MCP.md) - Использование GAC в качестве MCP-сервера для ИИ-агентов
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ru/CLAUDE_CODE.md) - Настройка и аутентификация Claude Code
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ru/QWEN.md) - Настройка и аутентификация Qwen.ai
 - **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов

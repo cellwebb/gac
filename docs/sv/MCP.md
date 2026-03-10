@@ -204,7 +204,7 @@ MCP-servern anvander din befintliga GAC-konfiguration. Ingen ytterligare install
 2. **API-nycklar**: Lagrade i `~/.gac.env` (installda under `gac init`)
 3. **Valfria installningar**: Alla GAC-miljovariabler galler (`GAC_LANGUAGE`, `GAC_VERBOSE` osv.)
 
-Se [huvuddokumentationen](USAGE.md#konfigurationsanmarkningar) for alla konfigurationsalternativ.
+Se [huvuddokumentationen](USAGE.md#konfigurationsanteckningar) for alla konfigurationsalternativ.
 
 ## Felsokning
 

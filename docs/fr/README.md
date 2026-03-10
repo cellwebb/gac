@@ -223,7 +223,7 @@ Suivez les métriques d'installation en temps réel et les statistiques de tél�
 ## Obtenir de l'aide
 
 - **Documentation complète** : [USAGE.md](docs/fr/USAGE.md) - Référence CLI complète
-- **Serveur MCP** : [docs/MCP.md](docs/fr/MCP.md) - Utiliser GAC comme serveur MCP pour les agents IA
+- **Serveur MCP** : [docs/MCP.md](MCP.md) - Utiliser GAC comme serveur MCP pour les agents IA
 - **Claude Code OAuth** : [docs/CLAUDE_CODE.md](docs/fr/CLAUDE_CODE.md) - Configuration et authentification de Claude Code
 - **Qwen.ai OAuth** : [docs/QWEN.md](docs/fr/QWEN.md) - Configuration et authentification de Qwen.ai
 - **Prompts personnalisés** : [CUSTOM_SYSTEM_PROMPTS.md](docs/fr/CUSTOM_SYSTEM_PROMPTS.md) - Personnaliser le style des messages de commit

@@ -223,7 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## सहायता प्राप्त करना
 
 - **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
-- **MCP सर्वर**: [docs/MCP.md](docs/hi/MCP.md) - AI एजेंटों के लिए GAC को MCP सर्वर के रूप में उपयोग करें
+- **MCP सर्वर**: [docs/MCP.md](MCP.md) - AI एजेंटों के लिए GAC को MCP सर्वर के रूप में उपयोग करें
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/hi/CLAUDE_CODE.md) - Claude Code सेटअप और प्रमाणीकरण
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/hi/QWEN.md) - Qwen.ai सेटअप और प्रमाणीकरण
 - **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें

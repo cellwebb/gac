@@ -223,7 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## ヘルプ
 
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
-- **MCP サーバー**: [MCP.md](docs/ja/MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
+- **MCP サーバー**: [MCP.md](MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ja/QWEN.md) - Qwen.ai のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ

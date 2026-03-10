@@ -204,7 +204,7 @@ De MCP-server gebruikt uw bestaande GAC-configuratie. Geen extra configuratie no
 2. **API-sleutels**: Opgeslagen in `~/.gac.env` (ingesteld tijdens `gac init`)
 3. **Optionele instellingen**: Alle GAC-omgevingsvariabelen zijn van toepassing (`GAC_LANGUAGE`, `GAC_VERBOSE`, enz.)
 
-Zie de [hoofddocumentatie](USAGE.md#configuratienotities) voor alle configuratieopties.
+Zie de [hoofddocumentatie](USAGE.md#configuratie-notities) voor alle configuratieopties.
 
 ## Probleemoplossing
 

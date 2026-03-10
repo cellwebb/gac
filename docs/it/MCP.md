@@ -204,7 +204,7 @@ Il server MCP utilizza la tua configurazione GAC esistente. Non è necessaria al
 2. **Chiavi API**: Memorizzate in `~/.gac.env` (configurate durante `gac init`)
 3. **Impostazioni opzionali**: Tutte le variabili d'ambiente GAC si applicano (`GAC_LANGUAGE`, `GAC_VERBOSE`, ecc.)
 
-Consulta la [documentazione principale](USAGE.md#note-sulla-configurazione) per tutte le opzioni di configurazione.
+Consulta la [documentazione principale](USAGE.md#note-di-configurazione) per tutte le opzioni di configurazione.
 
 ## Risoluzione Problemi
 
