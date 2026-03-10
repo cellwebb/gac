@@ -15,6 +15,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import re
 
 from mcp.server.fastmcp import FastMCP
 
@@ -24,6 +25,7 @@ from gac.mcp.models import (
     CommitResult,
     DiffStats,
     FileStat,
+    GroupedCommit,
     StatusRequest,
     StatusResult,
 )
@@ -190,6 +192,12 @@ def _truncate_diff(diff: str, max_lines: int) -> tuple[str, bool]:
 
     truncated = "\n".join(lines[:max_lines])
     return truncated, True
+
+
+def _extract_scope(message: str) -> str:
+    """Extract conventional commit scope from a message like 'feat(scope): ...'."""
+    match = re.match(r"^\w+\(([^)]+)\):", message.strip())
+    return match.group(1) if match else ""
 
 
 def _format_status_summary(
@@ -479,11 +487,19 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
     KEY PARAMETERS:
     - stage_all: Stage all changes (equivalent to git add -A)
+    - group: Split changes into multiple logical commits (AI-driven grouping)
     - dry_run: Preview what would happen without committing
     - message_only: Generate message without committing (NO commit is made!)
     - push: Push to remote after successful commit
     - hint: Additional context for better commit messages
     - auto_confirm: Skip confirmation prompts (REQUIRED for agents)
+
+    GROUP MODE (group=True):
+    When group=True the AI analyzes all staged changes and groups them into
+    multiple logical commits. Each group gets its own message. The result
+    includes a 'grouped_commits' list with scope, files, and suggested_message
+    for each group. Use with dry_run=True or message_only=True to preview the
+    groupings before committing.
 
     COMMIT MESSAGE OPTIONS:
     - one_liner: Single-line message (no body)
@@ -520,6 +536,19 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # Commit with context hint
         result = gac_commit(CommitRequest(
             hint="Fixes login bug reported in issue #123",
+            auto_confirm=True
+        ))
+
+        # Preview grouped commits (no commits created)
+        result = gac_commit(CommitRequest(
+            stage_all=True,
+            group=True,
+            dry_run=True
+        ))
+
+        # Execute grouped commits
+        result = gac_commit(CommitRequest(
+            group=True,
             auto_confirm=True
         ))
     """
@@ -598,8 +627,123 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 "⚠️ Potential secrets detected in staged changes. Review carefully before committing."
             )
 
-        # Build prompt
+        # Get generation config
+        temperature = config.get("temperature", 0.7)
+        max_tokens = config.get("max_output_tokens", 1000)
+        max_retries = config.get("max_retries", 3)
+
         prompt_builder = PromptBuilder(config)
+
+        # =====================================================================
+        # GROUP MODE: split staged changes into multiple logical commits
+        # =====================================================================
+        if request.group:
+            from gac.grouped_commit_workflow import GroupedCommitWorkflow
+
+            workflow = GroupedCommitWorkflow(config)
+
+            # Scale output tokens proportionally to number of files being grouped
+            num_files = len(staged_files)
+            token_multiplier = min(5, 2 + (num_files // 10))
+            group_max_tokens = int(max_tokens) * token_multiplier
+
+            # Build group-aware prompts
+            group_bundle = prompt_builder.build_prompts(
+                git_state=git_state,
+                group=True,
+                hint=request.hint,
+                one_liner=request.one_liner,
+                infer_scope=request.scope is None,
+                language=request.language,
+            )
+
+            group_conversation: list[dict[str, str]] = []
+            if group_bundle.system_prompt:
+                group_conversation.append({"role": "system", "content": group_bundle.system_prompt})
+            group_conversation.append({"role": "user", "content": group_bundle.user_prompt})
+
+            # Generate grouped commits (no interactive confirmation for MCP)
+            group_result = workflow.generate_grouped_commits_with_retry(
+                model=model,
+                conversation_messages=group_conversation,
+                temperature=temperature,
+                max_output_tokens=group_max_tokens,
+                max_retries=max_retries,
+                quiet=True,
+                staged_files_set=set(staged_files),
+                require_confirmation=False,
+            )
+
+            if isinstance(group_result, int):
+                return CommitResult(
+                    success=False,
+                    commit_message="",
+                    files_changed=staged_files,
+                    error="Failed to generate grouped commits. The AI model could not produce valid groupings.",
+                    warnings=warnings,
+                )
+
+            grouped_commits = [
+                GroupedCommit(
+                    scope=_extract_scope(commit["message"]),
+                    files=commit["files"],
+                    suggested_message=commit["message"].strip(),
+                )
+                for commit in group_result.commits
+            ]
+
+            num_groups = len(grouped_commits)
+
+            # ── message_only: return grouped suggestions, don't commit ──────
+            if request.message_only:
+                return CommitResult(
+                    success=True,
+                    commit_message=f"[{num_groups} grouped commits]",
+                    grouped_commits=grouped_commits,
+                    files_changed=staged_files,
+                    warnings=warnings + [f"ℹ️ message_only=True: {num_groups} commit groups generated, none created."],
+                )
+
+            # ── dry_run: return grouped suggestions, don't commit ───────────
+            if request.dry_run:
+                return CommitResult(
+                    success=True,
+                    commit_message=f"[{num_groups} grouped commits]",
+                    grouped_commits=grouped_commits,
+                    files_changed=staged_files,
+                    warnings=warnings + [f"ℹ️ dry_run=True: {num_groups} commit groups generated, none created."],
+                )
+
+            # ── execute all grouped commits ──────────────────────────────────
+            exit_code = workflow.execute_grouped_commits(
+                result=group_result,
+                dry_run=False,
+                push=request.push,
+                no_verify=request.no_verify,
+                hook_timeout=120,
+            )
+
+            if exit_code != 0:
+                return CommitResult(
+                    success=False,
+                    commit_message="",
+                    files_changed=staged_files,
+                    grouped_commits=grouped_commits,
+                    error="One or more grouped commits failed. Staging area has been restored.",
+                    warnings=warnings,
+                )
+
+            return CommitResult(
+                success=True,
+                commit_message=f"[{num_groups} grouped commits]",
+                grouped_commits=grouped_commits,
+                files_changed=staged_files,
+                warnings=warnings,
+            )
+
+        # =====================================================================
+        # SINGLE COMMIT MODE (default)
+        # =====================================================================
         prompt_bundle = prompt_builder.build_prompts(
             git_state=git_state,
             hint=request.hint,
@@ -613,11 +757,6 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         if prompt_bundle.system_prompt:
             conversation_messages.append({"role": "system", "content": prompt_bundle.system_prompt})
         conversation_messages.append({"role": "user", "content": prompt_bundle.user_prompt})
-
-        # Get generation config
-        temperature = config.get("temperature", 0.7)
-        max_tokens = config.get("max_output_tokens", 1000)
-        max_retries = config.get("max_retries", 3)
 
         # Generate commit message using AI
         raw_commit_message = generate_commit_message(
@@ -638,9 +777,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 error="Failed to generate commit message. Check AI model configuration.",
             )
 
-        # =====================================================================
-        # EARLY RETURN: message_only mode - DO NOT COMMIT
-        # =====================================================================
+        # ── message_only: return message, don't commit ───────────────────────
         if request.message_only:
             return CommitResult(
                 success=True,
@@ -650,9 +787,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 warnings=warnings + ["ℹ️ message_only=True: No commit was created."],
             )
 
-        # =====================================================================
-        # EARLY RETURN: dry_run mode - DO NOT COMMIT
-        # =====================================================================
+        # ── dry_run: return message, don't commit ────────────────────────────
         if request.dry_run:
             return CommitResult(
                 success=True,
@@ -662,9 +797,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 warnings=warnings + ["ℹ️ dry_run=True: No commit was created."],
             )
 
-        # =====================================================================
-        # EXECUTE COMMIT (only if NOT message_only and NOT dry_run)
-        # =====================================================================
+        # ── execute commit ───────────────────────────────────────────────────
         from gac.commit_executor import CommitExecutor
 
         executor = CommitExecutor(
