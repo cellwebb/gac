@@ -12,7 +12,6 @@ GAC kan koras som en [Model Context Protocol (MCP)](https://modelcontextprotocol
   - [Fordelar](#fordelar)
   - [Installation](#installation)
     - [Claude Code](#claude-code)
-    - [Claude Desktop](#claude-desktop)
     - [Cursor](#cursor)
     - [Andra MCP-klienter](#andra-mcp-klienter)
   - [Tillgangliga verktyg](#tillgangliga-verktyg)
@@ -65,21 +64,6 @@ Eller om du har GAC installerat globalt:
     "gac": {
       "command": "gac",
       "args": ["serve"]
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-Lagg till i din Claude Desktop-konfigurationsfil (`~/Library/Application Support/Claude/claude_desktop_config.json` pa macOS, `%APPDATA%\Claude\claude_desktop_config.json` pa Windows):
-
-```json
-{
-  "mcpServers": {
-    "gac": {
-      "command": "uvx",
-      "args": ["gac", "serve"]
     }
   }
 }

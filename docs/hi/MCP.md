@@ -12,7 +12,6 @@ GAC एक [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) स�
   - [लाभ](#लाभ)
   - [सेटअप](#सेटअप)
     - [Claude Code](#claude-code)
-    - [Claude Desktop](#claude-desktop)
     - [Cursor](#cursor)
     - [अन्य MCP क्लाइंट](#अन्य-mcp-क्लाइंट)
   - [उपलब्ध टूल्स](#उपलब्ध-टूल्स)
@@ -65,21 +64,6 @@ MCP सर्वर `gac serve` से शुरू होता है और �
     "gac": {
       "command": "gac",
       "args": ["serve"]
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-अपनी Claude Desktop कॉन्फ़िगरेशन फ़ाइल में जोड़ें (macOS पर `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows पर `%APPDATA%\Claude\claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "gac": {
-      "command": "uvx",
-      "args": ["gac", "serve"]
     }
   }
 }

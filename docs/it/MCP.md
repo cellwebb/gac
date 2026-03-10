@@ -12,7 +12,6 @@ GAC può funzionare come un server del [Model Context Protocol (MCP)](https://mo
   - [Benefici](#benefici)
   - [Installazione](#installazione)
     - [Claude Code](#claude-code)
-    - [Claude Desktop](#claude-desktop)
     - [Cursor](#cursor)
     - [Altri Client MCP](#altri-client-mcp)
   - [Strumenti Disponibili](#strumenti-disponibili)
@@ -65,21 +64,6 @@ O se hai GAC installato globalmente:
     "gac": {
       "command": "gac",
       "args": ["serve"]
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-Aggiungi al tuo file di configurazione di Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json` su macOS, `%APPDATA%\Claude\claude_desktop_config.json` su Windows):
-
-```json
-{
-  "mcpServers": {
-    "gac": {
-      "command": "uvx",
-      "args": ["gac", "serve"]
     }
   }
 }
