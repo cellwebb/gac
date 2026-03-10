@@ -1,0 +1,549 @@
+"""FastMCP server for GAC - Git Auto Commit MCP Tools.
+
+This module exposes GAC's commit generation capabilities to AI agents
+through the Model Context Protocol using FastMCP.
+
+Two primary tools:
+    - gac_commit: Generate and optionally execute git commits
+    - gac_status: Get repository status and diff information
+
+Usage:
+    gac-mcp              # Start MCP server (stdio transport)
+    gac-mcp --help       # Show help
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from mcp.server.fastmcp import FastMCP
+
+from gac.mcp.models import (
+    CommitInfo,
+    CommitRequest,
+    CommitResult,
+    DiffStats,
+    FileStat,
+    GroupedCommit,
+    StatusRequest,
+    StatusResult,
+)
+
+# Configure logging
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
+
+# Create FastMCP server instance
+mcp = FastMCP(
+    name="gac-mcp",
+    instructions="Git Auto Commit (GAC) - AI-powered commit message generation for agents. "
+    "Use gac_status to see repository state, then gac_commit to generate and execute commits.",
+)
+
+
+# =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+
+
+def _check_git_repo() -> tuple[bool, str]:
+    """Check if we're in a git repository.
+
+    Returns:
+        Tuple of (is_repo, error_message)
+    """
+    try:
+        from gac.git import run_git_command
+
+        run_git_command(["rev-parse", "--show-toplevel"])
+        return True, ""
+    except Exception as e:
+        return False, str(e)
+
+
+def _get_file_status() -> dict[str, list[str]]:
+    """Get file status categories (staged, unstaged, untracked, conflicts)."""
+    try:
+        from gac.git import run_git_command
+
+        result: dict[str, list[str]] = {
+            "staged": [],
+            "unstaged": [],
+            "untracked": [],
+            "conflicts": [],
+        }
+
+        # Get porcelain status
+        status_output = run_git_command(["status", "--porcelain"])
+
+        for line in status_output.splitlines():
+            if not line.strip():
+                continue
+
+            # Parse porcelain status (XY filename)
+            xy = line[:2]
+            filename = line[3:].strip()
+
+            # X = index status, Y = worktree status
+            index_status = xy[0]
+            worktree_status = xy[1]
+
+            # Check for conflicts
+            if index_status in "U" or worktree_status in "U" or xy in ("AA", "DD"):
+                result["conflicts"].append(filename)
+            elif index_status in "MADRC":
+                result["staged"].append(filename)
+            elif worktree_status in "MAD":
+                result["unstaged"].append(filename)
+            elif index_status == "?":
+                result["untracked"].append(filename)
+
+        return result
+    except Exception:
+        return {"staged": [], "unstaged": [], "untracked": [], "conflicts": []}
+
+
+def _get_diff_stats(diff_output: str) -> DiffStats:
+    """Parse diff output to extract statistics."""
+    files_changed = 0
+    insertions = 0
+    deletions = 0
+    file_stats: list[FileStat] = []
+
+    current_file = None
+    file_insertions = 0
+    file_deletions = 0
+
+    for line in diff_output.splitlines():
+        if line.startswith("diff --git"):
+            # Save previous file stats
+            if current_file:
+                file_stats.append(
+                    FileStat(
+                        file=current_file,
+                        insertions=file_insertions,
+                        deletions=file_deletions,
+                    )
+                )
+            # Start new file
+            parts = line.split(" b/")
+            current_file = parts[-1] if len(parts) > 1 else ""
+            file_insertions = 0
+            file_deletions = 0
+            files_changed += 1
+        elif line.startswith("+") and not line.startswith("+++"):
+            insertions += 1
+            file_insertions += 1
+        elif line.startswith("-") and not line.startswith("---"):
+            deletions += 1
+            file_deletions += 1
+
+    # Save last file
+    if current_file:
+        file_stats.append(
+            FileStat(file=current_file, insertions=file_insertions, deletions=file_deletions)
+        )
+
+    return DiffStats(
+        files_changed=files_changed,
+        insertions=insertions,
+        deletions=deletions,
+        file_stats=file_stats,
+    )
+
+
+def _get_recent_commits(count: int) -> list[CommitInfo]:
+    """Get N most recent commits."""
+    try:
+        from gac.git import run_git_command
+
+        # Format: hash|message|author|date
+        format_str = "%h|%s|%an|%cr"
+        output = run_git_command(["log", f"-{count}", f"--format={format_str}"])
+
+        commits: list[CommitInfo] = []
+        for line in output.splitlines():
+            if not line.strip():
+                continue
+            parts = line.split("|", 3)
+            if len(parts) >= 4:
+                commits.append(
+                    CommitInfo(
+                        hash=parts[0],
+                        message=parts[1],
+                        author=parts[2],
+                        date=parts[3],
+                    )
+                )
+        return commits
+    except Exception:
+        return []
+
+
+# =============================================================================
+# MCP TOOLS
+# =============================================================================
+
+
+@mcp.tool()
+def gac_status(request: StatusRequest) -> StatusResult:
+    """Get comprehensive git repository status.
+
+    This is your "vision" tool - use it to understand repository state before
+    making commits. It provides information about staged, unstaged, and untracked
+    files, along with optional diff content and commit history.
+
+    WHEN TO USE:
+    - Before calling gac_commit to understand what will be committed
+    - To check if there are any merge conflicts
+    - To see recent commit history and patterns
+    - To review diff content before committing
+
+    PARAMETERS:
+    - include_diff: Set True to see the full diff content (useful for understanding changes)
+    - include_stats: Set True to see line change statistics
+    - include_history: Set N > 0 to include N most recent commits
+    - staged_only: Set True to only show staged changes in diff
+    - include_untracked: Set False to exclude untracked files
+
+    WORKFLOW:
+    1. Call gac_status() to see what files changed
+    2. Call gac_status(include_diff=True) to understand the changes
+    3. Call gac_commit() with appropriate parameters
+
+    RETURNS:
+    StatusResult with branch, file lists, optional diff/stats/history
+
+    EXAMPLE:
+        # Basic status check
+        status = gac_status(StatusRequest())
+
+        # Full context before committing
+        status = gac_status(StatusRequest(
+            include_diff=True,
+            include_stats=True,
+            include_history=5
+        ))
+    """
+    # Check if we're in a git repo
+    is_repo, error = _check_git_repo()
+    if not is_repo:
+        return StatusResult(
+            branch="",
+            is_clean=False,
+            is_repo=False,
+            staged_files=[],
+            unstaged_files=[],
+            untracked_files=[],
+            conflicts=[],
+            error=f"Not in a git repository: {error}",
+        )
+
+    try:
+        from gac.git import get_current_branch, run_git_command
+
+        # Get basic status
+        branch = get_current_branch()
+        file_status = _get_file_status()
+
+        # Determine if clean
+        is_clean = (
+            not file_status["staged"]
+            and not file_status["unstaged"]
+            and (not file_status["untracked"] or not request.include_untracked)
+            and not file_status["conflicts"]
+        )
+
+        # Build result
+        result = StatusResult(
+            branch=branch,
+            is_clean=is_clean,
+            is_repo=True,
+            staged_files=file_status["staged"],
+            unstaged_files=file_status["unstaged"],
+            untracked_files=file_status["untracked"] if request.include_untracked else [],
+            conflicts=file_status["conflicts"],
+        )
+
+        # Include diff if requested
+        if request.include_diff:
+            diff_args = ["diff"]
+            if request.staged_only:
+                diff_args.append("--cached")
+            else:
+                diff_args.append("HEAD")
+
+            diff_output = run_git_command(diff_args)
+            result.diff = diff_output
+
+            # Include stats
+            if request.include_stats:
+                result.diff_stats = _get_diff_stats(diff_output)
+
+        # Include history if requested
+        if request.include_history > 0:
+            result.recent_commits = _get_recent_commits(request.include_history)
+
+        return result
+
+    except Exception as e:
+        logger.exception("Error getting git status")
+        return StatusResult(
+            branch="",
+            is_clean=False,
+            is_repo=True,
+            staged_files=[],
+            unstaged_files=[],
+            untracked_files=[],
+            conflicts=[],
+            error=str(e),
+        )
+
+
+@mcp.tool()
+def gac_commit(request: CommitRequest) -> CommitResult:
+    """Generate and optionally execute a git commit using AI.
+
+    This is your "action" tool - use it to create commit messages and execute
+    commits. GAC analyzes staged changes and generates conventional commit
+    messages using the configured AI model.
+
+    WHEN TO USE:
+    - You need to commit changes to a git repository
+    - You want AI-generated commit messages following best practices
+    - You need to stage, commit, and optionally push in one operation
+
+    IMPORTANT WORKFLOW:
+    1. Call gac_status() FIRST to understand repository state
+    2. If no staged files, either stage them first or use stage_all=True
+    3. Use dry_run=True to preview before executing
+    4. Use message_only=True to get just the message without committing
+    5. Use auto_confirm=True for non-interactive agent workflows
+
+    KEY PARAMETERS:
+    - stage_all: Stage all changes (equivalent to git add -A)
+    - dry_run: Preview what would happen without committing
+    - message_only: Generate message without committing
+    - push: Push to remote after successful commit
+    - hint: Additional context for better commit messages
+    - auto_confirm: Skip confirmation prompts (REQUIRED for agents)
+
+    COMMIT MESSAGE OPTIONS:
+    - one_liner: Single-line message (no body)
+    - scope: Conventional commit scope (e.g., 'auth', 'api')
+    - language: Commit message language (e.g., 'Spanish', 'zh-CN')
+
+    SAFETY OPTIONS:
+    - skip_secret_scan: Skip security scan (use with caution)
+    - no_verify: Skip pre-commit hooks
+
+    RETURNS:
+    CommitResult with success status, message, hash, and files changed
+
+    EXAMPLES:
+        # Preview a commit
+        result = gac_commit(CommitRequest(
+            stage_all=True,
+            dry_run=True
+        ))
+
+        # Quick commit with push
+        result = gac_commit(CommitRequest(
+            stage_all=True,
+            push=True,
+            auto_confirm=True
+        ))
+
+        # Get message only for review
+        result = gac_commit(CommitRequest(
+            message_only=True
+        ))
+
+        # Commit with context hint
+        result = gac_commit(CommitRequest(
+            hint="Fixes login bug reported in issue #123",
+            auto_confirm=True
+        ))
+    """
+    # Check if we're in a git repo
+    is_repo, error = _check_git_repo()
+    if not is_repo:
+        return CommitResult(
+            success=False,
+            commit_message="",
+            error=f"Not in a git repository: {error}",
+        )
+
+    try:
+        from gac.ai import generate_commit_message
+        from gac.ai_utils import count_tokens
+        from gac.commit_executor import CommitExecutor
+        from gac.config import load_config
+        from gac.git import get_staged_files, run_git_command
+        from gac.git_state_validator import GitStateValidator
+        from gac.postprocess import clean_commit_message
+        from gac.prompt_builder import PromptBuilder
+
+        # Load configuration
+        config = load_config()
+
+        # Determine model
+        model = request.model or config.get("model")
+        if not model:
+            return CommitResult(
+                success=False,
+                commit_message="",
+                error="No model configured. Run 'gac init' or provide model parameter.",
+            )
+
+        # Stage files if requested (even for dry_run in MCP - we want to preview)
+        if request.stage_all:
+            run_git_command(["add", "--all"])
+
+        # Get staged files
+        staged_files = get_staged_files(existing_only=False)
+
+        if not staged_files:
+            return CommitResult(
+                success=False,
+                commit_message="",
+                files_changed=[],
+                error="No staged changes found. Use stage_all=True or stage files manually.",
+            )
+
+        # Get git state for prompt building
+        validator = GitStateValidator(config)
+        git_state = validator.get_git_state(
+            stage_all=request.stage_all,
+            dry_run=request.dry_run,
+            skip_secret_scan=request.skip_secret_scan,
+            quiet=True,
+            model=model,
+            hint=request.hint,
+            one_liner=request.one_liner,
+            infer_scope=request.scope is None,
+            verbose=False,
+            language=request.language,
+        )
+
+        if not git_state:
+            return CommitResult(
+                success=False,
+                commit_message="",
+                files_changed=staged_files,
+                error="Failed to get git state. Ensure there are staged changes.",
+            )
+
+        # Collect warnings
+        warnings: list[str] = []
+        if git_state.has_secrets and not request.skip_secret_scan:
+            warnings.append(
+                "Potential secrets detected in staged changes. "
+                "Review carefully before committing."
+            )
+
+        # Build prompt
+        prompt_builder = PromptBuilder(config)
+        prompt_bundle = prompt_builder.build_prompts(
+            git_state=git_state,
+            hint=request.hint,
+            one_liner=request.one_liner,
+            infer_scope=request.scope is None,
+            language=request.language,
+        )
+
+        # Build conversation messages
+        conversation_messages: list[dict[str, str]] = []
+        if prompt_bundle.system_prompt:
+            conversation_messages.append({"role": "system", "content": prompt_bundle.system_prompt})
+        conversation_messages.append({"role": "user", "content": prompt_bundle.user_prompt})
+
+        # Get generation config
+        temperature = config.get("temperature", 0.7)
+        max_tokens = config.get("max_output_tokens", 1000)
+        max_retries = config.get("max_retries", 3)
+
+        # Generate commit message using AI
+        raw_commit_message = generate_commit_message(
+            model=model,
+            prompt=conversation_messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            max_retries=max_retries,
+            quiet=True,
+        )
+        commit_message = clean_commit_message(raw_commit_message)
+
+        if not commit_message:
+            return CommitResult(
+                success=False,
+                commit_message="",
+                files_changed=staged_files,
+                error="Failed to generate commit message. Check AI model configuration.",
+            )
+
+        # If message_only, return without committing
+        if request.message_only:
+            return CommitResult(
+                success=True,
+                commit_message=commit_message,
+                files_changed=staged_files,
+                warnings=warnings,
+            )
+
+        # If dry_run, return without committing
+        if request.dry_run:
+            return CommitResult(
+                success=True,
+                commit_message=commit_message,
+                files_changed=staged_files,
+                warnings=warnings,
+            )
+
+        # Execute the commit
+        executor = CommitExecutor(
+            dry_run=False,
+            quiet=True,
+            no_verify=request.no_verify,
+            hook_timeout=120,
+        )
+        executor.create_commit(commit_message)
+
+        # Get commit hash
+        commit_hash = run_git_command(["rev-parse", "HEAD"])[:7]
+
+        # Push if requested
+        if request.push:
+            executor.push_to_remote()
+
+        return CommitResult(
+            success=True,
+            commit_message=commit_message,
+            commit_hash=commit_hash,
+            files_changed=staged_files,
+            warnings=warnings,
+        )
+
+    except Exception as e:
+        logger.exception("Error in commit workflow")
+        return CommitResult(
+            success=False,
+            commit_message="",
+            error=str(e),
+        )
+
+
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
+
+
+def main():
+    """Main entry point for the GAC MCP server."""
+    # Run the FastMCP server with stdio transport (default for agents)
+    mcp.run()
+
+
+if __name__ == "__main__":
+    main()
