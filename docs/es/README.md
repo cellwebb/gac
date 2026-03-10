@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **Interrogación interactiva**: Usa `--interactive` (`-i`) para responder preguntas específicas sobre tus cambios para mensajes de commit más contextuales
 - **Flujos de trabajo de un comando**: Flujos de trabajo completos con banderas como `gac -ayp` (stage todo, auto-confirmar, push)
 - **Integración con Git**: Respeta los hooks de pre-commit y lefthook, ejecutándolos antes de operaciones costosas de LLM
+- **Servidor MCP**: Ejecuta `gac serve` para exponer herramientas de commit a agentes de IA a través del [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ### 🛡️ **Seguridad incorporada**
 
@@ -222,6 +223,7 @@ Rastrea métricas de instalación en tiempo real y estadísticas de descarga de 
 ## Obtener ayuda
 
 - **Documentación completa**: [USAGE.md](docs/es/USAGE.md) - Referencia completa de CLI
+- **Servidor MCP**: [docs/MCP.md](docs/es/MCP.md) - Usar GAC como servidor MCP para agentes de IA
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/es/CLAUDE_CODE.md) - Configuración y autenticación de Claude Code
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/es/QWEN.md) - Configuración y autenticación de Qwen.ai
 - **Prompts personalizados**: [CUSTOM_SYSTEM_PROMPTS.md](docs/es/CUSTOM_SYSTEM_PROMPTS.md) - Personaliza el estilo del mensaje de commit

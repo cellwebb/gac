@@ -375,6 +375,7 @@ gac --no-verify-ssl  # Пропустить проверку SSL для этог
 - `gac config unset KEY` — Удалить ключ конфигурации из `$HOME/.gac.env`
 - `gac language` (или `gac lang`) — Интерактивный селектор языка для сообщений коммитов (устанавливает GAC_LANGUAGE)
 - `gac diff` — Показать отфильтрованный git diff с опциями для индексированных/неиндексированных изменений, цвета и усечения
+- `gac serve` — Запустить GAC как [MCP-сервер](MCP.md) для интеграции с ИИ-агентами (транспорт stdio)
 
 ## Интерактивный режим
 
@@ -484,6 +485,7 @@ gac -i -v
 
 ## Получение справки
 
+- Для настройки MCP-сервера (интеграция с ИИ-агентами) смотрите [docs/MCP.md](MCP.md)
 - Для пользовательских системных подсказок смотрите [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - Для устранения неполадок и расширенных советов смотрите [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Для установки и конфигурации смотрите [README.md#installation-and-configuration](README.md#installation-and-configuration)

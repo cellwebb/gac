@@ -379,6 +379,7 @@ Os seguintes subcomandos estão disponíveis:
 - `gac config unset KEY` — Remover chave de configuração de `$HOME/.gac.env`
 - `gac language` (ou `gac lang`) — Seletor de idioma interativo para mensagens de commit (define GAC_LANGUAGE)
 - `gac diff` — Mostrar git diff filtrado com opções para mudanças preparadas/não preparadas, cor e truncamento
+- `gac serve` — Iniciar o GAC como [servidor MCP](MCP.md) para integração com agentes de IA (transporte stdio)
 
 ## Modo Interativo
 
@@ -488,6 +489,7 @@ gac -i -v
 
 ## Obtendo Ajuda
 
+- Para configuração do servidor MCP (integração com agentes de IA), veja [docs/MCP.md](MCP.md)
 - Para prompts de sistema personalizados, veja [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
 - Para solução de problemas e dicas avançadas, veja [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
 - Para instalação e configuração, veja [README.md#installation-and-configuration](../README.md#installation-and-configuration)

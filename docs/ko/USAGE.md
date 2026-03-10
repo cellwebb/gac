@@ -375,6 +375,7 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 - `gac config unset KEY` — `$HOME/.gac.env`에서 구성 키 제거
 - `gac language` (또는 `gac lang`) — 커밋 메시지를 위한 대화형 언어 선택기 (GAC_LANGUAGE 설정)
 - `gac diff` — 스테이징된/스테이징되지 않은 변경, 색상, 자르기 옵션으로 필터링된 git diff 표시
+- `gac serve` — AI 에이전트 통합을 위한 [MCP 서버](MCP.md)로 GAC 시작 (stdio 전송)
 
 ## 대화형 모드
 
@@ -484,6 +485,7 @@ gac -i -v
 
 ## 도움말 얻기
 
+- MCP 서버 설정(AI 에이전트 통합)에 대해서는 [docs/MCP.md](MCP.md)를 참조하세요
 - 사용자 정의 시스템 프롬프트는 [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)를 참조하세요
 - 문제 해결 및 고급 팁은 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)를 참조하세요
 - 설치 및 구성은 [README.md#installation-and-configuration](README.md#installation-and-configuration)를 참조하세요

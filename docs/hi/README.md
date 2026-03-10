@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **इंटरैक्टिव प्रश्न**: `--interactive` (`-i`) का उपयोग करके अपने परिवर्तनों के बारे में लक्षित प्रश्नों के उत्तर दें और अधिक संदर्भात्मक कमिट संदेश प्राप्त करें
 - **वन-कमांड वर्कफ्लोज़**: `gac -ayp` (सभी को स्टेज करें, ऑटो-कन्फर्म करें, पुश करें) जैसे फ्लैग्स के साथ पूर्ण वर्कफ्लोज़
 - **Git इंटीग्रेशन**: प्री-कमिट और लेफ्थुक हुक्स का सम्मान करता है, महंगे LLM ऑपरेशन से पहले उन्हें चलाता है
+- **MCP सर्वर**: [Model Context Protocol](https://modelcontextprotocol.io/) के माध्यम से AI एजेंटों को कमिट टूल्स उपलब्ध कराने के लिए `gac serve` चलाएं
 
 ### 🛡️ **बिल्ट-इन सुरक्षा**
 
@@ -222,6 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## सहायता प्राप्त करना
 
 - **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
+- **MCP सर्वर**: [docs/MCP.md](docs/hi/MCP.md) - AI एजेंटों के लिए GAC को MCP सर्वर के रूप में उपयोग करें
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/hi/CLAUDE_CODE.md) - Claude Code सेटअप और प्रमाणीकरण
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/hi/QWEN.md) - Qwen.ai सेटअप और प्रमाणीकरण
 - **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें

@@ -330,6 +330,7 @@ De volgende subcommando's zijn beschikbaar:
 - `gac config unset KEY` — Configuratiesleutel verwijderen uit `$HOME/.gac.env`
 - `gac language` (of `gac lang`) — Interactieve taalselector voor commitberichten (stelt GAC_LANGUAGE in)
 - `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
+- `gac serve` — Start GAC als [MCP-server](MCP.md) voor AI-agent integratie (stdio transport)
 
 ## Interactieve Modus
 
@@ -439,6 +440,7 @@ gac -i -v
 
 ## Hulp Krijgen
 
+- Voor MCP-server setup (AI-agent integratie), zie [docs/MCP.md](MCP.md)
 - Voor custom system prompts, zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - Voor probleemoplossing en geavanceerde tips, zie [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Voor installatie en configuratie, zie [README.md#installation-and-configuration](README.md#installation-and-configuration)

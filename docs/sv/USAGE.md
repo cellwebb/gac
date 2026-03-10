@@ -330,6 +330,7 @@ Följande underkommandon är tillgängliga:
 - `gac config unset KEY` — Ta bort konfigurationsnyckel från `$HOME/.gac.env`
 - `gac language` (eller `gac lang`) — Interaktiv språkväljare för commit-meddelanden (ställer in GAC_LANGUAGE)
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
+- `gac serve` — Starta GAC som [MCP-server](MCP.md) för AI-agent integration (stdio transport)
 
 ## Interaktivt Läge
 
@@ -439,6 +440,7 @@ gac -i -v
 
 ## Få hjälp
 
+- För MCP-server setup (AI-agent integration), se [docs/MCP.md](MCP.md)
 - För anpassade systemprompter, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - För felsökning och avancerade tips, se [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - För installation och konfiguration, se [README.md#installation-and-configuration](README.md#installation-and-configuration)

@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **対話型質問**: `--interactive` (`-i`) を使用して変更に関する質問に答え、より文脈に合ったコミットメッセージを取得
 - **ワンコマンドワークフロー**: `gac -ayp` のようなフラグで完全なワークフロー（すべてステージ、自動確定、プッシュ）
 - **Git 統合**: 高価な LLM 操作の前に pre-commit と lefthook フックを実行して尊重
+- **MCP サーバー**: `gac serve` を実行して [Model Context Protocol](https://modelcontextprotocol.io/) 経由で AI エージェントにコミットツールを公開
 
 ### 🛡️ **組み込みセキュリティ**
 
@@ -222,6 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## ヘルプ
 
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
+- **MCP サーバー**: [MCP.md](docs/ja/MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ja/QWEN.md) - Qwen.ai のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ

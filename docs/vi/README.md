@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **Hỏi đáp tương tác**: Sử dụng `--interactive` (`-i`) để trả lời các câu hỏi nhắm mục tiêu về các thay đổi của bạn để có thông điệp commit có nhiều ngữ cảnh hơn
 - **Quy trình làm việc một lệnh**: Quy trình làm việc hoàn chỉnh với các flag như `gac -ayp` (stage tất cả, tự động xác nhận, push)
 - **Tích hợp Git**: Tôn các hook pre-commit và lefthook, chạy chúng trước các thao tác LLM tốn kém
+- **MCP server**: Chạy `gac serve` để cung cấp công cụ commit cho AI agent thông qua [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ### 🛡️ **Bảo Mật Tích Hợp**
 
@@ -222,6 +223,7 @@ Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuốn
 ## Nhận Trợ Giúp
 
 - **Tài liệu đầy đủ**: [USAGE.md](USAGE.md) - Tham chiếu CLI hoàn chỉnh
+- **MCP server**: [docs/MCP.md](docs/vi/MCP.md) - Sử dụng GAC làm MCP server cho AI agent
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/vi/CLAUDE_CODE.md) - Cài đặt và xác thực Claude Code
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/vi/QWEN.md) - Cài đặt và xác thực Qwen.ai
 - **Gợi ý tùy chỉnh**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tùy chỉnh kiểu thông điệp commit

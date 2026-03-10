@@ -330,6 +330,7 @@ Các lệnh con sau đây có sẵn:
 - `gac config unset KEY` — Xóa khóa cấu hình khỏi `$HOME/.gac.env`
 - `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho các thông điệp commit (đặt GAC_LANGUAGE)
 - `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
+- `gac serve` — Khởi động GAC như một [MCP server](MCP.md) để tích hợp AI agent (truyền tải stdio)
 
 ## Chế Độ Tương Tác
 
@@ -439,6 +440,7 @@ gac -i -v
 
 ## Nhận Trợ Giúp
 
+- Để thiết lập MCP server (tích hợp AI agent), xem [docs/MCP.md](MCP.md)
 - Đối với gợi ý hệ thống tùy chỉnh, xem [docs/CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md)
 - Đối với xử lý sự cố và mẹo nâng cao, xem [docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - Đối với cài đặt và cấu hình, xem [README.md#installation-and-configuration](README.md#installation-and-configuration)

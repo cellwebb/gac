@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **交互式提问**：使用 `--interactive` (`-i`) 回答有关你更改的定向问题，以获得更多上下文的提交信息
 - **单命令工作流**：使用 `gac -ayp`（暂存所有、自动确认、推送）等标志完成完整工作流
 - **Git 集成**：尊重 pre-commit 和 lefthook 钩子，在昂贵的 LLM 操作之前运行它们
+- **MCP 服务器**：运行 `gac serve` 通过 [Model Context Protocol](https://modelcontextprotocol.io/) 向 AI 代理公开提交工具
 
 ### 🛡️ **内置安全**
 
@@ -222,6 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## 获取帮助
 
 - **完整文档**：[USAGE.md](docs/zh-CN/USAGE.md) - 完整的 CLI 参考
+- **MCP 服务器**：[MCP.md](docs/zh-CN/MCP.md) - 将 GAC 用作 AI 代理的 MCP 服务器
 - **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-CN/CLAUDE_CODE.md) - Claude Code 设置与认证
 - **Qwen.ai OAuth**：[docs/QWEN.md](docs/zh-CN/QWEN.md) - Qwen.ai 设置与认证
 - **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格

@@ -379,6 +379,7 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac config unset KEY` — Konfigurationsschlüssel aus `$HOME/.gac.env` entfernen
 - `gac language` (oder `gac lang`) — Interaktiver Sprachselektor für Commit-Nachrichten (setzt GAC_LANGUAGE)
 - `gac diff` — Gefiltertes git diff mit Optionen für gestufte/ungestufte Änderungen, Farbe und Kürzung anzeigen
+- `gac serve` — GAC als [MCP-Server](MCP.md) für KI-Agenten-Integration starten (stdio-Transport)
 
 ## Interaktiver Modus
 
@@ -488,6 +489,7 @@ gac -i -v
 
 ## Hilfe erhalten
 
+- Für MCP-Server-Setup (KI-Agenten-Integration) siehe [docs/MCP.md](MCP.md)
 - Für benutzerdefinierte System-Prompts siehe [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - Zur Fehlerbehebung und erweiterten Tipps siehe [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Für Installation und Konfiguration siehe [README.md#installation-and-configuration](README.md#installation-and-configuration)

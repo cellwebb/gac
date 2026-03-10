@@ -380,6 +380,7 @@ gac --no-verify-ssl  # このコミットのSSL検証をスキップ
 - `gac config unset KEY` — `$HOME/.gac.env` から設定キーを削除
 - `gac language` (または `gac lang`) — コミットメッセージの対話的言語セレクター（GAC_LANGUAGE を設定）
 - `gac diff` — ステージ/未ステージ変更、色、トランケーションのオプション付きでフィルタリングされた git diff を表示
+- `gac serve` — AI エージェント統合用の [MCP サーバー](MCP.md)として GAC を起動（stdio トランスポート）
 
 ## インタラクティブモード
 
@@ -489,6 +490,7 @@ gac -i -v
 
 ## ヘルプ
 
+- MCP サーバーのセットアップ（AI エージェント統合）については [MCP.md](MCP.md) を参照
 - カスタムシステムプロンプトについては [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) を参照
 - トラブルシューティングと高度なヒントについては [TROUBLESHOOTING.md](TROUBLESHOOTING.md) を参照
 - インストールと設定については [../README.md](../README.md) を参照

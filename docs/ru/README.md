@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **Интерактивные вопросы**: Используйте `--interactive` (`-i`) для ответа на целевые вопросы о ваших изменениях для более контекстуальных сообщений коммита
 - **Рабочие процессы в одну команду**: Полные рабочие процессы с флагами, такими как `gac -ayp` (индексировать всё, автоподтверждение, отправить)
 - **Интеграция с Git**: Уважает хуки pre-commit и lefthook, запуская их перед дорогостоящими операциями ИИ
+- **MCP-сервер**: Запустите `gac serve` для предоставления инструментов коммита ИИ-агентам через [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ### 🛡️ **Встроенная безопасность**
 
@@ -222,6 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## Получение помощи
 
 - **Полная документация**: [USAGE.md](docs/ru/USAGE.md) - Полное справочное руководство по CLI
+- **MCP-сервер**: [docs/MCP.md](docs/ru/MCP.md) - Использование GAC в качестве MCP-сервера для ИИ-агентов
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ru/CLAUDE_CODE.md) - Настройка и аутентификация Claude Code
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ru/QWEN.md) - Настройка и аутентификация Qwen.ai
 - **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов

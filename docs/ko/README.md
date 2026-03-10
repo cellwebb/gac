@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **상호작용 질문**: `--interactive` (`-i`)를 사용하여 변경 사항에 대한 목표 질문에 답해 더 풍부한 컨텍스트를 담은 커밋 메시지 생성
 - **한 번의 명령 워크플로우**: `gac -ayp` (모두 스테이징, 자동 확인, 푸시)와 같은 플래그로 완전한 워크플로우
 - **Git 통합**: 비싼 LLM 작업 전에 pre-commit 및 lefthook hooks 실행
+- **MCP 서버**: `gac serve`를 실행하여 [Model Context Protocol](https://modelcontextprotocol.io/)을 통해 AI 에이전트에 커밋 도구 제공
 
 ### 🛡️ **내장 보안**
 
@@ -222,6 +223,7 @@ ANTHROPIC_API_KEY=your_key_here
 ## 도움말 얻기
 
 - **전체 문서**: [docs/USAGE.md](docs/ko/USAGE.md) - 완전한 CLI 참조
+- **MCP 서버**: [docs/MCP.md](docs/ko/MCP.md) - AI 에이전트를 위한 MCP 서버로 GAC 사용
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ko/CLAUDE_CODE.md) - Claude Code 설정 및 인증
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/ko/QWEN.md) - Qwen.ai 설정 및 인증
 - **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의

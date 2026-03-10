@@ -381,6 +381,7 @@ gac --no-verify-ssl  # 为此次提交跳过 SSL 验证
 - `gac config unset KEY` — 从 `$HOME/.gac.env` 中删除配置键
 - `gac language`（或 `gac lang`）— 提交消息的交互式语言选择器（设置 GAC_LANGUAGE）
 - `gac diff` — 显示过滤的 git diff，具有暂存/未暂存更改、颜色和截断选项
+- `gac serve` — 将 GAC 作为 [MCP 服务器](MCP.md) 启动，用于 AI 代理集成（stdio 传输）
 
 ## 交互模式
 
@@ -490,6 +491,7 @@ gac -i -v
 
 ## 获取帮助
 
+- 有关 MCP 服务器设置（AI 代理集成），请参阅 [docs/MCP.md](MCP.md)
 - 有关自定义系统提示，请参阅 [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
 - 有关故障排除和高级提示，请参阅 [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
 - 有关安装和配置，请参阅 [README.md#installation-and-configuration](../README.md#installation-and-configuration)

@@ -97,6 +97,7 @@ uv tool upgrade gac
 - **Interaktiv spørsmålsstilling**: Bruk `--interactive` (`-i`) for å svare på målrettede spørsmål om endringene dine for mer kontekstuelle commit-meldinger
 - **Én-kommandos arbeidsflyter**: Komplette arbeidsflyter med flagg som `gac -ayp` (stage alle, auto-bekreft, push)
 - **Git-integrasjon**: Respekterer pre-commit og lefthook hooks, og kjører dem før dyre LLM-operasjoner
+- **MCP-server**: Kjør `gac serve` for å eksponere commit-verktøy til AI-agenter via [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ### 🛡️ **Innebygd Sikkerhet**
 
@@ -222,6 +223,7 @@ Følg sanntids installasjonsmålinger og pakkenedlastningsstatistikk.
 ## Få Hjelp
 
 - **Full dokumentasjon**: [USAGE.md](USAGE.md) - Komplett CLI-referanse
+- **MCP-server**: [MCP.md](MCP.md) - Bruk GAC som MCP-server for AI-agenter
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/no/CLAUDE_CODE.md) - Claude Code oppsett og autentisering
 - **Qwen.ai OAuth**: [docs/QWEN.md](docs/no/QWEN.md) - Qwen.ai oppsett og autentisering
 - **Egendefinerte prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tilpass commit-meldingsstil
