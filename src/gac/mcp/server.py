@@ -14,8 +14,10 @@ Usage:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import re
+from collections.abc import Generator
 
 from mcp.server.fastmcp import FastMCP
 
@@ -198,7 +200,7 @@ def _extract_scope(message: str) -> str:
     return match.group(1) if match else ""
 
 
-def _stderr_console_redirect():
+def _stderr_console_redirect() -> contextlib.AbstractContextManager[None]:
     """Context manager that redirects all Rich console output to stderr.
 
     MCP communicates over stdio (stdin/stdout).  Any writes to stdout from
@@ -206,12 +208,10 @@ def _stderr_console_redirect():
     module-level ``console`` objects in every GAC module that prints during
     commit execution so their output goes to stderr instead.
     """
-    import contextlib
-
     from rich.console import Console as RichConsole
 
     @contextlib.contextmanager
-    def _ctx():
+    def _ctx() -> Generator[None, None, None]:
         import gac.commit_executor as _ce
         import gac.grouped_commit_workflow as _gcw
         import gac.workflow_utils as _wu
@@ -219,12 +219,12 @@ def _stderr_console_redirect():
         stderr_con = RichConsole(stderr=True)
         saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}
         for mod in saved:
-            mod.console = stderr_con
+            mod.console = stderr_con  # type: ignore[attr-defined]
         try:
             yield
         finally:
             for mod, orig in saved.items():
-                mod.console = orig
+                mod.console = orig  # type: ignore[attr-defined]
 
     return _ctx()
 
