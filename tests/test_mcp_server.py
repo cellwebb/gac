@@ -180,41 +180,21 @@ class TestGetDiffStats:
         assert stats.file_stats[1].file == "b.py"
 
     def test_only_insertions(self):
-        diff = (
-            "diff --git a/new.py b/new.py\n"
-            "--- /dev/null\n"
-            "+++ b/new.py\n"
-            "+line1\n"
-            "+line2\n"
-        )
+        diff = "diff --git a/new.py b/new.py\n--- /dev/null\n+++ b/new.py\n+line1\n+line2\n"
         stats = _get_diff_stats(diff)
         assert stats.files_changed == 1
         assert stats.insertions == 2
         assert stats.deletions == 0
 
     def test_only_deletions(self):
-        diff = (
-            "diff --git a/old.py b/old.py\n"
-            "--- a/old.py\n"
-            "+++ /dev/null\n"
-            "-line1\n"
-            "-line2\n"
-            "-line3\n"
-        )
+        diff = "diff --git a/old.py b/old.py\n--- a/old.py\n+++ /dev/null\n-line1\n-line2\n-line3\n"
         stats = _get_diff_stats(diff)
         assert stats.files_changed == 1
         assert stats.insertions == 0
         assert stats.deletions == 3
 
     def test_per_file_stats(self):
-        diff = (
-            "diff --git a/x.py b/x.py\n"
-            "+add1\n"
-            "+add2\n"
-            "-del1\n"
-            "diff --git a/y.py b/y.py\n"
-            "+add3\n"
-        )
+        diff = "diff --git a/x.py b/x.py\n+add1\n+add2\n-del1\ndiff --git a/y.py b/y.py\n+add3\n"
         stats = _get_diff_stats(diff)
         assert stats.file_stats[0] == FileStat(file="x.py", insertions=2, deletions=1)
         assert stats.file_stats[1] == FileStat(file="y.py", insertions=1, deletions=0)
