@@ -1,9 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
 from gac.prompt_cli import (
+    _edit_text_interactive,
     get_active_custom_prompt,
     prompt,
 )
@@ -263,3 +264,171 @@ class TestGetActiveCustomPrompt:
         # Should gracefully handle missing file
         assert content is None
         assert source is None
+
+
+class TestEditTextInteractive:
+    @pytest.fixture(autouse=True)
+    def _patch_prompt_toolkit(self):
+        self.mock_buffer = MagicMock()
+        self.mock_document = MagicMock()
+        self.mock_editing_mode = MagicMock()
+        self.mock_key_bindings_cls = MagicMock()
+        self.mock_key_press_event = MagicMock()
+        self.mock_hsplit = MagicMock()
+        self.mock_layout_cls = MagicMock()
+        self.mock_window = MagicMock()
+        self.mock_buffer_control = MagicMock()
+        self.mock_formatted_text_control = MagicMock()
+        self.mock_scrollbar_margin = MagicMock()
+        self.mock_style = MagicMock()
+        self.mock_app_cls = MagicMock()
+        self.mock_app_instance = MagicMock()
+        self.mock_app_cls.return_value = self.mock_app_instance
+
+        self.patches = [
+            patch("prompt_toolkit.Application", self.mock_app_cls),
+            patch("prompt_toolkit.buffer.Buffer", self.mock_buffer),
+            patch("prompt_toolkit.document.Document", self.mock_document),
+            patch("prompt_toolkit.enums.EditingMode", self.mock_editing_mode),
+            patch("prompt_toolkit.key_binding.KeyBindings", self.mock_key_bindings_cls),
+            patch("prompt_toolkit.key_binding.KeyPressEvent", self.mock_key_press_event),
+            patch("prompt_toolkit.layout.HSplit", self.mock_hsplit),
+            patch("prompt_toolkit.layout.Layout", self.mock_layout_cls),
+            patch("prompt_toolkit.layout.Window", self.mock_window),
+            patch("prompt_toolkit.layout.controls.BufferControl", self.mock_buffer_control),
+            patch("prompt_toolkit.layout.controls.FormattedTextControl", self.mock_formatted_text_control),
+            patch("prompt_toolkit.layout.margins.ScrollbarMargin", self.mock_scrollbar_margin),
+            patch("prompt_toolkit.styles.Style", self.mock_style),
+        ]
+        for p in self.patches:
+            p.start()
+        yield
+        for p in self.patches:
+            p.stop()
+
+    def test_returns_none_when_neither_submitted_nor_cancelled(self):
+        self.mock_app_instance.run.return_value = None
+        result = _edit_text_interactive("test text")
+        assert result is None
+
+    def test_returns_none_on_eof_error(self):
+        self.mock_app_instance.run.side_effect = EOFError()
+        result = _edit_text_interactive("test text")
+        assert result is None
+
+    def test_returns_none_on_keyboard_interrupt(self):
+        self.mock_app_instance.run.side_effect = KeyboardInterrupt()
+        result = _edit_text_interactive("test text")
+        assert result is None
+
+    def test_returns_none_on_generic_exception(self):
+        self.mock_app_instance.run.side_effect = RuntimeError("something broke")
+        result = _edit_text_interactive("test text")
+        assert result is None
+
+    def test_cancelled_returns_none(self):
+        kb_instance = MagicMock()
+        handlers = {}
+
+        def capture_add(*keys):
+            def decorator(func):
+                handlers[keys] = func
+                return func
+            return decorator
+
+        kb_instance.add = capture_add
+        self.mock_key_bindings_cls.return_value = kb_instance
+
+        def simulate_cancel():
+            if ("c-c",) in handlers:
+                mock_event = MagicMock()
+                handlers[("c-c",)](mock_event)
+
+        self.mock_app_instance.run.side_effect = simulate_cancel
+        result = _edit_text_interactive("test text")
+        assert result is None
+
+    def test_submitted_returns_stripped_text(self):
+        kb_instance = MagicMock()
+        handlers = {}
+
+        def capture_add(*keys):
+            def decorator(func):
+                handlers[keys] = func
+                return func
+            return decorator
+
+        kb_instance.add = capture_add
+        self.mock_key_bindings_cls.return_value = kb_instance
+
+        mock_buffer_instance = MagicMock()
+        mock_buffer_instance.text = "  edited text  "
+        self.mock_buffer.return_value = mock_buffer_instance
+
+        def simulate_submit():
+            if ("c-s",) in handlers:
+                mock_event = MagicMock()
+                handlers[("c-s",)](mock_event)
+
+        self.mock_app_instance.run.side_effect = simulate_submit
+        result = _edit_text_interactive("initial text")
+        assert result == "edited text"
+
+    def test_escape_enter_submits(self):
+        kb_instance = MagicMock()
+        handlers = {}
+
+        def capture_add(*keys):
+            def decorator(func):
+                handlers[keys] = func
+                return func
+            return decorator
+
+        kb_instance.add = capture_add
+        self.mock_key_bindings_cls.return_value = kb_instance
+
+        mock_buffer_instance = MagicMock()
+        mock_buffer_instance.text = "submitted via escape"
+        self.mock_buffer.return_value = mock_buffer_instance
+
+        def simulate_escape_enter():
+            if ("escape", "enter") in handlers:
+                mock_event = MagicMock()
+                handlers[("escape", "enter")](mock_event)
+
+        self.mock_app_instance.run.side_effect = simulate_escape_enter
+        result = _edit_text_interactive("initial text")
+        assert result == "submitted via escape"
+
+
+class TestPromptSetEdgeCases:
+    def test_prompt_set_both_edit_and_file(self, runner, mock_paths, tmp_path, monkeypatch):
+        monkeypatch.delenv("GAC_SYSTEM_PROMPT_PATH", raising=False)
+        source_file = tmp_path / "source.txt"
+        source_file.write_text("content", encoding="utf-8")
+
+        result = runner.invoke(prompt, ["set", "--edit", "--file", str(source_file)])
+        assert result.exit_code != 0
+        assert "mutually exclusive" in result.output.lower()
+
+    def test_prompt_set_edit_empty_result(self, runner, mock_paths, monkeypatch):
+        monkeypatch.delenv("GAC_SYSTEM_PROMPT_PATH", raising=False)
+
+        with patch("gac.prompt_cli._edit_text_interactive") as mock_edit:
+            mock_edit.return_value = ""
+            result = runner.invoke(prompt, ["set", "--edit"])
+
+        assert result.exit_code == 0
+        assert "empty prompt not saved" in result.output.lower()
+        assert not mock_paths["custom_prompt"].exists()
+
+    def test_prompt_set_file_oserror(self, runner, mock_paths, tmp_path, monkeypatch):
+        monkeypatch.delenv("GAC_SYSTEM_PROMPT_PATH", raising=False)
+        source_file = tmp_path / "source.txt"
+        source_file.write_text("content", encoding="utf-8")
+
+        with patch("pathlib.Path.read_text", side_effect=OSError("Permission denied")):
+            result = runner.invoke(prompt, ["set", "--file", str(source_file)])
+
+        assert result.exit_code != 0
+        assert "error reading file" in result.output.lower()

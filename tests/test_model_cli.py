@@ -7,6 +7,7 @@ from unittest import mock
 from click.testing import CliRunner
 
 from gac.model_cli import (
+    _configure_model,
     _load_existing_env,
     _prompt_required_text,
     _should_show_rtl_warning_for_init,
@@ -190,3 +191,378 @@ def test_model_cli_basic(tmp_path):
                 result = runner.invoke(model)
 
                 assert result.exit_code == 0
+
+
+def test_configure_model_azure_new_endpoint_cancelled(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli._prompt_required_text") as mprompt,
+        ):
+            mselect.return_value.ask.side_effect = ["Azure OpenAI"]
+            mtext.return_value.ask.side_effect = ["gpt-5-mini"]
+            mprompt.return_value = None
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_azure_api_version_enter_new(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("questionary.password") as mpass,
+            mock.patch("gac.model_cli.set_key"),
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Keep existing endpoint",
+                "Enter new version",
+                "Keep existing key",
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-5-mini",
+                "2025-03-01-preview",
+            ]
+            mpass.return_value.ask.return_value = None
+
+            result = _configure_model({
+                "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
+                "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
+                "AZURE_OPENAI_API_KEY": "existing-key",
+            })
+            assert result is True
+
+
+def test_configure_model_azure_api_version_enter_new_cancelled(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+        ):
+            mselect.return_value.ask.side_effect = [
+                "Azure OpenAI",
+                "Keep existing endpoint",
+                "Enter new version",
+            ]
+            mtext.return_value.ask.side_effect = [
+                "gpt-5-mini",
+                None,
+            ]
+
+            result = _configure_model({
+                "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
+                "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
+            })
+            assert result is False
+
+
+def test_configure_model_ollama_url_cancelled(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+        ):
+            mselect.return_value.ask.side_effect = ["Ollama"]
+            mtext.return_value.ask.side_effect = ["gemma3", None]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_lmstudio_url_cancelled(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+        ):
+            mselect.return_value.ask.side_effect = ["LM Studio"]
+            mtext.return_value.ask.side_effect = ["gemma3", None]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_claude_code_oauth_keep_existing(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "existing"}),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)", "Keep existing token"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_claude_code_oauth_reauth_success(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "existing"}),
+            mock.patch("gac.oauth.claude_code.authenticate_and_save", return_value=True),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)", "Re-authenticate (get new token)"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_claude_code_oauth_reauth_fail(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "existing"}),
+            mock.patch("gac.oauth.claude_code.authenticate_and_save", return_value=False),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)", "Re-authenticate (get new token)"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_claude_code_oauth_no_existing_success(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
+            mock.patch("gac.oauth.claude_code.authenticate_and_save", return_value=True),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_claude_code_oauth_no_existing_fail(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
+            mock.patch("gac.oauth.claude_code.authenticate_and_save", return_value=False),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)"]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_qwen_oauth_keep_existing(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Keep existing token"]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_qwen_oauth_reauth_success(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
+            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth"),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Re-authenticate (get new token)"]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_qwen_oauth_reauth_fail(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
+            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth", side_effect=Exception("auth failed")),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Re-authenticate (get new token)"]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_configure_model_qwen_oauth_no_existing_success(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
+            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth"),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)"]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_qwen_oauth_no_existing_fail(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
+            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth", side_effect=Exception("auth failed")),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)"]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is False
+
+
+def test_model_command_configure_returns_false(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with mock.patch("gac.model_cli._configure_model", return_value=False):
+            runner = CliRunner()
+            result = runner.invoke(model)
+            assert result.exit_code == 0
+            assert "Model configuration complete" not in result.output
+
+
+def test_configure_model_claude_code_oauth_cancel_action(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "existing"}),
+        ):
+            mselect.return_value.ask.side_effect = ["Claude Code (OAuth)", None]
+            mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_qwen_oauth_cancel_action(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+        with (
+            mock.patch("questionary.select") as mselect,
+            mock.patch("questionary.text") as mtext,
+            mock.patch("gac.model_cli.set_key"),
+            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
+        ):
+            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", None]
+            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
+
+            result = _configure_model({})
+            assert result is True
+
+
+def test_configure_model_provider_key_aliases(tmp_path):
+    env_path = tmp_path / ".gac.env"
+    env_path.touch()
+
+    alias_providers = [
+        ("Kimi for Coding", "kimi-coding"),
+        ("MiniMax.io", "minimax"),
+        ("Moonshot AI", "moonshot"),
+        ("Synthetic.new", "synthetic"),
+    ]
+
+    for provider_name, expected_key in alias_providers:
+        with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
+            with (
+                mock.patch("questionary.select") as mselect,
+                mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.password") as mpass,
+                mock.patch("gac.model_cli.set_key") as mset,
+            ):
+                mselect.return_value.ask.side_effect = [provider_name]
+                mtext.return_value.ask.side_effect = ["test-model"]
+                mpass.return_value.ask.side_effect = ["test-key"]
+
+                result = _configure_model({})
+                assert result is True
+                model_call = mset.call_args_list[0]
+                assert f"{expected_key}:test-model" in model_call[0][2]
