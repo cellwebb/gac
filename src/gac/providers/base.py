@@ -44,6 +44,8 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
     Implements ProviderProtocol for type safety.
     """
 
+    config: ProviderConfig
+
     def __init__(self, config: ProviderConfig):
         self.config = config
         self._api_key: str | None = None  # Lazy load
