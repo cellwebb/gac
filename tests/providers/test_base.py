@@ -10,6 +10,8 @@ from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.base import (
     AnthropicCompatibleProvider,
+    BaseConfiguredProvider,
+    GenericHTTPProvider,
     OpenAICompatibleProvider,
     ProviderConfig,
 )
@@ -426,3 +428,120 @@ class TestSanitizeErrorResponse:
         result = sanitize_error_response(long_text)
         assert "[REDACTED]" in result
         assert len(result) <= MAX_ERROR_RESPONSE_LENGTH + 3
+
+
+class TestBaseConfiguredProviderProperties:
+    """Test BaseConfiguredProvider property accessors directly."""
+
+    def test_name_property(self):
+        config = ProviderConfig(name="TestName", api_key_env="TEST_KEY", base_url="http://test.url", timeout=45)
+
+        class ConcreteProvider(BaseConfiguredProvider):
+            def _build_request_body(self, messages, temperature, max_tokens, model, **kwargs):
+                return {}
+
+            def _parse_response(self, response):
+                return ""
+
+            def generate(self, model, messages, temperature=0.7, max_tokens=1024, **kwargs):
+                return ""
+
+        provider = ConcreteProvider(config)
+        assert provider.name == "TestName"
+
+    def test_api_key_env_property(self):
+        config = ProviderConfig(name="Test", api_key_env="MY_API_KEY", base_url="http://test.url")
+
+        class ConcreteProvider(BaseConfiguredProvider):
+            def _build_request_body(self, messages, temperature, max_tokens, model, **kwargs):
+                return {}
+
+            def _parse_response(self, response):
+                return ""
+
+            def generate(self, model, messages, temperature=0.7, max_tokens=1024, **kwargs):
+                return ""
+
+        provider = ConcreteProvider(config)
+        assert provider.api_key_env == "MY_API_KEY"
+
+    def test_base_url_property(self):
+        config = ProviderConfig(name="Test", api_key_env="KEY", base_url="http://custom.url/v1")
+
+        class ConcreteProvider(BaseConfiguredProvider):
+            def _build_request_body(self, messages, temperature, max_tokens, model, **kwargs):
+                return {}
+
+            def _parse_response(self, response):
+                return ""
+
+            def generate(self, model, messages, temperature=0.7, max_tokens=1024, **kwargs):
+                return ""
+
+        provider = ConcreteProvider(config)
+        assert provider.base_url == "http://custom.url/v1"
+
+    def test_timeout_property(self):
+        config = ProviderConfig(name="Test", api_key_env="KEY", base_url="http://test.url", timeout=99)
+
+        class ConcreteProvider(BaseConfiguredProvider):
+            def _build_request_body(self, messages, temperature, max_tokens, model, **kwargs):
+                return {}
+
+            def _parse_response(self, response):
+                return ""
+
+            def generate(self, model, messages, temperature=0.7, max_tokens=1024, **kwargs):
+                return ""
+
+        provider = ConcreteProvider(config)
+        assert provider.timeout == 99
+
+
+class TestGenericHTTPProviderParseResponse:
+    """Test GenericHTTPProvider._parse_response with different response formats."""
+
+    def _make_provider(self):
+        config = ProviderConfig(name="Generic", api_key_env="KEY", base_url="http://test.url")
+        return GenericHTTPProvider(config)
+
+    def test_openai_style_response(self):
+        provider = self._make_provider()
+        response = {"choices": [{"message": {"content": "openai response"}}]}
+        assert provider._parse_response(response) == "openai response"
+
+    def test_anthropic_style_response(self):
+        provider = self._make_provider()
+        response = {"content": [{"text": "anthropic response"}]}
+        assert provider._parse_response(response) == "anthropic response"
+
+    def test_ollama_style_response(self):
+        provider = self._make_provider()
+        response = {"message": {"content": "ollama response"}}
+        assert provider._parse_response(response) == "ollama response"
+
+    def test_fallback_long_string_value(self):
+        provider = self._make_provider()
+        response = {"result": "this is a long response text for fallback detection"}
+        assert provider._parse_response(response) == "this is a long response text for fallback detection"
+
+    def test_no_content_raises_ai_error(self):
+        provider = self._make_provider()
+        response = {"status": "ok", "id": "123"}
+        with pytest.raises(AIError, match="Could not extract content"):
+            provider._parse_response(response)
+
+    def test_empty_choices_falls_through(self):
+        provider = self._make_provider()
+        response = {"choices": [], "message": {"content": "from ollama"}}
+        assert provider._parse_response(response) == "from ollama"
+
+    def test_choices_with_no_content_falls_through(self):
+        provider = self._make_provider()
+        response = {"choices": [{"message": {}}], "content": [{"text": "from anthropic"}]}
+        assert provider._parse_response(response) == "from anthropic"
+
+    def test_empty_dict_raises_ai_error(self):
+        provider = self._make_provider()
+        with pytest.raises(AIError, match="Could not extract content"):
+            provider._parse_response({})
