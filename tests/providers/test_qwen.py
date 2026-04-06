@@ -190,3 +190,72 @@ class TestQwenEdgeCases:
 
                 with pytest.raises(AIError):
                     call_qwen_api("qwen3-coder-plus", [], 0.7, 1000)
+
+    def test_qwen_oauth_no_resource_url(self):
+        """Test Qwen falls back to default URL when resource_url is missing."""
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
+                with patch("gac.providers.base.httpx.post") as mock_post:
+                    mock_oauth_provider = mock.Mock()
+                    mock_oauth_provider.get_token.return_value = {
+                        "access_token": "oauth_token_123",
+                    }
+                    mock_provider_class.return_value = mock_oauth_provider
+
+                    mock_response = MagicMock()
+                    mock_response.json.return_value = {"choices": [{"message": {"content": "test response"}}]}
+                    mock_response.raise_for_status = MagicMock()
+                    mock_post.return_value = mock_response
+
+                    result = call_qwen_api("qwen3-coder-plus", [], 0.7, 1000)
+
+                    call_args = mock_post.call_args
+                    url = call_args[0][0]
+                    assert url == "https://chat.qwen.ai/api/v1/chat/completions"
+                    assert result == "test response"
+
+    def test_qwen_oauth_resource_url_with_http_prefix(self):
+        """Test Qwen with resource_url already having https:// prefix."""
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
+                with patch("gac.providers.base.httpx.post") as mock_post:
+                    mock_oauth_provider = mock.Mock()
+                    mock_oauth_provider.get_token.return_value = {
+                        "access_token": "oauth_token",
+                        "resource_url": "https://already-prefixed.qwen.ai",
+                    }
+                    mock_provider_class.return_value = mock_oauth_provider
+
+                    mock_response = MagicMock()
+                    mock_response.json.return_value = {"choices": [{"message": {"content": "test"}}]}
+                    mock_response.raise_for_status = MagicMock()
+                    mock_post.return_value = mock_response
+
+                    call_qwen_api("qwen3-coder-plus", [], 0.7, 1000)
+
+                    call_args = mock_post.call_args
+                    url = call_args[0][0]
+                    assert url == "https://already-prefixed.qwen.ai/v1/chat/completions"
+
+    def test_qwen_oauth_resource_url_with_v1_suffix(self):
+        """Test Qwen with resource_url already ending in /v1."""
+        with patch.dict(os.environ, {}, clear=True):
+            with patch("gac.providers.qwen.QwenOAuthProvider") as mock_provider_class:
+                with patch("gac.providers.base.httpx.post") as mock_post:
+                    mock_oauth_provider = mock.Mock()
+                    mock_oauth_provider.get_token.return_value = {
+                        "access_token": "oauth_token",
+                        "resource_url": "https://custom.qwen.ai/v1",
+                    }
+                    mock_provider_class.return_value = mock_oauth_provider
+
+                    mock_response = MagicMock()
+                    mock_response.json.return_value = {"choices": [{"message": {"content": "test"}}]}
+                    mock_response.raise_for_status = MagicMock()
+                    mock_post.return_value = mock_response
+
+                    call_qwen_api("qwen3-coder-plus", [], 0.7, 1000)
+
+                    call_args = mock_post.call_args
+                    url = call_args[0][0]
+                    assert url == "https://custom.qwen.ai/v1/chat/completions"

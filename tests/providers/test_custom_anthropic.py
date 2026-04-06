@@ -403,6 +403,93 @@ class TestCustomAnthropicEdgeCases:
 
                 assert result == "actual response text"
 
+    def test_base_url_with_v1_suffix(self):
+        """Test that base URL ending with /v1 gets /messages appended."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com/v1"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"content": [{"text": "test"}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                called_url = mock_post.call_args[0][0]
+                assert called_url == "https://api.example.com/v1/messages"
+
+    def test_parse_response_empty_content_array(self):
+        """Test that empty content array raises AIError."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"content": []}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                with pytest.raises(AIError) as exc_info:
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                assert "empty content" in str(exc_info.value).lower()
+
+    def test_parse_response_no_text_in_extended_format(self):
+        """Test that extended format without text item raises AIError."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "content": [{"type": "thinking", "thinking": "some thinking"}]
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                with pytest.raises(AIError) as exc_info:
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                assert "unexpected format" in str(exc_info.value).lower()
+
+    def test_parse_response_key_error(self):
+        """Test that KeyError in response parsing raises AIError."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                with pytest.raises(AIError) as exc_info:
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                assert "empty content" in str(exc_info.value).lower() or "unexpected" in str(exc_info.value).lower()
+
+    def test_parse_response_type_error_in_content(self):
+        """Test that TypeError from bad content structure raises AIError."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"content": [None]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                with pytest.raises(AIError) as exc_info:
+                    call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+
+                assert "unexpected" in str(exc_info.value).lower() or "TypeError" in str(exc_info.value)
+
 
 @pytest.mark.integration
 class TestCustomAnthropicIntegration:
