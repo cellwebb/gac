@@ -445,9 +445,7 @@ class TestCustomAnthropicEdgeCases:
         ):
             with patch("gac.providers.base.httpx.post") as mock_post:
                 mock_response = MagicMock()
-                mock_response.json.return_value = {
-                    "content": [{"type": "thinking", "thinking": "some thinking"}]
-                }
+                mock_response.json.return_value = {"content": [{"type": "thinking", "thinking": "some thinking"}]}
                 mock_response.raise_for_status = MagicMock()
                 mock_post.return_value = mock_response
 

@@ -4,7 +4,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gac.mcp.models import CommitInfo, CommitRequest, CommitResult, DiffStats, FileStat, GroupedCommit, StatusRequest, StatusResult
+from gac.mcp.models import (
+    CommitInfo,
+    CommitRequest,
+    CommitResult,
+    DiffStats,
+    FileStat,
+    StatusRequest,
+    StatusResult,
+)
 from gac.mcp.server import (
     _check_git_repo,
     _extract_scope,
@@ -584,7 +592,10 @@ class TestGacStatus:
 
     @patch("gac.mcp.server._truncate_diff", return_value=("line1\nline2\nline3", True))
     @patch("gac.git.run_git_command", return_value="line1\nline2\nline3\nline4\nline5")
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+    )
     @patch("gac.git.get_current_branch", return_value="dev")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_diff_truncation(self, mock_check, mock_branch, mock_file_status, mock_git_cmd, mock_truncate):
@@ -603,7 +614,10 @@ class TestGacStatus:
         assert "branch error" in result.error
 
     @patch("gac.git.run_git_command")
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+    )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_staged_only_diff(self, mock_check, mock_branch, mock_file_status, mock_git_cmd):
@@ -614,16 +628,22 @@ class TestGacStatus:
         assert result.diff == "+staged change"
 
     @patch("gac.git.run_git_command")
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+    )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_diff_head_when_not_staged_only(self, mock_check, mock_branch, mock_file_status, mock_git_cmd):
         mock_git_cmd.return_value = "+change"
-        result = gac_status(StatusRequest(include_diff=True, staged_only=False, include_stats=False))
+        gac_status(StatusRequest(include_diff=True, staged_only=False, include_stats=False))
 
         mock_git_cmd.assert_called_with(["diff", "HEAD"])
 
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": [], "unstaged": [], "untracked": ["extra.py"], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": [], "unstaged": [], "untracked": ["extra.py"], "conflicts": []},
+    )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_include_untracked_false(self, mock_check, mock_branch, mock_file_status):
@@ -632,7 +652,9 @@ class TestGacStatus:
         assert result.untracked_files == []
         assert result.is_clean is True
 
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": [], "unstaged": [], "untracked": [], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status", return_value={"staged": [], "unstaged": [], "untracked": [], "conflicts": []}
+    )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_clean_repo(self, mock_check, mock_branch, mock_file_status):
@@ -642,7 +664,10 @@ class TestGacStatus:
         assert result.diff is None
         assert result.recent_commits is None
 
-    @patch("gac.mcp.server._get_file_status", return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []})
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+    )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_no_diff_no_stats_no_history(self, mock_check, mock_branch, mock_file_status):
@@ -901,7 +926,15 @@ class TestGacCommit:
     @patch("gac.config.load_config", return_value={"model": "openai:gpt-4"})
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_grouped_commit_execute(
-        self, mock_check, mock_config, mock_git, mock_staged, mock_validator_cls, mock_pb_cls, mock_workflow_cls, mock_redirect
+        self,
+        mock_check,
+        mock_config,
+        mock_git,
+        mock_staged,
+        mock_validator_cls,
+        mock_pb_cls,
+        mock_workflow_cls,
+        mock_redirect,
     ):
         mock_validator_cls.return_value.get_git_state.return_value = _make_git_state()
         mock_pb_cls.return_value.build_prompts.return_value = _make_prompt_bundle()
@@ -946,7 +979,15 @@ class TestGacCommit:
     @patch("gac.config.load_config", return_value={"model": "openai:gpt-4"})
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_grouped_execution_failure(
-        self, mock_check, mock_config, mock_git, mock_staged, mock_validator_cls, mock_pb_cls, mock_workflow_cls, mock_redirect
+        self,
+        mock_check,
+        mock_config,
+        mock_git,
+        mock_staged,
+        mock_validator_cls,
+        mock_pb_cls,
+        mock_workflow_cls,
+        mock_redirect,
     ):
         mock_validator_cls.return_value.get_git_state.return_value = _make_git_state()
         mock_pb_cls.return_value.build_prompts.return_value = _make_prompt_bundle()
@@ -997,7 +1038,7 @@ class TestGacCommit:
         mock_git.side_effect = [None, RuntimeError("abort after staging")]
         with patch("gac.git_state_validator.GitStateValidator") as mock_v:
             mock_v.return_value.get_git_state.return_value = None
-            result = gac_commit(CommitRequest(stage_all=True))
+            gac_commit(CommitRequest(stage_all=True))
 
         mock_git.assert_any_call(["add", "--all"])
 

@@ -234,11 +234,13 @@ def test_configure_model_azure_api_version_enter_new(tmp_path):
             ]
             mpass.return_value.ask.return_value = None
 
-            result = _configure_model({
-                "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
-                "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
-                "AZURE_OPENAI_API_KEY": "existing-key",
-            })
+            result = _configure_model(
+                {
+                    "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
+                    "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
+                    "AZURE_OPENAI_API_KEY": "existing-key",
+                }
+            )
             assert result is True
 
 
@@ -262,10 +264,12 @@ def test_configure_model_azure_api_version_enter_new_cancelled(tmp_path):
                 None,
             ]
 
-            result = _configure_model({
-                "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
-                "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
-            })
+            result = _configure_model(
+                {
+                    "AZURE_OPENAI_ENDPOINT": "https://myendpoint.openai.azure.com",
+                    "AZURE_OPENAI_API_VERSION": "2025-01-01-preview",
+                }
+            )
             assert result is False
 
 

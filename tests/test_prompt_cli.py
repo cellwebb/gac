@@ -334,6 +334,7 @@ class TestEditTextInteractive:
             def decorator(func):
                 handlers[keys] = func
                 return func
+
             return decorator
 
         kb_instance.add = capture_add
@@ -356,6 +357,7 @@ class TestEditTextInteractive:
             def decorator(func):
                 handlers[keys] = func
                 return func
+
             return decorator
 
         kb_instance.add = capture_add
@@ -382,6 +384,7 @@ class TestEditTextInteractive:
             def decorator(func):
                 handlers[keys] = func
                 return func
+
             return decorator
 
         kb_instance.add = capture_add

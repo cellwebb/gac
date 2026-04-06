@@ -443,9 +443,7 @@ def test_execute_workflow_show_prompt():
 
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print") as mock_print:
-            with mock.patch.object(
-                workflow, "generate_grouped_commits_with_retry", return_value=0
-            ):
+            with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=0):
                 exit_code = workflow.execute_workflow(
                     system_prompt="System prompt",
                     user_prompt="User prompt",
@@ -481,9 +479,7 @@ def test_execute_workflow_interactive_mode():
 
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print"):
-            with mock.patch.object(
-                workflow, "generate_grouped_commits_with_retry", return_value=0
-            ):
+            with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=0):
                 with mock.patch("gac.interactive_mode.InteractiveMode") as mock_im_class:
                     mock_im = mock.Mock()
                     mock_im_class.return_value = mock_im
@@ -524,16 +520,10 @@ def test_execute_workflow_accept_decision():
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
-                with mock.patch.object(
-                    workflow, "generate_grouped_commits_with_retry", return_value=grouped_result
-                ):
+                with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=grouped_result):
                     with mock.patch.object(workflow, "display_grouped_commits"):
-                        with mock.patch.object(
-                            workflow, "handle_grouped_commit_confirmation", return_value="accept"
-                        ):
-                            with mock.patch.object(
-                                workflow, "execute_grouped_commits", return_value=0
-                            ) as mock_exec:
+                        with mock.patch.object(workflow, "handle_grouped_commit_confirmation", return_value="accept"):
+                            with mock.patch.object(workflow, "execute_grouped_commits", return_value=0) as mock_exec:
                                 exit_code = workflow.execute_workflow(
                                     system_prompt="System",
                                     user_prompt="User",
@@ -570,13 +560,9 @@ def test_execute_workflow_reject_decision():
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
-                with mock.patch.object(
-                    workflow, "generate_grouped_commits_with_retry", return_value=grouped_result
-                ):
+                with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=grouped_result):
                     with mock.patch.object(workflow, "display_grouped_commits"):
-                        with mock.patch.object(
-                            workflow, "handle_grouped_commit_confirmation", return_value="reject"
-                        ):
+                        with mock.patch.object(workflow, "handle_grouped_commit_confirmation", return_value="reject"):
                             exit_code = workflow.execute_workflow(
                                 system_prompt="System",
                                 user_prompt="User",
@@ -621,16 +607,12 @@ def test_execute_workflow_regenerate_then_accept():
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
-                with mock.patch.object(
-                    workflow, "generate_grouped_commits_with_retry", return_value=grouped_result
-                ):
+                with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=grouped_result):
                     with mock.patch.object(workflow, "display_grouped_commits"):
                         with mock.patch.object(
                             workflow, "handle_grouped_commit_confirmation", side_effect=mock_confirmation
                         ):
-                            with mock.patch.object(
-                                workflow, "execute_grouped_commits", return_value=0
-                            ):
+                            with mock.patch.object(workflow, "execute_grouped_commits", return_value=0):
                                 exit_code = workflow.execute_workflow(
                                     system_prompt="System",
                                     user_prompt="User",
@@ -667,13 +649,9 @@ def test_execute_workflow_no_confirmation():
     with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
         with mock.patch("gac.grouped_commit_workflow.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
-                with mock.patch.object(
-                    workflow, "generate_grouped_commits_with_retry", return_value=grouped_result
-                ):
+                with mock.patch.object(workflow, "generate_grouped_commits_with_retry", return_value=grouped_result):
                     with mock.patch.object(workflow, "display_grouped_commits"):
-                        with mock.patch.object(
-                            workflow, "execute_grouped_commits", return_value=0
-                        ) as mock_exec:
+                        with mock.patch.object(workflow, "execute_grouped_commits", return_value=0) as mock_exec:
                             exit_code = workflow.execute_workflow(
                                 system_prompt="System",
                                 user_prompt="User",
