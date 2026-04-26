@@ -121,13 +121,11 @@ def test_init_cli_complete_workflow_with_english_language(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Complete workflow: provider selection + language selection (no existing config)
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -148,13 +146,11 @@ def test_init_cli_complete_workflow_simple(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Simple workflow: provider selection + English language
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -175,12 +171,10 @@ def test_init_cli_existing_language_keep(monkeypatch):
             with (
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Provider, API key action, language action (Keep existing)
                 mselect.return_value.ask.side_effect = ["OpenAI", "Keep existing key", "Keep existing language"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -201,11 +195,9 @@ def test_init_cli_existing_configuration_workflow(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as _mpass,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 mselect.return_value.ask.side_effect = ["OpenAI", "Keep existing key", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-5"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
                 # mpass not used when keeping existing key
 
                 result = runner.invoke(init)

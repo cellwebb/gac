@@ -25,12 +25,10 @@ def test_init_cli_creates_new_gac_env_file(clean_env_state):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 mselect.return_value.ask.side_effect = ["Anthropic", "English"]
                 mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
                 mpass.return_value.ask.side_effect = ["test-key"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -56,12 +54,10 @@ def test_init_cli_complete_workflow_with_model_and_language(clean_env_state):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
-                mock.patch("questionary.confirm") as mconfirm,
             ):
                 mselect.return_value.ask.side_effect = ["Anthropic", "English"]
                 mtext.return_value.ask.side_effect = ["claude-sonnet-4-5"]
                 mpass.return_value.ask.side_effect = ["test-key"]
-                mconfirm.return_value.ask.side_effect = [False]  # Don't use 50/72 rule
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0

@@ -50,48 +50,6 @@ def _configure_language(existing_env: dict[str, str]) -> None:
         click.echo("Language configuration completed.")
 
 
-def _configure_50_72_rule(existing_env: dict[str, str]) -> None:
-    """Configure whether to always apply the 50/72 rule for commit messages."""
-    click.echo("\n")
-    click.echo("The 50/72 rule is a commit message convention where:")
-    click.echo("  - Subject line: maximum 50 characters")
-    click.echo("  - Body lines: maximum 72 characters per line")
-    click.echo("  - This keeps messages readable in git log and GitHub UI")
-    click.echo("")
-
-    current_value = existing_env.get("GAC_USE_50_72_RULE", "").lower()
-    default_enabled = current_value in ("true", "1", "yes", "on")
-
-    use_50_72 = questionary.confirm(
-        "Always apply the 50/72 rule to commit messages?",
-        default=default_enabled,
-    ).ask()
-
-    if use_50_72 is None:
-        click.echo("50/72 rule configuration skipped.")
-        return
-
-    # Update the env file
-    env_content = GAC_ENV_PATH.read_text(encoding="utf-8")
-    env_line = f"GAC_USE_50_72_RULE={str(use_50_72).lower()}"
-
-    if "GAC_USE_50_72_RULE" in env_content:
-        # Replace existing line
-        import re
-
-        env_content = re.sub(r"GAC_USE_50_72_RULE=.*", env_line, env_content)
-    else:
-        # Add new line
-        env_content += f"\n{env_line}"
-
-    GAC_ENV_PATH.write_text(env_content, encoding="utf-8")
-
-    if use_50_72:
-        click.echo("50/72 rule enabled. All commit messages will follow this format.")
-    else:
-        click.echo("50/72 rule disabled. Commit messages will have no length restrictions.")
-
-
 @click.command()
 def init() -> None:
     """Interactively set up $HOME/.gac.env for gac."""
@@ -104,8 +62,6 @@ def init() -> None:
         return
 
     _configure_language(existing_env)
-
-    _configure_50_72_rule(existing_env)
 
     click.echo("\ngac environment setup complete 🎉")
     click.echo("Configuration saved to:")
