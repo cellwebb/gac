@@ -31,7 +31,7 @@ from .moonshot import MoonshotProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
 from .openrouter import OpenRouterProvider
-from .qwen import QwenProvider
+from .qwen import QwenAPICNProvider, QwenAPIProvider, QwenProvider
 from .registry import (
     PROVIDER_REGISTRY,
     register_provider,
@@ -64,6 +64,8 @@ register_provider("ollama", OllamaProvider)
 register_provider("openai", OpenAIProvider)
 register_provider("openrouter", OpenRouterProvider)
 register_provider("qwen", QwenProvider)
+register_provider("qwen-api", QwenAPIProvider)
+register_provider("qwen-api-cn", QwenAPICNProvider)
 register_provider("replicate", ReplicateProvider)
 register_provider("streamlake", StreamlakeProvider)
 register_provider("synthetic", SyntheticProvider)

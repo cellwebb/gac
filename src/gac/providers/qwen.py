@@ -1,10 +1,18 @@
-"""Qwen API provider for gac with OAuth-only support."""
+"""Qwen API providers for gac.
+
+Includes three variants:
+- QwenProvider: OAuth-based access via chat.qwen.ai
+- QwenAPIProvider: API key access via Qwen Cloud (international endpoint)
+- QwenAPICNProvider: API key access via Qwen Cloud (mainland China endpoint)
+"""
 
 from gac.errors import AIError
 from gac.oauth import QwenOAuthProvider, TokenStore
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
 
 QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1"
+QWEN_CLOUD_INTL_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+QWEN_CLOUD_CN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
 
 class QwenProvider(OpenAICompatibleProvider):
@@ -62,3 +70,31 @@ class QwenProvider(OpenAICompatibleProvider):
     def _get_api_url(self, model: str | None = None) -> str:
         """Get Qwen API URL with /chat/completions endpoint."""
         return f"{self._resolved_base_url}/chat/completions"
+
+
+class QwenAPIProvider(OpenAICompatibleProvider):
+    """Qwen Cloud API provider (international endpoint) with OpenAI-compatible format."""
+
+    config = ProviderConfig(
+        name="Qwen API",
+        api_key_env="QWEN_API_KEY",
+        base_url=QWEN_CLOUD_INTL_BASE_URL,
+    )
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get Qwen Cloud API URL with /chat/completions endpoint."""
+        return f"{self.config.base_url}/chat/completions"
+
+
+class QwenAPICNProvider(OpenAICompatibleProvider):
+    """Qwen Cloud API provider (mainland China endpoint) with OpenAI-compatible format."""
+
+    config = ProviderConfig(
+        name="Qwen API CN",
+        api_key_env="QWEN_API_KEY",
+        base_url=QWEN_CLOUD_CN_BASE_URL,
+    )
+
+    def _get_api_url(self, model: str | None = None) -> str:
+        """Get Qwen Cloud CN API URL with /chat/completions endpoint."""
+        return f"{self.config.base_url}/chat/completions"
