@@ -88,6 +88,74 @@ class TestFireworksEdgeCases:
 
                 assert "null content" in str(exc_info.value).lower()
 
+    def test_fireworks_caps_max_tokens_at_4096(self):
+        """Test that max_tokens > 4096 is capped to avoid streaming requirement."""
+        from gac.providers.fireworks import FIREWORKS_MAX_TOKENS_NON_STREAMING
+
+        with patch.dict("os.environ", {"FIREWORKS_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"choices": [{"message": {"content": "feat: test"}}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                # Call with max_tokens > 4096
+                PROVIDER_REGISTRY["fireworks"]("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 8000)
+
+                # Verify the request was made with capped max_tokens
+                call_args = mock_post.call_args
+                json_body = call_args.kwargs.get("json") or call_args[1].get("json")
+                if json_body is None:
+                    json_body = call_args.kwargs.get("json", {}) or call_args[0]
+
+                # Check that max_tokens in the request body is capped at 4096
+                actual_max_tokens = json_body.get("max_tokens")
+                assert actual_max_tokens == FIREWORKS_MAX_TOKENS_NON_STREAMING, (
+                    f"Expected max_tokens to be capped at {FIREWORKS_MAX_TOKENS_NON_STREAMING}, got {actual_max_tokens}"
+                )
+
+    def test_fireworks_max_tokens_at_exactly_4096(self):
+        """Test that max_tokens = 4096 is not modified."""
+        with patch.dict("os.environ", {"FIREWORKS_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"choices": [{"message": {"content": "feat: test"}}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                # Call with max_tokens = 4096
+                PROVIDER_REGISTRY["fireworks"]("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 4096)
+
+                # Verify the request was made with max_tokens = 4096
+                call_args = mock_post.call_args
+                json_body = call_args.kwargs.get("json") or call_args[1].get("json")
+                if json_body is None:
+                    json_body = call_args.kwargs.get("json", {}) or call_args[0]
+
+                actual_max_tokens = json_body.get("max_tokens")
+                assert actual_max_tokens == 4096, f"Expected max_tokens = 4096, got {actual_max_tokens}"
+
+    def test_fireworks_max_tokens_below_4096(self):
+        """Test that max_tokens < 4096 is not modified."""
+        with patch.dict("os.environ", {"FIREWORKS_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {"choices": [{"message": {"content": "feat: test"}}]}
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                # Call with max_tokens = 1000
+                PROVIDER_REGISTRY["fireworks"]("accounts/fireworks/models/gpt-oss-20b", [], 0.7, 1000)
+
+                # Verify the request was made with max_tokens = 1000
+                call_args = mock_post.call_args
+                json_body = call_args.kwargs.get("json") or call_args[1].get("json")
+                if json_body is None:
+                    json_body = call_args.kwargs.get("json", {}) or call_args[0]
+
+                actual_max_tokens = json_body.get("max_tokens")
+                assert actual_max_tokens == 1000, f"Expected max_tokens = 1000, got {actual_max_tokens}"
+
 
 @pytest.mark.integration
 class TestFireworksIntegration:
