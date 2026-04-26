@@ -98,7 +98,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Mistral", "devstral-2512"),
         ("Moonshot AI", "kimi-k2.6"),
         ("Ollama", "gemma3"),
-        ("OpenAI", "gpt-5-mini"),
+        ("OpenAI", "gpt-5.4-mini"),
         ("OpenRouter", "openrouter/auto"),
         ("Qwen.ai (OAuth)", "qwen3-coder-plus"),
         ("Replicate", "openai/gpt-oss-120b"),
