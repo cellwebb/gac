@@ -100,7 +100,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-5.4-mini"),
         ("OpenRouter", "openrouter/auto"),
-        ("Qwen.ai (OAuth)", "qwen3-coder-plus"),
+        ("Qwen Cloud (API CN)", "qwen3.5-flash"),
+        ("Qwen Cloud (API INTL)", "qwen3.5-flash"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7-Flash"),
@@ -124,7 +125,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_custom_openai = provider_key == "custom-openai"
     is_lmstudio = provider_key == "lm-studio"
     is_ollama = provider_key == "ollama"
-    is_qwen = provider_key == "qwenai-oauth"
+    is_qwen_api = provider_key in ("qwen-cloud-api-intl", "qwen-cloud-api-cn")
     is_streamlake = provider_key == "streamlake"
     is_zai = provider_key in ("zai", "zai-coding")
 
@@ -136,8 +137,10 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         provider_key = "minimax"
     elif provider_key == "moonshot-ai":
         provider_key = "moonshot"
-    elif provider_key == "qwenai-oauth":
-        provider_key = "qwen"
+    elif provider_key == "qwen-cloud-api-intl":
+        provider_key = "qwen-api"
+    elif provider_key == "qwen-cloud-api-cn":
+        provider_key = "qwen-api-cn"
     elif provider_key == "syntheticnew":
         provider_key = "synthetic"
     elif provider_key == "waferai":
@@ -317,58 +320,13 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
                 return False
             return True
 
-    # Handle Qwen OAuth separately
-    if is_qwen:
-        from gac.oauth import QwenOAuthProvider, TokenStore
-
-        token_store = TokenStore()
-        qwen_token = token_store.get_token("qwen")
-        if qwen_token:
-            click.echo("\n✓ Qwen access token already configured.")
-            action = questionary.select(
-                "What would you like to do?",
-                choices=[
-                    "Keep existing token",
-                    "Re-authenticate (get new token)",
-                ],
-                use_shortcuts=True,
-                use_arrow_keys=True,
-                use_jk_keys=False,
-            ).ask()
-
-            if action is None or action.startswith("Keep existing"):
-                if action is None:
-                    click.echo("Qwen configuration cancelled. Keeping existing token.")
-                else:
-                    click.echo("Keeping existing Qwen token")
-                return True
-            else:
-                click.echo("\n🔐 Starting Qwen OAuth authentication...")
-                provider = QwenOAuthProvider(token_store)
-                try:
-                    provider.initiate_auth(open_browser=True)
-                    click.echo("✅ Qwen authentication completed successfully!")
-                    return True
-                except Exception as e:
-                    click.echo(f"❌ Qwen authentication failed: {e}")
-                    return False
-        else:
-            click.echo("\n🔐 Starting Qwen OAuth authentication...")
-            click.echo("   (Your browser will open automatically)\n")
-            provider = QwenOAuthProvider(token_store)
-            try:
-                provider.initiate_auth(open_browser=True)
-                click.echo("\n✅ Qwen authentication completed successfully!")
-                return True
-            except Exception as e:
-                click.echo(f"\n❌ Qwen authentication failed: {e}")
-                return False
-
     # Determine API key name based on provider
     if is_lmstudio:
         api_key_name = "LMSTUDIO_API_KEY"
     elif is_zai:
         api_key_name = "ZAI_API_KEY"
+    elif is_qwen_api:
+        api_key_name = "QWEN_API_KEY"
     else:
         api_key_name = f"{provider_key.upper().replace('-', '_')}_API_KEY"
 

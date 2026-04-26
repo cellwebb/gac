@@ -1,7 +1,6 @@
 """OAuth retry handling for expired tokens.
 
-This module provides a unified mechanism for handling OAuth token expiration
-across different providers (Claude Code, Qwen, etc.).
+This module provides a unified mechanism for handling OAuth token expiration.
 """
 
 from __future__ import annotations
@@ -44,22 +43,6 @@ def _create_claude_code_authenticator() -> Callable[[bool], bool]:
     return authenticate
 
 
-def _create_qwen_authenticator() -> Callable[[bool], bool]:
-    """Create authenticator function for Qwen."""
-
-    def authenticate(quiet: bool) -> bool:
-        from gac.oauth import QwenOAuthProvider, TokenStore
-
-        try:
-            oauth_provider = QwenOAuthProvider(TokenStore())
-            oauth_provider.initiate_auth(open_browser=True)
-            return True
-        except (AIError, ConfigError, OSError):
-            return False
-
-    return authenticate
-
-
 def _claude_code_extra_check(e: AIError) -> bool:
     """Extra check for Claude Code - verify error message contains expired/oauth."""
     error_str = str(e).lower()
@@ -73,13 +56,6 @@ OAUTH_PROVIDERS: list[OAuthProviderConfig] = [
         manual_auth_hint="Run 'gac model' to re-authenticate manually.",
         authenticate=_create_claude_code_authenticator(),
         extra_error_check=_claude_code_extra_check,
-    ),
-    OAuthProviderConfig(
-        provider_prefix="qwen:",
-        display_name="Qwen",
-        manual_auth_hint="Run 'gac auth qwen login' to re-authenticate manually.",
-        authenticate=_create_qwen_authenticator(),
-        extra_error_check=None,
     ),
 ]
 

@@ -3,7 +3,6 @@
 This module provides utility functions that support the AI provider implementations.
 """
 
-import json
 import logging
 import os
 import time
@@ -14,7 +13,7 @@ from rich.console import Console
 from rich.status import Status
 
 from gac.errors import AIError
-from gac.oauth import QwenOAuthProvider, refresh_token_if_expired
+from gac.oauth import refresh_token_if_expired
 from gac.oauth.token_store import TokenStore
 from gac.providers import SUPPORTED_PROVIDERS
 
@@ -88,30 +87,6 @@ def generate_with_retries(
             raise AIError.authentication_error(
                 "Claude Code token not found. Please authenticate with 'gac auth claude-code login'."
             )
-
-    # Check Qwen OAuth token expiry and refresh if needed
-    if provider == "qwen":
-        oauth_provider = QwenOAuthProvider(TokenStore())
-        token = oauth_provider.get_token()
-        if not token:
-            if not quiet:
-                console.print("[yellow]⚠ Qwen authentication not found or expired[/yellow]")
-                console.print("[cyan]🔐 Starting automatic authentication...[/cyan]")
-            try:
-                oauth_provider.initiate_auth(open_browser=True)
-                token = oauth_provider.get_token()
-                if not token:
-                    raise AIError.authentication_error(
-                        "Qwen authentication failed. Run 'gac auth qwen login' to authenticate manually."
-                    )
-                if not quiet:
-                    console.print("[green]✓ Authentication successful![/green]\n")
-            except AIError:
-                raise
-            except (ValueError, KeyError, json.JSONDecodeError, ConnectionError, OSError) as e:
-                raise AIError.authentication_error(
-                    f"Qwen authentication failed: {e}. Run 'gac auth qwen login' to authenticate manually."
-                ) from e
 
     # Set up spinner
     if is_group:

@@ -8,7 +8,6 @@ import logging
 import click
 
 from gac.oauth import (
-    QwenOAuthProvider,
     TokenStore,
     authenticate_and_save,
     remove_token,
@@ -25,16 +24,12 @@ def auth(ctx: click.Context) -> None:
 
     Supports authentication for:
     - claude-code: Claude Code subscription OAuth
-    - qwen: Qwen AI OAuth (device flow)
 
     Examples:
         gac auth                        # Show authentication status
         gac auth claude-code login      # Login to Claude Code
         gac auth claude-code logout     # Logout from Claude Code
         gac auth claude-code status     # Check Claude Code auth status
-        gac auth qwen login             # Login to Qwen
-        gac auth qwen logout            # Logout from Qwen
-        gac auth qwen status            # Check Qwen auth status
     """
     if ctx.invoked_subcommand is None:
         _show_auth_status()
@@ -53,13 +48,6 @@ def _show_auth_status() -> None:
     else:
         click.echo("Claude Code: ✗ Not authenticated")
         click.echo("             Run 'gac auth claude-code login' to login")
-
-    qwen_token = token_store.get_token("qwen")
-    if qwen_token:
-        click.echo("Qwen:        ✓ Authenticated")
-    else:
-        click.echo("Qwen:        ✗ Not authenticated")
-        click.echo("             Run 'gac auth qwen login' to login")
 
 
 # Claude Code commands
@@ -141,74 +129,3 @@ def claude_code_status() -> None:
     else:
         click.echo("Claude Code Authentication Status: ✗ Not authenticated")
         click.echo("Run 'gac auth claude-code login' to authenticate.")
-
-
-# Qwen commands
-@auth.group()
-def qwen() -> None:
-    """Manage Qwen OAuth authentication.
-
-    Use device flow authentication to log in to Qwen AI.
-    """
-    pass
-
-
-@qwen.command("login")
-@click.option("--no-browser", is_flag=True, help="Don't automatically open browser")
-@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
-def qwen_login(no_browser: bool = False, quiet: bool = False) -> None:
-    """Login to Qwen using OAuth device flow.
-
-    Opens a browser to authenticate with Qwen. The token is stored
-    securely in ~/.gac/oauth/qwen.json.
-    """
-    if not quiet:
-        setup_logging("INFO")
-
-    provider = QwenOAuthProvider()
-
-    if provider.is_authenticated():
-        if not quiet:
-            click.echo("✓ Already authenticated with Qwen.")
-            if not click.confirm("Re-authenticate?"):
-                return
-
-    try:
-        provider.initiate_auth(open_browser=not no_browser)
-        if not quiet:
-            click.echo()
-            click.echo("✅ Qwen authentication completed successfully!")
-    except Exception as e:
-        click.echo(f"❌ Qwen authentication failed: {e}")
-        raise click.ClickException("Qwen authentication failed") from None
-
-
-@qwen.command("logout")
-@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
-def qwen_logout(quiet: bool = False) -> None:
-    """Logout from Qwen and remove stored tokens."""
-    provider = QwenOAuthProvider()
-
-    if not provider.is_authenticated():
-        if not quiet:
-            click.echo("Not currently authenticated with Qwen.")
-        return
-
-    provider.logout()
-    if not quiet:
-        click.echo("✅ Successfully logged out from Qwen.")
-
-
-@qwen.command("status")
-def qwen_status() -> None:
-    """Check Qwen authentication status."""
-    provider = QwenOAuthProvider()
-    token = provider.get_token()
-
-    if token:
-        click.echo("Qwen Authentication Status: ✓ Authenticated")
-        if token.get("resource_url"):
-            click.echo(f"API Endpoint: {token['resource_url']}")
-    else:
-        click.echo("Qwen Authentication Status: ✗ Not authenticated")
-        click.echo("Run 'gac auth qwen login' to authenticate.")

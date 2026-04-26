@@ -1,75 +1,60 @@
-"""Qwen API providers for gac.
+"""Qwen Cloud API providers for gac.
 
-Includes three variants:
-- QwenProvider: OAuth-based access via chat.qwen.ai
+Two variants:
 - QwenAPIProvider: API key access via Qwen Cloud (international endpoint)
 - QwenAPICNProvider: API key access via Qwen Cloud (mainland China endpoint)
+
+QwenProvider (OAuth-based) is retained as a deprecation stub. Qwen discontinued
+Qwen Code plans, including the free tier, on 2026-04-15. See
+https://github.com/QwenLM/qwen-code/issues/3203.
 """
 
-from gac.errors import AIError
-from gac.oauth import QwenOAuthProvider, TokenStore
-from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from typing import Any
 
-QWEN_DEFAULT_API_URL = "https://chat.qwen.ai/api/v1"
+from gac.errors import AIError
+from gac.providers.base import BaseConfiguredProvider, OpenAICompatibleProvider, ProviderConfig
+
 QWEN_CLOUD_INTL_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 QWEN_CLOUD_CN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
+_QWEN_OAUTH_DEPRECATION_MESSAGE = (
+    "Qwen Code (OAuth) is no longer available. Qwen discontinued Qwen Code plans, "
+    "including the free tier, on 2026-04-15 "
+    "(see https://github.com/QwenLM/qwen-code/issues/3203). "
+    "Switch to 'qwen-api' (international) or 'qwen-api-cn' (mainland China) and provide a "
+    "QWEN_API_KEY from https://dashscope.aliyuncs.com. Run 'gac model' to reconfigure."
+)
 
-class QwenProvider(OpenAICompatibleProvider):
-    """Qwen provider with OAuth-only authentication."""
+
+class QwenProvider(BaseConfiguredProvider):
+    """Deprecation stub for the retired Qwen Code (OAuth) provider."""
 
     config = ProviderConfig(
-        name="Qwen",
+        name="Qwen Code (OAuth)",
         api_key_env="",
-        base_url=QWEN_DEFAULT_API_URL,
+        base_url="",
     )
 
     def __init__(self, config: ProviderConfig):
-        """Initialize with OAuth authentication."""
-        super().__init__(config)
-        self._auth_token, self._resolved_base_url = self._get_oauth_token()
+        raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
-    def _get_api_key(self) -> str:
-        """Return placeholder for parent class compatibility (OAuth is used instead)."""
-        return "oauth-token"
+    def _build_request_body(
+        self, messages: list[dict[str, Any]], temperature: float, max_tokens: int, model: str, **kwargs: Any
+    ) -> dict[str, Any]:
+        raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
-    def _get_oauth_token(self) -> tuple[str, str]:
-        """Get Qwen OAuth token from token store.
+    def _parse_response(self, response: dict[str, Any]) -> str:
+        raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
-        Returns:
-            Tuple of (access_token, api_url) for authentication.
-
-        Raises:
-            AIError: If no OAuth token is found.
-        """
-        oauth_provider = QwenOAuthProvider(TokenStore())
-        token = oauth_provider.get_token()
-        if token:
-            resource_url = token.get("resource_url")
-            if resource_url:
-                if not resource_url.startswith(("http://", "https://")):
-                    resource_url = f"https://{resource_url}"
-                if not resource_url.endswith("/v1"):
-                    resource_url = resource_url.rstrip("/") + "/v1"
-                base_url = resource_url
-            else:
-                base_url = QWEN_DEFAULT_API_URL
-            return token["access_token"], base_url
-
-        raise AIError.authentication_error("Qwen OAuth token not found. Run 'gac auth qwen login' to authenticate.")
-
-    def _build_headers(self) -> dict[str, str]:
-        """Build headers with OAuth token."""
-        headers = super()._build_headers()
-        # Replace Bearer token with the stored auth token
-        if "Authorization" in headers:
-            del headers["Authorization"]
-        headers["Authorization"] = f"Bearer {self._auth_token}"
-        return headers
-
-    def _get_api_url(self, model: str | None = None) -> str:
-        """Get Qwen API URL with /chat/completions endpoint."""
-        return f"{self._resolved_base_url}/chat/completions"
+    def generate(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+        **kwargs: Any,
+    ) -> str:
+        raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
 
 class QwenAPIProvider(OpenAICompatibleProvider):

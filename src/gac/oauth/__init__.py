@@ -9,7 +9,6 @@ from .claude_code import (
     remove_token,
     save_token,
 )
-from .qwen_oauth import QwenDeviceFlow, QwenOAuthProvider
 from .token_store import OAuthToken, TokenStore
 
 __all__ = [
@@ -18,8 +17,6 @@ __all__ = [
     "load_stored_token",
     "OAuthToken",
     "perform_oauth_flow",
-    "QwenDeviceFlow",
-    "QwenOAuthProvider",
     "refresh_token_if_expired",
     "remove_token",
     "save_token",
