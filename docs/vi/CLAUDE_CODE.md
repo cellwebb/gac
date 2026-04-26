@@ -148,6 +148,5 @@ Nếu xác thực OAuth thất bại:
 ## Xem thêm
 
 - [Tài liệu chính](USAGE.md)
-- [Thiết lập và xác thực Qwen.ai](QWEN.md)
 - [Hướng dẫn xử lý sự cố](TROUBLESHOOTING.md)
 - [Tài liệu Claude Code](https://claude.ai/code)

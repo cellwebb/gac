@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Qwen.ai (OAuth)** • **Qwen Cloud (API)** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Smart LLM-analyse**
 
@@ -225,7 +225,6 @@ Følg sanntids installasjonsmålinger og pakkenedlastningsstatistikk.
 - **Full dokumentasjon**: [USAGE.md](USAGE.md) - Komplett CLI-referanse
 - **MCP-server**: [MCP.md](MCP.md) - Bruk GAC som MCP-server for AI-agenter
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/no/CLAUDE_CODE.md) - Claude Code oppsett og autentisering
-- **Qwen.ai OAuth**: [docs/QWEN.md](docs/no/QWEN.md) - Qwen.ai oppsett og autentisering
 - **Egendefinerte prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tilpass commit-meldingsstil
 - **Feilsøking**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Vanlige problemer og løsninger
 - **Bidra**: [CONTRIBUTING.md](CONTRIBUTING.md) - Utviklingsoppsett og retningslinjer

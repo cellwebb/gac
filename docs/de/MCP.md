@@ -224,6 +224,5 @@ Der MCP-Server leitet alle Rich-Konsolenausgaben automatisch auf stderr um, um s
 
 - [Hauptdokumentation](USAGE.md)
 - [Claude Code OAuth-Einrichtung](CLAUDE_CODE.md)
-- [Qwen.ai OAuth-Einrichtung](QWEN.md)
 - [Fehlerbehebungsleitfaden](TROUBLESHOOTING.md)
 - [MCP-Spezifikation](https://modelcontextprotocol.io/)

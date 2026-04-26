@@ -224,6 +224,5 @@ MCP-servern omdirigerar automatiskt alla Rich-konsolutdata till stderr for att f
 
 - [Huvuddokumentation](USAGE.md)
 - [Claude Code OAuth-installation](CLAUDE_CODE.md)
-- [Qwen.ai OAuth-installation](QWEN.md)
 - [Felsokningsguide](TROUBLESHOOTING.md)
 - [MCP-specifikation](https://modelcontextprotocol.io/)

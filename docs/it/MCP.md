@@ -224,6 +224,5 @@ Il server MCP reindirizza automaticamente tutto l'output della console Rich su s
 
 - [Documentazione Principale](USAGE.md)
 - [Configurazione OAuth Claude Code](CLAUDE_CODE.md)
-- [Configurazione OAuth Qwen.ai](QWEN.md)
 - [Guida alla Risoluzione Problemi](TROUBLESHOOTING.md)
 - [Specifica MCP](https://modelcontextprotocol.io/)

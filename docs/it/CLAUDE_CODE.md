@@ -148,6 +148,5 @@ Se l'autenticazione OAuth fallisce:
 ## Vedi anche
 
 - [Documentazione principale](USAGE.md)
-- [Guida alla configurazione di Qwen.ai](QWEN.md)
 - [Guida alla risoluzione dei problemi](TROUBLESHOOTING.md)
 - [Documentazione Claude Code](https://claude.ai/code)

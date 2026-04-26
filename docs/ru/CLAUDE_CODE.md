@@ -148,6 +148,5 @@ gac model
 ## См. также
 
 - [Основная документация](USAGE.md)
-- [Настройка и аутентификация Qwen.ai](QWEN.md)
 - [Руководство по устранению неполадок](TROUBLESHOOTING.md)
 - [Документация Claude Code](https://claude.ai/code)

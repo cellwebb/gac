@@ -224,6 +224,5 @@ MCP server tự động chuyển hướng tất cả đầu ra Rich console sang
 
 - [Tài liệu chính](USAGE.md)
 - [Thiết lập Claude Code OAuth](CLAUDE_CODE.md)
-- [Thiết lập Qwen.ai OAuth](QWEN.md)
 - [Hướng dẫn xử lý sự cố](TROUBLESHOOTING.md)
 - [Đặc tả MCP](https://modelcontextprotocol.io/)

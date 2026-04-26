@@ -333,7 +333,6 @@ gac --no-verify-ssl  # SSL-Überprüfung für diesen Commit überspringen
 - Die empfohlene Methode zur Einrichtung von gac ist, `gac init` auszuführen und den interaktiven Aufforderungen zu folgen.
 - Bereits konfigurierte Sprache und nur Anbieter oder Modelle wechseln müssen? Führen Sie `gac model` aus, um die Einrichtung ohne Sprachfragen zu wiederholen.
 - **Claude Code verwenden?** Siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für OAuth-Authentifizierungsanweisungen.
-- **Qwen.ai verwenden?** Siehe den [Qwen.ai-Einrichtungsleitfaden](QWEN.md) für OAuth-Authentifizierungsanweisungen.
 - gac lädt Konfiguration in der folgenden Rangfolge:
   1. CLI-Flags
   2. Umgebungsvariablen
@@ -370,9 +369,6 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac auth claude-code login` — Anmelden zu Claude Code mit OAuth (öffnet Browser)
 - `gac auth claude-code logout` — Abmelden von Claude Code und gespeichertes Token entfernen
 - `gac auth claude-code status` — Claude Code-Authentifizierungsstatus prüfen
-- `gac auth qwen login` — Anmelden zu Qwen mit OAuth-Gerätefluss (öffnet Browser)
-- `gac auth qwen logout` — Abmelden von Qwen und gespeichertes Token entfernen
-- `gac auth qwen status` — Qwen-Authentifizierungsstatus prüfen
 - `gac config show` — Aktuelle Konfiguration anzeigen
 - `gac config set KEY VALUE` — Konfigurationsschlüssel in `$HOME/.gac.env` setzen
 - `gac config get KEY` — Konfigurationswert abrufen

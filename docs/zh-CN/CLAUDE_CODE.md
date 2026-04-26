@@ -148,6 +148,5 @@ gac model
 ## 另请参阅
 
 - [主要文档](USAGE.md)
-- [Qwen.ai 设置和身份验证](QWEN.md)
 - [故障排除指南](TROUBLESHOOTING.md)
 - [Claude Code 文档](https://claude.ai/code)

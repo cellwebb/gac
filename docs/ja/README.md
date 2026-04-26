@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Qwen.ai (OAuth)** • **Qwen Cloud (API)** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **スマートな LLM 分析**
 
@@ -225,7 +225,6 @@ ANTHROPIC_API_KEY=your_key_here
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
 - **MCP サーバー**: [MCP.md](MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
-- **Qwen.ai OAuth**: [docs/QWEN.md](docs/ja/QWEN.md) - Qwen.ai のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ
 - **トラブルシューティング**: [TROUBLESHOOTING.md](docs/ja/TROUBLESHOOTING.md) - 一般的な問題と解決策
 - **貢献**: [CONTRIBUTING.md](docs/ja/CONTRIBUTING.md) - 開発設定とガイドライン

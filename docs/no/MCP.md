@@ -224,6 +224,5 @@ MCP-serveren omdirigerer automatisk all Rich-konsollutdata til stderr for a forh
 
 - [Hoveddokumentasjon](USAGE.md)
 - [Claude Code OAuth-oppsett](CLAUDE_CODE.md)
-- [Qwen.ai OAuth-oppsett](QWEN.md)
 - [Feilsokingsguide](TROUBLESHOOTING.md)
 - [MCP-spesifikasjon](https://modelcontextprotocol.io/)

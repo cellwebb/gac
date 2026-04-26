@@ -224,6 +224,5 @@ MCP 伺服器會自動將所有 Rich 主控台輸出重新導向到 stderr，以
 
 - [主要文件](USAGE.md)
 - [Claude Code OAuth 設定](CLAUDE_CODE.md)
-- [Qwen.ai OAuth 設定](QWEN.md)
 - [故障排除指南](TROUBLESHOOTING.md)
 - [MCP 規範](https://modelcontextprotocol.io/)

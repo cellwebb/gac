@@ -224,6 +224,5 @@ The MCP server automatically redirects all Rich console output to stderr to prev
 
 - [Main Documentation](USAGE.md)
 - [Claude Code OAuth Setup](CLAUDE_CODE.md)
-- [Qwen.ai OAuth Setup](QWEN.md)
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 - [MCP Specification](https://modelcontextprotocol.io/)

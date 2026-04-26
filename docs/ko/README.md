@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Qwen.ai (OAuth)** • **Qwen Cloud (API)** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **스마트 LLM 분석**
 
@@ -225,7 +225,6 @@ ANTHROPIC_API_KEY=your_key_here
 - **전체 문서**: [docs/USAGE.md](docs/ko/USAGE.md) - 완전한 CLI 참조
 - **MCP 서버**: [docs/MCP.md](MCP.md) - AI 에이전트를 위한 MCP 서버로 GAC 사용
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ko/CLAUDE_CODE.md) - Claude Code 설정 및 인증
-- **Qwen.ai OAuth**: [docs/QWEN.md](docs/ko/QWEN.md) - Qwen.ai 설정 및 인증
 - **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의
 - **문제 해결**: [docs/TROUBLESHOOTING.md](docs/ko/TROUBLESHOOTING.md) - 일반적인 문제 및 해결책
 - **기여**: [docs/CONTRIBUTING.md](docs/ko/CONTRIBUTING.md) - 개발 설정 및 가이드라인

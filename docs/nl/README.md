@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Qwen.ai (OAuth)** • **Qwen Cloud (API)** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Slimme LLM-analyse**
 
@@ -225,7 +225,6 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 - **Volledige documentatie**: [docs/USAGE.md](docs/nl/USAGE.md) - Volledige CLI-referentie
 - **MCP-server**: [docs/MCP.md](MCP.md) - Gebruik GAC als MCP-server voor AI-agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/nl/CLAUDE_CODE.md) - Claude Code installatie en authenticatie
-- **Qwen.ai OAuth**: [docs/QWEN.md](docs/nl/QWEN.md) - Qwen.ai installatie en authenticatie
 - **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
 - **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/nl/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen
 - **Bijdragen**: [docs/CONTRIBUTING.md](docs/nl/CONTRIBUTING.md) - Ontwikkelsetup en richtlijnen

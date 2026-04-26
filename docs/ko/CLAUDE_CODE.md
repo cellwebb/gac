@@ -148,6 +148,5 @@ OAuth 인증이 실패하면:
 ## 참고 자료
 
 - [메인 문서](USAGE.md)
-- [Qwen.ai 설정 가이드](QWEN.md)
 - [문제 해결 가이드](TROUBLESHOOTING.md)
 - [Claude Code 문서](https://claude.ai/code)

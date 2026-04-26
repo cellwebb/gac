@@ -284,7 +284,6 @@ gac --no-verify-ssl  # Hoppa över SSL-verifiering för denna commit
 - Det rekommenderade sättet att konfigurera gac är att köra `gac init` och följa de interaktiva prompterna.
 - Redan konfigurerat språk och bara behöver byta leverantör eller modell? Kör `gac model` för att upprepa installationen utan språkfrågor.
 - **Använder Claude Code?** Se [Claude Code installationsguide](CLAUDE_CODE.md) för OAuth-autentiseringsinstruktioner.
-- **Använder Qwen.ai?** Se [Qwen.ai konfigurationsguide](QWEN.md) för OAuth-autentiseringsinstruktioner.
 - gac laddar konfigurationen i följande prioritetsordning:
   1. CLI-flaggor
   2. Miljövariabler
@@ -321,9 +320,6 @@ Följande underkommandon är tillgängliga:
 - `gac auth claude-code login` — Logga in på Claude Code med OAuth (öppnar webbläsare)
 - `gac auth claude-code logout` — Logga ut från Claude Code och ta bort sparat token
 - `gac auth claude-code status` — Kontrollera Claude Code-autentiseringsstatus
-- `gac auth qwen login` — Logga in på Qwen med OAuth-enhetsflöde (öppnar webbläsare)
-- `gac auth qwen logout` — Logga ut från Qwen och ta bort sparat token
-- `gac auth qwen status` — Kontrollera Qwen-autentiseringsstatus
 - `gac config show` — Visa nuvarande konfiguration
 - `gac config set KEY VALUE` — Ställ in konfigurationsnyckel i `$HOME/.gac.env`
 - `gac config get KEY` — Hämta konfigurationsvärde

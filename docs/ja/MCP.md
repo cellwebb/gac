@@ -224,6 +224,5 @@ MCP サーバーは stdio プロトコルの破損を防ぐために、すべて
 
 - [メインドキュメント](USAGE.md)
 - [Claude Code OAuth セットアップ](CLAUDE_CODE.md)
-- [Qwen.ai OAuth セットアップ](QWEN.md)
 - [トラブルシューティングガイド](TROUBLESHOOTING.md)
 - [MCP 仕様](https://modelcontextprotocol.io/)

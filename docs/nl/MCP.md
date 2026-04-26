@@ -224,6 +224,5 @@ De MCP-server leidt alle Rich-console-uitvoer automatisch om naar stderr om stdi
 
 - [Hoofddocumentatie](USAGE.md)
 - [Claude Code OAuth-installatie](CLAUDE_CODE.md)
-- [Qwen.ai OAuth-installatie](QWEN.md)
 - [Probleemoplossing](TROUBLESHOOTING.md)
 - [MCP-specificatie](https://modelcontextprotocol.io/)

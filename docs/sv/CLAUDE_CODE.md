@@ -148,6 +148,5 @@ Om OAuth-autentisering misslyckas:
 ## Se även
 
 - [Huvuddokumentation](USAGE.md)
-- [Qwen.ai-installation och autentisering](QWEN.md)
 - [Felsökningsguide](TROUBLESHOOTING.md)
 - [Claude Code-dokumentation](https://claude.ai/code)

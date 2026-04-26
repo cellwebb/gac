@@ -148,6 +148,5 @@ OAuth 認証が失敗した場合：
 ## 関連情報
 
 - [メインドキュメント](USAGE.md)
-- [Qwen.ai セットアップガイド](QWEN.md)
 - [トラブルシューティングガイド](TROUBLESHOOTING.md)
 - [Claude Code ドキュメント](https://claude.ai/code)

@@ -68,8 +68,8 @@ uv tool upgrade gac
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
-- **Qwen.ai (OAuth)** • **Qwen Cloud (API)** • **Replicate** • **Streamlake** • **Synthetic.new**
-- **Together AI** • **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
+- **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
+- **Wafer.ai** • **Z.AI** • **Z.AI Coding** • **Custom Endpoints (Anthropic/OpenAI)**
 
 ### 🧠 **Smart LLM Analysis**
 
@@ -226,7 +226,6 @@ Track real-time installation metrics and package download statistics.
 - **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
 - **MCP server**: [docs/MCP.md](docs/en/MCP.md) - Use GAC as an MCP server for AI agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/en/CLAUDE_CODE.md) - Claude Code setup and authentication
-- **Qwen.ai OAuth**: [docs/QWEN.md](docs/en/QWEN.md) - Qwen.ai setup and authentication
 - **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions
 - **Contributing**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Development setup and guidelines
