@@ -4,6 +4,8 @@
 
 GAC 支援透過 Claude Code 訂閱進行身份驗證，允許您使用 Claude Code 訂閱而不是支付昂貴的 Anthropic API 費用。這對於已經透過訂閱獲得 Claude Code 存取權限的用戶來說是完美的選擇。
 
+> ⚠️ **注意 — 未經官方認可的使用:** Anthropic 正在積極打擊在 Claude Code CLI 之外使用 Claude Code OAuth 令牌的第三方工具，有時會撤銷存取權限。gac 足夠小，到目前為止還沒有引起注意，但在這裡使用 Claude Code (OAuth) **未經官方認可**，隨時可能停止工作。如果您需要可靠的提交訊息生成，請改用直接 API 提供者（`anthropic`、`openai` 等）。有關目前政策，請參閱 [Anthropic 的 Claude Code 訂閱文件](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription)。
+
 ## 什麼是 Claude Code？
 
 Claude Code 是 Anthropic 的訂閱服務，提供基於 OAuth 的 Claude 模型存取。與使用 API 金鑰（按令牌計費）不同，Claude Code 使用您訂閱中的 OAuth 令牌。

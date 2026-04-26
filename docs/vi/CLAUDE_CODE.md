@@ -4,6 +4,8 @@
 
 GAC hỗ trợ xác thực qua đăng ký Claude Code, cho phép bạn sử dụng đăng ký Claude Code của mình thay vì trả cho API Anthropic đắt tiền. Điều này hoàn hảo cho những người dùng đã có quyền truy cập Claude Code qua đăng ký của họ.
 
+> ⚠️ **Cảnh báo — sử dụng không được phép:** Anthropic đang tích cực trấn áp các công cụ của bên thứ ba sử dụng mã thông báo OAuth của Claude Code bên ngoài chính CLI Claude Code, đôi khi thu hồi quyền truy cập. gac đủ nhỏ để thoát khỏi sự chú ý cho đến nay, nhưng sử dụng Claude Code (OAuth) ở đây **không được phép chính thức** và có thể ngừng hoạt động bất kỳ lúc nào. Nếu bạn cần tạo thông báo cam kết đáng tin cậy, hãy sử dụng nhà cung cấp API trực tiếp (`anthropic`, `openai`, v.v.) thay thế. Xem [tài liệu đăng ký Claude Code của Anthropic](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription) để biết chính sách hiện tại.
+
 ## Claude Code là gì?
 
 Claude Code là dịch vụ đăng ký của Anthropic cung cấp quyền truy cập Claude mô hình dựa trên OAuth. Thay vì sử dụng khóa API (được tính phí theo token), Claude Code sử dụng token OAuth từ đăng ký của bạn.

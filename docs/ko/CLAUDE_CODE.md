@@ -4,6 +4,8 @@
 
 GAC는 Claude Code 구독을 통한 인증을 지원하며, 비싼 Anthropic API를 지불하는 대신 Claude Code 구독을 사용할 수 있습니다. 이미 구독으로 Claude Code 액세스 권한을 가진 사용자에게 적합합니다.
 
+> ⚠️ **주의 — 공식적으로 승인되지 않은 사용:** Anthropic은 Claude Code CLI 외부에서 Claude Code OAuth 토큰을 사용하는 타사 도구를 적극적으로 단속하고 있으며, 때로는 액세스를 취소합니다. gac는 지금까지 레이더에서 벗어날 정도로 작지만, 여기서 Claude Code (OAuth)를 사용하는 것은 **공식적으로 승인되지 않았으며** 언제든지 작동을 중지할 수 있습니다. 안정적인 커밋 메시지 생성이 필요하면 대신 직접 API 제공자(`anthropic`, `openai` 등)를 사용하세요. 현재 정책은 [Anthropic의 Claude Code 구독 문서](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription)를 참조하세요.
+
 ## Claude Code란?
 
 Claude Code는 Anthropic의 구독 서비스로, OAuth 기반의 Claude 모델 액세스를 제공합니다. API 키(토큰당 과금)를 사용하는 대신, Claude Code는 구독의 OAuth 토큰을 사용합니다.

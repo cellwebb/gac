@@ -4,6 +4,8 @@
 
 GAC suporta autenticação através de assinaturas Claude Code, permitindo que você use sua assinatura Claude Code em vez de pagar pela API Anthropic cara. Isso é perfeito para usuários que já têm acesso a Claude Code através de sua assinatura.
 
+> ⚠️ **Aviso — uso não autorizado:** Anthropic tem combatido ativamente ferramentas de terceiros que usam tokens OAuth de Claude Code fora da CLI Claude Code, às vezes revogando o acesso. gac é pequeno o suficiente para ter ficado sob o radar até agora, mas usar Claude Code (OAuth) aqui **não é oficialmente autorizado** e pode parar de funcionar a qualquer momento. Se você precisar de geração confiável de mensagens de commit, use um provedor de API direto (`anthropic`, `openai`, etc.) em seu lugar. Consulte a [documentação de assinatura Claude Code do Anthropic](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription) para a política atual.
+
 ## O que é Claude Code?
 
 Claude Code é o serviço de assinatura da Anthropic que fornece acesso aos modelos Claude baseado em OAuth. Em vez de usar chaves API (que são cobradas por token), Claude Code usa tokens OAuth da sua assinatura.

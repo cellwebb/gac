@@ -285,6 +285,13 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         from gac.oauth.claude_code import authenticate_and_save
         from gac.oauth.token_store import TokenStore
 
+        click.echo(
+            "\n⚠️  Note: Anthropic has been cracking down on third-party tools using Claude Code "
+            "OAuth tokens; this use of gac is unsanctioned and could stop working at any time. "
+            "For reliable use, prefer a direct API provider (anthropic, openai, etc.). "
+            "See https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription"
+        )
+
         token_store = TokenStore()
         existing_token_data = token_store.get_token("claude-code")
         if existing_token_data:

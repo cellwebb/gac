@@ -80,6 +80,13 @@ def claude_code_login(quiet: bool = False) -> None:
                 return
 
     if not quiet:
+        click.echo(
+            "⚠️  Note: Anthropic has been cracking down on third-party tools using Claude Code "
+            "OAuth tokens; this use of gac is unsanctioned and could stop working at any time. "
+            "For reliable use, prefer a direct API provider (anthropic, openai, etc.). "
+            "See https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription"
+        )
+        click.echo()
         click.echo("🔐 Starting Claude Code OAuth authentication...")
         click.echo("   Your browser will open automatically")
         click.echo("   (Waiting up to 3 minutes for callback)")

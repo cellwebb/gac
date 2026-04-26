@@ -4,6 +4,8 @@
 
 GAC は Claude Code サブスクリプションによる認証をサポートしており、高価な Anthropic API を支払う代わりに Claude Code サブスクリプションを使用できます。これは、すでにサブスクリプションで Claude Code へのアクセス権を持っているユーザーに最適です。
 
+> ⚠️ **注意 — 非公式な使用:** Anthropic は Claude Code CLI 外で Claude Code OAuth トークンを使用するサードパーティツールを積極的に取り締まっており、アクセスを取り消すことがあります。gac は小さいため、これまでのところ指摘されていませんが、ここで Claude Code (OAuth) を使用することは**公式には認可されていない**ため、いつでも機能しなくなる可能性があります。確実なコミットメッセージ生成が必要な場合は、代わりに直接 API プロバイダー（`anthropic`、`openai` など）を使用してください。現在のポリシーについては、[Anthropic の Claude Code サブスクリプション ドキュメント](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-claude-subscription)を参照してください。
+
 ## Claude Code とは？
 
 Claude Code は Anthropic のサブスクリプションサービスで、OAuth ベースの Claude モデルアクセスを提供します。API キー（トークンごとに課金）を使用する代わりに、Claude Code はサブスクリプションの OAuth トークンを使用します。
