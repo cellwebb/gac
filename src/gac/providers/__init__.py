@@ -40,6 +40,7 @@ from .replicate import ReplicateProvider
 from .streamlake import StreamlakeProvider
 from .synthetic import SyntheticProvider
 from .together import TogetherProvider
+from .wafer import WaferProvider
 from .zai import ZAICodingProvider, ZAIProvider
 
 # Register all providers - this populates PROVIDER_REGISTRY automatically
@@ -67,6 +68,7 @@ register_provider("replicate", ReplicateProvider)
 register_provider("streamlake", StreamlakeProvider)
 register_provider("synthetic", SyntheticProvider)
 register_provider("together", TogetherProvider)
+register_provider("wafer", WaferProvider)
 register_provider("zai", ZAIProvider)
 register_provider("zai-coding", ZAICodingProvider)
 

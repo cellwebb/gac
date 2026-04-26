@@ -105,6 +105,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7"),
         ("Together AI", "openai/gpt-oss-120B"),
+        ("Wafer.ai", "glm-5.1"),
         ("Z.AI", "glm-5"),
         ("Z.AI Coding", "glm-5"),
     ]
@@ -139,6 +140,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         provider_key = "qwen"
     elif provider_key == "syntheticnew":
         provider_key = "synthetic"
+    elif provider_key == "waferai":
+        provider_key = "wafer"
 
     if is_streamlake:
         endpoint_id = _prompt_required_text("Enter the Streamlake inference endpoint ID (required):")
