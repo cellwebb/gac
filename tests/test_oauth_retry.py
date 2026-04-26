@@ -2,9 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-import pytest
-
-from gac.errors import AIError, ConfigError
+from gac.errors import AIError
 from gac.oauth_retry import (
     OAUTH_PROVIDERS,
     OAuthProviderConfig,
@@ -28,69 +26,6 @@ class TestOAuthRetry:
             result = authenticator(quiet=True)
             assert result is True
             mock_auth.assert_called_once_with(quiet=True)
-
-    def test_create_qwen_authenticator_success_no_network(self):
-        """Test Qwen authenticator creation using direct function mock (lines 34-43)."""
-        # Mock the entire authenticator function creation and execution
-        # This avoids calling the real implementation with network requests
-        from gac.oauth_retry import _create_qwen_authenticator
-
-        with (
-            patch("gac.oauth.qwen_oauth.QwenOAuthProvider"),
-            patch("gac.oauth.qwen_oauth.TokenStore"),
-            patch("gac.oauth.qwen_oauth.httpx.post"),
-            patch("gac.oauth.qwen_oauth.QwenDeviceFlow"),
-            patch("webbrowser.open") as mock_open,
-        ):
-            # Mock the device flow response
-            mock_device_response = Mock()
-            mock_device_response.verification_uri_complete = "https://test.qwen.com"
-            mock_device_response.user_code = "TESTCODE123"
-            mock_device_flow = Mock()
-            mock_device_flow.initiate_device_flow.return_value = mock_device_response
-
-            # Mock token poll
-            mock_token = {
-                "access_token": "test_token",
-                "token_type": "Bearer",
-                "expiry": 999999999,
-                "refresh_token": None,
-            }
-            mock_device_flow.poll_for_token.return_value = mock_token
-
-            with patch("gac.oauth.qwen_oauth.QwenDeviceFlow", return_value=mock_device_flow):
-                try:
-                    authenticator = _create_qwen_authenticator()
-                    result = authenticator(quiet=True)
-                    assert result is True
-                except Exception as e:
-                    # If network calls still happen, at least verify webbrowser wasn't called
-                    assert not mock_open.called
-                    # Verify we couldn't authenticate due to missing mocking
-                    pytest.skip(f"Network calls not fully mocked: {e}")
-
-    def test_create_qwen_authenticator_function_mock(self):
-        """Test Qwen authenticator using function-level mocking to avoid network calls."""
-        # Mock the authenticator creation itself
-        with patch("gac.oauth_retry._create_qwen_authenticator") as mock_create_func:
-            mock_auth_func = Mock(return_value=True)
-            mock_create_func.return_value = mock_auth_func
-
-            # Test that the mock function works
-            result = mock_auth_func(quiet=False)
-            assert result is True
-            mock_auth_func.assert_called_once_with(quiet=False)
-
-    def test_create_qwen_authenticator_failure_via_function_mock(self):
-        """Test Qwen authenticator failure using function-level mocking."""
-        with patch("gac.oauth_retry._create_qwen_authenticator") as mock_create_func:
-            # Test different error types
-            for _error in [AIError("Error"), ConfigError("Config error"), OSError("OS error")]:
-                mock_auth_func = Mock(return_value=False)  # Simulate auth returning False
-                mock_create_func.return_value = mock_auth_func
-
-                result = mock_auth_func(quiet=False)
-                assert result is False
 
     def test_claude_code_extra_check(self):
         """Test Claude Code extra error check (lines 46-48)."""
@@ -132,17 +67,6 @@ class TestOAuthRetry:
 
         provider = _find_oauth_provider("claude-code:claude-3-haiku", error)
         assert provider is None
-
-    def test_find_oauth_provider_qwen_success(self):
-        """Test _find_oauth_provider with Qwen (no extra check)."""
-        error = AIError("Authentication failed")
-        error.error_type = "authentication"
-
-        provider = _find_oauth_provider("qwen:qwen-max", error)
-        assert provider is not None
-        assert provider.provider_prefix == "qwen:"
-        assert provider.display_name == "Qwen"
-        assert provider.extra_error_check is None
 
     def test_find_oauth_provider_no_match_model(self):
         """Test _find_oauth_provider with non-matching model."""
@@ -287,19 +211,13 @@ class TestOAuthRetry:
 
     def test_oauth_providers_configuration(self):
         """Test OAUTH_PROVIDERS constant is properly configured."""
-        assert len(OAUTH_PROVIDERS) == 2
+        assert len(OAUTH_PROVIDERS) == 1
 
         # Claude Code provider
         claude_provider = next(p for p in OAUTH_PROVIDERS if p.provider_prefix == "claude-code:")
         assert claude_provider.display_name == "Claude Code"
         assert claude_provider.manual_auth_hint == "Run 'gac model' to re-authenticate manually."
         assert claude_provider.extra_error_check is not None
-
-        # Qwen provider
-        qwen_provider = next(p for p in OAUTH_PROVIDERS if p.provider_prefix == "qwen:")
-        assert qwen_provider.display_name == "Qwen"
-        assert qwen_provider.manual_auth_hint == "Run 'gac auth qwen login' to re-authenticate manually."
-        assert qwen_provider.extra_error_check is None
 
     def test_oauth_retry_no_browser_opening(self):
         """Test that OAuth_retry functions don't open browsers when mocked properly."""

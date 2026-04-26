@@ -506,10 +506,13 @@ class TestProviderRegistry:
             "openai",
             "openrouter",
             "qwen",
+            "qwen-api",
+            "qwen-api-cn",
             "replicate",
             "streamlake",
             "synthetic",
             "together",
+            "wafer",
             "zai",
             "zai-coding",
         }

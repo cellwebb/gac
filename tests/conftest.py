@@ -218,7 +218,6 @@ def isolate_oauth_tokens():
     # Also patch TokenStore in ALL modules that import it directly
     # Python's import creates local references, so we must patch each one
     modules_to_patch = [
-        "gac.oauth.qwen_oauth",
         "gac.oauth.claude_code",
         "gac.auth_cli",
         "gac.ai_utils",

@@ -18,6 +18,7 @@ from tests.providers.conftest import BaseProviderTest
 
 call_qwen_api = PROVIDER_REGISTRY["qwen-api"]
 call_qwen_api_cn = PROVIDER_REGISTRY["qwen-api-cn"]
+call_qwen_oauth_stub = PROVIDER_REGISTRY["qwen"]
 
 
 class TestQwenAPIImports:
@@ -31,6 +32,19 @@ class TestQwenAPIImports:
         """Test that qwen-api providers are in the registry."""
         assert "qwen-api" in PROVIDER_REGISTRY
         assert "qwen-api-cn" in PROVIDER_REGISTRY
+
+
+class TestQwenOAuthDeprecationStub:
+    """The legacy 'qwen' (OAuth) registry entry should fail fast with a migration message."""
+
+    def test_qwen_stub_raises_authentication_error(self):
+        with pytest.raises(AIError) as exc_info:
+            call_qwen_oauth_stub("qwen3-coder-plus", [], 0.7, 100)
+
+        message = str(exc_info.value)
+        assert "no longer available" in message.lower()
+        assert "qwen-api" in message
+        assert "qwen-api-cn" in message
 
 
 class TestQwenAPIKeyValidation:

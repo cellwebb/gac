@@ -401,100 +401,6 @@ def test_configure_model_claude_code_oauth_no_existing_fail(tmp_path):
             assert result is False
 
 
-def test_configure_model_qwen_oauth_keep_existing(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Keep existing token"]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
-
-            result = _configure_model({})
-            assert result is True
-
-
-def test_configure_model_qwen_oauth_reauth_success(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
-            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth"),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Re-authenticate (get new token)"]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
-
-            result = _configure_model({})
-            assert result is True
-
-
-def test_configure_model_qwen_oauth_reauth_fail(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
-            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth", side_effect=Exception("auth failed")),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", "Re-authenticate (get new token)"]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
-
-            result = _configure_model({})
-            assert result is False
-
-
-def test_configure_model_qwen_oauth_no_existing_success(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
-            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth"),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)"]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
-
-            result = _configure_model({})
-            assert result is True
-
-
-def test_configure_model_qwen_oauth_no_existing_fail(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value=None),
-            mock.patch("gac.oauth.qwen_oauth.QwenOAuthProvider.initiate_auth", side_effect=Exception("auth failed")),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)"]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
-
-            result = _configure_model({})
-            assert result is False
-
-
 def test_model_command_configure_returns_false(tmp_path):
     env_path = tmp_path / ".gac.env"
     env_path.touch()
@@ -520,24 +426,6 @@ def test_configure_model_claude_code_oauth_cancel_action(tmp_path):
         ):
             mselect.return_value.ask.side_effect = ["Claude Code (OAuth)", None]
             mtext.return_value.ask.side_effect = ["claude-sonnet-4-6"]
-
-            result = _configure_model({})
-            assert result is True
-
-
-def test_configure_model_qwen_oauth_cancel_action(tmp_path):
-    env_path = tmp_path / ".gac.env"
-    env_path.touch()
-
-    with mock.patch("gac.model_cli.GAC_ENV_PATH", env_path):
-        with (
-            mock.patch("questionary.select") as mselect,
-            mock.patch("questionary.text") as mtext,
-            mock.patch("gac.model_cli.set_key"),
-            mock.patch("gac.oauth.token_store.TokenStore.get_token", return_value={"access_token": "qwen-token"}),
-        ):
-            mselect.return_value.ask.side_effect = ["Qwen.ai (OAuth)", None]
-            mtext.return_value.ask.side_effect = ["qwen3-coder-plus"]
 
             result = _configure_model({})
             assert result is True
