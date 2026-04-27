@@ -62,6 +62,7 @@ gac
 | `--no-verify`        |      | 提交時跳過 pre-commit 和 lefthook 鉤子          |
 | `--skip-secret-scan` |      | 跳過暫存變更中的密鑰安全掃描                    |
 | `--no-verify-ssl`    |      | 跳過 SSL 證書驗證（適用於企業代理）             |
+| `--signoff`          |      | 新增 Signed-off-by 行到提交訊息（DCO 合規）     |
 | `--interactive`      | `-i` | 就變更提問以獲得更好的提交                      |
 
 **注意：**組合 `-a` 和 `-g`（即 `-ag`）以先暫存所有變更，然後將它們分組為提交。
@@ -279,6 +280,35 @@ gac --no-verify-ssl  # 跳過此次提交的 SSL 驗證
 
 **注意：**僅在你信任的網路環境中使用此選項。停用 SSL 驗證會降低安全性，可能使你的 API 請求容易受到中間人攻擊。
 
+### Signed-off-by 行（DCO 合規）
+
+gac 支援向提交訊息新增 `Signed-off-by` 行，這在許多開源專案中是 [Developer Certificate of Origin (DCO)](https://developercertificate.org/) 合規所必需的。
+
+**新增 signoff :**
+
+```sh
+gac --signoff  # 新增 Signed-off-by 行到提交訊息（DCO 合規）
+```
+
+**要永久啟用 :** 在您的 `.gac.env` 檔案中設定 `GAC_SIGNOFF=true`，或將 `signoff=true` 新增到您的設定中。
+
+**功能 :**
+
+- 在提交訊息中新增 `Signed-off-by: 您的姓名 <your.email@example.com>`
+- 使用您的 git 設定（`user.name` 和 `user.email`）來填充該行
+- Cherry Studio、Linux 核心和其他使用 DCO 的專案需要此功能
+
+**設定 git 身份資訊 :**
+
+確保您的 git 設定具有正確的姓名和電子郵件 :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**注意 :** Signed-off-by 行是在提交時由 git 新增的，而不是在訊息生成時由 AI 新增的。您在預覽中看不到它，但它會在最終提交中（使用 `git log -1` 檢查）。
+
 ## 設定說明
 
 - 設定 gac 的推薦方法是執行 `gac init` 並按照互動式提示操作。
@@ -297,6 +327,7 @@ gac --no-verify-ssl  # 跳過此次提交的 SSL 驗證
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自動推斷並在提交訊息中包含範圍（例如，`feat(auth):` vs `feat:`）
 - `GAC_VERBOSE=true` - 生成包含動機、架構和影響部分的詳細提交訊息
 - `GAC_USE_50_72_RULE=true` - 始終對提交訊息應用 50/72 規則（主題 ≤50 字符，正文行 ≤72 字符）
+- `GAC_SIGNOFF=true` - 始終在提交中新增 Signed-off-by 行（用於 DCO 合規）
 - `GAC_TEMPERATURE=0.7` - 控制 LLM 創造力（0.0-1.0，較低 = 更專注）
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 生成訊息的最大權杖數（使用 `--group` 時根據檔案數量自動縮放 2-5 倍；覆蓋以提高或降低）
 - `GAC_WARNING_LIMIT_TOKENS=4096` - 當提示超過此權杖數時發出警告

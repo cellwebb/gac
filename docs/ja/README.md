@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **ワンライナー** (-o フラグ): 従来のコミット形式に従う単一行のコミットメッセージ
 - **標準** (デフォルト): 実装の詳細を説明する箇条書き付きの要約
 - **詳細** (-v フラグ): 動機、技術的アプローチ、影響分析を含む包括的な説明
+- **50/72 ルール** (--50-72 フラグ): git log と GitHub UI での最適な可読性のため、クラシックなコミットメッセージ形式を強制
+- **DCO/Signoff** (--signoff フラグ): Developer Certificate of Origin コンプライアンスのための Signed-off-by 行を追加（Cherry Studio、Linux カーネル、その他のプロジェクトで必要）
 
 ### 🌍 **多言語サポート**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # セキュリティスキャンをスキップ（注意して使用）
 gac --skip-secret-scan
+
+# DCO コンプライアンスのための signoff を追加（Cherry Studio、Linux カーネルなど）
+gac --signoff
 ```
 
 ### 対話型フィードバックシステム

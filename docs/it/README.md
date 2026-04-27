@@ -83,8 +83,10 @@ uv tool upgrade gac
 - **Una riga** (flag -o): Messaggio di commit su una singola riga seguendo il formato conventional commit
 - **Standard** (predefinito): Riepilogo con punti elenco che spiegano i dettagli di implementazione
 - **Dettagliato** (flag -v): Spiegazioni complete inclusi motivazione, approccio tecnico e analisi dell'impatto
+- **Regola 50/72** (flag --50-72): Impone il formato classico del messaggio di commit per una leggibilità ottimale in git log e GitHub UI
+- **DCO/Signoff** (flag --signoff): Aggiunge la riga Signed-off-by per la conformità al Developer Certificate of Origin (richiesto da Cherry Studio, Linux kernel e altri progetti)
 
-### 🌍 **Supporto Multilingue**
+### 🌍 **Supporto multilingue**
 
 - **25+ lingue**: Genera messaggi di commit in inglese, cinese, giapponese, coreano, spagnolo, francese, tedesco, italiano e 20+ altre lingue
 - **Traduzione flessibile**: Scegli di mantenere i prefissi dei commit convenzionali in inglese per la compatibilità degli strumenti, o tradurli completamente
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Salta scansione sicurezza (usa con cautela)
 gac --skip-secret-scan
+
+# Aggiungi signoff per conformità DCO (Cherry Studio, Linux kernel, etc.)
+gac --signoff
 ```
 
 ### Sistema di Feedback Interattivo

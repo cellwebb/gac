@@ -62,6 +62,7 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | `--no-verify`        |      | Hoppa över pre-commit och lefthook hooks vid commit                        |
 | `--skip-secret-scan` |      | Hoppa över säkerhetsskanning för hemligheter i stageade ändringar          |
 | `--no-verify-ssl`    |      | Hoppa över SSL-certifikatverifiering (användbart för företagsproxyer)      |
+| `--signoff`          |      | Lägg till Signed-off-by-rad i commit-meddelandet (DCO-efterlevnad)         |
 | `--interactive`      | `-i` | Ställ frågor om ändringar för bättre commits                               |
 
 **Obs:** Kombinera `-a` och `-g` (dvs. `-ag`) för att stagea ALLA ändringar först, sedan gruppera dem i commits.
@@ -279,6 +280,35 @@ gac --no-verify-ssl  # Hoppa över SSL-verifiering för denna commit
 
 **Obs:** Använd endast detta alternativ i betrodda nätverksmiljöer. Att inaktivera SSL-verifiering minskar säkerheten och kan göra dina API-förfrågningar sårbara för man-in-the-middle-attacker.
 
+### Signed-off-by-rad (DCO-efterlevnad)
+
+gac stödjer att lägga till en `Signed-off-by`-rad i commit-meddelanden, vilket krävs för [Developer Certificate of Origin (DCO)](https://developercertificate.org/)-efterlevnad i många open source-projekt.
+
+**Lägg till signoff :**
+
+```sh
+gac --signoff  # Lägg till Signed-off-by-rad i commit-meddelandet (DCO-efterlevnad)
+```
+
+**För att aktivera permanent :** Ställ in `GAC_SIGNOFF=true` i din `.gac.env`-fil, eller lägg till `signoff=true` i din konfiguration.
+
+**Vad den gör :**
+
+- Lägger till `Signed-off-by: Ditt Namn <din.email@example.com>` i commit-meddelandet
+- Använder din git-konfiguration (`user.name` och `user.email`) för raden
+- Krävs för projekt som Cherry Studio, Linux-kärnan och andra som använder DCO
+
+**Git-identitetsinställningar :**
+
+Se till att din git-konfiguration har rätt namn och e-post :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Obs :** Signed-off-by-raden läggs till av git under commit, inte av AI under meddelandegenerering. Du ser den inte i förhandsgranskningen, men den kommer att finnas i den slutliga commiten (kontrollera med `git log -1`).
+
 ## Konfigurationsanteckningar
 
 - Det rekommenderade sättet att konfigurera gac är att köra `gac init` och följa de interaktiva prompterna.
@@ -297,6 +327,7 @@ Du kan anpassa gacs beteende med dessa valfria miljövariabler:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Härled automatiskt och inkludera scope i commit-meddelanden (t.ex. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generera detaljerade commit-meddelanden med motivation, arkitektur och påverkanssektioner
 - `GAC_USE_50_72_RULE=true` - Tillämpa alltid 50/72-regeln för commit-meddelanden (ämne ≤50 tecken, brödtextlinjer ≤72 tecken)
+- `GAC_SIGNOFF=true` - Lägg alltid till Signed-off-by-rad i commits (för DCO-efterlevnad)
 - `GAC_TEMPERATURE=0.7` - Kontrollera LLM:s kreativitet (0.0-1.0, lägre = mer fokuserad)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximalt antal tokens för genererade meddelanden (automatiskt skalat 2-5x vid användning av `--group` baserat på filantal; åsidosätt för att gå högre eller lägre)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Varna när prompter överskrider denna tokenräkning

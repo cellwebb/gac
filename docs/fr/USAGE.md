@@ -63,6 +63,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--no-verify`        |       | Sauter les hooks pre-commit et lefthook lors du commit                           |
 | `--skip-secret-scan` |       | Sauter l'analyse de sécurité pour les secrets dans les changements indexés       |
 | `--no-verify-ssl`    |       | Sauter la vérification des certificats SSL (utile pour les proxies d'entreprise) |
+| `--signoff`          |       | Ajouter une ligne Signed-off-by au message de commit (conformité DCO)            |
 | `--interactive`      | `-i`  | Poser des questions sur les changements pour générer de meilleurs commits        |
 
 **Note :** Combinez `-a` et `-g` (c'est-à-dire `-ag`) pour indexer TOUS les changements d'abord, puis les grouper en commits.
@@ -328,6 +329,35 @@ gac --no-verify-ssl  # Sauter la vérification SSL pour ce commit
 
 **Note :** N'utilisez cette option que dans des environnements réseau de confiance. Désactiver la vérification SSL réduit la sécurité et peut rendre vos requêtes API vulnérables aux attaques de type man-in-the-middle.
 
+### Ligne Signed-off-by (Conformité DCO)
+
+gac prend en charge l'ajout d'une ligne `Signed-off-by` aux messages de commit, qui est requise pour la conformité au [Developer Certificate of Origin (DCO)](https://developercertificate.org/) dans de nombreux projets open source.
+
+**Ajouter signoff :**
+
+```sh
+gac --signoff  # Ajouter une ligne Signed-off-by au message de commit (conformité DCO)
+```
+
+**Pour activer de manière permanente :** Définissez `GAC_SIGNOFF=true` dans votre fichier `.gac.env`, ou ajoutez `signoff=true` à votre configuration.
+
+**Ce que cela fait :**
+
+- Ajoute `Signed-off-by: Votre Nom <votre.email@example.com>` au message de commit
+- Utilise votre configuration git (`user.name` et `user.email`) pour la ligne
+- Requis pour des projets comme Cherry Studio, noyau Linux et autres utilisant DCO
+
+**Configuration de l'identité git :**
+
+Assurez-vous que votre configuration git a le bon nom et email :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Note :** La ligne Signed-off-by est ajoutée par git lors du commit, pas par l'IA lors de la génération du message. Vous ne la verrez pas dans la prévisualisation, mais elle sera dans le commit final (vérifiez avec `git log -1`).
+
 ## Notes de configuration
 
 - La méthode recommandée pour configurer gac est d'exécuter `gac init` et de suivre les invites interactives.
@@ -346,6 +376,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inférer et inclure automatiquement la portée dans les messages de commit (ex: `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Générer des messages de commit détaillés avec sections motivation, architecture et impact
 - `GAC_USE_50_72_RULE=true` - Toujours appliquer la règle 50/72 pour les messages de commit (sujet ≤50 caractères, lignes du corps ≤72 caractères)
+- `GAC_SIGNOFF=true` - Toujours ajouter la ligne Signed-off-by aux commits (pour la conformité DCO)
 - `GAC_TEMPERATURE=0.7` - Contrôler la créativité de l'IA (0.0-1.0, plus bas = plus focus)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Tokens maximum pour les messages générés (automatiquement mis à l'échelle 2-5x lors de l'utilisation de `--group` basé sur le nombre de fichiers ; remplacer pour aller plus haut ou plus bas)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Avertir quand les prompts dépassent ce nombre de tokens

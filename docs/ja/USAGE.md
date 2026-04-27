@@ -63,6 +63,7 @@ gac
 | `--no-verify`        |          | コミット時に pre-commit と lefthook フックをスキップ             |
 | `--skip-secret-scan` |          | ステージされた変更での秘密検出をスキップ                         |
 | `--no-verify-ssl`    |          | SSL証明書の検証をスキップ（企業プロキシに便利）                  |
+| `--signoff`          |          | コミットメッセージに Signed-off-by 行を追加（DCO 準拠）          |
 | `--interactive`      | `-i`     | より良いコミットのために変更について質問する                     |
 
 **注意:** `-ag` のように `-a` と `-g` を組み合わせて、まずすべての変更をステージしてからコミットにグループ化します。
@@ -329,6 +330,35 @@ gac --no-verify-ssl  # このコミットのSSL検証をスキップ
 
 **注意:** 信頼できるネットワーク環境でのみこのオプションを使用してください。SSL検証を無効にするとセキュリティが低下し、API要求が中間者攻撃に対して脆弱になる可能性があります。
 
+### Signed-off-by 行（DCO 準拠）
+
+gac はコミットメッセージに `Signed-off-by` 行を追加することをサポートしており、これは多くのオープンソースプロジェクトで [Developer Certificate of Origin (DCO)](https://developercertificate.org/) 準拠のために必要です。
+
+**Signoff を追加 :**
+
+```sh
+gac --signoff  # コミットメッセージに Signed-off-by 行を追加（DCO 準拠）
+```
+
+**永続的に有効にするには :** `.gac.env` ファイルに `GAC_SIGNOFF=true` を設定するか、設定に `signoff=true` を追加してください。
+
+**機能 :**
+
+- コミットメッセージに `Signed-off-by: あなたの名前 <your.email@example.com>` を追加します
+- git config (`user.name` と `user.email`) を使用して行を構成します
+- Cherry Studio、Linux カーネル、その他 DCO を使用するプロジェクトで必要です
+
+**git ユーザー情報の設定 :**
+
+git config に正しい名前とメールアドレスが設定されていることを確認してください :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**注意 :** Signed-off-by 行はメッセージ生成時の AI ではなく、コミット時に git によって追加されます。プレビューには表示されませんが、最終的なコミットには含まれます (`git log -1` で確認してください)。
+
 ## 設定に関する注意
 
 - gac を設定する推奨方法は `gac init` を実行して対話的なプロンプトに従うことです。
@@ -347,6 +377,7 @@ gac --no-verify-ssl  # このコミットのSSL検証をスキップ
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - コミットメッセージにスコープを自動的に推論して含める（例: `feat(auth):` vs `feat:`）
 - `GAC_VERBOSE=true` - 動機、アーキテクチャ、影響セクションを含む詳細なコミットメッセージを生成
 - `GAC_USE_50_72_RULE=true` - コミットメッセージに常に 50/72 ルールを適用（件名 ≤50 文字、本文行 ≤72 文字）
+- `GAC_SIGNOFF=true` - 常にコミットに Signed-off-by 行を追加（DCO 準拠用）
 - `GAC_TEMPERATURE=0.7` - LLM の創造性を制御（0.0-1.0、低いほど focused）
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 生成されたメッセージの最大トークン数（`--group` 使用時にファイル数に基づいて自動的に 2-5 倍にスケーリング；これ以上または以下にするには上書き）
 - `GAC_WARNING_LIMIT_TOKENS=4096` - プロンプトがこのトークン数を超えた場合に警告

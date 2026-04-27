@@ -52,18 +52,19 @@ gac
 
 ## 핵심 워크플로우 플래그
 
-| 플래그 / 옵션        | 단축 | 설명                                               |
-| -------------------- | ---- | -------------------------------------------------- |
-| `--add-all`          | `-a` | 커밋하기 전에 모든 변경 사항 스테이징              |
-| `--group`            | `-g` | 스테이징된 변경 사항을 여러 논리적 커밋으로 그룹화 |
-| `--push`             | `-p` | 커밋 후 리모트로 변경 사항 푸시                    |
-| `--yes`              | `-y` | 프롬프트 없이 자동으로 커밋을 확정                 |
-| `--dry-run`          |      | 변경 없이 어떤 일이 발생할지 표시                  |
-| `--message-only`     |      | 실제 커밋 없이 생성된 커밋 메시지만 출력           |
-| `--no-verify`        |      | 커밋 시 pre-commit 및 lefthook hooks 건너뛰기      |
-| `--skip-secret-scan` |      | 스테이징된 변경 사항의 비밀 검사 건너뛰기          |
-| `--no-verify-ssl`    |      | SSL 인증서 검증 건너뛰기 (기업 프록시에 유용)      |
-| `--interactive`      | `-i` | 더 나은 커밋을 위해 변경 사항에 대해 질문하기      |
+| 플래그 / 옵션        | 단축 | 설명                                                  |
+| -------------------- | ---- | ----------------------------------------------------- |
+| `--add-all`          | `-a` | 커밋하기 전에 모든 변경 사항 스테이징                 |
+| `--group`            | `-g` | 스테이징된 변경 사항을 여러 논리적 커밋으로 그룹화    |
+| `--push`             | `-p` | 커밋 후 리모트로 변경 사항 푸시                       |
+| `--yes`              | `-y` | 프롬프트 없이 자동으로 커밋을 확정                    |
+| `--dry-run`          |      | 변경 없이 어떤 일이 발생할지 표시                     |
+| `--message-only`     |      | 실제 커밋 없이 생성된 커밋 메시지만 출력              |
+| `--no-verify`        |      | 커밋 시 pre-commit 및 lefthook hooks 건너뛰기         |
+| `--skip-secret-scan` |      | 스테이징된 변경 사항의 비밀 검사 건너뛰기             |
+| `--no-verify-ssl`    |      | SSL 인증서 검증 건너뛰기 (기업 프록시에 유용)         |
+| `--signoff`          |      | 커밋 메시지에 Signed-off-by 라인 추가 (DCO 규정 준수) |
+| `--interactive`      | `-i` | 더 나은 커밋을 위해 변경 사항에 대해 질문하기         |
 
 **참고:** 먼저 모든 변경 사항을 스테이징한 다음 커밋으로 그룹화하려면 `-a`와 `-g`를 결합하세요 (즉, `-ag`).
 
@@ -324,6 +325,35 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 
 **참고:** 신뢰할 수 있는 네트워크 환경에서만 이 옵션을 사용하세요. SSL 검증을 비활성화하면 보안이 감소하고 API 요청이 중간자 공격에 취약해질 수 있습니다.
 
+### Signed-off-by 라인 (DCO 규정 준수)
+
+gac는 커밋 메시지에 `Signed-off-by` 라인을 추가하는 것을 지원하며, 이는 많은 오픈소스 프로젝트에서 [Developer Certificate of Origin (DCO)](https://developercertificate.org/) 규정 준수를 위해 필요합니다.
+
+**Signoff 추가 :**
+
+```sh
+gac --signoff  # 커밋 메시지에 Signed-off-by 라인 추가 (DCO 규정 준수)
+```
+
+**영구적으로 활성화하려면 :** `.gac.env` 파일에 `GAC_SIGNOFF=true`를 설정하거나, 설정에 `signoff=true`를 추가하세요.
+
+**기능 :**
+
+- 커밋 메시지에 `Signed-off-by: 당신의 이름 <your.email@example.com>` 추가
+- git config (`user.name` 및 `user.email`)을 사용하여 라인 구성
+- Cherry Studio, Linux 커널 및 기타 DCO를 사용하는 프로젝트에 필요함
+
+**git 사용자 정보 설정 :**
+
+git config에 올바른 이름과 이메일이 설정되어 있는지 확인하세요 :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**참고 :** Signed-off-by 라인은 메시지 생성 중 AI가 아닌 커밋 중 git에 의해 추가됩니다. 미리보기에는 표시되지 않지만 최종 커밋에 포함됩니다 (`git log -1`로 확인).
+
 ## 구성 노트
 
 - gac를 설정하는 권장 방법은 `gac init`를 실행하고 대화형 프롬프트를 따르는 것입니다.
@@ -342,6 +372,7 @@ gac --no-verify-ssl  # 이 커밋에 대한 SSL 검증 건너뛰기
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - 커밋 메시지에 스코프를 자동으로 추론하고 포함 (예: `feat(auth):`처럼 스코프를 포함해 `feat:` 대신 사용)
 - `GAC_VERBOSE=true` - 동기, 아키텍처 및 영향 섹션으로 상세한 커밋 메시지 생성
 - `GAC_USE_50_72_RULE=true` - 커밋 메시지에 항상 50/72 규칙 적용 (제목 ≤50자, 본문 줄 ≤72자)
+- `GAC_SIGNOFF=true` - 항상 커밋에 Signed-off-by 라인 추가 (DCO 규정 준수용)
 - `GAC_TEMPERATURE=0.7` - LLM 창의성 제어 (0.0-1.0, 낮을수록 더 집중됨)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 생성된 메시지용 최대 토큰 (`--group` 사용 시 파일 수에 따라 자동으로 2-5배 조정됨; 더 높거나 낮게 설정하려면 재정의)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - 프롬프트가 이 토큰 수를 초과하면 경고

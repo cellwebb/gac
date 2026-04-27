@@ -52,18 +52,19 @@ Genera un messaggio di commit basato su LLM per le modifiche in staging e richie
 
 ## Flag del Workflow Principale
 
-| Flag / Opzione       | Breve | Descrizione                                                |
-| -------------------- | ----- | ---------------------------------------------------------- |
-| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit       |
-| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici     |
-| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit              |
-| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere        |
-| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche                |
-| `--message-only`     |       | Output solo del messaggio di commit generato senza commit  |
-| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit         |
-| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche      |
-| `--no-verify-ssl`    |       | Salta verifica certificato SSL (utile per proxy aziendali) |
-| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori   |
+| Flag / Opzione       | Breve | Descrizione                                                         |
+| -------------------- | ----- | ------------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit                |
+| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici              |
+| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit                       |
+| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere                 |
+| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche                         |
+| `--message-only`     |       | Output solo del messaggio di commit generato senza commit           |
+| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit                  |
+| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche               |
+| `--no-verify-ssl`    |       | Salta verifica certificato SSL (utile per proxy aziendali)          |
+| `--signoff`          |       | Aggiungi riga Signed-off-by al messaggio di commit (conformità DCO) |
+| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori            |
 
 **Nota:** Combina `-a` e `-g` (cioè `-ag`) per mettere in staging TUTTE le modifiche prima, poi raggrupparle in commit.
 
@@ -324,6 +325,35 @@ gac --no-verify-ssl  # Salta verifica SSL per questo commit
 
 **Nota:** Usa questa opzione solo in ambienti di rete affidabili. Disabilitare la verifica SSL riduce la sicurezza e può rendere le tue richieste API vulnerabili ad attacchi man-in-the-middle.
 
+### Riga Signed-off-by (Conformità DCO)
+
+gac supporta l'aggiunta di una riga `Signed-off-by` ai messaggi di commit, che è richiesta per la conformità al [Developer Certificate of Origin (DCO)](https://developercertificate.org/) in molti progetti open source.
+
+**Aggiungi signoff :**
+
+```sh
+gac --signoff  # Aggiungi riga Signed-off-by al messaggio di commit (conformità DCO)
+```
+
+**Per abilitare permanentemente :** Imposta `GAC_SIGNOFF=true` nel tuo file `.gac.env`, o aggiungi `signoff=true` alla tua configurazione.
+
+**Cosa fa :**
+
+- Aggiunge `Signed-off-by: Il Tuo Nome <tua.email@example.com>` al messaggio di commit
+- Usa la tua configurazione git (`user.name` e `user.email`) per la riga
+- Richiesto per progetti come Cherry Studio, kernel Linux e altri che usano DCO
+
+**Configurazione identità git :**
+
+Assicurati che la tua configurazione git abbia il nome e l'email corretti :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Nota :** La riga Signed-off-by è aggiunta da git durante il commit, non dall'IA durante la generazione del messaggio. Non la vedrai nell'anteprima, ma sarà nel commit finale (verifica con `git log -1`).
+
 ## Note di Configurazione
 
 - Il modo raccomandato per configurare gac è eseguire `gac init` e seguire i prompt interattivi.
@@ -342,6 +372,7 @@ Puoi personalizzare il comportamento di gac con queste variabili ambiente opzion
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Deduci automaticamente e includi scope nei messaggi di commit (es. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Genera messaggi di commit dettagliati con sezioni motivazione, architettura e impatto
 - `GAC_USE_50_72_RULE=true` - Applica sempre la regola 50/72 per i messaggi di commit (oggetto ≤50 caratteri, righe corpo ≤72 caratteri)
+- `GAC_SIGNOFF=true` - Aggiungi sempre la riga Signed-off-by ai commit (per conformità DCO)
 - `GAC_TEMPERATURE=0.7` - Controlla creatività LLM (0.0-1.0, più basso = più focalizzato)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Token massimi per messaggi generati (scalato automaticamente 2-5x quando usi `--group` in base al numero di file; sovrascrivi per andare più alto o più basso)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Avvisa quando i prompt superano questo numero di token

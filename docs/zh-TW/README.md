@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **單行**（-o 標誌）：遵循常規提交格式的單行提交訊息
 - **標準**（預設）：帶有解釋實作細節的要點的摘要
 - **詳細**（-v 標誌）：包括動機、技術方法和影響分析的全面解釋
+- **50/72 規則**（--50-72 標誌）：強制使用經典的提交訊息格式，以便在 git log 和 GitHub UI 中獲得最佳可讀性
+- **DCO/Signoff**（--signoff 標誌）：新增 Signed-off-by 行以符合開發者原產地證書（Cherry Studio、Linux 核心及其他專案要求）
 
 ### 🌍 **多語言支援**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # 跳過安全掃描（謹慎使用）
 gac --skip-secret-scan
+
+# 新增 signoff 以符合 DCO（Cherry Studio、Linux 核心等）
+gac --signoff
 ```
 
 ### 互動式回饋系統

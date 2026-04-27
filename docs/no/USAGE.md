@@ -62,6 +62,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | `--no-verify`        |      | Hopp over pre-commit og lefthook hooks ved committing             |
 | `--skip-secret-scan` |      | Hopp over sikkerhetsskanning for hemmeligheter i staged endringer |
 | `--no-verify-ssl`    |      | Hopp over SSL-sertifikatverifisering (nyttig for bedriftsproxyer) |
+| `--signoff`          |      | Legg til Signed-off-by-linje i commit-meldingen (DCO-samsvar)     |
 | `--interactive`      | `-i` | Still spørsmål om endringer for bedre commits                     |
 
 **Merknad:** Kombiner `-a` og `-g` (dvs. `-ag`) for å stage ALLE endringer først, deretter gruppere dem i commits.
@@ -279,6 +280,35 @@ gac --no-verify-ssl  # Hopp over SSL-verifisering for denne commit
 
 **Merknad:** Bruk kun dette alternativet i pålitelige nettverksmiljøer. Deaktivering av SSL-verifisering reduserer sikkerheten og kan gjøre API-forespørslene dine sårbare for man-in-the-middle-angrep.
 
+### Signed-off-by-linje (DCO-samsvar)
+
+gac støtter å legge til en `Signed-off-by`-linje i commit-meldinger, som er påkrevd for [Developer Certificate of Origin (DCO)](https://developercertificate.org/)-samsvar i mange open source-prosjekter.
+
+**Legg til signoff :**
+
+```sh
+gac --signoff  # Legg til Signed-off-by-linje i commit-meldingen (DCO-samsvar)
+```
+
+**For å aktivere permanent :** Sett `GAC_SIGNOFF=true` i `.gac.env`-filen din, eller legg til `signoff=true` i konfigurasjonen din.
+
+**Hva den gjør :**
+
+- Legger til `Signed-off-by: Ditt Navn <din.email@example.com>` i commit-meldingen
+- Bruker git-konfigurasjonen din (`user.name` og `user.email`) til linjen
+- Påkrevd for prosjekter som Cherry Studio, Linux-kjernen og andre som bruker DCO
+
+**Git-identitetsoppsett :**
+
+Sørg for at git-konfigurasjonen din har riktig navn og e-post :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Merknad :** Signed-off-by-linjen legges til av git under commit, ikke av AI under meldingsgenerering. Du vil ikke se den i forhåndsvisningen, men den vil være i den endelige commiten (sjekk med `git log -1`).
+
 ## Konfigurasjonsnotater
 
 - Den anbefalte måten å sette opp gac er å kjøre `gac init` og følge de interaktive promptene.
@@ -297,6 +327,7 @@ Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Utled automatisk og inkluder scope i commit-meldinger (f.eks. `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generer detaljerte commit-meldinger med motivasjon, arkitektur og påvirkningseksjoner
 - `GAC_USE_50_72_RULE=true` - Alltid anvende 50/72-regelen for commit-meldinger (emne ≤50 tegn, brødtekstlinjer ≤72 tegn)
+- `GAC_SIGNOFF=true` - Alltid legg til Signed-off-by-linje i commits (for DCO-samsvar)
 - `GAC_TEMPERATURE=0.7` - Kontroller LLM-kreativitet (0.0-1.0, lavere = mer fokusert)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maksimum tokens for genererte meldinger (automatisk skalert 2-5x når du bruker `--group` basert på filantall; overstyr for å gå høyere eller lavere)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Varsel når prompter overstiger dette tokenantallet

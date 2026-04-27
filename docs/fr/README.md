@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **Une ligne** (-o) : Message de commit sur une seule ligne suivant le format de commit conventionnel
 - **Standard** (par défaut) : Résumé avec points expliquant les détails d'implémentation
 - **Détaillé** (-v) : Explications complètes incluant motivation, approche technique et analyse d'impact
+- **Règle 50/72** (drapeau --50-72) : Applique le format classique de message de commit pour une lisibilité optimale dans git log et l'interface GitHub
+- **DCO/Signoff** (drapeau --signoff) : Ajoute la ligne Signed-off-by pour la conformité au Developer Certificate of Origin (requis par Cherry Studio, le noyau Linux et autres projets)
 
 ### 🌍 **Support multilingue**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Ignorer l'analyse de sécurité (utiliser avec prudence)
 gac --skip-secret-scan
+
+# Ajouter signoff pour conformité DCO (Cherry Studio, noyau Linux, etc.)
+gac --signoff
 ```
 
 ### Système de feedback interactif

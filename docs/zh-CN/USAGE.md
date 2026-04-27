@@ -52,18 +52,19 @@ gac
 
 ## 核心工作流标志
 
-| 标志 / 选项          | 简写 | 描述                                   |
-| -------------------- | ---- | -------------------------------------- |
-| `--add-all`          | `-a` | 在提交之前暂存所有更改                 |
-| `--group`            | `-g` | 将暂存的更改分组为多个逻辑提交         |
-| `--push`             | `-p` | 提交后推送更改到远程                   |
-| `--yes`              | `-y` | 自动确认提交而不提示                   |
-| `--dry-run`          |      | 显示会发生什么而不进行任何更改         |
-| `--message-only`     |      | 仅输出生成的提交信息，而不实际执行提交 |
-| `--no-verify`        |      | 提交时跳过 pre-commit 和 lefthook 钩子 |
-| `--skip-secret-scan` |      | 跳过暂存更改中的密钥安全扫描           |
-| `--no-verify-ssl`    |      | 跳过 SSL 证书验证（适用于企业代理）    |
-| `--interactive`      | `-i` | 就更改提问以获得更好的提交             |
+| 标志 / 选项          | 简写 | 描述                                        |
+| -------------------- | ---- | ------------------------------------------- |
+| `--add-all`          | `-a` | 在提交之前暂存所有更改                      |
+| `--group`            | `-g` | 将暂存的更改分组为多个逻辑提交              |
+| `--push`             | `-p` | 提交后推送更改到远程                        |
+| `--yes`              | `-y` | 自动确认提交而不提示                        |
+| `--dry-run`          |      | 显示会发生什么而不进行任何更改              |
+| `--message-only`     |      | 仅输出生成的提交信息，而不实际执行提交      |
+| `--no-verify`        |      | 提交时跳过 pre-commit 和 lefthook 钩子      |
+| `--skip-secret-scan` |      | 跳过暂存更改中的密钥安全扫描                |
+| `--no-verify-ssl`    |      | 跳过 SSL 证书验证（适用于企业代理）         |
+| `--signoff`          |      | 添加 Signed-off-by 行到提交信息（DCO 合规） |
+| `--interactive`      | `-i` | 就更改提问以获得更好的提交                  |
 
 **注意：**组合 `-a` 和 `-g`（即 `-ag`）以先暂存所有更改，然后将它们分组为提交。
 
@@ -330,6 +331,35 @@ gac --no-verify-ssl  # 为此次提交跳过 SSL 验证
 
 **注意：**禁用 SSL 验证会降低安全性。仅在必要时并在受信任的网络环境中使用此选项。
 
+### Signed-off-by 行（DCO 合规）
+
+gac 支持向提交信息添加 `Signed-off-by` 行，这在许多开源项目中是 [Developer Certificate of Origin (DCO)](https://developercertificate.org/) 合规所必需的。
+
+**添加 signoff :**
+
+```sh
+gac --signoff  # 添加 Signed-off-by 行到提交信息（DCO 合规）
+```
+
+**要永久启用 :** 在您的 `.gac.env` 文件中设置 `GAC_SIGNOFF=true`，或将 `signoff=true` 添加到您的配置中。
+
+**功能 :**
+
+- 在提交信息中添加 `Signed-off-by: 您的姓名 <your.email@example.com>`
+- 使用您的 git 配置（`user.name` 和 `user.email`）来填充该行
+- Cherry Studio、Linux 内核和其他使用 DCO 的项目需要此功能
+
+**设置 git 身份信息 :**
+
+确保您的 git 配置具有正确的姓名和电子邮件 :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**注意 :** Signed-off-by 行是在提交时由 git 添加的，而不是在消息生成时由 AI 添加的。您在预览中看不到它，但它会在最终提交中（使用 `git log -1` 检查）。
+
 ## 配置说明
 
 - 设置 gac 的推荐方法是运行 `gac init` 并按照交互式提示操作。
@@ -348,6 +378,7 @@ gac --no-verify-ssl  # 为此次提交跳过 SSL 验证
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自动推断并在提交信息中包含范围（例如，`feat(auth):` vs `feat:`）
 - `GAC_VERBOSE=true` - 生成包含动机、架构和影响部分的详细提交信息
 - `GAC_USE_50_72_RULE=true` - 始终对提交信息应用 50/72 规则（主题 ≤50 字符，正文行 ≤72 字符）
+- `GAC_SIGNOFF=true` - 始终在提交中添加 Signed-off-by 行（用于 DCO 合规）
 - `GAC_TEMPERATURE=0.7` - 控制 LLM 创造力（0.0-1.0，较低 = 更专注）
 - `GAC_MAX_OUTPUT_TOKENS=4096` - 生成信息的最大令牌数（使用 `--group` 时根据文件数量自动缩放 2-5 倍；覆盖以提高或降低）
 - `GAC_WARNING_LIMIT_TOKENS=4096` - 当提示超过此令牌数时发出警告

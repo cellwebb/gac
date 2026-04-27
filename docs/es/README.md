@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **Una línea** (bandera -o): Mensaje de commit de una sola línea siguiendo el formato de commit convencional
 - **Estándar** (predeterminado): Resumen con viñetas explicando detalles de implementación
 - **Detallado** (bandera -v): Explicaciones completas incluyendo motivación, enfoque técnico y análisis de impacto
+- **Regla 50/72** (bandera --50-72): Aplica el formato clásico de mensaje de commit para legibilidad óptima en git log y GitHub UI
+- **DCO/Signoff** (bandera --signoff): Agrega línea Signed-off-by para cumplimiento del Developer Certificate of Origin (requerido por Cherry Studio, kernel de Linux y otros proyectos)
 
 ### 🌍 **Soporte multilingüe**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Omitir escaneo de seguridad (usar con cuidado)
 gac --skip-secret-scan
+
+# Agregar signoff para cumplimiento DCO (Cherry Studio, kernel de Linux, etc.)
+gac --signoff
 ```
 
 ### Sistema de retroalimentación interactiva

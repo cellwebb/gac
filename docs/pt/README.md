@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **Uma linha** (flag -o): Mensagem de commit de uma única linha seguindo formato de commit convencional
 - **Padrão** (padrão): Resumo com pontos de bullet explicando detalhes da implementação
 - **Verboso** (flag -v): Explicações abrangentes incluindo motivação, abordagem técnica e análise de impacto
+- **Regra 50/72** (bandeira --50-72): Impõe o formato clássico de mensagem de commit para legibilidade ótima no git log e GitHub UI
+- **DCO/Signoff** (bandeira --signoff): Adiciona linha Signed-off-by para conformidade com Developer Certificate of Origin (exigido por Cherry Studio, Linux kernel e outros projetos)
 
 ### 🌍 **Suporte Multilíngue**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Pule verificação de segurança (use com cuidado)
 gac --skip-secret-scan
+
+# Adicionar signoff para conformidade DCO (Cherry Studio, Linux kernel, etc.)
+gac --signoff
 ```
 
 ### Sistema de Feedback Interativo

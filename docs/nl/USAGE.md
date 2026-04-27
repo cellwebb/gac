@@ -62,6 +62,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--no-verify`        |      | Sla pre-commit en lefthook hooks over bij commit                             |
 | `--skip-secret-scan` |      | Sla security scan over voor geheimen in staged wijzigingen                   |
 | `--no-verify-ssl`    |      | Sla SSL-certificaatverificatie over (nuttig voor bedrijfsproxies)            |
+| `--signoff`          |      | Voeg Signed-off-by regel toe aan commitbericht (DCO-naleving)                |
 | `--interactive`      | `-i` | Stel vragen over wijzigingen voor betere commits                             |
 
 **Let op:** Combineer `-a` en `-g` (d.w.z. `-ag`) om eerst ALLE wijzigingen te stage, en ze daarna te groeperen in commits.
@@ -279,6 +280,35 @@ gac --no-verify-ssl  # Sla SSL-verificatie over voor deze commit
 
 **Let op:** Gebruik deze optie alleen in vertrouwde netwerkomgevingen. Het uitschakelen van SSL-verificatie vermindert de beveiliging en kan uw API-verzoeken kwetsbaar maken voor man-in-the-middle aanvallen.
 
+### Signed-off-by Regel (DCO-naleving)
+
+gac ondersteunt het toevoegen van een `Signed-off-by` regel aan commitberichten, wat vereist is voor naleving van de [Developer Certificate of Origin (DCO)](https://developercertificate.org/) in veel open-source projecten.
+
+**Signoff toevoegen :**
+
+```sh
+gac --signoff  # Voeg Signed-off-by regel toe aan commitbericht (DCO-naleving)
+```
+
+**Om permanent in te stellen :** Stel `GAC_SIGNOFF=true` in je `.gac.env` bestand, of voeg `signoff=true` toe aan je configuratie.
+
+**Wat het doet :**
+
+- Voegt `Signed-off-by: Jouw Naam <jouw.email@example.com>` toe aan het commitbericht
+- Gebruikt je git configuratie (`user.name` en `user.email`) voor de regel
+- Vereist voor projecten zoals Cherry Studio, Linux kernel en andere die DCO gebruiken
+
+**Git identiteit instellen :**
+
+Zorg ervoor dat je git configuratie de juiste naam en email heeft :
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Let op :** De Signed-off-by regel wordt toegevoegd door git tijdens de commit, niet door de AI tijdens berichtgeneratie. Je ziet het niet in de preview, maar het zal in de uiteindelijke commit zitten (controleer met `git log -1`).
+
 ## Configuratie Notities
 
 - De aanbevolen manier om gac in te stellen is `gac init` uit te voeren en de interactieve prompts te volgen.
@@ -297,6 +327,7 @@ U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Stel automatisch een scope en voeg deze toe aan commitberichten (bv., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Genereer gedetailleerde commitberichten met motivatie, architectuur en impact secties
 - `GAC_USE_50_72_RULE=true` - De 50/72-regel altijd toepassen voor commitberichten (onderwerp ≤50 tekens, body-regels ≤72 tekens)
+- `GAC_SIGNOFF=true` - Altijd Signed-off-by regel toevoegen aan commits (voor DCO-naleving)
 - `GAC_TEMPERATURE=0.7` - Controleer LLM creativiteit (0.0-1.0, lager = meer gefocust)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximale tokens voor gegenereerde berichten (automatisch geschaald 2-5x bij gebruik van `--group` op basis van bestandsaantal; overschrijf om hoger of lager te gaan)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Waarschuw wanneer prompts dit tokenaantal overschrijden

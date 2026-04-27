@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **One-liner** (-o vlag): Eénregelig commitbericht in conventioneel commitformaat
 - **Standaard** (standaard): Samenvatting met bullet points die implementatiedetails uitleggen
 - **Uitgebreid** (-v vlag): Uitgebreide uitleg inclusief motivatie, technische aanpak en impactanalyse
+- **50/72 regel** (--50-72 vlag): Forceer het klassieke commit-berichtformaat voor optimale leesbaarheid in git log en GitHub UI
+- **DCO/Signoff** (--signoff vlag): Voeg Signed-off-by regel toe voor Developer Certificate of Origin naleving (vereist door Cherry Studio, Linux kernel en andere projecten)
 
 ### 🌍 **Meertalige Ondersteuning**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Sla security scan over (gebruik voorzichtig)
 gac --skip-secret-scan
+
+# Signoff toevoegen voor DCO naleving (Cherry Studio, Linux kernel, etc.)
+gac --signoff
 ```
 
 ### Interactief Feedbacksysteem

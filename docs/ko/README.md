@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **한 줄 요약** (-o 플래그): 컨벤셔널 커밋 형식을 따르는 한 줄 커밋 메시지
 - **표준** (기본값): 구현 세부사항을 설명하는 불렛 포인트가 포함된 요약
 - **상세** (-v 플래그): 동기, 기술적 접근 방식, 영향 분석을 포함한 포괄적인 설명
+- **50/72 규칙** (--50-72 플래그): git log와 GitHub UI에서 최적의 가독성을 위해 클래식 커밋 메시지 형식 강제
+- **DCO/Signoff** (--signoff 플래그): Developer Certificate of Origin 규정 준수를 위해 Signed-off-by 줄 추가 (Cherry Studio, Linux 커널 및 기타 프로젝트에서 필요)
 
 ### 🌍 **다국어 지원**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # 보안 스캔 건너뛰기 (주의해서 사용)
 gac --skip-secret-scan
+
+# DCO 규정 준수를 위한 signoff 추가 (Cherry Studio, Linux 커널 등)
+gac --signoff
 ```
 
 ### 상호작용 피드백 시스템

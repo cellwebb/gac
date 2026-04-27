@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **Một dòng** (-o flag): Thông điệp commit một dòng theo định dạng commit tiêu chuẩn
 - **Tiêu chuẩn** (mặc định): Tóm tắt với các gạch đầu dòng giải thích chi tiết triển khai
 - **Chi tiết** (-v flag): Giải thích toàn diện bao gồm động cơ, cách tiếp cận kỹ thuật và phân tích tác động
+- **Quy tắc 50/72** (cờ --50-72): Áp dụng định dạng tin nhắn commit cổ điển để dễ đọc tối ưu trong git log và GitHub UI
+- **DCO/Signoff** (cờ --signoff): Thêm dòng Signed-off-by để tuân thủ Developer Certificate of Origin (bắt buộc bởi Cherry Studio, Linux kernel và các dự án khác)
 
 ### 🌍 **Hỗ Trợ Đa Ngôn Ngữ**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Bỏ qua quét bảo mật (sử dụng cẩn thận)
 gac --skip-secret-scan
+
+# Thêm signoff để tuân thủ DCO (Cherry Studio, Linux kernel, v.v.)
+gac --signoff
 ```
 
 ### Hệ Thống Phản Hồi Tương Tác

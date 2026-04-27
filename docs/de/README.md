@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **Einzeiler** (-o Flag): Einzeilige Commit-Nachricht im conventional commit Format
 - **Standard** (Standard): Zusammenfassung mit Stichpunkten zur Erklärung der Implementierungsdetails
 - **Ausführlich** (-v Flag): Umfassende Erklärungen inklusive Motivation, technischer Herangehensweise und Impact-Analyse
+- **50/72 Regel** (--50-72 Flag): Erzwingt das klassische Commit-Message-Format für optimale Lesbarkeit in git log und GitHub UI
+- **DCO/Signoff** (--signoff Flag): Fügt Signed-off-by Zeile für Developer Certificate of Origin Compliance hinzu (erforderlich von Cherry Studio, Linux Kernel und anderen Projekten)
 
 ### 🌍 **Mehrsprachige Unterstützung**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Sicherheits-Scan überspringen (vorsichtig verwenden)
 gac --skip-secret-scan
+
+# Signoff für DCO Compliance hinzufügen (Cherry Studio, Linux Kernel, etc.)
+gac --signoff
 ```
 
 ### Interaktives Feedback-System

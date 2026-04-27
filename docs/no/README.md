@@ -83,6 +83,8 @@ uv tool upgrade gac
 - **En-linjers** (-o flagg): Enkel-linjers commit-melding som følger conventional commit-format
 - **Standard** (standard): Oppsummering med punktliste som forklarer implementeringsdetaljer
 - **Utførlig** (-v flagg): Oversiktlige forklaringer inkludert motivasjon, teknisk tilnærming og påvirkningsanalyse
+- **50/72-regel** (--50-72 flagg): Tvinger det klassiske commit-meldingformatet for optimal lesbarhet i git log og GitHub UI
+- **DCO/Signoff** (--signoff flagg): Legg til Signed-off-by-linje for Developer Certificate of Origin-samsvar (påkrevd av Cherry Studio, Linux-kjernen og andre prosjekter)
 
 ### 🌍 **Flerspråklig Støtte**
 
@@ -159,6 +161,9 @@ gac --show-prompt
 
 # Hopp over sikkerhetsskanning (bruk med forsiktighet)
 gac --skip-secret-scan
+
+# Legg til signoff for DCO-samsvar (Cherry Studio, Linux-kjernen, etc.)
+gac --signoff
 ```
 
 ### Interaktivt Tilbakemeldingssystem
