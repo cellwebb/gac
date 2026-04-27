@@ -84,6 +84,7 @@ uv tool upgrade gac
 - **Standard** (default): Summary with bullet points explaining implementation details
 - **Verbose** (-v flag): Comprehensive explanations including motivation, technical approach, and impact analysis
 - **50/72 rule** (--50-72 flag): Enforce the classic commit message format for optimal readability in git log and GitHub UI
+- **DCO/Signoff** (--signoff flag): Add Signed-off-by line for Developer Certificate of Origin compliance (required by Cherry Studio, Linux kernel, and other projects)
 
 ### 🌍 **Multilingual Support**
 
@@ -160,6 +161,9 @@ gac --show-prompt
 
 # Skip security scan (use carefully)
 gac --skip-secret-scan
+
+# Add signoff for DCO compliance (Cherry Studio, Linux kernel, etc.)
+gac --signoff
 ```
 
 ### Interactive Feedback System

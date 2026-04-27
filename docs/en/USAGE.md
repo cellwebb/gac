@@ -63,6 +63,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | `--no-verify`        |       | Skip pre-commit and lefthook hooks when committing               |
 | `--skip-secret-scan` |       | Skip security scan for secrets in staged changes                 |
 | `--no-verify-ssl`    |       | Skip SSL certificate verification (useful for corporate proxies) |
+| `--signoff`          |       | Add Signed-off-by line to the commit message (DCO compliance)    |
 | `--interactive`      | `-i`  | Ask questions about the changes to generate better commits       |
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
@@ -326,6 +327,35 @@ gac --no-verify-ssl  # Skip SSL verification for this commit
 
 **Note:** Disabling SSL verification reduces security. Only use this option when necessary and in trusted network environments.
 
+### Signed-off-by Line (DCO Compliance)
+
+gac supports adding a `Signed-off-by` line to commit messages, which is required for [Developer Certificate of Origin (DCO)](https://developercertificate.org/) compliance in many open-source projects.
+
+**Adding signoff:**
+
+```sh
+gac --signoff  # Add Signed-off-by line to the commit
+```
+
+**To enable permanently:** Set `GAC_SIGNOFF=true` in your `.gac.env` file, or add `signoff=true` to your configuration.
+
+**What it does:**
+
+- Appends `Signed-off-by: Your Name <your.email@example.com>` to the commit message
+- Uses your git config (`user.name` and `user.email`) to populate the line
+- Required for projects like Cherry Studio, Linux kernel, and others using DCO
+
+**Setting up your git identity:**
+
+Ensure your git config has the correct name and email:
+
+```sh
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+**Note:** The signoff line is added by git during the commit, not by the AI during message generation. You won't see it in the preview, but it will be in the final commit (check with `git log -1`).
+
 ## Configuration Notes
 
 - The recommended way to set up gac is to run `gac init` and follow the interactive prompts.
@@ -344,6 +374,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
 - `GAC_USE_50_72_RULE=true` - Always enforce the 50/72 rule for commit messages (subject ≤50 chars, body lines ≤72 chars)
+- `GAC_SIGNOFF=true` - Always add Signed-off-by line to commits (for DCO compliance)
 - `GAC_TEMPERATURE=0.7` - Control LLM creativity (0.0-1.0, lower = more focused)
 - `GAC_MAX_OUTPUT_TOKENS=4096` - Maximum tokens for generated messages (automatically scaled 2-5x when using `--group` based on file count; override to go higher or lower)
 - `GAC_WARNING_LIMIT_TOKENS=4096` - Warn when prompts exceed this token count
