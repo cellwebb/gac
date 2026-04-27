@@ -247,7 +247,7 @@ class TestFileRenameHandling:
         assert ["add", "-A", "old_file.py"] in git_calls
         assert ["add", "-A", "new_file.py"] in git_calls
 
-        mock_commit.assert_called_once_with("Rename file", False, 120)
+        mock_commit.assert_called_once_with("Rename file", False, 120, False)
 
     @patch("gac.grouped_commit_workflow.get_staged_files")
     @patch("gac.grouped_commit_workflow.run_git_command")

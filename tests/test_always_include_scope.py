@@ -69,14 +69,23 @@ class TestAlwaysIncludeScopeCLI:
             "skip_secret_scan": False,
             "hook_timeout": 120,
             "use_50_72_rule": False,
+            "signoff": False,
         }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
 
         runner = CliRunner()
-        runner.invoke(cli, [])
+        result = runner.invoke(cli, [])
 
         # Check that main was called with infer_scope=True (which triggers inference)
+        if result.exit_code != 0:
+            print(f"CLI output: {result.output}")
+            if result.exception:
+                import traceback
+
+                print(
+                    f"Exception: {''.join(traceback.format_exception(type(result.exception), result.exception, result.exception.__traceback__))}"
+                )
         mock_main.assert_called_once()
         opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
         assert opts.infer_scope is True
@@ -98,6 +107,7 @@ class TestAlwaysIncludeScopeCLI:
             "skip_secret_scan": False,
             "hook_timeout": 120,
             "use_50_72_rule": False,
+            "signoff": False,
         }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
@@ -127,6 +137,7 @@ class TestAlwaysIncludeScopeCLI:
             "skip_secret_scan": False,
             "hook_timeout": 120,
             "use_50_72_rule": False,
+            "signoff": False,
         }
         monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)

@@ -54,6 +54,7 @@ class TestMainCommand:
             "skip_secret_scan": False,
             "hook_timeout": 120,
             "use_50_72_rule": False,
+            "signoff": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
         monkeypatch.setattr("gac.cli.config", mock_config)
@@ -95,6 +96,7 @@ class TestInteractiveFlag:
             "skip_secret_scan": False,
             "hook_timeout": 120,
             "use_50_72_rule": False,
+            "signoff": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
         monkeypatch.setattr("gac.cli.config", mock_config)

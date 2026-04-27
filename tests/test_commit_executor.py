@@ -283,17 +283,19 @@ class TestCommitExecutorInitialization:
         assert executor.quiet is False
         assert executor.no_verify is False
         assert executor.hook_timeout == 120
+        assert executor.signoff is False
 
     def test_commit_executor_init_custom_params(self):
         """Test CommitExecutor initialization with custom parameters."""
         # Act
-        executor = CommitExecutor(dry_run=True, quiet=True, no_verify=True, hook_timeout=60)
+        executor = CommitExecutor(dry_run=True, quiet=True, no_verify=True, hook_timeout=60, signoff=True)
 
         # Assert
         assert executor.dry_run is True
         assert executor.quiet is True
         assert executor.no_verify is True
         assert executor.hook_timeout == 60
+        assert executor.signoff is True
 
     def test_create_commit_actual_execution(self):
         """Test actual commit execution (non-dry-run)."""
@@ -306,7 +308,7 @@ class TestCommitExecutorInitialization:
             commit_executor.create_commit(commit_message)
 
             # Assert
-            mock_execute_commit.assert_called_once_with(commit_message, False, 120)
+            mock_execute_commit.assert_called_once_with(commit_message, False, 120, False)
 
     def test_create_commit_actual_execution_with_no_verify(self):
         """Test actual commit execution with no_verify=True."""
@@ -319,7 +321,20 @@ class TestCommitExecutorInitialization:
             commit_executor.create_commit(commit_message)
 
             # Assert
-            mock_execute_commit.assert_called_once_with(commit_message, True, 180)
+            mock_execute_commit.assert_called_once_with(commit_message, True, 180, False)
+
+    def test_create_commit_with_signoff(self):
+        """Test commit execution with signoff=True."""
+        # Arrange
+        commit_executor = CommitExecutor(dry_run=False, signoff=True)
+        commit_message = "feat: commit with signoff"
+
+        with patch("gac.commit_executor.execute_commit") as mock_execute_commit:
+            # Act
+            commit_executor.create_commit(commit_message)
+
+            # Assert
+            mock_execute_commit.assert_called_once_with(commit_message, False, 120, True)
 
 
 if __name__ == "__main__":
