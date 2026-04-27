@@ -59,12 +59,16 @@ def handle_confirmation_loop(
         return ("regenerate", commit_message, conversation_messages)
 
 
-def execute_commit(commit_message: str, no_verify: bool, hook_timeout: int | None = None) -> None:
+def execute_commit(
+    commit_message: str, no_verify: bool, hook_timeout: int | None = None, signoff: bool = False
+) -> None:
     from gac.git import run_git_command
 
     commit_args = ["commit", "-m", commit_message]
     if no_verify:
         commit_args.append("--no-verify")
+    if signoff:
+        commit_args.append("--signoff")
     effective_timeout = hook_timeout if hook_timeout and hook_timeout > 0 else EnvDefaults.HOOK_TIMEOUT
     run_git_command(commit_args, timeout=effective_timeout)
     logger.info("Commit created successfully")

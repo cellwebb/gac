@@ -35,6 +35,7 @@ class GACConfig(TypedDict, total=False):
     rtl_confirmed: bool
     hook_timeout: int
     use_50_72_rule: bool
+    signoff: bool
 
 
 def validate_config(config: GACConfig) -> None:
@@ -120,6 +121,7 @@ def load_config() -> GACConfig:
         "hook_timeout": int(os.getenv("GAC_HOOK_TIMEOUT", EnvDefaults.HOOK_TIMEOUT)),
         "use_50_72_rule": os.getenv("GAC_USE_50_72_RULE", str(EnvDefaults.USE_50_72_RULE)).lower()
         in ("true", "1", "yes", "on"),
+        "signoff": os.getenv("GAC_SIGNOFF", str(EnvDefaults.SIGNOFF)).lower() in ("true", "1", "yes", "on"),
     }
 
     validate_config(config)

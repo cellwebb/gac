@@ -74,6 +74,8 @@ console = Console()
     type=click.Choice(Logging.LEVELS, case_sensitive=False),
     help=f"Set log level (default: {config['log_level']})",
 )
+# Commit options
+@click.option("--signoff", is_flag=True, help="Add Signed-off-by line to the commit message")
 # Advanced options
 @click.option("--no-verify", is_flag=True, help="Skip pre-commit and lefthook hooks when committing")
 @click.option("--skip-secret-scan", is_flag=True, help="Skip security scan for secrets in staged changes")
@@ -121,6 +123,7 @@ def cli(
     skip_secret_scan: bool = False,
     no_verify_ssl: bool = False,
     hook_timeout: int = 0,
+    signoff: bool = False,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
     if ctx.invoked_subcommand is None:
@@ -154,6 +157,9 @@ def cli(
         # Determine if 50/72 rule should be applied based on --50-72 flag or config setting
         use_fifty_seventy_two = bool(fifty_seventy_two or config["use_50_72_rule"])
 
+        # Determine if signoff should be added based on --signoff flag or config setting
+        use_signoff = bool(signoff or config["signoff"])
+
         # Resolve language code to full name if provided
         resolved_language = Languages.resolve_code(language) if language else None
 
@@ -178,6 +184,7 @@ def cli(
                 language=resolved_language,
                 hook_timeout=hook_timeout if hook_timeout > 0 else config["hook_timeout"],
                 fifty_seventy_two=use_fifty_seventy_two,
+                signoff=use_signoff,
             )
             exit_code = main(opts)
             sys.exit(exit_code)
@@ -210,6 +217,7 @@ def cli(
             "no_verify_ssl": no_verify_ssl,
             "hook_timeout": hook_timeout,
             "fifty_seventy_two": fifty_seventy_two,
+            "signoff": signoff,
         }
 
 

@@ -133,7 +133,11 @@ def main(opts: CLIOptions) -> int:
     git_validator = GitStateValidator(config)
     prompt_builder = PromptBuilder(config)
     commit_executor = CommitExecutor(
-        dry_run=opts.dry_run, quiet=opts.quiet, no_verify=opts.no_verify, hook_timeout=opts.hook_timeout
+        dry_run=opts.dry_run,
+        quiet=opts.quiet,
+        no_verify=opts.no_verify,
+        hook_timeout=opts.hook_timeout,
+        signoff=opts.signoff,
     )
     interactive_mode = InteractiveMode(config)
     grouped_workflow = GroupedCommitWorkflow(config)
@@ -265,6 +269,7 @@ def main(opts: CLIOptions) -> int:
                 git_state=git_state,
                 hint=opts.hint,
                 fifty_seventy_two=opts.fifty_seventy_two,
+                signoff=opts.signoff,
             )
         else:
             # Build workflow context
@@ -285,6 +290,7 @@ def main(opts: CLIOptions) -> int:
                 interactive=opts.interactive,
                 hook_timeout=opts.hook_timeout,
                 fifty_seventy_two=opts.fifty_seventy_two,
+                signoff=opts.signoff,
             )
             state = WorkflowState(
                 prompts=prompts,
@@ -316,6 +322,7 @@ def main(opts: CLIOptions) -> int:
             interactive=opts.interactive,
             hook_timeout=opts.hook_timeout,
             fifty_seventy_two=opts.fifty_seventy_two,
+            signoff=opts.signoff,
         )
         state = WorkflowState(
             prompts=prompts,

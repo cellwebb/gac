@@ -56,6 +56,9 @@ class CLIOptions:
     # Formatting
     fifty_seventy_two: bool = False
 
+    # Commit options
+    signoff: bool = False
+
 
 @dataclass(frozen=True)
 class GenerationConfig:
@@ -87,6 +90,7 @@ class WorkflowFlags:
     interactive: bool
     hook_timeout: int = 120
     fifty_seventy_two: bool = False
+    signoff: bool = False
 
 
 @dataclass

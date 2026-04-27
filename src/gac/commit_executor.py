@@ -16,11 +16,19 @@ console = Console()
 class CommitExecutor:
     """Handles commit creation and related operations."""
 
-    def __init__(self, dry_run: bool = False, quiet: bool = False, no_verify: bool = False, hook_timeout: int = 120):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        quiet: bool = False,
+        no_verify: bool = False,
+        hook_timeout: int = 120,
+        signoff: bool = False,
+    ):
         self.dry_run = dry_run
         self.quiet = quiet
         self.no_verify = no_verify
         self.hook_timeout = hook_timeout
+        self.signoff = signoff
 
     def create_commit(self, commit_message: str) -> None:
         """Create a single commit with the given message."""
@@ -34,7 +42,7 @@ class CommitExecutor:
             console.print(f"Would commit {len(staged_files)} files")
             logger.info(f"Would commit {len(staged_files)} files")
         else:
-            execute_commit(commit_message, self.no_verify, self.hook_timeout)
+            execute_commit(commit_message, self.no_verify, self.hook_timeout, self.signoff)
 
     def push_to_remote(self) -> None:
         """Push changes to remote repository.

@@ -16,6 +16,7 @@ class EnvDefaults:
     NO_VERIFY_SSL: bool = False  # Skip SSL certificate verification (for corporate proxies)
     HOOK_TIMEOUT: int = 120  # Timeout for pre-commit and lefthook hooks in seconds
     USE_50_72_RULE: bool = False  # Enforce 50/72 rule for commit messages
+    SIGNOFF: bool = False  # Add Signed-off-by line to commit message
 
 
 class ProviderDefaults:

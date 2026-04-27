@@ -307,6 +307,7 @@ class GroupedCommitWorkflow:
         no_verify: bool,
         hook_timeout: int,
         fifty_seventy_two: bool = False,
+        signoff: bool = False,
     ) -> int:
         """Execute the grouped commits by creating multiple individual commits.
 
@@ -350,7 +351,7 @@ class GroupedCommitWorkflow:
                             commit["message"].strip(),
                             fifty_seventy_two=fifty_seventy_two,
                         )
-                        execute_commit(cleaned_message, no_verify, hook_timeout)
+                        execute_commit(cleaned_message, no_verify, hook_timeout, signoff)
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except (AIError, ConfigError, GitError, subprocess.SubprocessError, OSError) as e:
                         restore_needed = True
@@ -417,6 +418,7 @@ class GroupedCommitWorkflow:
         hint: str,
         hook_timeout: int = 120,
         fifty_seventy_two: bool = False,
+        signoff: bool = False,
     ) -> int:
         """Execute the complete grouped commit workflow.
 
@@ -485,6 +487,7 @@ class GroupedCommitWorkflow:
                         no_verify=no_verify,
                         hook_timeout=hook_timeout,
                         fifty_seventy_two=fifty_seventy_two,
+                        signoff=signoff,
                     )
                 elif decision == "reject":
                     return 0  # User rejected, clean exit
@@ -500,4 +503,5 @@ class GroupedCommitWorkflow:
                     no_verify=no_verify,
                     hook_timeout=hook_timeout,
                     fifty_seventy_two=fifty_seventy_two,
+                    signoff=signoff,
                 )
