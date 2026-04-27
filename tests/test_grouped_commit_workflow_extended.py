@@ -384,10 +384,12 @@ class TestInteractiveValidationScenarios:
             ],
             raw_response="test response",
         )
+        conversation_messages: list[dict[str, str]] = []
 
-        decision = self.workflow.handle_grouped_commit_confirmation(result)
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
 
         assert decision == "accept"
+        assert conversation_messages == []
         mock_prompt.assert_called_once_with(
             "Proceed with 2 commits above? [y/n/r/<feedback>]",
             type=str,
@@ -403,8 +405,9 @@ class TestInteractiveValidationScenarios:
         result = GroupedCommitResult(
             commits=[{"files": ["file1.py"], "message": "Test commit"}], raw_response="test response"
         )
+        conversation_messages: list[dict[str, str]] = []
 
-        decision = self.workflow.handle_grouped_commit_confirmation(result)
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
 
         assert decision == "reject"
         mock_print.assert_any_call("[yellow]Commits not accepted. Exiting...[/yellow]")
@@ -417,25 +420,52 @@ class TestInteractiveValidationScenarios:
         result = GroupedCommitResult(
             commits=[{"files": ["file1.py"], "message": "Test commit"}], raw_response="test response"
         )
+        conversation_messages: list[dict[str, str]] = []
 
-        decision = self.workflow.handle_grouped_commit_confirmation(result)
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
 
         assert decision == "regenerate"
+        assert len(conversation_messages) == 1
+        assert conversation_messages[0]["role"] == "user"
+        assert "alternative" in conversation_messages[0]["content"].lower()
 
     @patch("click.prompt")
-    def test_custom_feedback(self, mock_prompt):
-        """Test user provides custom feedback for regeneration."""
-        # Custom feedback should also regenerate - but we need to mock the method properly
-        # The current implementation only handles specific cases, so we'll test with a valid case
-        mock_prompt.return_value = "reroll"  # Valid regenerate response
+    def test_reroll_alias_appends_regenerate_instruction(self, mock_prompt):
+        """`reroll` should behave like `r` and append a regenerate instruction."""
+        mock_prompt.return_value = "reroll"
 
         result = GroupedCommitResult(
             commits=[{"files": ["file1.py"], "message": "Test commit"}], raw_response="test response"
         )
+        conversation_messages: list[dict[str, str]] = []
 
-        decision = self.workflow.handle_grouped_commit_confirmation(result)
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
 
         assert decision == "regenerate"
+        assert len(conversation_messages) == 1
+        assert conversation_messages[0]["role"] == "user"
+
+    @patch("click.prompt")
+    def test_custom_feedback_appends_message_and_regenerates(self, mock_prompt):
+        """Custom feedback text should append a feedback instruction and trigger regeneration."""
+        mock_prompt.return_value = "split the test files into a separate commit"
+
+        result = GroupedCommitResult(
+            commits=[{"files": ["file1.py", "test_file1.py"], "message": "Test commit"}],
+            raw_response="test response",
+        )
+        conversation_messages: list[dict[str, str]] = [
+            {"role": "user", "content": "original prompt"},
+            {"role": "assistant", "content": "test response"},
+        ]
+
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
+
+        assert decision == "regenerate"
+        assert len(conversation_messages) == 3
+        appended = conversation_messages[-1]
+        assert appended["role"] == "user"
+        assert "split the test files into a separate commit" in appended["content"]
 
     @patch("click.prompt")
     def test_empty_response_continues_prompt(self, mock_prompt):
@@ -445,8 +475,10 @@ class TestInteractiveValidationScenarios:
         result = GroupedCommitResult(
             commits=[{"files": ["file1.py"], "message": "Test commit"}], raw_response="test response"
         )
+        conversation_messages: list[dict[str, str]] = []
 
-        decision = self.workflow.handle_grouped_commit_confirmation(result)
+        decision = self.workflow.handle_grouped_commit_confirmation(result, conversation_messages)
 
         assert decision == "accept"
         assert mock_prompt.call_count == 3
+        assert conversation_messages == []

@@ -597,7 +597,7 @@ def test_execute_workflow_regenerate_then_accept():
 
     call_count = 0
 
-    def mock_confirmation(result):
+    def mock_confirmation(result, conversation_messages):
         nonlocal call_count
         call_count += 1
         if call_count == 1:
