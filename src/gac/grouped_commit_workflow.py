@@ -251,13 +251,18 @@ class GroupedCommitWorkflow:
                 f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
             )
 
-    def handle_grouped_commit_confirmation(self, result: GroupedCommitResult) -> str:
+    def handle_grouped_commit_confirmation(
+        self, result: GroupedCommitResult, conversation_messages: list[dict[str, str]]
+    ) -> str:
         """Handle user confirmation for grouped commits.
+
+        Mutates ``conversation_messages`` to append a regenerate or feedback
+        instruction so the next AI call has guidance.
 
         Returns:
             "accept": User accepted commits
             "reject": User rejected commits
-            "regenerate": User wants to regenerate
+            "regenerate": User wants to regenerate (with optional feedback)
         """
         num_commits = len(result.commits)
         while True:
@@ -276,8 +281,23 @@ class GroupedCommitWorkflow:
             if response == "":
                 continue
             if response_lower in ["r", "reroll"]:
+                conversation_messages.append(
+                    {
+                        "role": "user",
+                        "content": "Please provide an alternative grouping of these commits using the same repository context.",
+                    }
+                )
                 console.print("[cyan]Regenerating commit groups...[/cyan]")
                 return "regenerate"
+
+            conversation_messages.append(
+                {
+                    "role": "user",
+                    "content": f"Please revise the grouped commits based on this feedback: {response}",
+                }
+            )
+            console.print(f"[cyan]Regenerating commit groups with feedback: {response}[/cyan]")
+            return "regenerate"
 
     def execute_grouped_commits(
         self,
@@ -455,7 +475,7 @@ class GroupedCommitWorkflow:
 
             # Handle confirmation
             if require_confirmation:
-                decision = self.handle_grouped_commit_confirmation(result)
+                decision = self.handle_grouped_commit_confirmation(result, conversation_messages)
                 if decision == "accept":
                     # User accepted, execute commits
                     return self.execute_grouped_commits(
