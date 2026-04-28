@@ -111,15 +111,20 @@ def show() -> None:
     table.add_column("Metric", style="dim")
     table.add_column("Value", style="bold")
 
-    table.add_row("First gac", summary["first_used"])
-    table.add_row("Last gac", summary["last_used"])
+    first_used = "/".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["first_used"].split("-"))
+    last_used = "/".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["last_used"].split("-"))
+    table.add_row("First gac", first_used)
+    table.add_row("Last gac", last_used)
     streak_emoji = (
         " 🔥🏆" if new_streak_record and streak >= 5 else " 🏆" if new_streak_record else " 🔥" if streak >= 5 else ""
     )
-    table.add_row("Current streak", f"{streak} day{'s' if streak != 1 else ''}{streak_emoji}")
+    table.add_row(
+        "Current streak",
+        f"[bold cyan]{streak}[/bold cyan] day{'s' if streak != 1 else ''}{streak_emoji}",
+    )
     table.add_row(
         "Longest streak",
-        f"{longest_streak} day{'s' if longest_streak != 1 else ''}",
+        f"[bold cyan]{longest_streak}[/bold cyan] day{'s' if longest_streak != 1 else ''}",
     )
 
     console.print(table)
@@ -129,7 +134,7 @@ def show() -> None:
     console.print("[bold]Activity Summary:[/bold]")
     activity_table = Table(show_header=True, box=None)
     activity_table.add_column("Period", style="dim")
-    activity_table.add_column("Gacs", style="bold", justify="right")
+    activity_table.add_column("Gacs", style="bold cyan", justify="right")
     activity_table.add_column("Commits", style="bold cyan", justify="right")
 
     activity_table.add_row("Today", str(today_gacs), str(today_commits))
@@ -147,7 +152,7 @@ def show() -> None:
         console.print("[bold]Top Projects:[/bold]")
         projects_table = Table(show_header=True, box=None)
         projects_table.add_column("Project", style="dim")
-        projects_table.add_column("Gacs", style="bold", justify="right")
+        projects_table.add_column("Gacs", style="bold cyan", justify="right")
         projects_table.add_column("Commits", style="bold cyan", justify="right")
 
         sorted_projects = sorted(projects.items(), key=project_activity, reverse=True)
