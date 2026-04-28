@@ -20,6 +20,7 @@ from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
+from gac.stats import record_commit
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -352,6 +353,7 @@ class GroupedCommitWorkflow:
                             fifty_seventy_two=fifty_seventy_two,
                         )
                         execute_commit(cleaned_message, no_verify, hook_timeout, signoff)
+                        record_commit()
                         console.print(f"[green]✓ Commit {idx}/{num_commits} created[/green]")
                     except (AIError, ConfigError, GitError, subprocess.SubprocessError, OSError) as e:
                         restore_needed = True

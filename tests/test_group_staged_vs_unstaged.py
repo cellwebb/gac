@@ -76,6 +76,7 @@ def test_normal_mode_uses_staged_status():
         patch("gac.main.clean_commit_message", return_value="feat: update"),
         patch("gac.main.console.print"),
         patch("gac.workflow_utils.execute_commit"),
+        patch("gac.commit_executor.record_commit"),  # Mock stats recording
         patch("click.prompt", return_value="y"),
         patch("gac.main.count_tokens", return_value=10),
     ):

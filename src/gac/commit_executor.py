@@ -7,6 +7,7 @@ from rich.console import Console
 
 from gac.errors import GitError
 from gac.git import get_staged_files, push_changes
+from gac.stats import record_commit
 from gac.workflow_utils import execute_commit
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,8 @@ class CommitExecutor:
             logger.info(f"Would commit {len(staged_files)} files")
         else:
             execute_commit(commit_message, self.no_verify, self.hook_timeout, self.signoff)
+            # Record successful commit for stats tracking
+            record_commit()
 
     def push_to_remote(self) -> None:
         """Push changes to remote repository.

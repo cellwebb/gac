@@ -58,6 +58,8 @@ class TestScopeFlag:
         monkeypatch.setattr("click.prompt", lambda *args, **kwargs: "y")
         # Mock run_pre_commit_hooks to return True
         monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
+        # Mock record_commit to avoid writing to stats file during tests
+        monkeypatch.setattr("gac.commit_executor.record_commit", lambda: None)
 
         # Mock preprocess_diff to avoid any processing issues
         monkeypatch.setattr("gac.preprocess.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
