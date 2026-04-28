@@ -830,6 +830,12 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         with _stderr_console_redirect():
             executor.create_commit(commit_message)
 
+        # Record stats (create_commit no longer tracks stats internally)
+        from gac.stats import record_commit, record_gac
+
+        record_commit()
+        record_gac()
+
         # Get commit hash
         commit_hash = run_git_command(["rev-parse", "HEAD"])[:7]
 

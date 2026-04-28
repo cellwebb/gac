@@ -19,6 +19,7 @@ from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
 from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
+from gac.stats import record_commit, record_gac
 from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
@@ -107,6 +108,11 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
 
     # Execute the commit
     ctx.state.commit_executor.create_commit(commit_message)
+
+    # Record successful commit and gac (only when commit actually happened)
+    if not ctx.flags.dry_run:
+        record_commit()
+        record_gac()
 
     # Push if requested
     if ctx.flags.push:

@@ -20,7 +20,7 @@ from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
-from gac.stats import record_commit
+from gac.stats import record_commit, record_gac
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -369,6 +369,9 @@ class GroupedCommitWorkflow:
                 restore_staging(original_staged_files or [], original_staged_diff)
                 console.print("[green]Original staging area restored.[/green]")
                 return 1
+
+            # Record successful gac after all grouped commits are created
+            record_gac()
 
         if push:
             try:
