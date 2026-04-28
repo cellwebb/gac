@@ -66,5 +66,5 @@ def init() -> None:
     click.echo("\ngac environment setup complete 🎉")
     click.echo("Configuration saved to:")
     click.echo(f"  {GAC_ENV_PATH}")
-    click.echo("\nYou can now run 'gac' in any Git repository to generate commit messages.")
+    click.echo("\nYou can now run 'gac' or 'uvx gac' in any Git repository to generate commit messages.")
     click.echo("Run 'gac --help' to see available options.")
