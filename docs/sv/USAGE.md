@@ -28,6 +28,7 @@ Det här dokumentet beskriver alla tillgängliga flaggor och alternativ för `ga
     - [Fråga-Svar Workflow](#fråga-svar-workflow)
     - [Kombination med andra flaggor](#kombination-med-andra-flaggor)
     - [Bästa Praxis](#bästa-praxis)
+  - [Användningsstatistik](#användningsstatistik)
   - [Få hjälp](#få-hjälp)
 
 ## Grundläggande användning
@@ -336,6 +337,7 @@ Du kan anpassa gacs beteende med dessa valfria miljövariabler:
 - `GAC_TRANSLATE_PREFIXES=true` - Översätt konventionella commit-prefix (feat, fix, etc.) till målspråket (standard: false, behåller prefix på engelska)
 - `GAC_SKIP_SECRET_SCAN=true` - Inaktivera automatisk säkerhetsskanning för hemligheter i stageade ändringar (använd med försiktighet)
 - `GAC_NO_VERIFY_SSL=true` - Hoppa över SSL-certifikatverifiering för API-anrop (användbart för företagsproxyer som fångar SSL-trafik)
+- `GAC_DISABLE_STATS=true` - Inaktivera spårning av användningsstatistik (ingen läsning eller skrivning av statistikfil; befintlig data bevaras)
 
 Se `.gac.env.example` för en komplett konfigurationsmall.
 
@@ -358,6 +360,9 @@ Följande underkommandon är tillgängliga:
 - `gac language` (eller `gac lang`) — Interaktiv språkväljare för commit-meddelanden (ställer in GAC_LANGUAGE)
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
 - `gac serve` — Starta GAC som [MCP-server](MCP.md) för AI-agent integration (stdio transport)
+- `gac stats show` — Visa din gac-användningsstatistik (totaler, streaks, daglig & veckovis aktivitet, topprojekt)
+- `gac stats project` — Visa statistik endast för det aktuella git-projektet
+- `gac stats reset` — Återställ all statistik till noll (ber om bekräftelse)
 
 ## Interaktivt Läge
 
@@ -464,6 +469,63 @@ gac -i -v
 - **Dokumentationsförberedelse** - dina svar kan hjälpa till att bilda grunden för release notes
 - **Lärverktyg** - frågor förstärker bra praxis för commit-meddelanden
 - **Hoppa över för enkla ändringar** - för triviala fixes kan grundläggande läge vara snabbare
+
+## Användningsstatistik
+
+gac spårar lättviktig användningsstatistik så att du kan se din commit-aktivitet, streaks och mest aktiva projekt. Statistik lagras lokalt i `~/.gac_stats.json` och skickas aldrig någonstans.
+
+**Vad spåras:** totalt antal gac-körningar, totalt antal commits, första/senaste användningsdatum, dagliga och veckovisa antal, nuvarande och längsta streak samt aktivitetsantal per projekt.
+
+**Vad INTE spåras:** commit-meddelanden, kodinnehåll, filsökvägar, personlig information eller något utöver antal och projektnamn.
+
+### Statistikunderkommandon
+
+| Kommando            | Beskrivning                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `gac stats`         | Visa din statistik (samma som `gac stats show`)                                       |
+| `gac stats show`    | Visa fullständig statistik: totaler, streaks, daglig & veckovis aktivitet, topprojekt |
+| `gac stats project` | Visa statistik endast för det aktuella git-projektet                                  |
+| `gac stats reset`   | Återställ all statistik till noll (ber om bekräftelse)                                |
+
+### Exempel
+
+```sh
+# Visa din övergripande statistik
+gac stats
+
+# Statistik endast för aktuellt projekt
+gac stats project
+
+# Återställ all statistik (med bekräftelseprompt)
+gac stats reset
+```
+
+### Vad du kommer att se
+
+Att köra `gac stats` visar:
+
+- **Totalt antal gacs och commits** — hur många gånger du har använt gac och hur många commits det skapat
+- **Nuvarande och längsta streak** — på varandra följande dagar med gac-aktivitet (🔥 vid 5+ dagar)
+- **Aktivitetssammanfattning** — dagens och denna veckas gacs/commits jämfört med din toppdag och toppvecka
+- **Toppprojekt** — dina 5 mest aktiva repos efter gac- + commit-antal
+- **Highscore-firanden** — 🏆 troféer när du sätter nya dagliga, veckovisa eller streak-rekord; 🥈 för att matcha dem
+- **Uppmuntransmeddelanden** — kontextuella uppmuntringar baserade på din aktivitet
+
+### Inaktivera statistik
+
+Ställ in miljövariabeln `GAC_DISABLE_STATS` till valfritt värde:
+
+```sh
+# Inaktivera statistikspårning
+export GAC_DISABLE_STATS=1
+
+# Eller i .gac.env
+GAC_DISABLE_STATS=true
+```
+
+När inaktiverat hoppar gac över all statistikinspelning — ingen filläsning eller skrivning sker. Befintlig data bevaras men uppdateras inte förrän du tar bort variabeln.
+
+---
 
 ## Få hjälp
 

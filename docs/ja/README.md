@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git 統合**: 高価な LLM 操作の前に pre-commit と lefthook フックを実行して尊重
 - **MCP サーバー**: `gac serve` を実行して [Model Context Protocol](https://modelcontextprotocol.io/) 経由で AI エージェントにコミットツールを公開
 
+### 📊 **使用統計**
+
+- **gac の使用を追跡**: gac で何回コミットしたか、現在のストリーク、1日/1週間のアクティビティのピーク、トッププロジェクトを確認
+- **プロジェクト別統計**: `gac stats project` で現在のリポジトリの統計を表示
+- **ハイスコアのお祝い**: 🏆 新しい日次、週次、またはストリーク記録を樹立したときにトロフィーを獲得；🥈 記録に並んだときに獲得
+- **オプトアウト可能**: `GAC_DISABLE_STATS=1` を設定して追跡を無効化 — データは一切書き込まれません
+- **プライバシー優先**: カウント、日付、プロジェクト名（git リモート/ディレクトリから派生）のみを保存 — コミットメッセージ、コード、個人情報は一切保存しません
+
 ### 🛡️ **組み込みセキュリティ**
 
 - **自動秘密検出**: コミット前に API キー、パスワード、トークンをスキャン
@@ -137,11 +145,18 @@ gac
 | `gac -i`          | 変更について質問してより良いコンテキストを取得        |
 | `gac -g`          | 変更を複数の論理的なコミットにグループ化              |
 | `gac -p`          | コミットしてプッシュ                                  |
+| `gac stats`       | gac の使用統計を表示                                  |
 
 ### パワーユーザー例
 
 ```bash
 # 一コマンドで完全なワークフロー
+# コミット統計を表示
+gac stats
+
+# 現在のプロジェクトのみの統計
+gac stats project
+
 gac -ayp -h "リリース準備"
 
 # スコープ付きの詳細な説明
@@ -231,6 +246,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **MCP サーバー**: [MCP.md](MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ
+- **使用統計**: `gac stats --help` または[完全なドキュメント](docs/ja/USAGE.md#使用統計)を参照
 - **トラブルシューティング**: [TROUBLESHOOTING.md](docs/ja/TROUBLESHOOTING.md) - 一般的な問題と解決策
 - **貢献**: [CONTRIBUTING.md](docs/ja/CONTRIBUTING.md) - 開発設定とガイドライン
 

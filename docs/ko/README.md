@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git 통합**: 비싼 LLM 작업 전에 pre-commit 및 lefthook hooks 실행
 - **MCP 서버**: `gac serve`를 실행하여 [Model Context Protocol](https://modelcontextprotocol.io/)을 통해 AI 에이전트에 커밋 도구 제공
 
+### 📊 **사용 통계**
+
+- **gac 사용 추적**: gac으로 몇 번 커밋했는지, 현재 연속 사용 일수, 일일/주간 활동 피크, 상위 프로젝트 확인
+- **프로젝트별 통계**: `gac stats project`로 현재 저장소의 통계 보기
+- **하이 스코어 축하**: 🏆 새로운 일일, 주간 또는 연속 기록을 세우면 트로피 획득; 🥈 기록과 타이면 획득
+- **옵트아웃 가능**: `GAC_DISABLE_STATS=1` 설정으로 추적 비활성화 — 데이터가 기록되지 않습니다
+- **개인정보 보호 우선**: 카운트, 날짜, 프로젝트 이름(git 원격/디렉토리에서 파생)만 저장 — 커밋 메시지, 코드, 개인 데이터는 저장하지 않습니다
+
 ### 🛡️ **내장 보안**
 
 - **자동 비밀 감지**: 커밋 전에 API 키, 비밀번호, 토큰 스캔
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | 변경에 대한 질문하여 더 나은 컨텍스트 얻기           |
 | `gac -g`        | 변경 사항을 여러 논리적인 커밋으로 그룹화            |
 | `gac -p`        | 커밋하고 푸시                                        |
+| `gac stats`     | gac 사용 통계 보기                                   |
 
 ### 고급 사용자 예제
 
 ```bash
 # 한 명령어로 완전한 워크플로우
+# 커밋 통계 보기
+gac stats
+
+# 현재 프로젝트만의 통계
+gac stats project
+
 gac -ayp -h "릴리스 준비"
 
 # 스코프가 포함된 상세 설명
@@ -231,6 +246,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **MCP 서버**: [docs/MCP.md](MCP.md) - AI 에이전트를 위한 MCP 서버로 GAC 사용
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ko/CLAUDE_CODE.md) - Claude Code 설정 및 인증
 - **사용자 정의 프롬프트**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/ko/CUSTOM_SYSTEM_PROMPTS.md) - 커밋 메시지 스타일 사용자 정의
+- **사용 통계**: `gac stats --help` 또는 [전체 문서](docs/ko/USAGE.md#사용-통계)를 참조하세요
 - **문제 해결**: [docs/TROUBLESHOOTING.md](docs/ko/TROUBLESHOOTING.md) - 일반적인 문제 및 해결책
 - **기여**: [docs/CONTRIBUTING.md](docs/ko/CONTRIBUTING.md) - 개발 설정 및 가이드라인
 

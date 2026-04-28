@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git integration**: Respects pre-commit and lefthook hooks, running them before expensive LLM operations
 - **MCP server**: Run `gac serve` to expose commit tools to AI agents via the [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Usage Statistics**
+
+- **Track your gacs**: See how many commits you've made with gac, your current streak, peak daily/weekly activity, and top projects
+- **Per-project stats**: View stats for the current repo with `gac stats project`
+- **High score celebrations**: 🏆 trophies when you set new daily, weekly, or streak records; 🥈 for tying them
+- **Opt-out friendly**: Set `GAC_DISABLE_STATS=1` to disable tracking — no data is written
+- **Privacy-first**: Only stores counts, dates, and project names (derived from git remote/directory) — no commit messages, code, or personal data
+
 ### 🛡️ **Built-in Security**
 
 - **Automatic secret detection**: Scans for API keys, passwords, and tokens before committing
@@ -137,10 +145,17 @@ gac
 | `gac -i`        | Ask questions about changes for better context                          |
 | `gac -g`        | Group changes into multiple logical commits                             |
 | `gac -p`        | Commit and push                                                         |
+| `gac stats`     | View your gac usage statistics                                          |
 
 ### Power User Examples
 
 ```bash
+# View your commit statistics
+gac stats
+
+# Stats for the current project only
+gac stats project
+
 # Complete workflow in one command
 gac -ayp -h "release preparation"
 
@@ -231,6 +246,7 @@ Track real-time installation metrics and package download statistics.
 - **MCP server**: [docs/MCP.md](docs/en/MCP.md) - Use GAC as an MCP server for AI agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/en/CLAUDE_CODE.md) - Claude Code setup and authentication
 - **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
+- **Usage statistics**: See `gac stats --help` or the [full docs](docs/en/USAGE.md#usage-statistics)
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions
 - **Contributing**: [docs/CONTRIBUTING.md](docs/en/CONTRIBUTING.md) - Development setup and guidelines
 

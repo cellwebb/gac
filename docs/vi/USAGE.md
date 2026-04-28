@@ -28,6 +28,7 @@ Tài liệu này mô tả tất cả các flag và tùy chọn có sẵn cho cô
     - [Quy Trình Hỏi-Đáp](#quy-trình-hỏi-đáp)
     - [Kết Hợp Với Các Flag Khác](#kết-hợp-với-các-flag-khác)
     - [Thực T hành Tốt Nhất](#thực-t-hành-tốt-nhất)
+  - [Thống Kê Sử Dụng](#thống-kê-sử-dụng)
   - [Nhận Trợ Giúp](#nhận-trợ-giúp)
 
 ## Sử Dụng Cơ Bản
@@ -336,6 +337,7 @@ Bạn có thể tùy chỉnh hành vi của gac với các biến môi trường
 - `GAC_TRANSLATE_PREFIXES=true` - Dịch các tiền tố commit tiêu chuẩn (feat, fix, v.v.) vào ngôn ngữ đích (mặc định: false, giữ tiền tố bằng tiếng Anh)
 - `GAC_SKIP_SECRET_SCAN=true` - Vô hiệu hóa quét bảo mật tự động cho các bí mật trong các thay đổi đã staged (sử dụng cẩn thận)
 - `GAC_NO_VERIFY_SSL=true` - Bỏ qua xác minh chứng chỉ SSL cho các cuộc gọi API (hữu ích cho proxy doanh nghiệp chặn lưu lượng SSL)
+- `GAC_DISABLE_STATS=true` - Vô hiệu hóa theo dõi thống kê sử dụng (không đọc hoặc ghi tệp thống kê; dữ liệu hiện có được bảo tồn)
 
 Xem `.gac.env.example` cho mẫu cấu hình hoàn chỉnh.
 
@@ -358,6 +360,9 @@ Các lệnh con sau đây có sẵn:
 - `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho các thông điệp commit (đặt GAC_LANGUAGE)
 - `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
 - `gac serve` — Khởi động GAC như một [MCP server](MCP.md) để tích hợp AI agent (truyền tải stdio)
+- `gac stats show` — Xem thống kê sử dụng gac của bạn (tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, dự án hàng đầu)
+- `gac stats project` — Xem thống kê chỉ cho dự án git hiện tại
+- `gac stats reset` — Đặt lại tất cả thống kê về không (yêu cầu xác nhận)
 
 ## Chế Độ Tương Tác
 
@@ -464,6 +469,63 @@ gac -i -v
 - **Chuẩn bị tài liệu** - câu trả lời của bạn có thể giúp hình thành cơ sở cho release notes
 - **Công cụ học tập** - các câu hỏi củng cố các thực hành tốt cho thông điệp commit
 - **Bỏ qua cho các thay đổi đơn giản** - cho các sửa đổi tầm thường, chế độ cơ bản có thể nhanh hơn
+
+## Thống Kê Sử Dụng
+
+gac theo dõi thống kê sử dụng nhẹ để bạn có thể xem hoạt động commit, chuỗi, và các dự án tích cực nhất của mình. Thống kê được lưu trữ cục bộ trong `~/.gac_stats.json` và không bao giờ được gửi đi đâu.
+
+**Được theo dõi:** tổng số lần chạy gac, tổng số commit, ngày sử dụng đầu/cuối, số đếm hàng ngày và hàng tuần, chuỗi hiện tại và dài nhất, và số đếm hoạt động theo dự án.
+
+**Không được theo dõi:** thông điệp commit, nội dung mã, đường dẫn tệp, thông tin cá nhân, hoặc bất cứ điều gì ngoài số đếm và tên dự án.
+
+### Lệnh Con Thống Kê
+
+| Lệnh                | Mô tả                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| `gac stats`         | Hiển thị thống kê của bạn (giống như `gac stats show`)                                    |
+| `gac stats show`    | Hiển thị thống kê đầy đủ: tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, dự án hàng đầu |
+| `gac stats project` | Hiển thị thống kê chỉ cho dự án git hiện tại                                              |
+| `gac stats reset`   | Đặt lại tất cả thống kê về không (yêu cầu xác nhận)                                       |
+
+### Ví Dụ
+
+```sh
+# Xem thống kê tổng thể của bạn
+gac stats
+
+# Thống kê chỉ cho dự án hiện tại
+gac stats project
+
+# Đặt lại tất cả thống kê (với yêu cầu xác nhận)
+gac stats reset
+```
+
+### Những Gì Bạn Sẽ Thấy
+
+Chạy `gac stats` hiển thị:
+
+- **Tổng số gac và commit** — bao nhiêu lần bạn đã sử dụng gac và bao nhiêu commit nó đã tạo
+- **Chuỗi hiện tại và dài nhất** — các ngày liên tiếp có hoạt động gac (🔥 ở 5+ ngày)
+- **Tóm tắt hoạt động** — gac/commit hôm nay và tuần này so với ngày đỉnh và tuần đỉnh của bạn
+- **Dự án hàng đầu** — 5 repo tích cực nhất của bạn theo số gac + commit
+- **Ăn mừng điểm cao** — 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, hoặc chuỗi mới; 🥈 khi ngang bằng
+- **Tin nhắn khích lệ** — những nhắc nhở theo ngữ cảnh dựa trên hoạt động của bạn
+
+### Vô Hiệu Hóa Thống Kê
+
+Đặt biến môi trường `GAC_DISABLE_STATS` thành bất kỳ giá trị nào:
+
+```sh
+# Vô hiệu hóa theo dõi thống kê
+export GAC_DISABLE_STATS=1
+
+# Hoặc trong .gac.env
+GAC_DISABLE_STATS=true
+```
+
+Khi bị vô hiệu hóa, gac bỏ qua tất cả việc ghi thống kê — không có đọc hoặc ghi tệp nào xảy ra. Dữ liệu hiện có được bảo tồn nhưng sẽ không được cập nhật cho đến khi bạn bỏ đặt biến này.
+
+---
 
 ## Nhận Trợ Giúp
 

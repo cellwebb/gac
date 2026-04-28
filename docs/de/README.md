@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git-Integration**: Respektiert pre-commit und leftthook Hooks, führt sie vor teuren KI-Operationen aus
 - **MCP-Server**: Führen Sie `gac serve` aus, um Commit-Tools über das [Model Context Protocol](https://modelcontextprotocol.io/) für KI-Agenten bereitzustellen
 
+### 📊 **Nutzungsstatistiken**
+
+- **Verfolgen Sie Ihre gacs**: Sehen Sie, wie viele Commits Sie mit gac gemacht haben, Ihren aktuellen Streak, die höchste tägliche/wöchentliche Aktivität und Top-Projekte
+- **Projektspezifische Statistiken**: Zeigen Sie Statistiken für das aktuelle Repo mit `gac stats project` an
+- **Highscore-Feiern**: 🏆 Trophäen, wenn Sie neue tägliche, wöchentliche oder Streak-Rekorde aufstellen; 🥈 wenn Sie diese einstellen
+- **Opt-out-freundlich**: Setzen Sie `GAC_DISABLE_STATS=1`, um die Erfassung zu deaktivieren — es werden keine Daten geschrieben
+- **Datenschutz zuerst**: Speichert nur Zähler, Daten und Projektnamen (abgeleitet vom Git-Remote/Verzeichnis) — keine Commit-Nachrichten, Code oder persönliche Daten
+
 ### 🛡️ **Eingebaute Sicherheit**
 
 - **Automatische Geheimnis-Erkennung**: Scannt vor dem Commit nach API-Schlüsseln, Passwörtern und Tokens
@@ -137,11 +145,18 @@ gac
 | `gac -i`           | Fragen zu Änderungen stellen für besseren Kontext                                    |
 | `gac -g`           | Änderungen in mehrere logische Commits gruppieren                                    |
 | `gac -p`           | Commit und push                                                                      |
+| `gac stats`        | Ihre gac-Nutzungsstatistiken anzeigen                                                |
 
 ### Power-User-Beispiele
 
 ```bash
 # Vollständiger Workflow in einem Befehl
+# Ihre Commit-Statistiken anzeigen
+gac stats
+
+# Statistiken nur für das aktuelle Projekt
+gac stats project
+
 gac -ayp -h "Release-Vorbereitung"
 
 # Detaillierte Erklärung mit Scope
@@ -230,6 +245,7 @@ Verfolgen Sie Echtzeit-Installationsmetriken und Paket-Download-Statistiken.
 - **MCP-Server**: [docs/MCP.md](MCP.md) - GAC als MCP-Server für KI-Agenten verwenden
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/de/CLAUDE_CODE.md) - Claude Code Einrichtung und Authentifizierung
 - **Benutzerdefinierte Prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/de/CUSTOM_SYSTEM_PROMPTS.md) - Commit-Nachrichten-Stil anpassen
+- **Nutzungsstatistiken**: Siehe `gac stats --help` oder die [vollständige Doku](docs/de/USAGE.md#nutzungsstatistiken)
 - **Fehlerbehebung**: [docs/TROUBLESHOOTING.md](docs/de/TROUBLESHOOTING.md) - Häufige Probleme und Lösungen
 - **Mitwirken**: [docs/CONTRIBUTING.md](docs/de/CONTRIBUTING.md) - Entwicklungseinrichtung und Richtlinien
 

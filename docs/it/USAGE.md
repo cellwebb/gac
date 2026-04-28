@@ -29,6 +29,7 @@ Questo documento descrive tutte le flag e opzioni disponibili per lo strumento C
     - [Workflow Domanda-Risposta](#workflow-domanda-risposta)
     - [Combinazione con Altre Flag](#combinazione-con-altre-flag)
     - [Best Practice](#best-practice)
+  - [Statistiche di Utilizzo](#statistiche-di-utilizzo)
   - [Ottenere Aiuto](#ottenere-aiuto)
 
 ## Utilizzo Base
@@ -381,6 +382,7 @@ Puoi personalizzare il comportamento di gac con queste variabili ambiente opzion
 - `GAC_TRANSLATE_PREFIXES=true` - Traduci prefissi commit convenzionali (feat, fix, ecc.) nella lingua target (default: false, mantiene prefissi in inglese)
 - `GAC_SKIP_SECRET_SCAN=true` - Disabilita scansione sicurezza automatica per segreti nelle modifiche in staging (usa con cautela)
 - `GAC_NO_VERIFY_SSL=true` - Salta verifica certificato SSL per chiamate API (utile per proxy aziendali che intercettano traffico SSL)
+- `GAC_DISABLE_STATS=true` - Disabilita il tracciamento delle statistiche di utilizzo (nessuna lettura o scrittura di file di statistiche; i dati esistenti sono preservati)
 
 Vedi `.gac.env.example` per un template di configurazione completo.
 
@@ -403,6 +405,9 @@ I seguenti sottocomandi sono disponibili:
 - `gac language` (o `gac lang`) — Selettore lingua interattivo per messaggi di commit (imposta GAC_LANGUAGE)
 - `gac diff` — Mostra git diff filtrato con opzioni per modifiche staging/non-staging, colore e troncamento
 - `gac serve` — Avvia GAC come [server MCP](MCP.md) per l'integrazione con agenti AI (trasporto stdio)
+- `gac stats show` — Vedi le tue statistiche di utilizzo di gac (totali, serie, attività giornaliera e settimanale, progetti principali)
+- `gac stats project` — Vedi le statistiche solo per il progetto git corrente
+- `gac stats reset` — Ripristina tutte le statistiche a zero (richiede conferma)
 
 ## Modalità Interattiva
 
@@ -509,6 +514,63 @@ gac -i -v
 - **Preparazione documentazione** - le tue risposte possono aiutare a formare la base per le release notes
 - **Strumento di apprendimento** - le domande rafforzano buone pratiche di messaggi di commit
 - **Salta per modifiche semplici** - per fix banali, la modalità base potrebbe essere più veloce
+
+## Statistiche di Utilizzo
+
+gac traccia statistiche di utilizzo leggere per permetterti di vedere la tua attività di commit, serie e progetti più attivi. Le statistiche sono memorizzate localmente in `~/.gac_stats.json` e non vengono mai inviate da nessuna parte.
+
+**Cosa viene tracciato:** esecuzioni totali di gac, commit totali, date primo/ultimo utilizzo, conteggi giornalieri e settimanali, serie attuale e più lunga, e conteggi di attività per progetto.
+
+**Cosa NON viene tracciato:** messaggi di commit, contenuto del codice, percorsi dei file, informazioni personali o qualsiasi cosa oltre conteggi e nomi di progetti.
+
+### Sottocomandi delle Statistiche
+
+| Comando             | Descrizione                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Mostra le tue statistiche (come `gac stats show`)                                                   |
+| `gac stats show`    | Mostra statistiche complete: totali, serie, attività giornaliera e settimanale, progetti principali |
+| `gac stats project` | Mostra statistiche solo per il progetto git corrente                                                |
+| `gac stats reset`   | Ripristina tutte le statistiche a zero (richiede conferma)                                          |
+
+### Esempi
+
+```sh
+# Visualizza le tue statistiche generali
+gac stats
+
+# Statistiche del progetto corrente solamente
+gac stats project
+
+# Ripristina tutte le statistiche (con conferma)
+gac stats reset
+```
+
+### Cosa vedrai
+
+Eseguire `gac stats` mostra:
+
+- **Gac e commit totali** — quante volte hai usato gac e quanti commit ha creato
+- **Serie attuale e più lunga** — giorni consecutivi con attività gac (🔥 a 5+ giorni)
+- **Riepilogo attività** — gac/commit di oggi e di questa settimana vs il tuo picco giornaliero e settimanale
+- **Progetti principali** — i tuoi 5 repository più attivi per conteggio gac + commit
+- **Celebrazioni dei record** — 🏆 trofei quando stabilisci nuovi record giornalieri, settimanali o di serie; 🥈 per pareggiarli
+- **Messaggi di incoraggiamento** — suggerimenti contestuali basati sulla tua attività
+
+### Disabilitare le statistiche
+
+Imposta la variabile d'ambiente `GAC_DISABLE_STATS` con qualsiasi valore:
+
+```sh
+# Disabilita tracciamento statistiche
+export GAC_DISABLE_STATS=1
+
+# Oppure in .gac.env
+GAC_DISABLE_STATS=true
+```
+
+Quando disabilitato, gac salta tutta la registrazione delle statistiche — nessuna lettura o scrittura di file avviene. I dati esistenti sono preservati ma non verranno aggiornati finché non rimuovi la variabile.
+
+---
 
 ## Ottenere Aiuto
 

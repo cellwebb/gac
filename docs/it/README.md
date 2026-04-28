@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Integrazione Git**: Rispetta gli hook pre-commit e lefthook, eseguendoli prima delle operazioni costose del LLM
 - **Server MCP**: Esegui `gac serve` per esporre gli strumenti di commit agli agenti AI tramite il [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Statistiche di Utilizzo**
+
+- **Traccia i tuoi gac**: Vedi quanti commit hai fatto con gac, la tua serie attuale, picchi di attività giornaliera/settimanale e progetti principali
+- **Statistiche per progetto**: Visualizza le statistiche del repository attuale con `gac stats project`
+- **Celebrazioni dei record**: 🏆 trofei quando stabilisci nuovi record giornalieri, settimanali o di serie; 🥈 per pareggiarli
+- **Disattivazione semplice**: Imposta `GAC_DISABLE_STATS=1` per disabilitare il tracciamento — nessun dato viene scritto
+- **Privacy al primo posto**: Memorizza solo conteggi, date e nomi di progetti (derivati da remote/directory git) — nessun messaggio di commit, codice o dato personale
+
 ### 🛡️ **Sicurezza Integrata**
 
 - **Rilevamento automatico dei segreti**: Scansiona chiavi API, password e token prima del commit
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | Fai domande sulle modifiche per un contesto migliore                     |
 | `gac -g`        | Raggruppa le modifiche in più commit logici                              |
 | `gac -p`        | Fai il commit e push                                                     |
+| `gac stats`     | Visualizza le tue statistiche di utilizzo di gac                         |
 
 ### Esempi per Utenti Avanzati
 
 ```bash
 # Workflow completo in un comando
+# Visualizza le tue statistiche dei commit
+gac stats
+
+# Statistiche del progetto corrente solamente
+gac stats project
+
 gac -ayp -h "preparazione release"
 
 # Spiegazione dettagliata con scope
@@ -231,6 +246,7 @@ Traccia metriche di installazione in tempo reale e statistiche di download dei p
 - **Server MCP**: [docs/MCP.md](MCP.md) - Usa GAC come server MCP per agenti AI
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/it/CLAUDE_CODE.md) - Configurazione e autenticazione di Claude Code
 - **Prompt personalizzati**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/it/CUSTOM_SYSTEM_PROMPTS.md) - Personalizza lo stile dei messaggi di commit
+- **Statistiche di utilizzo**: Vedi `gac stats --help` o la [documentazione completa](docs/it/USAGE.md#statistiche-di-utilizzo)
 - **Risoluzione problemi**: [docs/TROUBLESHOOTING.md](docs/it/TROUBLESHOOTING.md) - Problemi comuni e soluzioni
 - **Contribuire**: [docs/CONTRIBUTING.md](docs/it/CONTRIBUTING.md) - Setup di sviluppo e linee guida
 

@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git-integrasjon**: Respekterer pre-commit og lefthook hooks, og kjører dem før dyre LLM-operasjoner
 - **MCP-server**: Kjør `gac serve` for å eksponere commit-verktøy til AI-agenter via [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Bruksstatistikk**
+
+- **Spor dine gacs**: Se hvor mange committer du har gjort med gac, din nåværende streak, topp daglige/ukentlige aktivitet og topprosjekter
+- **Prosjektstatistikk**: Vis statistikk for nåværende repo med `gac stats project`
+- **Highscore-feiringer**: 🏆 trofeer når du setter nye daglige, ukentlige eller streak-rekorder; 🥈 for å tangere dem
+- **Opt-out-vennlig**: Sett `GAC_DISABLE_STATS=1` for å deaktivere sporing — ingen data skrives
+- **Personvern først**: Lagrer kun tellinger, datoer og prosjektnavn (avledet fra git remote/katalog) — ingen commit-meldinger, kode eller personopplysninger
+
 ### 🛡️ **Innebygd Sikkerhet**
 
 - **Automatisk hemmelighetsoppdagelse**: Skanner etter API-nøkler, passord og tokens før commit
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | Stil spørsmål om endringer for bedre kontekst                            |
 | `gac -g`        | Gruppere endringer i flere logiske commits                               |
 | `gac -p`        | Commit og push                                                           |
+| `gac stats`     | Vis din gac-bruksstatistikk                                              |
 
 ### Eksempler for Avanserte Brukere
 
 ```bash
 # Komplett arbeidsflyt i én kommando
+# Vis din commitstatistikk
+gac stats
+
+# Statistikk kun for nåværende prosjekt
+gac stats project
+
 gac -ayp -h "release preparation"
 
 # Detaljert forklaring med scope
@@ -231,6 +246,7 @@ Følg sanntids installasjonsmålinger og pakkenedlastningsstatistikk.
 - **MCP-server**: [MCP.md](MCP.md) - Bruk GAC som MCP-server for AI-agenter
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/no/CLAUDE_CODE.md) - Claude Code oppsett og autentisering
 - **Egendefinerte prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tilpass commit-meldingsstil
+- **Bruksstatistikk**: Se `gac stats --help` eller den [fulle dokumentasjonen](USAGE.md#bruksstatistikk)
 - **Feilsøking**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Vanlige problemer og løsninger
 - **Bidra**: [CONTRIBUTING.md](CONTRIBUTING.md) - Utviklingsoppsett og retningslinjer
 

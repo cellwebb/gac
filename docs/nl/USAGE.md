@@ -28,6 +28,7 @@ Dit document beschrijft alle beschikbare vlaggen en opties voor de `gac` CLI too
     - [Vraag-Antwoord Workflow](#vraag-antwoord-workflow)
     - [Combinatie met andere vlaggen](#combinatie-met-andere-vlaggen)
     - [Beste Praktijken](#beste-praktijken)
+  - [Gebruiksstatistieken](#gebruiksstatistieken)
   - [Hulp Krijgen](#hulp-krijgen)
 
 ## Basisgebruik
@@ -336,6 +337,7 @@ U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 - `GAC_TRANSLATE_PREFIXES=true` - Vertaal conventionele commit prefixen (feat, fix, etc.) naar de doeltaal (standaard: false, houdt prefixen in Engels)
 - `GAC_SKIP_SECRET_SCAN=true` - Schakel automatische security scanning voor geheimen in staged wijzigingen uit (gebruik met voorzichtigheid)
 - `GAC_NO_VERIFY_SSL=true` - Sla SSL-certificaatverificatie over voor API-aanroepen (nuttig voor bedrijfsproxies die SSL-verkeer onderscheppen)
+- `GAC_DISABLE_STATS=true` - Schakel tracking van gebruikstatistieken uit (geen lees- of schrijfbewerkingen naar het statistiekbestand; bestaande gegevens worden behouden)
 
 Zie `.gac.env.example` voor een complete configuratiesjabloon.
 
@@ -358,6 +360,9 @@ De volgende subcommando's zijn beschikbaar:
 - `gac language` (of `gac lang`) — Interactieve taalselector voor commitberichten (stelt GAC_LANGUAGE in)
 - `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
 - `gac serve` — Start GAC als [MCP-server](MCP.md) voor AI-agent integratie (stdio transport)
+- `gac stats show` — Bekijk uw gac-gebruiksstatistieken (totalen, streaks, dagelijkse & wekelijkse activiteit, topprojecten)
+- `gac stats project` — Bekijk statistieken alleen voor het huidige git-project
+- `gac stats reset` — Reset alle statistieken naar nul (vraagt om bevestiging)
 
 ## Interactieve Modus
 
@@ -464,6 +469,63 @@ gac -i -v
 - **Documentatie voorbereiding** - uw antwoorden kunnen helpen bij het vormen van de basis voor release notes
 - **Leerhulpmiddel** - vragen versterken goede praktijken voor commitberichten
 - **Overslaan voor simpele wijzigingen** - voor triviale fixes kan de basismodus sneller zijn
+
+## Gebruiksstatistieken
+
+gac houdt lichtgewicht gebruikstatistieken bij, zodat u uw commitactiviteit, streaks en meest actieve projecten kunt bekijken. Statistieken worden lokaal opgeslagen in `~/.gac_stats.json` en worden nergens naartoe gestuurd.
+
+**Wat wordt bijgehouden:** totaal aantal gac-uitvoeringen, totaal aantal commits, eerste/laatste gebruiksdata, dagelijkse en wekelijkse tellingen, huidige en langste streak, en activiteitstellingen per project.
+
+**Wat NIET wordt bijgehouden:** commitberichten, code-inhoud, bestandspaden, persoonlijke informatie of iets anders dan tellingen en projectnamen.
+
+### Statistiek-subcommando's
+
+| Commando            | Beschrijving                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| `gac stats`         | Uw statistieken bekijken (hetzelfde als `gac stats show`)                                        |
+| `gac stats show`    | Volledige statistieken tonen: totalen, streaks, dagelijkse & wekelijkse activiteit, topprojecten |
+| `gac stats project` | Statistieken alleen voor het huidige git-project tonen                                           |
+| `gac stats reset`   | Alle statistieken naar nul resetten (vraagt om bevestiging)                                      |
+
+### Voorbeelden
+
+```sh
+# Uw algemene statistieken bekijken
+gac stats
+
+# Statistieken alleen voor het huidige project
+gac stats project
+
+# Alle statistieken resetten (met bevestigingsprompt)
+gac stats reset
+```
+
+### Wat u zult zien
+
+Het uitvoeren van `gac stats` toont:
+
+- **Totaal aantal gacs en commits** — hoe vaak u gac heeft gebruikt en hoeveel commits het heeft gemaakt
+- **Huidige en langste streak** — opeenvolgende dagen met gac-activiteit (🔥 bij 5+ dagen)
+- **Activiteitssamenvatting** — gacs/commits van vandaag en deze week vergeleken met uw piekdag en piekweek
+- **Topprojecten** — uw 5 meest actieve repos op basis van gac- + commit-aantal
+- **Highscore-vieringen** — 🏆 trofeeën wanneer u nieuwe dagelijkse, wekelijkse of streak-records vestigt; 🥈 voor het evenaren ervan
+- **Aanmoedigingsberichten** — contextuele aanmoedigingen op basis van uw activiteit
+
+### Statistieken uitschakelen
+
+Stel de omgevingsvariabele `GAC_DISABLE_STATS` in op een willekeurige waarde:
+
+```sh
+# Statistiektracking uitschakelen
+export GAC_DISABLE_STATS=1
+
+# Of in .gac.env
+GAC_DISABLE_STATS=true
+```
+
+Bij uitschakeling slaat gac alle statistiekregistratie over — er vinden geen bestandslees- of schrijfbewerkingen plaats. Bestaande gegevens worden behouden maar niet bijgewerkt totdat u de variabele verwijdert.
+
+---
 
 ## Hulp Krijgen
 

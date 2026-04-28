@@ -29,6 +29,7 @@ Ce document décrit tous les drapeaux et options disponibles pour l'outil CLI `g
     - [Workflow Questions-Réponses](#workflow-questions-réponses)
     - [Combinaison avec d'autres drapeaux](#combinaison-avec-dautres-drapeaux)
     - [Meilleures pratiques](#meilleures-pratiques)
+  - [Statistiques d'utilisation](#statistiques-dutilisation)
   - [Obtenir de l'aide](#obtenir-de-laide)
 
 ## Utilisation de base
@@ -385,6 +386,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 - `GAC_TRANSLATE_PREFIXES=true` - Traduire les préfixes de commits conventionnels (feat, fix, etc.) dans la langue cible (par défaut : false, garde les préfixes en anglais)
 - `GAC_SKIP_SECRET_SCAN=true` - Désactiver l'analyse de sécurité automatique pour les secrets dans les changements indexés (utiliser avec prudence)
 - `GAC_NO_VERIFY_SSL=true` - Sauter la vérification des certificats SSL pour les appels API (utile pour les proxies d'entreprise qui interceptent le trafic SSL)
+- `GAC_DISABLE_STATS=true` - Désactiver le suivi des statistiques d'utilisation (aucune lecture ou écriture de fichier de statistiques ; les données existantes sont préservées)
 
 Voir `.gac.env.example` pour un modèle de configuration complet.
 
@@ -407,6 +409,9 @@ Les sous-commandes suivantes sont disponibles :
 - `gac language` (ou `gac lang`) — Sélecteur de langue interactif pour les messages de commit (définit GAC_LANGUAGE)
 - `gac diff` — Afficher le git diff filtré avec des options pour les changements indexés/non indexés, la couleur et la troncature
 - `gac serve` — Démarrer GAC en tant que [serveur MCP](MCP.md) pour l'intégration d'agents IA (transport stdio)
+- `gac stats show` — Voir vos statistiques d'utilisation de gac (totaux, séries, activité quotidienne et hebdomadaire, projets principaux)
+- `gac stats project` — Voir les statistiques du projet git actuel uniquement
+- `gac stats reset` — Réinitialiser toutes les statistiques à zéro (demande confirmation)
 
 ## Mode Interactif
 
@@ -513,6 +518,63 @@ gac -i -v
 - **Préparation de documentation** - vos réponses peuvent aider à former la base des notes de version
 - **Outil d'apprentissage** - les questions renforcent les bonnes pratiques de messages de commit
 - **Sauter pour les changements simples** - pour les corrections triviales, le mode de base peut être plus rapide
+
+## Statistiques d'utilisation
+
+gac suit des statistiques d'utilisation légères pour que vous puissiez voir votre activité de commits, séries et projets les plus actifs. Les statistiques sont stockées localement dans `~/.gac_stats.json` et ne sont jamais envoyées nulle part.
+
+**Ce qui est suivi :** nombre total d'exécutions gac, nombre total de commits, dates de première/dernière utilisation, comptes quotidiens et hebdomadaires, série actuelle et la plus longue, et comptes d'activité par projet.
+
+**Ce qui n'est PAS suivi :** messages de commit, contenu de code, chemins de fichiers, informations personnelles ou quoi que ce soit au-delà des comptes et noms de projets.
+
+### Sous-commandes de statistiques
+
+| Commande            | Description                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Afficher vos statistiques (identique à `gac stats show`)                                                       |
+| `gac stats show`    | Afficher les statistiques complètes : totaux, séries, activité quotidienne et hebdomadaire, projets principaux |
+| `gac stats project` | Afficher les statistiques du projet git actuel uniquement                                                      |
+| `gac stats reset`   | Réinitialiser toutes les statistiques à zéro (demande confirmation)                                            |
+
+### Exemples
+
+```sh
+# Voir vos statistiques globales
+gac stats
+
+# Statistiques du projet actuel uniquement
+gac stats project
+
+# Réinitialiser toutes les statistiques (avec confirmation)
+gac stats reset
+```
+
+### Ce que vous verrez
+
+Exécuter `gac stats` affiche :
+
+- **Gacs et commits totaux** — combien de fois vous avez utilisé gac et combien de commits il a créés
+- **Série actuelle et la plus longue** — jours consécutifs avec activité gac (🔥 à 5+ jours)
+- **Résumé d'activité** — gacs/commits d'aujourd'hui et de cette semaine vs votre pic quotidien et hebdomadaire
+- **Projets principaux** — vos 5 dépôts les plus actifs par comptes gac + commits
+- **Célébrations de records** — 🏆 trophées quand vous établissez de nouveaux records quotidiens, hebdomadaires ou de série ; 🥈 pour les égaler
+- **Messages d'encouragement** — suggestions contextuelles basées sur votre activité
+
+### Désactiver les statistiques
+
+Définissez la variable d'environnement `GAC_DISABLE_STATS` avec n'importe quelle valeur :
+
+```sh
+# Désactiver le suivi des statistiques
+export GAC_DISABLE_STATS=1
+
+# Ou dans .gac.env
+GAC_DISABLE_STATS=true
+```
+
+Quand désactivé, gac ignore tout enregistrement de statistiques — aucune lecture ou écriture de fichier n'a lieu. Les données existantes sont préservées mais ne seront pas mises à jour tant que la variable n'est pas supprimée.
+
+---
 
 ## Obtenir de l'aide
 

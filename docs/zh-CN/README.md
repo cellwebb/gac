@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git 集成**：尊重 pre-commit 和 lefthook 钩子，在昂贵的 LLM 操作之前运行它们
 - **MCP 服务器**：运行 `gac serve` 通过 [Model Context Protocol](https://modelcontextprotocol.io/) 向 AI 代理公开提交工具
 
+### 📊 **使用统计**
+
+- **追踪你的 gac 使用**：查看你用 gac 做了多少次提交、当前连续使用天数、每日/每周活动峰值和热门项目
+- **项目级统计**：使用 `gac stats project` 查看当前仓库的统计信息
+- **高分庆祝**：🏆 在你创造新的每日、每周或连续使用记录时获得奖杯；🥈 在追平记录时获得
+- **随时退出**：设置 `GAC_DISABLE_STATS=1` 以禁用追踪 — 不会写入任何数据
+- **隐私优先**：仅存储计数、日期和项目名称（从 git 远程/目录派生）— 不含提交信息、代码或个人数据
+
 ### 🛡️ **内置安全**
 
 - **自动密钥检测**：在提交前扫描 API 密钥、密码和令牌
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | 询问有关更改的问题以获得更好的上下文           |
 | `gac -g`        | 将更改分组为多个逻辑提交                       |
 | `gac -p`        | 提交并推送                                     |
+| `gac stats`     | 查看你的 gac 使用统计                          |
 
 ### 高级用户示例
 
 ```bash
 # 一条命令完成完整工作流
+# 查看你的提交统计
+gac stats
+
+# 仅查看当前项目的统计
+gac stats project
+
 gac -ayp -h "发布准备"
 
 # 带范围的详细解释
@@ -231,6 +246,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **MCP 服务器**：[MCP.md](MCP.md) - 将 GAC 用作 AI 代理的 MCP 服务器
 - **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-CN/CLAUDE_CODE.md) - Claude Code 设置与认证
 - **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格
+- **使用统计**：参见 `gac stats --help` 或[完整文档](docs/zh-CN/USAGE.md#使用统计)
 - **故障排除**：[TROUBLESHOOTING.md](docs/zh-CN/TROUBLESHOOTING.md) - 常见问题和解决方案
 - **贡献**：[CONTRIBUTING.md](docs/zh-CN/CONTRIBUTING.md) - 开发设置和指南
 

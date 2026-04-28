@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git-integration**: Respekterar pre-commit och lefthook hooks, kör dem innan dyra LLM-operationer
 - **MCP-server**: Kör `gac serve` för att exponera commit-verktyg till AI-agenter via [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Användningsstatistik**
+
+- **Spåra dina gacs**: Se hur många commits du har gjort med gac, din nuvarande streak, topp dagliga/veckovisa aktivitet och topprojekt
+- **Projektspecifik statistik**: Visa statistik för nuvarande repo med `gac stats project`
+- **Highscore-firanden**: 🏆 troféer när du sätter nya dagliga, veckovisa eller streak-rekord; 🥈 för att matcha dem
+- **Opt-out-vänligt**: Ställ in `GAC_DISABLE_STATS=1` för att inaktivera spårning — ingen data skrivs
+- **Integritet först**: Lagrar endast antal, datum och projektnamn (härledda från git remote/katalog) — inga commit-meddelanden, kod eller personlig information
+
 ### 🛡️ **Inbyggd Säkerhet**
 
 - **Automatisk hemlighetsdetektering**: Skannar efter API-nycklar, lösenord och tokens innan commit
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | Ställ frågor om ändringar för bättre kontext                       |
 | `gac -g`        | Gruppera ändringar i flera logiska commits                         |
 | `gac -p`        | Commit och push                                                    |
+| `gac stats`     | Visa din gac-användningsstatistik                                  |
 
 ### Exempel för Avancerade Användare
 
 ```bash
 # Komplett arbetsflöde i ett kommando
+# Visa din commitstatistik
+gac stats
+
+# Statistik endast för aktuellt projekt
+gac stats project
+
 gac -ayp -h "release preparation"
 
 # Detaljerad förklaring med scope
@@ -231,6 +246,7 @@ Följ realtids installationsmätningar och pakkenedladdningsstatistik.
 - **MCP-server**: [MCP.md](MCP.md) - Använd GAC som MCP-server för AI-agenter
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/sv/CLAUDE_CODE.md) - Claude Code konfiguration och autentisering
 - **Anpassade prompts**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Anpassa commit-meddelandestil
+- **Användningsstatistik**: Se `gac stats --help` eller den [fulla dokumentationen](USAGE.md#användningsstatistik)
 - **Felsökning**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Vanliga problem och lösningar
 - **Bidra**: [CONTRIBUTING.md](CONTRIBUTING.md) - Utvecklings-setup och riktlinjer
 

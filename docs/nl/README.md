@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Git-integratie**: Respecteert pre-commit en lefthook hooks en voert ze uit vóór dure LLM-operaties
 - **MCP-server**: Voer `gac serve` uit om commit-tools beschikbaar te stellen aan AI-agents via het [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Gebruiksstatistieken**
+
+- **Volg uw gacs**: Zie hoeveel commits u met gac heeft gedaan, uw huidige streak, piekdagelijkse/wekelijkse activiteit en topprojecten
+- **Projectstatistieken**: Bekijk statistieken voor de huidige repo met `gac stats project`
+- **Highscore-vieringen**: 🏆 trofeeën wanneer u nieuwe dagelijkse, wekelijkse of streak-records vestigt; 🥈 voor het evenaren ervan
+- **Opt-outvriendelijk**: Stel `GAC_DISABLE_STATS=1` in om tracking uit te schakelen — er worden geen gegevens geschreven
+- **Privacy eerst**: Slaat alleen tellingen, datums en projectnamen op (afgeleid van git remote/map) — geen commitberichten, code of persoonlijke gegevens
+
 ### 🛡️ **Ingebouwde Beveiliging**
 
 - **Automatische secret-detectie**: Scant op API-sleutels, wachtwoorden en tokens voor het committen
@@ -137,11 +145,18 @@ gac
 | `gac -i`        | Stel vragen over wijzigingen voor betere context                     |
 | `gac -g`        | Wijzigingen groeperen in meerdere logische commits                   |
 | `gac -p`        | Commit en push                                                       |
+| `gac stats`     | Uw gac-gebruiksstatistieken bekijken                                 |
 
 ### Power User Voorbeelden
 
 ```bash
 # Volledige workflow in één commando
+# Uw commitstatistieken bekijken
+gac stats
+
+# Statistieken alleen voor het huidige project
+gac stats project
+
 gac -ayp -h "release preparation"
 
 # Gedetailleerde uitleg met scope
@@ -231,6 +246,7 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 - **MCP-server**: [docs/MCP.md](MCP.md) - Gebruik GAC als MCP-server voor AI-agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/nl/CLAUDE_CODE.md) - Claude Code installatie en authenticatie
 - **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
+- **Gebruiksstatistieken**: Zie `gac stats --help` of de [volledige docs](docs/nl/USAGE.md#gebruiksstatistieken)
 - **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/nl/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen
 - **Bijdragen**: [docs/CONTRIBUTING.md](docs/nl/CONTRIBUTING.md) - Ontwikkelsetup en richtlijnen
 

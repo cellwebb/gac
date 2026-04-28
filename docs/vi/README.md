@@ -101,6 +101,14 @@ uv tool upgrade gac
 - **Tích hợp Git**: Tôn các hook pre-commit và lefthook, chạy chúng trước các thao tác LLM tốn kém
 - **MCP server**: Chạy `gac serve` để cung cấp công cụ commit cho AI agent thông qua [Model Context Protocol](https://modelcontextprotocol.io/)
 
+### 📊 **Thống Kê Sử Dụng**
+
+- **Theo dõi các gac của bạn**: Xem bạn đã thực hiện bao nhiêu commit với gac, chuỗi hiện tại, hoạt động đỉnh hàng ngày/hàng tuần, và các dự án hàng đầu
+- **Thống kê theo dự án**: Xem thống kê cho repo hiện tại với `gac stats project`
+- **Ăn mừng điểm cao**: 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, hoặc chuỗi mới; 🥈 khi ngang bằng
+- **Dễ dàng từ chối**: Đặt `GAC_DISABLE_STATS=1` để vô hiệu hóa theo dõi — không có dữ liệu nào được ghi
+- **Ưu tiên quyền riêng tư**: Chỉ lưu trữ số lượng, ngày tháng và tên dự án (được lấy từ git remote/thư mục) — không có thông điệp commit, mã, hay dữ liệu cá nhân
+
 ### 🛡️ **Bảo Mật Tích Hợp**
 
 - **Phát hiện bí mật tự động**: Quét các khóa API, mật khẩu và token trước khi commit
@@ -137,11 +145,18 @@ gac
 | `gac -i`         | Hỏi về các thay đổi để có ngữ cảnh tốt hơn                                    |
 | `gac -g`         | Nhóm các thay đổi thành nhiều commit logic                                    |
 | `gac -p`         | Commit và push                                                                |
+| `gac stats`      | Xem thống kê sử dụng gac của bạn                                              |
 
 ### Ví Dụ Người Dùng Nâng Cao
 
 ```bash
 # Quy trình hoàn chỉnh trong một lệnh
+# Xem thống kê commit của bạn
+gac stats
+
+# Thống kê chỉ cho dự án hiện tại
+gac stats project
+
 gac -ayp -h "chuẩn bị phát hành"
 
 # Giải thích chi tiết với phạm vi
@@ -231,6 +246,7 @@ Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuốn
 - **MCP server**: [docs/MCP.md](MCP.md) - Sử dụng GAC làm MCP server cho AI agent
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/vi/CLAUDE_CODE.md) - Cài đặt và xác thực Claude Code
 - **Gợi ý tùy chỉnh**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tùy chỉnh kiểu thông điệp commit
+- **Thống kê sử dụng**: Xem `gac stats --help` hoặc [tài liệu đầy đủ](docs/vi/USAGE.md#thống-kê-sử-dụng)
 - **Xử lý sự cố**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Các vấn đề phổ biến và giải pháp
 - **Đóng góp**: [CONTRIBUTING.md](CONTRIBUTING.md) - Thiết lập phát triển và hướng dẫn
 

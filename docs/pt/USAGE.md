@@ -29,6 +29,7 @@ Este documento descreve todas as flags e opções disponíveis para a ferramenta
     - [Fluxo de Perguntas e Respostas](#fluxo-de-perguntas-e-respostas)
     - [Combinação com Outras Flags](#combinação-com-outras-flags)
     - [Melhores Práticas](#melhores-práticas)
+  - [Estatísticas de Uso](#estatísticas-de-uso)
   - [Obtendo Ajuda](#obtendo-ajuda)
 
 ## Uso Básico
@@ -385,6 +386,7 @@ Você pode personalizar o comportamento do gac com estas variáveis de ambiente 
 - `GAC_TRANSLATE_PREFIXES=true` - Traduzir prefixos de commit convencionais (feat, fix, etc.) para o idioma alvo (padrão: false, mantém prefixos em inglês)
 - `GAC_SKIP_SECRET_SCAN=true` - Desativar varredura de segurança automática para segredos nas alterações em stage (use com cautela)
 - `GAC_NO_VERIFY_SSL=true` - Ignorar verificação de certificado SSL para chamadas de API (útil para proxies corporativos que interceptam tráfego SSL)
+- `GAC_DISABLE_STATS=true` - Desativar o rastreamento de estatísticas de uso (nenhuma leitura ou gravação de arquivo de estatísticas; dados existentes são preservados)
 
 Veja `.gac.env.example` para um modelo de configuração completo.
 
@@ -407,6 +409,9 @@ Os seguintes subcomandos estão disponíveis:
 - `gac language` (ou `gac lang`) — Seletor de idioma interativo para mensagens de commit (define GAC_LANGUAGE)
 - `gac diff` — Mostrar git diff filtrado com opções para mudanças preparadas/não preparadas, cor e truncamento
 - `gac serve` — Iniciar o GAC como [servidor MCP](MCP.md) para integração com agentes de IA (transporte stdio)
+- `gac stats show` — Ver suas estatísticas de uso do gac (totais, sequências, atividade diária e semanal, projetos principais)
+- `gac stats project` — Ver estatísticas apenas do projeto git atual
+- `gac stats reset` — Redefinir todas as estatísticas para zero (solicita confirmação)
 
 ## Modo Interativo
 
@@ -513,6 +518,63 @@ gac -i -v
 - **Preparação de documentação** - suas respostas podem ajudar a formar a base para release notes
 - **Ferramenta de aprendizado** - as perguntas reforçam boas práticas de mensagens de commit
 - **Pule para alterações simples** - para correções triviais, o modo básico pode ser mais rápido
+
+## Estatísticas de Uso
+
+gac rastreia estatísticas de uso leves para que você possa ver sua atividade de commits, sequências e projetos mais ativos. As estatísticas são armazenadas localmente em `~/.gac_stats.json` e nunca são enviadas para nenhum lugar.
+
+**O que é rastreado:** execuções totais do gac, commits totais, datas de primeiro/último uso, contagens diárias e semanais, sequência atual e mais longa, e contagens de atividade por projeto.
+
+**O que NÃO é rastreado:** mensagens de commit, conteúdo de código, caminhos de arquivos, informações pessoais ou qualquer coisa além de contagens e nomes de projetos.
+
+### Subcomandos de Estatísticas
+
+| Comando             | Descrição                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Mostrar suas estatísticas (o mesmo que `gac stats show`)                                           |
+| `gac stats show`    | Exibir estatísticas completas: totais, sequências, atividade diária e semanal, projetos principais |
+| `gac stats project` | Mostrar estatísticas apenas do projeto git atual                                                   |
+| `gac stats reset`   | Redefinir todas as estatísticas para zero (solicita confirmação)                                   |
+
+### Exemplos
+
+```sh
+# Veja suas estatísticas gerais
+gac stats
+
+# Estatísticas do projeto atual apenas
+gac stats project
+
+# Redefinir todas as estatísticas (com confirmação)
+gac stats reset
+```
+
+### O que você verá
+
+Executar `gac stats` exibe:
+
+- **Gacs e commits totais** — quantas vezes você usou gac e quantos commits ele criou
+- **Sequência atual e mais longa** — dias consecutivos com atividade gac (🔥 aos 5+ dias)
+- **Resumo de atividade** — gacs/commits de hoje e desta semana vs seu pico diário e semanal
+- **Projetos principais** — seus 5 repositórios mais ativos por contagem de gac + commits
+- **Celebrações de recordes** — 🏆 troféus quando você estabelece novos recordes diários, semanais ou de sequência; 🥈 por empatá-los
+- **Mensagens de encorajamento** — sugestões contextuais baseadas na sua atividade
+
+### Desativar estatísticas
+
+Defina a variável de ambiente `GAC_DISABLE_STATS` com qualquer valor:
+
+```sh
+# Desativar rastreamento de estatísticas
+export GAC_DISABLE_STATS=1
+
+# Ou em .gac.env
+GAC_DISABLE_STATS=true
+```
+
+Quando desativado, gac ignora todo registro de estatísticas — nenhuma leitura ou gravação de arquivo ocorre. Os dados existentes são preservados mas não serão atualizados até que você remova a variável.
+
+---
 
 ## Obtendo Ajuda
 
