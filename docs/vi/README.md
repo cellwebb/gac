@@ -232,14 +232,6 @@ Xem `.gac.env.example` cho tất cả các tùy chọn có sẵn.
 
 ---
 
-## Phân Tích Dự Án
-
-📊 **[Xem phân tích sử dụng và thống kê trực tiếp →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuống gói.
-
----
-
 ## Nhận Trợ Giúp
 
 - **Tài liệu đầy đủ**: [USAGE.md](USAGE.md) - Tham chiếu CLI hoàn chỉnh
@@ -255,8 +247,6 @@ Theo dõi chỉ số cài đặt thời gian thực và thống kê tải xuốn
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-Được tạo với ❤️ cho các nhà phát triển muốn có thông điệp commit tốt hơn
 
 [⭐ Star chúng tôi trên GitHub](https://github.com/cellwebb/gac) • [🐛 Báo cáo vấn đề](https://github.com/cellwebb/gac/issues) • [📖 Tài liệu đầy đủ](USAGE.md)
 

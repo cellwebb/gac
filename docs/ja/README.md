@@ -232,14 +232,6 @@ ANTHROPIC_API_KEY=your_key_here
 
 ---
 
-## プロジェクト分析
-
-📊 **[ライブ使用分析と統計を表示 →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-リアルタイムのインストールメトリクスとパッケージダウンロード統計を追跡。
-
----
-
 ## ヘルプ
 
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
@@ -255,8 +247,6 @@ ANTHROPIC_API_KEY=your_key_here
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-より良いコミットメッセージを求める開発者のために ❤️ で作成
 
 [⭐ GitHub でスターを付ける](https://github.com/cellwebb/gac) • [🐛 問題を報告](https://github.com/cellwebb/gac/issues) • [📖 完全なドキュメント](docs/ja/USAGE.md)
 

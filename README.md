@@ -232,14 +232,6 @@ See `.gac.env.example` for all available options.
 
 ---
 
-## Project Analytics
-
-📊 **[View live usage analytics and statistics →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-Track real-time installation metrics and package download statistics.
-
----
-
 ## Getting Help
 
 - **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
@@ -255,8 +247,6 @@ Track real-time installation metrics and package download statistics.
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-Made with ❤️ for developers who want better commit messages
 
 [⭐ Star us on GitHub](https://github.com/cellwebb/gac) • [🐛 Report issues](https://github.com/cellwebb/gac/issues) • [📖 Full docs](docs/en/USAGE.md)
 

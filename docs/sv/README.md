@@ -232,14 +232,6 @@ Se `.gac.env.example` för alla tillgängliga alternativ.
 
 ---
 
-## Projektanalys
-
-📊 **[Visa live användningsanalys och statistik →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-Följ realtids installationsmätningar och pakkenedladdningsstatistik.
-
----
-
 ## Få Hjälp
 
 - **Full dokumentation**: [USAGE.md](USAGE.md) - Komplett CLI-referens
@@ -255,8 +247,6 @@ Följ realtids installationsmätningar och pakkenedladdningsstatistik.
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-Skapat med ❤️ för utvecklare som vill ha bättre commit-meddelanden
 
 [⭐ Stjärna oss på GitHub](https://github.com/cellwebb/gac) • [🐛 Rapportera problem](https://github.com/cellwebb/gac/issues) • [📖 Full dokumentation](USAGE.md)
 

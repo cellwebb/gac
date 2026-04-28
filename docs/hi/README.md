@@ -232,14 +232,6 @@ ANTHROPIC_API_KEY=your_key_here
 
 ---
 
-## प्रोजेक्ट एनालिटिक्स
-
-📊 **[लाइव उपयोग एनालिटिक्स और आँकड़े देखें →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-रीयल-टाइम इंस्टॉलेशन मेट्रिक्स और पैकेज डाउनलोड आँकड़ों को ट्रैक करें।
-
----
-
 ## सहायता प्राप्त करना
 
 - **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
@@ -255,8 +247,6 @@ ANTHROPIC_API_KEY=your_key_here
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-बेहतर कमिट मैसेज चाहने वाले डेवलपर्स के लिए ❤️ के साथ बनाया गया
 
 [⭐ GitHub पर हमें स्टार करें](https://github.com/cellwebb/gac) • [🐛 इश्यू रिपोर्ट करें](https://github.com/cellwebb/gac/issues) • [📖 पूरे डॉक्स](docs/hi/USAGE.md)
 

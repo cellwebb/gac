@@ -232,14 +232,6 @@ ANTHROPIC_API_KEY=your_key_here
 
 ---
 
-## 專案分析
-
-📊 **[檢視即時使用分析和統計資料 →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-追蹤即時安裝指標和套件下載統計資料。
-
----
-
 ## 獲取協助
 
 - **完整文件**：[USAGE.md](docs/zh-TW/USAGE.md) - 完整的 CLI 參考
@@ -255,8 +247,6 @@ ANTHROPIC_API_KEY=your_key_here
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-用 ❤️ 為想要更好提交訊息的開發者製作
 
 [⭐ 在 GitHub 上給我們點星](https://github.com/cellwebb/gac) • [🐛 報告問題](https://github.com/cellwebb/gac/issues) • [📖 完整文件](docs/zh-TW/USAGE.md)
 

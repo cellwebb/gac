@@ -232,14 +232,6 @@ Zie `.gac.env.example` voor alle beschikbare opties.
 
 ---
 
-## Project Analytics
-
-📊 **[Bekijk live gebruiksstatistieken en analyse →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-Volg real-time installatiemetrieken en package downloadstatistieken.
-
----
-
 ## Hulp Krijgen
 
 - **Volledige documentatie**: [docs/USAGE.md](docs/nl/USAGE.md) - Volledige CLI-referentie
@@ -255,8 +247,6 @@ Volg real-time installatiemetrieken en package downloadstatistieken.
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-Gemaakt met ❤️ voor ontwikkelaars die betere commitberichten willen
 
 [⭐ Star ons op GitHub](https://github.com/cellwebb/gac) • [🐛 Rapporteer problemen](https://github.com/cellwebb/gac/issues) • [📖 Volledige docs](docs/nl/USAGE.md)
 

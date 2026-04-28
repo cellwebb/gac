@@ -232,14 +232,6 @@ ANTHROPIC_API_KEY=your_key_here
 
 ---
 
-## 프로젝트 분석
-
-📊 **[실시간 사용 분석 및 통계 보기 →](https://clickpy.clickhouse.com/dashboard/gac)**
-
-실시간 설치 지표 및 패키지 다운로드 통계를 추적하세요.
-
----
-
 ## 도움말 얻기
 
 - **전체 문서**: [docs/USAGE.md](docs/ko/USAGE.md) - 완전한 CLI 참조
@@ -255,8 +247,6 @@ ANTHROPIC_API_KEY=your_key_here
 <!-- markdownlint-disable MD033 MD036 -->
 
 <div align="center">
-
-더 나은 커밋 메시지를 원하는 개발자들을 위해 ❤️로 만들었습니다
 
 [⭐ GitHub에서 스타하기](https://github.com/cellwebb/gac) • [🐛 이슈 보고](https://github.com/cellwebb/gac/issues) • [📖 전체 문서](docs/ko/USAGE.md)
 
