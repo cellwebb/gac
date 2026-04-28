@@ -12,6 +12,7 @@ from gac.stats import (
     get_stats_summary,
     load_stats,
     record_commit,
+    record_gac,
     reset_stats,
     save_stats,
 )
@@ -33,10 +34,15 @@ class TestLoadStats:
         """Test loading stats from existing file."""
         stats_file = tmp_path / "stats.json"
         test_data = {
+            "total_gacs": 20,
             "total_commits": 42,
             "first_used": "2024-01-01T00:00:00",
             "last_used": "2024-06-15T12:30:00",
+            "daily_gacs": {"2024-06-15": 3},
             "daily_commits": {"2024-06-15": 5},
+            "weekly_gacs": {"2024-W24": 3},
+            "weekly_commits": {"2024-W24": 5},
+            "projects": {},
         }
         stats_file.write_text(json.dumps(test_data))
 
@@ -66,10 +72,15 @@ class TestSaveStats:
         """Test saving stats to file."""
         stats_file = tmp_path / "stats.json"
         stats: GACStats = {
+            "total_gacs": 5,
             "total_commits": 10,
             "first_used": "2024-01-01T00:00:00",
             "last_used": "2024-06-15T12:30:00",
+            "daily_gacs": {"2024-06-15": 2},
             "daily_commits": {"2024-06-15": 3},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "projects": {},
         }
 
         with patch("gac.stats.STATS_FILE", stats_file):
@@ -81,7 +92,17 @@ class TestSaveStats:
     def test_save_stats_io_error(self, tmp_path, caplog):
         """Test handling IO error when saving stats."""
         stats_file = tmp_path / "stats.json"
-        stats: GACStats = {"total_commits": 10, "first_used": None, "last_used": None, "daily_commits": {}}
+        stats: GACStats = {
+            "total_gacs": 5,
+            "total_commits": 10,
+            "first_used": None,
+            "last_used": None,
+            "daily_gacs": {},
+            "daily_commits": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "projects": {},
+        }
 
         with patch("gac.stats.STATS_FILE", stats_file):
             with patch.object(Path, "write_text", side_effect=OSError("Permission denied")):
@@ -98,13 +119,15 @@ class TestRecordCommit:
         stats_file = tmp_path / "stats.json"
 
         with patch("gac.stats.STATS_FILE", stats_file):
+            # Now record_gac and record_commit are called together after successful commit
             record_commit()
+            record_gac()
 
             stats = load_stats()
             assert stats["total_commits"] == 1
+            assert stats["total_gacs"] == 1
             assert stats["first_used"] is not None
             assert stats["last_used"] is not None
-            assert stats["first_used"] == stats["last_used"]
 
     def test_record_multiple_commits(self, tmp_path):
         """Test recording multiple commits."""
@@ -130,6 +153,21 @@ class TestRecordCommit:
             stats = load_stats()
             assert stats["daily_commits"][today] == 2
 
+    def test_record_updates_weekly(self, tmp_path):
+        """Test that weekly counts are updated."""
+        stats_file = tmp_path / "stats.json"
+        iso_week = datetime.now().isocalendar()
+        week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_commit()
+            record_commit()
+            record_gac()
+
+            stats = load_stats()
+            assert stats["weekly_commits"][week_key] == 2
+            assert stats["weekly_gacs"][week_key] == 1
+
 
 class TestGetStatsSummary:
     """Tests for get_stats_summary function."""
@@ -137,13 +175,19 @@ class TestGetStatsSummary:
     def test_summary_no_commits(self):
         """Test summary when no commits made."""
         with patch("gac.stats.load_stats") as mock_load:
-            mock_load.return_value = {
+            mock_load.return_value: GACStats = {
+                "total_gacs": 0,
                 "total_commits": 0,
                 "first_used": None,
                 "last_used": None,
+                "daily_gacs": {},
                 "daily_commits": {},
+                "weekly_gacs": {},
+                "weekly_commits": {},
+                "projects": {},
             }
             summary = get_stats_summary()
+            assert summary["total_gacs"] == 0
             assert summary["total_commits"] == 0
             assert summary["first_used"] == "Never"
             assert summary["last_used"] == "Never"
@@ -154,10 +198,15 @@ class TestGetStatsSummary:
         today = datetime.now().strftime("%Y-%m-%d")
 
         stats: GACStats = {
+            "total_gacs": 5,
             "total_commits": 10,
             "first_used": "2024-01-01T00:00:00",
             "last_used": f"{today}T12:00:00",
+            "daily_gacs": {today: 1, "2024-01-01": 1},
             "daily_commits": {today: 3, "2024-01-01": 2},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "projects": {"my-project": {"gacs": 3, "commits": 6}},
         }
         stats_file.write_text(json.dumps(stats))
 
@@ -176,10 +225,15 @@ class TestResetStats:
         """Test resetting stats to zero."""
         stats_file = tmp_path / "stats.json"
         stats: GACStats = {
+            "total_gacs": 50,
             "total_commits": 100,
             "first_used": "2024-01-01T00:00:00",
             "last_used": "2024-06-15T12:30:00",
+            "daily_gacs": {"2024-06-15": 3},
             "daily_commits": {"2024-06-15": 5},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "projects": {},
         }
         stats_file.write_text(json.dumps(stats))
 
@@ -191,6 +245,46 @@ class TestResetStats:
             assert new_stats["first_used"] is None
             assert new_stats["last_used"] is None
             assert new_stats["daily_commits"] == {}
+
+
+class TestDisableStats:
+    """Tests for GAC_DISABLE_STATS environment variable."""
+
+    def test_record_gac_disabled(self, tmp_path):
+        """Test that record_gac does nothing when GAC_DISABLE_STATS is set."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+            record_gac()
+
+            stats = load_stats()
+            assert stats["total_gacs"] == 0
+
+    def test_record_commit_disabled(self, tmp_path):
+        """Test that record_commit does nothing when GAC_DISABLE_STATS is set."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+            record_commit()
+
+            stats = load_stats()
+            assert stats["total_commits"] == 0
+
+    def test_record_gac_enabled_by_default(self, tmp_path):
+        """Test that record_gac works when GAC_DISABLE_STATS is not set."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            # Ensure env var is not set
+            import os
+
+            if "GAC_DISABLE_STATS" in os.environ:
+                del os.environ["GAC_DISABLE_STATS"]
+
+            record_gac()
+
+            stats = load_stats()
+            assert stats["total_gacs"] == 1
 
 
 if __name__ == "__main__":

@@ -303,16 +303,12 @@ class TestCommitExecutorInitialization:
         commit_executor = CommitExecutor(dry_run=False)
         commit_message = "feat: actual commit"
 
-        with (
-            patch("gac.commit_executor.execute_commit") as mock_execute_commit,
-            patch("gac.commit_executor.record_commit") as mock_record_commit,
-        ):
+        with patch("gac.commit_executor.execute_commit") as mock_execute_commit:
             # Act
             commit_executor.create_commit(commit_message)
 
             # Assert
             mock_execute_commit.assert_called_once_with(commit_message, False, 120, False)
-            mock_record_commit.assert_called_once()
 
     def test_create_commit_actual_execution_with_no_verify(self):
         """Test actual commit execution with no_verify=True."""
@@ -320,16 +316,12 @@ class TestCommitExecutorInitialization:
         commit_executor = CommitExecutor(dry_run=False, no_verify=True, hook_timeout=180)
         commit_message = "feat: commit with no verify"
 
-        with (
-            patch("gac.commit_executor.execute_commit") as mock_execute_commit,
-            patch("gac.commit_executor.record_commit") as mock_record_commit,
-        ):
+        with patch("gac.commit_executor.execute_commit") as mock_execute_commit:
             # Act
             commit_executor.create_commit(commit_message)
 
             # Assert
             mock_execute_commit.assert_called_once_with(commit_message, True, 180, False)
-            mock_record_commit.assert_called_once()
 
     def test_create_commit_with_signoff(self):
         """Test commit execution with signoff=True."""
@@ -337,16 +329,12 @@ class TestCommitExecutorInitialization:
         commit_executor = CommitExecutor(dry_run=False, signoff=True)
         commit_message = "feat: commit with signoff"
 
-        with (
-            patch("gac.commit_executor.execute_commit") as mock_execute_commit,
-            patch("gac.commit_executor.record_commit") as mock_record_commit,
-        ):
+        with patch("gac.commit_executor.execute_commit") as mock_execute_commit:
             # Act
             commit_executor.create_commit(commit_message)
 
             # Assert
             mock_execute_commit.assert_called_once_with(commit_message, False, 120, True)
-            mock_record_commit.assert_called_once()
 
 
 if __name__ == "__main__":
