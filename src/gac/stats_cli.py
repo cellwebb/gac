@@ -1,11 +1,20 @@
 """CLI for viewing gac usage statistics."""
 
+from datetime import datetime
+
 import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from gac.stats import get_stats_summary, reset_stats
+from gac.stats import (
+    get_current_project_name,
+    get_stats_summary,
+    load_stats,
+    project_activity,
+    reset_stats,
+    stats_enabled,
+)
 
 console = Console()
 
@@ -21,22 +30,77 @@ def stats(ctx: click.Context) -> None:
 @stats.command()
 def show() -> None:
     """Show your gac usage statistics."""
-    summary = get_stats_summary()
-    total = summary["total_commits"]
+    # Check if stats tracking is disabled
+    if not stats_enabled():
+        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set).[/dim]")
+        console.print("[dim]Unset GAC_DISABLE_STATS to start tracking your gacs! 🚀[/dim]")
+        return
 
-    if total == 0:
-        console.print("[yellow]No commits yet! Time to start gaccing! 🚀[/yellow]")
-        console.print("[dim]Run 'gac' in a git repository to make your first commit.[/dim]")
+    summary = get_stats_summary()
+    total_gacs = summary.get("total_gacs", 0)
+    total_commits = summary.get("total_commits", 0)
+
+    if total_gacs == 0:
+        console.print("[yellow]No gacs yet! Time to start gaccing! 🚀[/yellow]")
+        console.print("[dim]Run 'gac' or 'uvx gac' in a git repository to make your first commit.[/dim]")
         return
 
     # Main stats panel
-    today = summary["today_commits"]
+    today_gacs = summary.get("today_gacs", 0)
+    today_commits = summary.get("today_commits", 0)
     streak = summary["streak"]
+    longest_streak = summary.get("longest_streak", 0)
+    peak_daily_gacs = summary.get("peak_daily_gacs", 0)
+    peak_daily_commits = summary.get("peak_daily_commits", 0)
+    week_gacs = summary.get("week_gacs", 0)
+    week_commits = summary.get("week_commits", 0)
+    peak_weekly_gacs = summary.get("peak_weekly_gacs", 0)
+    peak_weekly_commits = summary.get("peak_weekly_commits", 0)
+
+    # Compute previous peak (excluding today) to distinguish new records from ties
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    prev_peak_gacs = max((v for d, v in summary.get("daily_gacs", {}).items() if d != today_str), default=0)
+    prev_peak_commits = max((v for d, v in summary.get("daily_commits", {}).items() if d != today_str), default=0)
+    # Previous weekly peak (excluding this week)
+    iso_week = datetime.now().isocalendar()
+    this_week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
+    prev_peak_weekly_gacs = max((v for w, v in summary.get("weekly_gacs", {}).items() if w != this_week_key), default=0)
+    prev_peak_weekly_commits = max(
+        (v for w, v in summary.get("weekly_commits", {}).items() if w != this_week_key), default=0
+    )
+    # Previous longest streak: if current streak equals longest, the previous
+    # record is longest_streak minus what today contributed (at most 1 day)
+    prev_longest = longest_streak - 1 if streak == longest_streak and streak > 0 else longest_streak
+
+    # Determine high scores for trophy display
+    new_peak_gacs = today_gacs > 0 and today_gacs > prev_peak_gacs
+    tied_peak_gacs = today_gacs > 0 and today_gacs == prev_peak_gacs
+    new_peak_commits = today_commits > 0 and today_commits > prev_peak_commits
+    tied_peak_commits = today_commits > 0 and today_commits == prev_peak_commits
+    new_peak_weekly_gacs = week_gacs > 0 and week_gacs > prev_peak_weekly_gacs
+    tied_peak_weekly_gacs = week_gacs > 0 and week_gacs == prev_peak_weekly_gacs
+    new_peak_weekly_commits = week_commits > 0 and week_commits > prev_peak_weekly_commits
+    tied_peak_weekly_commits = week_commits > 0 and week_commits == prev_peak_weekly_commits
+    new_streak_record = streak > 0 and streak > prev_longest
+    tied_streak_record = streak > 0 and streak == prev_longest
 
     console.print()
+
+    # Format the gac'd message (handles pluralization)
+    if total_gacs == 1:
+        gac_message = "You've gac'd [bold cyan]1[/bold cyan] time"
+    else:
+        gac_message = f"You've gac'd [bold cyan]{total_gacs}[/bold cyan] times"
+
+    # Add commits info
+    if total_commits == 1:
+        commit_message = "creating [bold cyan]1[/bold cyan] commit"
+    else:
+        commit_message = f"creating [bold cyan]{total_commits}[/bold cyan] commits"
+
     console.print(
         Panel.fit(
-            f"[bold cyan]{total}[/bold cyan] {'commit' if total == 1 else 'commits'} made with gac!",
+            f"{gac_message}, {commit_message}!",
             title="🚀 GAC Stats",
             border_style="green",
         )
@@ -49,21 +113,92 @@ def show() -> None:
 
     table.add_row("First gac", summary["first_used"])
     table.add_row("Last gac", summary["last_used"])
-    table.add_row("Today's gacs", str(today))
-    table.add_row("Current streak", f"{streak} day{'s' if streak != 1 else ''}")
+    streak_emoji = (
+        " 🔥🏆" if new_streak_record and streak >= 5 else " 🏆" if new_streak_record else " 🔥" if streak >= 5 else ""
+    )
+    table.add_row("Current streak", f"{streak} day{'s' if streak != 1 else ''}{streak_emoji}")
+    table.add_row(
+        "Longest streak",
+        f"{longest_streak} day{'s' if longest_streak != 1 else ''}",
+    )
 
     console.print(table)
 
-    # Encouragement message based on usage
-    if today > 0:
-        if today >= 5:
-            console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")
-        elif streak >= 7:
-            console.print("[green]🚀 Wow, a week-long streak! You're a gac machine![/green]")
-        else:
-            console.print("[green]✨ Nice work today! Every commit counts![/green]")
+    # Activity summary table (today vs peak)
+    console.print()
+    console.print("[bold]Activity Summary:[/bold]")
+    activity_table = Table(show_header=True, box=None)
+    activity_table.add_column("Period", style="dim")
+    activity_table.add_column("Gacs", style="bold", justify="right")
+    activity_table.add_column("Commits", style="bold cyan", justify="right")
+
+    activity_table.add_row("Today", str(today_gacs), str(today_commits))
+    activity_table.add_row("Peak Day", str(peak_daily_gacs), str(peak_daily_commits))
+    activity_table.add_row("This Week", str(week_gacs), str(week_commits))
+    activity_table.add_row("Peak Week", str(peak_weekly_gacs), str(peak_weekly_commits))
+
+    console.print(activity_table)
+
+    # Top projects
+    stats_data = load_stats()
+    projects = stats_data.get("projects", {})
+    if projects:
+        console.print()
+        console.print("[bold]Top Projects:[/bold]")
+        projects_table = Table(show_header=True, box=None)
+        projects_table.add_column("Project", style="dim")
+        projects_table.add_column("Gacs", style="bold", justify="right")
+        projects_table.add_column("Commits", style="bold cyan", justify="right")
+
+        sorted_projects = sorted(projects.items(), key=project_activity, reverse=True)
+
+        # Show top 5 projects
+        for project, data in sorted_projects[:5]:
+            gacs = data.get("gacs", 0)
+            commits = data.get("commits", 0)
+            projects_table.add_row(project, str(gacs), str(commits))
+
+        console.print(projects_table)
+        console.print()
+
+    # Celebration and encouragement messages
+    any_trophy = (
+        new_peak_gacs or new_peak_commits or new_peak_weekly_gacs or new_peak_weekly_commits or new_streak_record
+    )
+    any_tie = (
+        tied_peak_gacs or tied_peak_commits or tied_peak_weekly_gacs or tied_peak_weekly_commits or tied_streak_record
+    )
+
+    if today_gacs > 0 or any_trophy or any_tie:
+        if new_peak_gacs:
+            console.print("[bold yellow]🏆 New daily high score for gacs![/bold yellow]")
+        elif tied_peak_gacs:
+            console.print("[yellow]🥈 Tied your daily high score for gacs![/yellow]")
+        if new_peak_commits:
+            console.print("[bold yellow]🏆 New daily high score for commits![/bold yellow]")
+        elif tied_peak_commits:
+            console.print("[yellow]🥈 Tied your daily high score for commits![/yellow]")
+        if new_peak_weekly_gacs:
+            console.print("[bold yellow]🏆 New weekly high score for gacs![/bold yellow]")
+        elif tied_peak_weekly_gacs:
+            console.print("[yellow]🥈 Tied your weekly high score for gacs![/yellow]")
+        if new_peak_weekly_commits:
+            console.print("[bold yellow]🏆 New weekly high score for commits![/bold yellow]")
+        elif tied_peak_weekly_commits:
+            console.print("[yellow]🥈 Tied your weekly high score for commits![/yellow]")
+        if new_streak_record:
+            console.print("[bold yellow]🏆 New longest streak record![/bold yellow]")
+        elif tied_streak_record:
+            console.print("[yellow]🥈 Tied your longest streak record![/yellow]")
+        if not (any_trophy or any_tie):
+            if today_commits >= 5:
+                console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")
+            elif streak >= 7:
+                console.print("[green]🚀 Wow, a week-long streak! You're a gac machine![/green]")
+            else:
+                console.print("[green]✨ Nice work today! Every gac counts![/green]")
     elif streak > 0:
-        console.print("[yellow]💪 Don't break that streak! Time for a commit![/yellow]")
+        console.print("[yellow]💪 Don't break that streak! Time for a gac![/yellow]")
 
     console.print()
 
@@ -81,3 +216,48 @@ def reset() -> None:
         console.print("[green]Statistics reset. Starting fresh! 🚀[/green]")
     else:
         console.print("[dim]Reset cancelled. Your stats are safe![/dim]")
+
+
+@stats.command()
+def project() -> None:
+    """Show stats for the current project only."""
+    project_name = get_current_project_name()
+    if not project_name:
+        console.print("[red]Error: Not in a git repository.[/red]")
+        return
+
+    stats = load_stats()
+    projects = stats.get("projects", {})
+
+    project_data = projects.get(project_name, {})
+
+    if not project_data or (project_data.get("gacs", 0) == 0 and project_data.get("commits", 0) == 0):
+        console.print(f"[yellow]No gacs yet for project '{project_name}'![/yellow]")
+        console.print("[dim]Run 'gac' or 'uvx gac' in this repository to start tracking.[/dim]")
+        return
+
+    gacs = project_data.get("gacs", 0)
+    commits = project_data.get("commits", 0)
+
+    console.print()
+
+    # Format message
+    if gacs == 1:
+        gac_msg = "You've gac'd [bold cyan]1[/bold cyan] time"
+    else:
+        gac_msg = f"You've gac'd [bold cyan]{gacs}[/bold cyan] times"
+
+    if commits == 1:
+        commit_msg = "created [bold cyan]1[/bold cyan] commit"
+    else:
+        commit_msg = f"created [bold cyan]{commits}[/bold cyan] commits"
+
+    console.print(
+        Panel.fit(
+            f"{gac_msg} and {commit_msg} in this project!",
+            title=f"🚀 {project_name}",
+            border_style="green",
+        )
+    )
+
+    console.print()
