@@ -69,13 +69,20 @@ class GACStats(TypedDict):
 
     total_gacs: int  # Number of gac workflow runs
     total_commits: int  # Number of actual commits created
+    total_prompt_tokens: int  # Total prompt tokens consumed
+    total_completion_tokens: int  # Total completion tokens consumed
     first_used: str | None
     last_used: str | None
     daily_gacs: dict[str, int]  # date -> gac count
     daily_commits: dict[str, int]  # date -> commit count
+    daily_prompt_tokens: dict[str, int]  # date -> prompt token count
+    daily_completion_tokens: dict[str, int]  # date -> completion token count
     weekly_gacs: dict[str, int]  # ISO week (e.g. 2026-W18) -> gac count
     weekly_commits: dict[str, int]  # ISO week -> commit count
-    projects: dict[str, Any]  # project_name -> {gacs, commits}
+    weekly_prompt_tokens: dict[str, int]  # ISO week -> prompt token count
+    weekly_completion_tokens: dict[str, int]  # ISO week -> completion token count
+    projects: dict[str, Any]  # project_name -> {gacs, commits, prompt_tokens, completion_tokens}
+    models: dict[str, Any]  # model_name -> {gacs, prompt_tokens, completion_tokens}
 
 
 def load_stats() -> GACStats:
@@ -87,13 +94,20 @@ def load_stats() -> GACStats:
     empty: GACStats = {
         "total_gacs": 0,
         "total_commits": 0,
+        "total_prompt_tokens": 0,
+        "total_completion_tokens": 0,
         "first_used": None,
         "last_used": None,
         "daily_gacs": {},
         "daily_commits": {},
+        "daily_prompt_tokens": {},
+        "daily_completion_tokens": {},
         "weekly_gacs": {},
         "weekly_commits": {},
+        "weekly_prompt_tokens": {},
+        "weekly_completion_tokens": {},
         "projects": {},
+        "models": {},
     }
 
     if not STATS_FILE.exists():
@@ -105,13 +119,20 @@ def load_stats() -> GACStats:
         return {
             "total_gacs": data.get("total_gacs", 0),
             "total_commits": data.get("total_commits", 0),
+            "total_prompt_tokens": data.get("total_prompt_tokens", 0),
+            "total_completion_tokens": data.get("total_completion_tokens", 0),
             "first_used": data.get("first_used"),
             "last_used": data.get("last_used"),
             "daily_gacs": data.get("daily_gacs", {}),
             "daily_commits": data.get("daily_commits", {}),
+            "daily_prompt_tokens": data.get("daily_prompt_tokens", {}),
+            "daily_completion_tokens": data.get("daily_completion_tokens", {}),
             "weekly_gacs": data.get("weekly_gacs", {}),
             "weekly_commits": data.get("weekly_commits", {}),
+            "weekly_prompt_tokens": data.get("weekly_prompt_tokens", {}),
+            "weekly_completion_tokens": data.get("weekly_completion_tokens", {}),
             "projects": data.get("projects", {}),
+            "models": data.get("models", {}),
         }
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(f"Failed to load stats: {e}")
@@ -119,22 +140,37 @@ def load_stats() -> GACStats:
 
 
 def save_stats(stats: GACStats) -> None:
-    """Save statistics to the stats file.
+    """Save statistics to the stats file atomically.
+
+    Writes to a temporary file in the same directory and then renames it
+    over the destination so an interrupted write cannot leave a truncated
+    or partially-written JSON file behind.
 
     Args:
         stats: GACStats dictionary to save
     """
+    # Write to a sibling temp file then atomic-rename. os.replace is
+    # atomic on POSIX and Windows when source and dest are on the same
+    # filesystem, which they are here (sibling of STATS_FILE).
+    tmp_file = STATS_FILE.with_suffix(STATS_FILE.suffix + f".tmp.{os.getpid()}")
     try:
-        STATS_FILE.write_text(json.dumps(stats, indent=2))
+        STATS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp_file.write_text(json.dumps(stats, indent=2))
+        os.replace(tmp_file, STATS_FILE)
     except OSError as e:
         logger.warning(f"Failed to save stats: {e}")
+        try:
+            tmp_file.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
-def record_gac(project_name: str | None = None) -> None:
+def record_gac(project_name: str | None = None, model: str | None = None) -> None:
     """Record a gac workflow run in the statistics.
 
     Args:
         project_name: Name of the project. Auto-detected from git if not provided.
+        model: Name of the AI model used for this gac (e.g. 'anthropic:claude-haiku-4-5').
 
     This should be called when a gac workflow starts (after validation passes).
 
@@ -175,8 +211,19 @@ def record_gac(project_name: str | None = None) -> None:
     # Update project stats
     if project_name:
         if project_name not in stats["projects"]:
-            stats["projects"][project_name] = {"gacs": 0, "commits": 0}
+            stats["projects"][project_name] = {
+                "gacs": 0,
+                "commits": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+            }
         stats["projects"][project_name]["gacs"] += 1
+
+    # Update model stats
+    if model:
+        if model not in stats["models"]:
+            stats["models"][model] = {"gacs": 0, "prompt_tokens": 0, "completion_tokens": 0}
+        stats["models"][model]["gacs"] += 1
 
     save_stats(stats)
     logger.debug(f"Recorded gac. Total gacs: {stats['total_gacs']}")
@@ -223,11 +270,80 @@ def record_commit(project_name: str | None = None) -> None:
     # Update project stats
     if project_name:
         if project_name not in stats["projects"]:
-            stats["projects"][project_name] = {"gacs": 0, "commits": 0}
+            stats["projects"][project_name] = {
+                "gacs": 0,
+                "commits": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+            }
         stats["projects"][project_name]["commits"] += 1
 
     save_stats(stats)
     logger.debug(f"Recorded commit. Total commits: {stats['total_commits']}")
+
+
+def record_tokens(
+    prompt_tokens: int,
+    completion_tokens: int,
+    model: str | None = None,
+    project_name: str | None = None,
+) -> None:
+    """Record token usage for an AI generation call.
+
+    Args:
+        prompt_tokens: Number of prompt (input) tokens used.
+        completion_tokens: Number of completion (output) tokens used.
+        model: Name of the AI model used (e.g. 'anthropic:claude-haiku-4-5').
+        project_name: Name of the project. Auto-detected from git if not provided.
+
+    Does nothing if GAC_DISABLE_STATS environment variable is set.
+    """
+    if not stats_enabled():
+        return
+
+    if prompt_tokens <= 0 and completion_tokens <= 0:
+        return
+
+    if project_name is None:
+        project_name = get_current_project_name()
+
+    stats = load_stats()
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    iso_week = now.isocalendar()
+    week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
+
+    stats["total_prompt_tokens"] += prompt_tokens
+    stats["total_completion_tokens"] += completion_tokens
+
+    stats["daily_prompt_tokens"][today] = stats["daily_prompt_tokens"].get(today, 0) + prompt_tokens
+    stats["daily_completion_tokens"][today] = stats["daily_completion_tokens"].get(today, 0) + completion_tokens
+    stats["weekly_prompt_tokens"][week_key] = stats["weekly_prompt_tokens"].get(week_key, 0) + prompt_tokens
+    stats["weekly_completion_tokens"][week_key] = stats["weekly_completion_tokens"].get(week_key, 0) + completion_tokens
+
+    if project_name:
+        if project_name not in stats["projects"]:
+            stats["projects"][project_name] = {
+                "gacs": 0,
+                "commits": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+            }
+        proj = stats["projects"][project_name]
+        proj["prompt_tokens"] = proj.get("prompt_tokens", 0) + prompt_tokens
+        proj["completion_tokens"] = proj.get("completion_tokens", 0) + completion_tokens
+
+    if model:
+        if model not in stats["models"]:
+            stats["models"][model] = {"gacs": 0, "prompt_tokens": 0, "completion_tokens": 0}
+        m = stats["models"][model]
+        m["prompt_tokens"] = m.get("prompt_tokens", 0) + prompt_tokens
+        m["completion_tokens"] = m.get("completion_tokens", 0) + completion_tokens
+
+    save_stats(stats)
+    logger.debug(
+        f"Recorded tokens. Total prompt: {stats['total_prompt_tokens']}, completion: {stats['total_completion_tokens']}"
+    )
 
 
 def get_stats_summary() -> dict[str, Any]:
@@ -240,12 +356,27 @@ def get_stats_summary() -> dict[str, Any]:
 
     total_gacs = stats["total_gacs"]
     total_commits = stats["total_commits"]
+    total_prompt_tokens = stats.get("total_prompt_tokens", 0)
+    total_completion_tokens = stats.get("total_completion_tokens", 0)
+    total_tokens = total_prompt_tokens + total_completion_tokens
     first_used = stats["first_used"]
     last_used = stats["last_used"]
     daily_gacs = stats["daily_gacs"]
     daily_commits = stats["daily_commits"]
+    daily_prompt_tokens = stats.get("daily_prompt_tokens", {})
+    daily_completion_tokens = stats.get("daily_completion_tokens", {})
     weekly_gacs = stats["weekly_gacs"]
     weekly_commits = stats["weekly_commits"]
+    weekly_prompt_tokens = stats.get("weekly_prompt_tokens", {})
+    weekly_completion_tokens = stats.get("weekly_completion_tokens", {})
+
+    # Combine daily/weekly token totals (prompt + completion) for peak/period display
+    daily_total_tokens: dict[str, int] = {}
+    for day_key in set(daily_prompt_tokens) | set(daily_completion_tokens):
+        daily_total_tokens[day_key] = daily_prompt_tokens.get(day_key, 0) + daily_completion_tokens.get(day_key, 0)
+    weekly_total_tokens: dict[str, int] = {}
+    for wk in set(weekly_prompt_tokens) | set(weekly_completion_tokens):
+        weekly_total_tokens[wk] = weekly_prompt_tokens.get(wk, 0) + weekly_completion_tokens.get(wk, 0)
 
     # Calculate streaks (based on gacs, not commits)
     today = datetime.now().strftime("%Y-%m-%d")
@@ -286,12 +417,14 @@ def get_stats_summary() -> dict[str, Any]:
     # Today's stats
     today_gacs = daily_gacs.get(today, 0)
     today_commits = daily_commits.get(today, 0)
+    today_tokens = daily_total_tokens.get(today, 0)
 
     # This week's stats
     iso_week = datetime.now().isocalendar()
     week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
     week_gacs = weekly_gacs.get(week_key, 0)
     week_commits = weekly_commits.get(week_key, 0)
+    week_tokens = weekly_total_tokens.get(week_key, 0)
 
     # Format dates
     first_used_str = "Never" if first_used is None else datetime.fromisoformat(first_used).strftime("%Y-%m-%d")
@@ -302,34 +435,54 @@ def get_stats_summary() -> dict[str, Any]:
 
     top_projects = sorted(projects.items(), key=project_activity, reverse=True)
 
+    # Get models and sort by gacs (uses)
+    models = stats.get("models", {})
+    top_models = sorted(models.items(), key=model_activity, reverse=True)
+
     # Calculate peak single-day stats
     peak_daily_gacs: int = max(daily_gacs.values()) if daily_gacs else 0
     peak_daily_commits: int = max(daily_commits.values()) if daily_commits else 0
+    peak_daily_tokens: int = max(daily_total_tokens.values()) if daily_total_tokens else 0
 
     # Calculate peak weekly stats
     peak_weekly_gacs: int = max(weekly_gacs.values()) if weekly_gacs else 0
     peak_weekly_commits: int = max(weekly_commits.values()) if weekly_commits else 0
+    peak_weekly_tokens: int = max(weekly_total_tokens.values()) if weekly_total_tokens else 0
 
     return {
         "total_gacs": total_gacs,
         "total_commits": total_commits,
+        "total_prompt_tokens": total_prompt_tokens,
+        "total_completion_tokens": total_completion_tokens,
+        "total_tokens": total_tokens,
         "first_used": first_used_str,
         "last_used": last_used_str,
         "today_gacs": today_gacs,
         "today_commits": today_commits,
+        "today_tokens": today_tokens,
         "week_gacs": week_gacs,
         "week_commits": week_commits,
+        "week_tokens": week_tokens,
         "streak": streak,
         "longest_streak": longest_streak,
         "daily_gacs": daily_gacs,
         "daily_commits": daily_commits,
+        "daily_prompt_tokens": daily_prompt_tokens,
+        "daily_completion_tokens": daily_completion_tokens,
+        "daily_total_tokens": daily_total_tokens,
         "weekly_gacs": weekly_gacs,
         "weekly_commits": weekly_commits,
+        "weekly_prompt_tokens": weekly_prompt_tokens,
+        "weekly_completion_tokens": weekly_completion_tokens,
+        "weekly_total_tokens": weekly_total_tokens,
         "peak_daily_gacs": peak_daily_gacs,
         "peak_daily_commits": peak_daily_commits,
+        "peak_daily_tokens": peak_daily_tokens,
         "peak_weekly_gacs": peak_weekly_gacs,
         "peak_weekly_commits": peak_weekly_commits,
+        "peak_weekly_tokens": peak_weekly_tokens,
         "top_projects": top_projects,
+        "top_models": top_models,
     }
 
 
@@ -347,18 +500,39 @@ def project_activity(project_data: tuple[str, Any]) -> int:
     return int(data.get("gacs", 0)) + int(data.get("commits", 0))
 
 
+def model_activity(model_data: tuple[str, Any]) -> int:
+    """Sort key for models by gacs (workflow uses).
+
+    Args:
+        model_data: Tuple of (model_name, data) where data is a dict
+            with 'gacs', 'prompt_tokens', and 'completion_tokens' keys.
+
+    Returns:
+        Number of gacs run with this model.
+    """
+    data = model_data[1]
+    return int(data.get("gacs", 0))
+
+
 def reset_stats() -> None:
     """Reset all statistics to zero."""
     empty_stats: GACStats = {
         "total_gacs": 0,
         "total_commits": 0,
+        "total_prompt_tokens": 0,
+        "total_completion_tokens": 0,
         "first_used": None,
         "last_used": None,
         "daily_gacs": {},
         "daily_commits": {},
+        "daily_prompt_tokens": {},
+        "daily_completion_tokens": {},
         "weekly_gacs": {},
         "weekly_commits": {},
+        "weekly_prompt_tokens": {},
+        "weekly_completion_tokens": {},
         "projects": {},
+        "models": {},
     }
     save_stats(empty_stats)
     logger.info("Statistics reset")

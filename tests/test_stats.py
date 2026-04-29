@@ -13,9 +13,31 @@ from gac.stats import (
     load_stats,
     record_commit,
     record_gac,
+    record_tokens,
     reset_stats,
     save_stats,
 )
+
+
+def _empty_stats() -> GACStats:
+    return {
+        "total_gacs": 0,
+        "total_commits": 0,
+        "total_prompt_tokens": 0,
+        "total_completion_tokens": 0,
+        "first_used": None,
+        "last_used": None,
+        "daily_gacs": {},
+        "daily_commits": {},
+        "daily_prompt_tokens": {},
+        "daily_completion_tokens": {},
+        "weekly_gacs": {},
+        "weekly_commits": {},
+        "weekly_prompt_tokens": {},
+        "weekly_completion_tokens": {},
+        "projects": {},
+        "models": {},
+    }
 
 
 class TestLoadStats:
@@ -245,6 +267,215 @@ class TestResetStats:
             assert new_stats["first_used"] is None
             assert new_stats["last_used"] is None
             assert new_stats["daily_commits"] == {}
+
+
+class TestAtomicSave:
+    """Tests for atomic save_stats behavior."""
+
+    def test_save_stats_uses_atomic_replace(self, tmp_path):
+        """Test that save_stats writes via temp file and atomic rename, leaving no leftover temp."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["total_gacs"] = 7
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            save_stats(stats)
+
+        assert stats_file.exists()
+        loaded = json.loads(stats_file.read_text())
+        assert loaded["total_gacs"] == 7
+        # No leftover .tmp.* sibling files
+        leftovers = list(tmp_path.glob("stats.json.tmp.*"))
+        assert leftovers == []
+
+    def test_save_stats_failure_does_not_corrupt_existing(self, tmp_path):
+        """Test that an interrupted/failed write preserves the previous stats file."""
+        stats_file = tmp_path / "stats.json"
+        good_stats: GACStats = _empty_stats()
+        good_stats["total_gacs"] = 99
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            save_stats(good_stats)
+            # Sanity: existing file is the good one.
+            assert json.loads(stats_file.read_text())["total_gacs"] == 99
+
+            # Force the temp-file write to fail mid-save.
+            with patch.object(Path, "write_text", side_effect=OSError("boom")):
+                bad_stats: GACStats = _empty_stats()
+                bad_stats["total_gacs"] = 1
+                save_stats(bad_stats)
+
+            # Existing file must still hold the prior value, not be truncated.
+            loaded = json.loads(stats_file.read_text())
+            assert loaded["total_gacs"] == 99
+            # No orphaned tmp files left behind
+            assert list(tmp_path.glob("stats.json.tmp.*")) == []
+
+
+class TestRecordTokens:
+    """Tests for record_tokens function."""
+
+    def test_record_tokens_basic(self, tmp_path):
+        """Test recording prompt and completion tokens updates totals."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(100, 50, model="anthropic:test-model")
+
+            stats = load_stats()
+            assert stats["total_prompt_tokens"] == 100
+            assert stats["total_completion_tokens"] == 50
+
+    def test_record_tokens_accumulates(self, tmp_path):
+        """Test that token counts accumulate across calls."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(100, 50, model="anthropic:test-model")
+            record_tokens(200, 75, model="anthropic:test-model")
+
+            stats = load_stats()
+            assert stats["total_prompt_tokens"] == 300
+            assert stats["total_completion_tokens"] == 125
+
+    def test_record_tokens_updates_daily_and_weekly(self, tmp_path):
+        """Test daily and weekly token buckets are updated."""
+        stats_file = tmp_path / "stats.json"
+        today = datetime.now().strftime("%Y-%m-%d")
+        iso_week = datetime.now().isocalendar()
+        week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(100, 50)
+
+            stats = load_stats()
+            assert stats["daily_prompt_tokens"][today] == 100
+            assert stats["daily_completion_tokens"][today] == 50
+            assert stats["weekly_prompt_tokens"][week_key] == 100
+            assert stats["weekly_completion_tokens"][week_key] == 50
+
+    def test_record_tokens_per_model(self, tmp_path):
+        """Test tokens are tracked per model."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(100, 50, model="anthropic:claude-haiku-4-5")
+            record_tokens(200, 75, model="openai:gpt-5")
+            record_tokens(50, 25, model="anthropic:claude-haiku-4-5")
+
+            stats = load_stats()
+            assert stats["models"]["anthropic:claude-haiku-4-5"]["prompt_tokens"] == 150
+            assert stats["models"]["anthropic:claude-haiku-4-5"]["completion_tokens"] == 75
+            assert stats["models"]["openai:gpt-5"]["prompt_tokens"] == 200
+            assert stats["models"]["openai:gpt-5"]["completion_tokens"] == 75
+
+    def test_record_tokens_per_project(self, tmp_path):
+        """Test tokens are attributed to a project bucket."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(100, 50, model="anthropic:test", project_name="proj-a")
+            record_tokens(200, 75, model="anthropic:test", project_name="proj-b")
+            record_tokens(50, 25, model="anthropic:test", project_name="proj-a")
+
+            stats = load_stats()
+            assert stats["projects"]["proj-a"]["prompt_tokens"] == 150
+            assert stats["projects"]["proj-a"]["completion_tokens"] == 75
+            assert stats["projects"]["proj-b"]["prompt_tokens"] == 200
+            assert stats["projects"]["proj-b"]["completion_tokens"] == 75
+
+    def test_record_tokens_disabled(self, tmp_path):
+        """Test record_tokens does nothing when GAC_DISABLE_STATS is set."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+            record_tokens(100, 50, model="anthropic:test")
+
+            stats = load_stats()
+            assert stats["total_prompt_tokens"] == 0
+            assert stats["total_completion_tokens"] == 0
+
+    def test_record_tokens_zero_no_op(self, tmp_path):
+        """Test record_tokens skips when both counts are zero."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_tokens(0, 0, model="anthropic:test")
+
+            assert not stats_file.exists() or load_stats()["total_prompt_tokens"] == 0
+
+
+class TestRecordGacWithModel:
+    """Tests for record_gac model tracking."""
+
+    def test_record_gac_tracks_model(self, tmp_path):
+        """Test record_gac increments model.gacs counter."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_gac(model="anthropic:claude-haiku-4-5")
+            record_gac(model="anthropic:claude-haiku-4-5")
+            record_gac(model="openai:gpt-5")
+
+            stats = load_stats()
+            assert stats["models"]["anthropic:claude-haiku-4-5"]["gacs"] == 2
+            assert stats["models"]["openai:gpt-5"]["gacs"] == 1
+
+    def test_record_gac_no_model(self, tmp_path):
+        """Test record_gac without a model leaves models dict empty."""
+        stats_file = tmp_path / "stats.json"
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            record_gac()
+
+            stats = load_stats()
+            assert stats["models"] == {}
+
+
+class TestSummaryWithTokens:
+    """Tests for token-related fields in get_stats_summary."""
+
+    def test_summary_includes_token_totals(self, tmp_path):
+        """Test summary surfaces token totals and peaks."""
+        stats_file = tmp_path / "stats.json"
+        today = datetime.now().strftime("%Y-%m-%d")
+        iso_week = datetime.now().isocalendar()
+        week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
+
+        stats: GACStats = _empty_stats()
+        stats["total_prompt_tokens"] = 1000
+        stats["total_completion_tokens"] = 500
+        stats["daily_prompt_tokens"] = {today: 200, "2024-01-01": 800}
+        stats["daily_completion_tokens"] = {today: 100, "2024-01-01": 400}
+        stats["weekly_prompt_tokens"] = {week_key: 200}
+        stats["weekly_completion_tokens"] = {week_key: 100}
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            assert summary["total_prompt_tokens"] == 1000
+            assert summary["total_completion_tokens"] == 500
+            assert summary["total_tokens"] == 1500
+            assert summary["today_tokens"] == 300  # 200 + 100
+            assert summary["peak_daily_tokens"] == 1200  # 2024-01-01 had 800+400
+            assert summary["week_tokens"] == 300
+
+    def test_summary_includes_top_models(self, tmp_path):
+        """Test summary returns top_models sorted by gacs."""
+        stats_file = tmp_path / "stats.json"
+
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "model-a": {"gacs": 5, "prompt_tokens": 500, "completion_tokens": 100},
+            "model-b": {"gacs": 10, "prompt_tokens": 100, "completion_tokens": 50},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            top = summary["top_models"]
+            assert top[0][0] == "model-b"
+            assert top[1][0] == "model-a"
 
 
 class TestDisableStats:
