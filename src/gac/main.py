@@ -19,7 +19,7 @@ from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
 from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
-from gac.stats import record_commit, record_gac
+from gac.stats import record_commit, record_gac, record_tokens
 from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
@@ -78,6 +78,8 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
         commit_message = clean_commit_message(raw_commit_message, fifty_seventy_two=ctx.flags.fifty_seventy_two)
         logger.info("Generated commit message:")
         logger.info(commit_message)
+        completion_tokens = count_tokens(raw_commit_message, ctx.model)
+        record_tokens(prompt_tokens, completion_tokens, model=ctx.model)
         conversation_messages.append({"role": "assistant", "content": commit_message})
 
         if ctx.message_only:
@@ -86,7 +88,13 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
 
         # Display commit message panel (always show, regardless of confirmation mode)
         if not ctx.quiet:
-            display_commit_message(commit_message, prompt_tokens, ctx.model, ctx.quiet)
+            display_commit_message(
+                commit_message,
+                prompt_tokens,
+                ctx.model,
+                ctx.quiet,
+                completion_tokens=completion_tokens,
+            )
 
         # Handle confirmation
         if ctx.flags.require_confirmation:
@@ -112,7 +120,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     # Record successful commit and gac (only when commit actually happened)
     if not ctx.flags.dry_run:
         record_commit()
-        record_gac()
+        record_gac(model=ctx.model)
 
     # Push if requested
     if ctx.flags.push:
