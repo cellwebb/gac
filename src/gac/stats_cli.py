@@ -39,8 +39,8 @@ def show() -> None:
     """Show your gac usage statistics."""
     # Check if stats tracking is disabled
     if not stats_enabled():
-        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set).[/dim]")
-        console.print("[dim]Unset GAC_DISABLE_STATS to start tracking your gacs! 🚀[/dim]")
+        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set to a truthy value).[/dim]")
+        console.print("[dim]Unset GAC_DISABLE_STATS or set it to 'false' to start tracking your gacs! 🚀[/dim]")
         return
 
     summary = get_stats_summary()

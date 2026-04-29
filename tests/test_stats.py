@@ -518,5 +518,35 @@ class TestDisableStats:
             assert stats["total_gacs"] == 1
 
 
+class TestStatsEnabled:
+    """Tests for stats_enabled() value parsing."""
+
+    @pytest.mark.parametrize(
+        "value",
+        ["false", "False", "FALSE", "0", "no", "No", "off", "OFF", "n", "", "  false  "],
+    )
+    def test_falsy_values_keep_stats_enabled(self, value):
+        from gac.stats import stats_enabled
+
+        with patch.dict("os.environ", {"GAC_DISABLE_STATS": value}):
+            assert stats_enabled() is True
+
+    @pytest.mark.parametrize(
+        "value",
+        ["true", "True", "TRUE", "1", "yes", "Yes", "on", "y", "anything-else"],
+    )
+    def test_truthy_values_disable_stats(self, value):
+        from gac.stats import stats_enabled
+
+        with patch.dict("os.environ", {"GAC_DISABLE_STATS": value}):
+            assert stats_enabled() is False
+
+    def test_unset_keeps_stats_enabled(self, monkeypatch):
+        from gac.stats import stats_enabled
+
+        monkeypatch.delenv("GAC_DISABLE_STATS", raising=False)
+        assert stats_enabled() is True
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

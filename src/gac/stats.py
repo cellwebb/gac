@@ -16,12 +16,20 @@ logger = logging.getLogger(__name__)
 STATS_FILE = Path.home() / ".gac_stats.json"
 
 
+_FALSY_VALUES = {"", "0", "false", "no", "off", "n"}
+
+
 def stats_enabled() -> bool:
     """Check if stats tracking is enabled.
 
-    Returns False if GAC_DISABLE_STATS environment variable is set to any value.
+    Disabled only when GAC_DISABLE_STATS is set to a truthy value
+    (e.g. ``true``, ``1``, ``yes``). Falsy values (``false``, ``0``, ``no``,
+    ``off``, empty string) leave stats enabled.
     """
-    return os.environ.get("GAC_DISABLE_STATS") is None
+    raw = os.environ.get("GAC_DISABLE_STATS")
+    if raw is None:
+        return True
+    return raw.strip().lower() in _FALSY_VALUES
 
 
 def get_current_project_name() -> str | None:
