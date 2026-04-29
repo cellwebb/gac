@@ -742,6 +742,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                     push=request.push,
                     no_verify=request.no_verify,
                     hook_timeout=120,
+                    model=model,
                 )
 
             if exit_code != 0:
@@ -780,6 +781,10 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         conversation_messages.append({"role": "user", "content": prompt_bundle.user_prompt})
 
         # Generate commit message using AI
+        from gac.ai_utils import count_tokens
+        from gac.stats import record_tokens
+
+        prompt_tokens = count_tokens(conversation_messages, model)
         raw_commit_message = generate_commit_message(
             model=model,
             prompt=conversation_messages,
@@ -788,6 +793,8 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             max_retries=max_retries,
             quiet=True,
         )
+        completion_tokens = count_tokens(raw_commit_message, model)
+        record_tokens(prompt_tokens, completion_tokens, model=model)
         commit_message = clean_commit_message(raw_commit_message)
 
         if not commit_message:
@@ -834,7 +841,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         from gac.stats import record_commit, record_gac
 
         record_commit()
-        record_gac()
+        record_gac(model=model)
 
         # Get commit hash
         commit_hash = run_git_command(["rev-parse", "HEAD"])[:7]
