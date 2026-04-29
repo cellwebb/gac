@@ -20,7 +20,7 @@ from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
-from gac.stats import record_commit, record_gac
+from gac.stats import record_commit, record_gac, record_tokens
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -187,6 +187,9 @@ class GroupedCommitWorkflow:
                 skip_success_message=True,
             )
 
+            completion_tokens = count_tokens(raw_response, model)
+            record_tokens(prompt_tokens, completion_tokens, model=model)
+
             try:
                 parsed = self.parse_and_validate_json_response(raw_response)
             except ValueError as e:
@@ -309,6 +312,7 @@ class GroupedCommitWorkflow:
         hook_timeout: int,
         fifty_seventy_two: bool = False,
         signoff: bool = False,
+        model: str | None = None,
     ) -> int:
         """Execute the grouped commits by creating multiple individual commits.
 
@@ -371,7 +375,7 @@ class GroupedCommitWorkflow:
                 return 1
 
             # Record successful gac after all grouped commits are created
-            record_gac()
+            record_gac(model=model)
 
         if push:
             try:
@@ -493,6 +497,7 @@ class GroupedCommitWorkflow:
                         hook_timeout=hook_timeout,
                         fifty_seventy_two=fifty_seventy_two,
                         signoff=signoff,
+                        model=model,
                     )
                 elif decision == "reject":
                     return 0  # User rejected, clean exit
@@ -509,4 +514,5 @@ class GroupedCommitWorkflow:
                     hook_timeout=hook_timeout,
                     fifty_seventy_two=fifty_seventy_two,
                     signoff=signoff,
+                    model=model,
                 )
