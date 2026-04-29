@@ -89,6 +89,23 @@ def _configure_stats(existing_env: dict[str, str], env_path: Path = GAC_ENV_PATH
         existing_env["GAC_DISABLE_STATS"] = "true"
         click.echo("Set GAC_DISABLE_STATS='true'. Stats disabled.")
 
+        # Offer to delete any existing stats history.
+        from gac.stats import STATS_FILE
+
+        if STATS_FILE.exists():
+            delete = questionary.confirm(
+                f"Delete existing stats history at {STATS_FILE}?",
+                default=False,
+            ).ask()
+            if delete:
+                try:
+                    STATS_FILE.unlink()
+                    click.echo(f"Deleted {STATS_FILE}.")
+                except OSError as e:
+                    click.echo(f"Could not delete stats file: {e}")
+            else:
+                click.echo("Kept existing stats history. New tracking is paused.")
+
 
 @click.command()
 def init() -> None:

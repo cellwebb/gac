@@ -255,8 +255,12 @@ def test_configure_stats_disable_from_default():
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
+        stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
-            with mock.patch("questionary.confirm") as mconfirm:
+            with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.confirm") as mconfirm,
+            ):
                 mconfirm.return_value.ask.side_effect = [False]
                 existing_env: dict[str, str] = {}
                 _configure_stats(existing_env, env_path)
@@ -288,8 +292,12 @@ def test_configure_stats_keep_disabled():
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.write_text("GAC_DISABLE_STATS='true'\n")
+        stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
-            with mock.patch("questionary.confirm") as mconfirm:
+            with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.confirm") as mconfirm,
+            ):
                 mconfirm.return_value.ask.side_effect = [False]
                 existing_env = {"GAC_DISABLE_STATS": "true"}
                 _configure_stats(existing_env, env_path)
@@ -313,13 +321,78 @@ def test_configure_stats_user_cancels():
                 assert "GAC_DISABLE_STATS" not in existing_env
 
 
+def test_configure_stats_disable_offers_to_delete_existing_history():
+    """When disabling, offer to delete existing stats file. User accepts."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        stats_file = Path(tmpdir) / ".gac_stats.json"
+        stats_file.write_text("{}")
+
+        with _patch_env_paths(env_path):
+            with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.confirm") as mconfirm,
+            ):
+                # 1) disable stats, 2) confirm delete
+                mconfirm.return_value.ask.side_effect = [False, True]
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                assert not stats_file.exists()
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_disable_keeps_existing_history_when_user_declines():
+    """When disabling, user can keep the existing stats file."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        stats_file = Path(tmpdir) / ".gac_stats.json"
+        stats_file.write_text('{"total_gacs": 5}')
+
+        with _patch_env_paths(env_path):
+            with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.confirm") as mconfirm,
+            ):
+                # 1) disable stats, 2) keep file
+                mconfirm.return_value.ask.side_effect = [False, False]
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                assert stats_file.exists()
+                assert stats_file.read_text() == '{"total_gacs": 5}'
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_disable_no_prompt_when_no_history():
+    """When disabling and no stats file exists, the delete prompt is skipped."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        stats_file = Path(tmpdir) / ".gac_stats.json"  # never created
+
+        with _patch_env_paths(env_path):
+            with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.confirm") as mconfirm,
+            ):
+                mconfirm.return_value.ask.side_effect = [False]  # only the enable prompt
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                # confirm called exactly once (no delete prompt)
+                assert mconfirm.call_count == 1
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
 def test_init_cli_language_action_cancelled(monkeypatch):
     """Test init workflow when user cancels language selection."""
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = _setup_env_file(tmpdir)
+        stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
             with (
+                mock.patch("gac.stats.STATS_FILE", stats_file),
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
@@ -328,7 +401,8 @@ def test_init_cli_language_action_cancelled(monkeypatch):
                 mselect.return_value.ask.side_effect = ["OpenAI", None]  # Cancels at language step
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
-                mconfirm.return_value.ask.side_effect = [False]  # Won't be called
+                # Stats step still runs after language; user enables stats.
+                mconfirm.return_value.ask.side_effect = [True]
 
                 result = runner.invoke(init)
                 # Should complete model config but cancel language part
