@@ -92,14 +92,21 @@ def check_token_warning(
     return True
 
 
-def display_commit_message(commit_message: str, prompt_tokens: int, model: str, quiet: bool) -> None:
-    from gac.ai_utils import count_tokens
-
+def display_commit_message(
+    commit_message: str,
+    prompt_tokens: int,
+    model: str,
+    quiet: bool,
+    completion_tokens: int | None = None,
+) -> None:
     console.print("[bold green]Generated commit message:[/bold green]")
     console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
 
     if not quiet:
-        completion_tokens = count_tokens(commit_message, model)
+        if completion_tokens is None:
+            from gac.ai_utils import count_tokens
+
+            completion_tokens = count_tokens(commit_message, model)
         total_tokens = prompt_tokens + completion_tokens
         console.print(
             f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
