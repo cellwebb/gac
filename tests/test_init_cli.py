@@ -7,7 +7,7 @@ from unittest import mock
 
 from click.testing import CliRunner
 
-from gac.init_cli import _configure_language, _load_existing_env, _prompt_required_text, init
+from gac.init_cli import _configure_language, _configure_stats, _load_existing_env, _prompt_required_text, init
 
 
 def _setup_env_file(tmpdir: str) -> Path:
@@ -121,11 +121,13 @@ def test_init_cli_complete_workflow_with_english_language(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
+                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Complete workflow: provider selection + language selection (no existing config)
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
+                mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -146,11 +148,13 @@ def test_init_cli_complete_workflow_simple(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
+                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Simple workflow: provider selection + English language
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
+                mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -171,10 +175,12 @@ def test_init_cli_existing_language_keep(monkeypatch):
             with (
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
+                mock.patch("questionary.confirm") as mconfirm,
             ):
                 # Provider, API key action, language action (Keep existing)
                 mselect.return_value.ask.side_effect = ["OpenAI", "Keep existing key", "Keep existing language"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
+                mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -195,10 +201,11 @@ def test_init_cli_existing_configuration_workflow(monkeypatch):
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as _mpass,
+                mock.patch("questionary.confirm") as mconfirm,
             ):
                 mselect.return_value.ask.side_effect = ["OpenAI", "Keep existing key", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-5"]
-                # mpass not used when keeping existing key
+                mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
                 result = runner.invoke(init)
                 assert result.exit_code == 0
@@ -223,6 +230,87 @@ def test_init_cli_provider_selection_cancelled():
                 result = runner.invoke(init)
                 assert result.exit_code == 0
                 assert "Provider selection cancelled" in result.output
+
+
+def test_configure_stats_enable_from_default():
+    """Test that confirming with no prior setting leaves env file unchanged."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.confirm") as mconfirm:
+                mconfirm.return_value.ask.side_effect = [True]
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                # questionary.confirm called with default=True
+                args, kwargs = mconfirm.call_args
+                assert kwargs.get("default") is True
+                # No GAC_DISABLE_STATS written
+                assert "GAC_DISABLE_STATS" not in env_path.read_text()
+                assert "GAC_DISABLE_STATS" not in existing_env
+
+
+def test_configure_stats_disable_from_default():
+    """Test that declining writes GAC_DISABLE_STATS=true to the env file."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.confirm") as mconfirm:
+                mconfirm.return_value.ask.side_effect = [False]
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS" in env_text
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_re_enable_removes_key():
+    """Test that confirming when previously disabled removes the key."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GAC_DISABLE_STATS='true'\n")
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.confirm") as mconfirm:
+                mconfirm.return_value.ask.side_effect = [True]
+                existing_env = {"GAC_DISABLE_STATS": "true"}
+                _configure_stats(existing_env, env_path)
+                # default should be False (currently disabled)
+                args, kwargs = mconfirm.call_args
+                assert kwargs.get("default") is False
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS" not in env_text
+                assert "GAC_DISABLE_STATS" not in existing_env
+
+
+def test_configure_stats_keep_disabled():
+    """Test that declining when previously disabled re-asserts the key."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GAC_DISABLE_STATS='true'\n")
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.confirm") as mconfirm:
+                mconfirm.return_value.ask.side_effect = [False]
+                existing_env = {"GAC_DISABLE_STATS": "true"}
+                _configure_stats(existing_env, env_path)
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS" in env_text
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_user_cancels():
+    """Test that cancelling (Ctrl-C / None) leaves env unchanged."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        before = env_path.read_text()
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.confirm") as mconfirm:
+                mconfirm.return_value.ask.side_effect = [None]
+                existing_env: dict[str, str] = {}
+                _configure_stats(existing_env, env_path)
+                assert env_path.read_text() == before
+                assert "GAC_DISABLE_STATS" not in existing_env
 
 
 def test_init_cli_language_action_cancelled(monkeypatch):
