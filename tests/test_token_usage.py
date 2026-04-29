@@ -66,8 +66,9 @@ class TestTokenUsageDisplay:
         # Mock pre-commit hooks to succeed
         monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
         # Mock stats recording to avoid writing to stats file during tests
-        monkeypatch.setattr("gac.main.record_commit", lambda: None)
-        monkeypatch.setattr("gac.main.record_gac", lambda: None)
+        monkeypatch.setattr("gac.main.record_commit", lambda *a, **kw: None)
+        monkeypatch.setattr("gac.main.record_gac", lambda *a, **kw: None)
+        monkeypatch.setattr("gac.main.record_tokens", lambda *a, **kw: None)
 
     def test_estimated_token_usage_displayed(self, runner, mock_dependencies, monkeypatch):
         """Test that estimated token usage is displayed."""

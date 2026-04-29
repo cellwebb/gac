@@ -59,8 +59,9 @@ class TestScopeFlag:
         # Mock run_pre_commit_hooks to return True
         monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda: True)
         # Mock stats recording to avoid writing to stats file during tests
-        monkeypatch.setattr("gac.main.record_commit", lambda: None)
-        monkeypatch.setattr("gac.main.record_gac", lambda: None)
+        monkeypatch.setattr("gac.main.record_commit", lambda *a, **kw: None)
+        monkeypatch.setattr("gac.main.record_gac", lambda *a, **kw: None)
+        monkeypatch.setattr("gac.main.record_tokens", lambda *a, **kw: None)
 
         # Mock preprocess_diff to avoid any processing issues
         monkeypatch.setattr("gac.preprocess.preprocess_diff", lambda diff, token_limit=None, model=None: diff)
