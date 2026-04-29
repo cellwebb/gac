@@ -11,10 +11,17 @@ from gac.stats import (
     get_current_project_name,
     get_stats_summary,
     load_stats,
+    model_activity,
     project_activity,
     reset_stats,
     stats_enabled,
 )
+
+
+def _format_tokens(n: int) -> str:
+    """Format a token count with thousands separators (e.g. 1,234,567)."""
+    return f"{n:,}"
+
 
 console = Console()
 
@@ -39,8 +46,9 @@ def show() -> None:
     summary = get_stats_summary()
     total_gacs = summary.get("total_gacs", 0)
     total_commits = summary.get("total_commits", 0)
+    total_tokens = summary.get("total_tokens", 0)
 
-    if total_gacs == 0:
+    if total_gacs == 0 and total_commits == 0 and total_tokens == 0:
         console.print("[yellow]No gacs yet! Time to start gaccing! 🚀[/yellow]")
         console.print("[dim]Run 'gac' or 'uvx gac' in a git repository to make your first commit.[/dim]")
         return
@@ -48,25 +56,33 @@ def show() -> None:
     # Main stats panel
     today_gacs = summary.get("today_gacs", 0)
     today_commits = summary.get("today_commits", 0)
+    today_tokens = summary.get("today_tokens", 0)
     streak = summary["streak"]
     longest_streak = summary.get("longest_streak", 0)
     peak_daily_gacs = summary.get("peak_daily_gacs", 0)
     peak_daily_commits = summary.get("peak_daily_commits", 0)
+    peak_daily_tokens = summary.get("peak_daily_tokens", 0)
     week_gacs = summary.get("week_gacs", 0)
     week_commits = summary.get("week_commits", 0)
+    week_tokens = summary.get("week_tokens", 0)
     peak_weekly_gacs = summary.get("peak_weekly_gacs", 0)
     peak_weekly_commits = summary.get("peak_weekly_commits", 0)
+    peak_weekly_tokens = summary.get("peak_weekly_tokens", 0)
 
     # Compute previous peak (excluding today) to distinguish new records from ties
     today_str = datetime.now().strftime("%Y-%m-%d")
     prev_peak_gacs = max((v for d, v in summary.get("daily_gacs", {}).items() if d != today_str), default=0)
     prev_peak_commits = max((v for d, v in summary.get("daily_commits", {}).items() if d != today_str), default=0)
+    prev_peak_tokens = max((v for d, v in summary.get("daily_total_tokens", {}).items() if d != today_str), default=0)
     # Previous weekly peak (excluding this week)
     iso_week = datetime.now().isocalendar()
     this_week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
     prev_peak_weekly_gacs = max((v for w, v in summary.get("weekly_gacs", {}).items() if w != this_week_key), default=0)
     prev_peak_weekly_commits = max(
         (v for w, v in summary.get("weekly_commits", {}).items() if w != this_week_key), default=0
+    )
+    prev_peak_weekly_tokens = max(
+        (v for w, v in summary.get("weekly_total_tokens", {}).items() if w != this_week_key), default=0
     )
     # Previous longest streak: if current streak equals longest, the previous
     # record is longest_streak minus what today contributed (at most 1 day)
@@ -77,10 +93,14 @@ def show() -> None:
     tied_peak_gacs = today_gacs > 0 and today_gacs == prev_peak_gacs
     new_peak_commits = today_commits > 0 and today_commits > prev_peak_commits
     tied_peak_commits = today_commits > 0 and today_commits == prev_peak_commits
+    new_peak_tokens = today_tokens > 0 and today_tokens > prev_peak_tokens
+    tied_peak_tokens = today_tokens > 0 and today_tokens == prev_peak_tokens
     new_peak_weekly_gacs = week_gacs > 0 and week_gacs > prev_peak_weekly_gacs
     tied_peak_weekly_gacs = week_gacs > 0 and week_gacs == prev_peak_weekly_gacs
     new_peak_weekly_commits = week_commits > 0 and week_commits > prev_peak_weekly_commits
     tied_peak_weekly_commits = week_commits > 0 and week_commits == prev_peak_weekly_commits
+    new_peak_weekly_tokens = week_tokens > 0 and week_tokens > prev_peak_weekly_tokens
+    tied_peak_weekly_tokens = week_tokens > 0 and week_tokens == prev_peak_weekly_tokens
     new_streak_record = streak > 0 and streak > prev_longest
     tied_streak_record = streak > 0 and streak == prev_longest
 
@@ -136,11 +156,14 @@ def show() -> None:
     activity_table.add_column("Period", style="dim")
     activity_table.add_column("Gacs", style="bold cyan", justify="right")
     activity_table.add_column("Commits", style="bold cyan", justify="right")
+    activity_table.add_column("Tokens", style="bold cyan", justify="right")
 
-    activity_table.add_row("Today", str(today_gacs), str(today_commits))
-    activity_table.add_row("Peak Day", str(peak_daily_gacs), str(peak_daily_commits))
-    activity_table.add_row("This Week", str(week_gacs), str(week_commits))
-    activity_table.add_row("Peak Week", str(peak_weekly_gacs), str(peak_weekly_commits))
+    activity_table.add_row("Today", str(today_gacs), str(today_commits), _format_tokens(today_tokens))
+    activity_table.add_row("Peak Day", str(peak_daily_gacs), str(peak_daily_commits), _format_tokens(peak_daily_tokens))
+    activity_table.add_row("This Week", str(week_gacs), str(week_commits), _format_tokens(week_tokens))
+    activity_table.add_row(
+        "Peak Week", str(peak_weekly_gacs), str(peak_weekly_commits), _format_tokens(peak_weekly_tokens)
+    )
 
     console.print(activity_table)
 
@@ -154,6 +177,7 @@ def show() -> None:
         projects_table.add_column("Project", style="dim")
         projects_table.add_column("Gacs", style="bold cyan", justify="right")
         projects_table.add_column("Commits", style="bold cyan", justify="right")
+        projects_table.add_column("Tokens", style="bold cyan", justify="right")
 
         sorted_projects = sorted(projects.items(), key=project_activity, reverse=True)
 
@@ -161,17 +185,59 @@ def show() -> None:
         for project, data in sorted_projects[:5]:
             gacs = data.get("gacs", 0)
             commits = data.get("commits", 0)
-            projects_table.add_row(project, str(gacs), str(commits))
+            tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+            projects_table.add_row(project, str(gacs), str(commits), _format_tokens(tokens))
 
         console.print(projects_table)
         console.print()
 
+    # Top models
+    models = stats_data.get("models", {})
+    if models:
+        console.print("[bold]Top Models:[/bold]")
+        models_table = Table(show_header=True, box=None)
+        models_table.add_column("Model", style="dim")
+        models_table.add_column("Gacs", style="bold cyan", justify="right")
+        models_table.add_column("Prompt", style="bold cyan", justify="right")
+        models_table.add_column("Completion", style="bold cyan", justify="right")
+        models_table.add_column("Tokens", style="bold cyan", justify="right")
+
+        sorted_models = sorted(models.items(), key=model_activity, reverse=True)
+
+        for model_name, data in sorted_models[:5]:
+            gacs = data.get("gacs", 0)
+            prompt_t = int(data.get("prompt_tokens", 0))
+            completion_t = int(data.get("completion_tokens", 0))
+            total_t = prompt_t + completion_t
+            models_table.add_row(
+                model_name,
+                str(gacs),
+                _format_tokens(prompt_t),
+                _format_tokens(completion_t),
+                _format_tokens(total_t),
+            )
+
+        console.print(models_table)
+        console.print()
+
     # Celebration and encouragement messages
     any_trophy = (
-        new_peak_gacs or new_peak_commits or new_peak_weekly_gacs or new_peak_weekly_commits or new_streak_record
+        new_peak_gacs
+        or new_peak_commits
+        or new_peak_tokens
+        or new_peak_weekly_gacs
+        or new_peak_weekly_commits
+        or new_peak_weekly_tokens
+        or new_streak_record
     )
     any_tie = (
-        tied_peak_gacs or tied_peak_commits or tied_peak_weekly_gacs or tied_peak_weekly_commits or tied_streak_record
+        tied_peak_gacs
+        or tied_peak_commits
+        or tied_peak_tokens
+        or tied_peak_weekly_gacs
+        or tied_peak_weekly_commits
+        or tied_peak_weekly_tokens
+        or tied_streak_record
     )
 
     if today_gacs > 0 or any_trophy or any_tie:
@@ -187,6 +253,10 @@ def show() -> None:
             console.print("[bold yellow]🏆 New daily high score for commits![/bold yellow]")
         elif tied_peak_commits:
             console.print("[yellow]🥈 Tied your daily high score for commits![/yellow]")
+        if new_peak_tokens:
+            console.print("[bold yellow]🏆 New daily high score for tokens![/bold yellow]")
+        elif tied_peak_tokens:
+            console.print("[yellow]🥈 Tied your daily high score for tokens![/yellow]")
         if new_peak_weekly_gacs:
             console.print("[bold yellow]🏆 New weekly high score for gacs![/bold yellow]")
         elif tied_peak_weekly_gacs:
@@ -195,6 +265,10 @@ def show() -> None:
             console.print("[bold yellow]🏆 New weekly high score for commits![/bold yellow]")
         elif tied_peak_weekly_commits:
             console.print("[yellow]🥈 Tied your weekly high score for commits![/yellow]")
+        if new_peak_weekly_tokens:
+            console.print("[bold yellow]🏆 New weekly high score for tokens![/bold yellow]")
+        elif tied_peak_weekly_tokens:
+            console.print("[yellow]🥈 Tied your weekly high score for tokens![/yellow]")
         if not (any_trophy or any_tie):
             if today_commits >= 5:
                 console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")
@@ -236,13 +310,19 @@ def project() -> None:
 
     project_data = projects.get(project_name, {})
 
-    if not project_data or (project_data.get("gacs", 0) == 0 and project_data.get("commits", 0) == 0):
+    has_activity = bool(project_data) and any(
+        int(project_data.get(field, 0)) > 0 for field in ("gacs", "commits", "prompt_tokens", "completion_tokens")
+    )
+    if not has_activity:
         console.print(f"[yellow]No gacs yet for project '{project_name}'![/yellow]")
         console.print("[dim]Run 'gac' or 'uvx gac' in this repository to start tracking.[/dim]")
         return
 
     gacs = project_data.get("gacs", 0)
     commits = project_data.get("commits", 0)
+    prompt_t = int(project_data.get("prompt_tokens", 0))
+    completion_t = int(project_data.get("completion_tokens", 0))
+    total_t = prompt_t + completion_t
 
     console.print()
 
@@ -264,5 +344,15 @@ def project() -> None:
             border_style="green",
         )
     )
+
+    if total_t > 0:
+        console.print()
+        token_table = Table(show_header=False, box=None)
+        token_table.add_column("Metric", style="dim")
+        token_table.add_column("Value", style="bold cyan", justify="right")
+        token_table.add_row("Prompt tokens", _format_tokens(prompt_t))
+        token_table.add_row("Completion tokens", _format_tokens(completion_t))
+        token_table.add_row("Total tokens", _format_tokens(total_t))
+        console.print(token_table)
 
     console.print()

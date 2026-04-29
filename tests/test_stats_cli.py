@@ -124,6 +124,75 @@ class TestStatsCLI:
         assert result.exit_code == 0
         assert "View your gac usage statistics" in result.output
 
+    def test_stats_show_with_token_only_history(self, runner):
+        """Test stats show renders activity even when only tokens were recorded
+        (e.g. dry-run or message-only sessions where no commit/gac was created).
+        """
+        with patch("gac.stats_cli.get_stats_summary") as mock_summary, patch("gac.stats_cli.load_stats") as mock_load:
+            mock_summary.return_value = {
+                "total_gacs": 0,
+                "total_commits": 0,
+                "total_prompt_tokens": 1000,
+                "total_completion_tokens": 200,
+                "total_tokens": 1200,
+                "first_used": "2026-04-01",
+                "last_used": "2026-04-29",
+                "today_gacs": 0,
+                "today_commits": 0,
+                "today_tokens": 1200,
+                "week_gacs": 0,
+                "week_commits": 0,
+                "week_tokens": 1200,
+                "streak": 0,
+                "longest_streak": 0,
+                "peak_daily_gacs": 0,
+                "peak_daily_commits": 0,
+                "peak_daily_tokens": 1200,
+                "peak_weekly_gacs": 0,
+                "peak_weekly_commits": 0,
+                "peak_weekly_tokens": 1200,
+                "daily_gacs": {},
+                "daily_commits": {},
+                "daily_total_tokens": {"2026-04-29": 1200},
+                "weekly_gacs": {},
+                "weekly_commits": {},
+                "weekly_total_tokens": {"2026-W18": 1200},
+                "top_projects": [],
+                "top_models": [],
+            }
+            mock_load.return_value = {"projects": {}, "models": {}}
+            result = runner.invoke(cli, ["stats", "show"])
+            assert result.exit_code == 0
+            # Should NOT short-circuit with the empty message
+            assert "No gacs yet" not in result.output
+            # Should render token activity
+            assert "1,200" in result.output
+
+    def test_stats_project_with_token_only_history(self, runner):
+        """Test stats project renders activity for a project that has only token usage
+        (no recorded commits or gacs yet)."""
+        with (
+            patch("gac.stats_cli.get_current_project_name", return_value="my-proj"),
+            patch("gac.stats_cli.load_stats") as mock_load,
+        ):
+            mock_load.return_value = {
+                "projects": {
+                    "my-proj": {
+                        "gacs": 0,
+                        "commits": 0,
+                        "prompt_tokens": 800,
+                        "completion_tokens": 150,
+                    }
+                }
+            }
+            result = runner.invoke(cli, ["stats", "project"])
+            assert result.exit_code == 0
+            assert "No gacs yet" not in result.output
+            # Token breakdown table should be rendered.
+            assert "950" in result.output  # 800 + 150 total
+            assert "800" in result.output
+            assert "150" in result.output
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
