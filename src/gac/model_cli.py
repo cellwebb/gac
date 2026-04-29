@@ -111,6 +111,13 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Z.AI Coding", "glm-5.1"),
     ]
     provider_names = [p[0] for p in providers]
+    click.echo()
+    click.echo(
+        "💡 Tip: Commit messages are short, so smaller models (e.g. Claude Haiku, GPT mini,\n"
+        "Gemini Flash) are typically more than capable — and significantly cheaper. The\n"
+        "defaults below favor these. Stick with them unless you have a reason not to."
+    )
+    click.echo()
     provider = questionary.select(
         "Select your provider:", choices=provider_names, use_shortcuts=True, use_arrow_keys=True, use_jk_keys=False
     ).ask()
