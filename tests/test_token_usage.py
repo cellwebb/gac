@@ -73,7 +73,9 @@ class TestTokenUsageDisplay:
     def test_estimated_token_usage_displayed(self, runner, mock_dependencies, monkeypatch):
         """Test that estimated token usage is displayed."""
         # Mock generate_commit_message
-        monkeypatch.setattr("gac.main.generate_commit_message", lambda *args, **kwargs: "feat: add new feature")
+        monkeypatch.setattr(
+            "gac.main.generate_commit_message", lambda *args, **kwargs: ("feat: add new feature", 10, 5, 500)
+        )
 
         # Mock count_tokens to return predictable values
         def mock_count_tokens(content, model):
@@ -115,7 +117,7 @@ class TestTokenUsageDisplay:
     def test_token_usage_not_displayed_when_quiet(self, runner, mock_dependencies, monkeypatch):
         """Test that token usage is not displayed in quiet mode."""
         # Mock generate_commit_message
-        monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: "feat: add new feature")
+        monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: ("feat: add new feature", 10, 5, 500))
 
         # Mock count_tokens
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 100)
@@ -165,7 +167,7 @@ class TestTokenUsageDisplay:
         monkeypatch.setattr("gac.ai_utils.count_tokens", fake_count_tokens)
 
         # Provide two commit messages, one for the initial generation and one for the reroll
-        commit_messages = iter(["feat: initial", "feat: rerolled"])
+        commit_messages = iter([("feat: initial", 10, 5, 500), ("feat: rerolled", 10, 5, 500)])
 
         conversation_history: list[list[dict[str, str]]] = []
 

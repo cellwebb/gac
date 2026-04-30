@@ -73,7 +73,7 @@ class TestOllamaEdgeCases:
             mock_post.return_value = mock_response
 
             result = call_ollama_api("llama2", [], 0.7, 1000)
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_ollama_response_format(self):
         """Test response with response field format."""
@@ -84,7 +84,7 @@ class TestOllamaEdgeCases:
             mock_post.return_value = mock_response
 
             result = call_ollama_api("llama2", [], 0.7, 1000)
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_ollama_fallback_string_format(self):
         """Test fallback to string conversion for unexpected format."""
@@ -95,7 +95,7 @@ class TestOllamaEdgeCases:
             mock_post.return_value = mock_response
 
             result = call_ollama_api("llama2", [], 0.7, 1000)
-            assert "other_field" in result
+            assert "other_field" in result[0]
 
     def test_ollama_null_content(self):
         """Test handling of null content in message."""
@@ -124,7 +124,7 @@ class TestOllamaEdgeCases:
             # Verify custom URL was used
             call_args = mock_post.call_args
             assert "http://custom:8080/api/chat" in call_args[0][0]
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_ollama_with_api_key(self):
         """Test that API key is included in headers when provided."""
@@ -142,7 +142,7 @@ class TestOllamaEdgeCases:
             headers = call_args.kwargs["headers"]
             assert "Authorization" in headers
             assert headers["Authorization"] == "Bearer test-key"
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_ollama_connection_error(self):
         """Test handling of connection error when Ollama is not running."""
@@ -175,8 +175,8 @@ class TestOllamaIntegration:
             response = call_ollama_api(model="gpt-oss:20b", messages=messages, temperature=1.0, max_tokens=50)
 
             assert response is not None
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
         except AIError as e:
             error_str = str(e).lower()
             if "not found" in error_str:

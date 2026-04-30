@@ -119,7 +119,11 @@ class TestAzureOpenAIProviderMocked(BaseProviderTest):
             ):
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
-            assert result == "feat: Add new Azure feature"
+            assert isinstance(result, tuple)
+            assert len(result) == 4
+            content, prompt_tokens, completion_tokens, duration_ms = result
+            assert content == "feat: Add new Azure feature"
+            assert isinstance(duration_ms, int) and duration_ms >= 0
             mock_post.assert_called_once()
 
             # Verify URL construction

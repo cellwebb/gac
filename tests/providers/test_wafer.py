@@ -104,8 +104,8 @@ class TestWaferIntegration:
             response = PROVIDER_REGISTRY["wafer"](model="glm-5.1", messages=messages, temperature=1.0, max_tokens=50)
 
             assert response is not None
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
         except AIError as e:
             error_str = str(e).lower()
             if "429" in error_str or "rate limit" in error_str or "quota" in error_str:

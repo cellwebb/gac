@@ -141,7 +141,7 @@ class TestSingleCommitWorkflow:
     def test_panel_displayed_with_auto_confirm_flag(self, mock_count_tokens, mock_generate, mock_components):
         """Test that commit message panel is displayed even when require_confirmation=False (-y flag)."""
         commit_executor, interactive_mode, git_state = mock_components
-        mock_generate.return_value = "feat: test commit message"
+        mock_generate.return_value = ("feat: test commit message", 10, 5, 500)
         mock_count_tokens.return_value = 100
 
         ctx = self._create_context(
@@ -161,7 +161,7 @@ class TestSingleCommitWorkflow:
     def test_panel_not_displayed_when_quiet(self, mock_count_tokens, mock_generate, mock_components):
         """Test that commit message panel is not displayed when quiet=True."""
         commit_executor, interactive_mode, git_state = mock_components
-        mock_generate.return_value = "feat: test commit message"
+        mock_generate.return_value = ("feat: test commit message", 10, 5, 500)
         mock_count_tokens.return_value = 100
 
         ctx = self._create_context(commit_executor, interactive_mode, git_state, require_confirmation=False, quiet=True)
@@ -179,7 +179,7 @@ class TestSingleCommitWorkflow:
     def test_abort_on_no_response(self, mock_console, mock_count_tokens, mock_generate, mock_components):
         """Test that responding 'n' to confirmation aborts the commit."""
         commit_executor, interactive_mode, git_state = mock_components
-        mock_generate.return_value = "feat: test commit message"
+        mock_generate.return_value = ("feat: test commit message", 10, 5, 500)
         mock_count_tokens.return_value = 100
 
         interactive_mode.handle_single_commit_confirmation.return_value = ("feat: test commit message", "no")
@@ -199,7 +199,7 @@ class TestSingleCommitWorkflow:
     def test_regenerate_on_reroll_response(self, mock_count_tokens, mock_generate, mock_components):
         """Test that responding 'r' regenerates the commit message."""
         commit_executor, interactive_mode, git_state = mock_components
-        mock_generate.side_effect = ["feat: first message", "feat: second message"]
+        mock_generate.side_effect = [("feat: first message", 10, 5, 500), ("feat: second message", 10, 5, 500)]
         mock_count_tokens.return_value = 100
 
         interactive_mode.handle_single_commit_confirmation.side_effect = [
@@ -223,7 +223,7 @@ class TestSingleCommitWorkflow:
     def test_proceed_on_yes_response(self, mock_count_tokens, mock_generate, mock_components):
         """Test that responding 'y' proceeds with the commit."""
         commit_executor, interactive_mode, git_state = mock_components
-        mock_generate.return_value = "feat: test commit message"
+        mock_generate.return_value = ("feat: test commit message", 10, 5, 500)
         mock_count_tokens.return_value = 100
 
         interactive_mode.handle_single_commit_confirmation.return_value = ("feat: edited message", "yes")

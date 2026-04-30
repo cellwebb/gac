@@ -93,7 +93,11 @@ class TestCustomOpenAIProviderMocked(BaseProviderTest):
             ):
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
-            assert result == "feat: Add new feature"
+            assert isinstance(result, tuple)
+            assert len(result) == 4
+            content, prompt_tokens, completion_tokens, duration_ms = result
+            assert content == "feat: Add new feature"
+            assert isinstance(duration_ms, int) and duration_ms >= 0
             mock_post.assert_called_once()
 
     def test_empty_content_handling(self):
@@ -304,5 +308,5 @@ class TestCustomOpenAIIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

@@ -67,7 +67,12 @@ class TestLargeFileHandling:
         # Set up token counting - first call is large, subsequent calls normal
         mock_count_tokens.side_effect = [5000, 3000]  # First large, then normal
         mock_warning.return_value = True  # User accepts
-        mock_generate.return_value = '{"commits": [{"files": ["large_file.py"], "message": "Add large file"}]}'
+        mock_generate.return_value = (
+            '{"commits": [{"files": ["large_file.py"], "message": "Add large file"}]}',
+            10,
+            5,
+            500,
+        )
 
         conversation_messages = [{"role": "user", "content": "Generate commits"}]
         staged_files_set = {"large_file.py"}
@@ -116,7 +121,7 @@ class TestRetryLogicAndErrorRecovery:
     def test_max_json_validation_retries_exceeded(self, mock_print, mock_generate):
         """Test failure after maximum JSON validation retries."""
         # Always return invalid JSON
-        mock_generate.return_value = "Not valid JSON at all"
+        mock_generate.return_value = ("Not valid JSON at all", 0, 0, 0)
 
         conversation_messages = [{"role": "user", "content": "Generate commits"}]
         staged_files_set = {"file1.py"}
@@ -146,8 +151,8 @@ class TestRetryLogicAndErrorRecovery:
         """Test successful retry after file validation error."""
         # First response has missing files, second response is correct
         mock_generate.side_effect = [
-            '{"commits": [{"files": ["file1.py"], "message": "Test"}]}',  # Missing file2.py
-            '{"commits": [{"files": ["file1.py", "file2.py"], "message": "Fixed"}]}',  # Correct
+            ('{"commits": [{"files": ["file1.py"], "message": "Test"}]}', 10, 5, 500),
+            ('{"commits": [{"files": ["file1.py", "file2.py"], "message": "Fixed"}]}', 10, 5, 500),
         ]
 
         conversation_messages = [{"role": "user", "content": "Generate commits"}]
@@ -172,7 +177,7 @@ class TestRetryLogicAndErrorRecovery:
     @patch("gac.grouped_commit_workflow.generate_grouped_commits")
     def test_quiet_mode_retry_logging(self, mock_generate):
         """Test that retry messages are not logged in quiet mode."""
-        mock_generate.return_value = "Invalid JSON"
+        mock_generate.return_value = ("Invalid JSON", 0, 0, 0)
 
         conversation_messages = [{"role": "user", "content": "Generate commits"}]
         staged_files_set = {"file1.py"}

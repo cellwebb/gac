@@ -152,8 +152,8 @@ def test_conversation_state_preservation():
             with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
                 # First call fails, second succeeds
                 mock_generate.side_effect = [
-                    "Invalid JSON",
-                    '{"commits": [{"files": ["file1.py"], "message": "Fixed"}]}',
+                    ("Invalid JSON", 0, 0, 0),
+                    ('{"commits": [{"files": ["file1.py"], "message": "Fixed"}]}', 10, 5, 500),
                 ]
 
                 staged_files_set = {"file1.py"}
@@ -302,7 +302,12 @@ def test_file_validation_failed_after_retries():
 
     with mock.patch("gac.grouped_commit_workflow.check_token_warning", return_value=True):
         with mock.patch("gac.grouped_commit_workflow.generate_grouped_commits") as mock_generate:
-            mock_generate.return_value = '{"commits": [{"files": ["file1.py"], "message": "Only one file"}]}'
+            mock_generate.return_value = (
+                '{"commits": [{"files": ["file1.py"], "message": "Only one file"}]}',
+                10,
+                5,
+                500,
+            )
 
             conversation_messages = [{"role": "user", "content": "Generate commits"}]
             staged_files_set = {"file1.py", "file2.py"}

@@ -270,8 +270,8 @@ class TestQwenAPIIntegration:
             response = call_qwen_api(model="qwen3-max", messages=messages, temperature=1.0, max_tokens=50)
 
             assert response is not None
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
         except Exception as e:
             if "empty content" in str(e) or "null content" in str(e):
                 pytest.skip(f"Qwen API returned empty content - possible configuration issue: {e}")

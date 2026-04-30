@@ -162,7 +162,7 @@ class TestClaudeCodeEdgeCases:
                 assert payload["messages"][0]["role"] == "user"
                 assert "System instruction" in payload["messages"][0]["content"]
                 assert "User message" in payload["messages"][0]["content"]
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_claude_code_no_system_message(self):
         """Test that Claude Code identifier is always used as exact system message."""
@@ -184,7 +184,7 @@ class TestClaudeCodeEdgeCases:
                 assert payload["system"] == "You are Claude Code, Anthropic's official CLI for Claude."
                 assert len(payload["messages"]) == 1
                 assert payload["messages"][0]["content"] == "User message"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_claude_code_authentication_header(self):
         """Test that Claude Code uses Bearer token authentication."""
@@ -237,5 +237,5 @@ class TestClaudeCodeIntegration:
         response = call_claude_code_api(model="claude-haiku-4-5", messages=messages, temperature=1.0, max_tokens=50)
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

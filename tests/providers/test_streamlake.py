@@ -78,7 +78,7 @@ class TestStreamLakeProviderMocked(BaseProviderTest):
             messages = [{"role": "user", "content": "Generate a commit message"}]
             with patch.dict(os.environ, {"VC_API_KEY": "alias-key"}, clear=True):
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
-        assert result == "feat: Add new feature"
+        assert result[0] == "feat: Add new feature"
         headers = mock_post.call_args.kwargs.get("headers", {})
         assert headers.get("Authorization") == "Bearer alias-key"
 
@@ -164,7 +164,7 @@ class TestStreamLakeEdgeCases:
             call_args = mock_post.call_args
             headers = call_args.kwargs["headers"]
             assert headers["Authorization"] == "Bearer vc-test-key"
-            assert result == "test response"
+            assert result[0] == "test response"
 
 
 @pytest.mark.integration
@@ -187,8 +187,8 @@ class TestStreamLakeIntegration:
             )
 
             assert response is not None
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
         except AIError as e:
             error_str = str(e).lower()
             if "429" in error_str or "rate limit" in error_str or "quota" in error_str:

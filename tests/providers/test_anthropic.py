@@ -158,7 +158,7 @@ class TestAnthropicEdgeCases:
                 # Messages should only contain non-system messages
                 assert len(payload["messages"]) == 1
                 assert payload["messages"][0]["role"] == "user"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_anthropic_no_system_message(self):
         """Test that system field is not included when no system message."""
@@ -179,7 +179,7 @@ class TestAnthropicEdgeCases:
                 # System field should not be present
                 assert "system" not in payload
                 assert len(payload["messages"]) == 1
-                assert result == "test response"
+                assert result[0] == "test response"
 
 
 @pytest.mark.integration
@@ -198,5 +198,5 @@ class TestAnthropicIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

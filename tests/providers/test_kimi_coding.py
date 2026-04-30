@@ -173,7 +173,7 @@ class TestKimiEdgeCases:
                 assert payload["messages"][0]["content"] == "System instruction"
                 assert payload["messages"][1]["role"] == "user"
                 assert payload["messages"][1]["content"] == "User message"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_kimi_no_system_message(self):
         """Test that messages work without system message."""
@@ -195,7 +195,7 @@ class TestKimiEdgeCases:
                 assert len(payload["messages"]) == 1
                 assert payload["messages"][0]["role"] == "user"
                 assert payload["messages"][0]["content"] == "User message"
-                assert result == "test response"
+                assert result[0] == "test response"
 
 
 @pytest.mark.integration
@@ -212,5 +212,5 @@ class TestKimiIntegration:
         response = call_kimi_coding_api(model="kimi-for-coding", messages=messages, temperature=1.0, max_tokens=50)
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

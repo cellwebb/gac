@@ -135,13 +135,15 @@ class TestGenerateCommitMessage:
             generate_commit_message(model="invalid-format", prompt="test prompt")  # Missing colon separator
         assert "Invalid model format" in str(exc_info.value)
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value="feat: Add new feature")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("feat: Add new feature", 10, 5, 500))}
+    )
     def test_generate_commit_message_string_prompt(self):
         """Test generate_commit_message with string prompt using unified API."""
         # Test with string prompt using the unified API
         result = generate_commit_message(model="openai:gpt-4", prompt="Generate a commit message", quiet=True)
 
-        assert result == "feat: Add new feature"
+        assert result[0] == "feat: Add new feature"
 
         # Verify the openai function was called
         from gac.providers import PROVIDER_REGISTRY
@@ -152,7 +154,9 @@ class TestGenerateCommitMessage:
         assert call_args[1]["messages"][1]["content"] == "Generate a commit message"  # user message
         assert call_args[1]["messages"][0]["content"] == ""  # system message (empty for string prompt)
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value="fix: Resolve bug")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value=("fix: Resolve bug", 10, 5, 500))}
+    )
     def test_generate_commit_message_tuple_prompt(self):
         """Test generate_commit_message with tuple prompt using unified API."""
         # Test with tuple prompt using the unified API
@@ -162,7 +166,7 @@ class TestGenerateCommitMessage:
             model="anthropic:claude-3", prompt=(system_prompt, user_prompt), temperature=0.5, max_tokens=100, quiet=True
         )
 
-        assert result == "fix: Resolve bug"
+        assert result[0] == "fix: Resolve bug"
 
         # Verify the parameters passed to call_anthropic_api
         from gac.providers import PROVIDER_REGISTRY
@@ -177,7 +181,9 @@ class TestGenerateCommitMessage:
 
     @patch("gac.ai_utils.Status")
     @patch("gac.ai_utils.console")
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value="docs: Update README")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("docs: Update README", 10, 5, 500))}
+    )
     def test_generate_commit_message_with_spinner(self, mock_console, mock_status_class):
         """Test generate_commit_message with spinner (non-quiet mode)."""
         # Setup mocks
@@ -187,7 +193,7 @@ class TestGenerateCommitMessage:
         # Test with spinner enabled (quiet=False)
         result = generate_commit_message(model="openai:gpt-4", prompt="test", quiet=False)
 
-        assert result == "docs: Update README"
+        assert result[0] == "docs: Update README"
 
         # Verify spinner was used
         mock_status_class.assert_called_once()
@@ -195,7 +201,9 @@ class TestGenerateCommitMessage:
         mock_spinner.stop.assert_called_once()
         mock_console.print.assert_called_once_with("✓ Generated commit message with openai gpt-4")
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openrouter": MagicMock(return_value="chore: tidy config")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"openrouter": MagicMock(return_value=("chore: tidy config", 10, 5, 500))}
+    )
     def test_generate_commit_message_openrouter_provider(self):
         """Test that generate_commit_message routes openrouter provider correctly using unified API."""
         result = generate_commit_message(
@@ -206,7 +214,7 @@ class TestGenerateCommitMessage:
             quiet=True,
         )
 
-        assert result == "chore: tidy config"
+        assert result[0] == "chore: tidy config"
         from gac.providers import PROVIDER_REGISTRY
 
         mock_openrouter_api = PROVIDER_REGISTRY["openrouter"]
@@ -215,7 +223,10 @@ class TestGenerateCommitMessage:
         assert call_args[1]["temperature"] == 0.7
         assert call_args[1]["max_tokens"] == 256
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"streamlake": MagicMock(return_value="feat: summarize planets")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"streamlake": MagicMock(return_value=("feat: summarize planets", 10, 5, 500))},
+    )
     def test_generate_commit_message_streamlake_provider(self):
         """Test that generate_commit_message routes streamlake provider correctly using unified API."""
         result = generate_commit_message(
@@ -226,7 +237,7 @@ class TestGenerateCommitMessage:
             quiet=True,
         )
 
-        assert result == "feat: summarize planets"
+        assert result[0] == "feat: summarize planets"
         from gac.providers import PROVIDER_REGISTRY
 
         mock_streamlake_api = PROVIDER_REGISTRY["streamlake"]
@@ -243,7 +254,7 @@ class TestGenerateCommitMessage:
                 side_effect=[
                     AIError.connection_error("network connection failed"),
                     AIError.timeout_error("request timeout"),
-                    "feat: Success after retries",
+                    ("feat: Success after retries", 10, 5, 500),
                 ]
             )
         },
@@ -253,7 +264,7 @@ class TestGenerateCommitMessage:
         # Test with retries
         result = generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=3, quiet=True)
 
-        assert result == "feat: Success after retries"
+        assert result[0] == "feat: Success after retries"
         from gac.providers import PROVIDER_REGISTRY
 
         mock_openai_api = PROVIDER_REGISTRY["openai"]
@@ -353,19 +364,22 @@ class TestGenerateCommitMessage:
 
         assert exc_info.value.error_type == "unknown"
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value="Alternative response format")})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY",
+        {"openai": MagicMock(return_value=("Alternative response format", 10, 5, 500))},
+    )
     def test_generate_commit_message_response_without_choices(self):
         """Test handling of normal response format."""
         result = generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", quiet=True)
 
-        assert result == "Alternative response format"
+        assert result[0] == "Alternative response format"
 
     @patch("gac.ai_utils.time.sleep")
     @patch("gac.ai_utils.Status")
     @patch("gac.ai_utils.console")
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY",
-        {"openai": MagicMock(side_effect=[AIError.connection_error("Temporary error"), "Success"])},
+        {"openai": MagicMock(side_effect=[AIError.connection_error("Temporary error"), ("Success", 1, 1, 100)])},
     )
     def test_generate_commit_message_retry_with_spinner(self, mock_console, mock_status_class, mock_sleep):
         """Test retry logic with spinner animation."""
@@ -376,7 +390,7 @@ class TestGenerateCommitMessage:
         # Test with spinner and retry
         result = generate_commit_message(model="openai:gpt-4.1-mini", prompt="test", max_retries=2, quiet=False)
 
-        assert result == "Success"
+        assert result[0] == "Success"
 
         # Verify spinner was started and succeeded
         mock_spinner.start.assert_called_once()
@@ -407,7 +421,8 @@ class TestGenerateCommitMessage:
         mock_console.print.assert_called_with("✗ Failed to generate commit message with openai gpt-4.1-mini")
 
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value="feat: Add conversation support")}
+        "gac.providers.PROVIDER_REGISTRY",
+        {"anthropic": MagicMock(return_value=("feat: Add conversation support", 10, 5, 500))},
     )
     def test_generate_commit_message_list_prompt(self):
         """Test generate_commit_message with list of messages prompt format."""
@@ -420,7 +435,7 @@ class TestGenerateCommitMessage:
         ]
         result = generate_commit_message(model="anthropic:claude-3", prompt=messages, quiet=True)
 
-        assert result == "feat: Add conversation support"
+        assert result[0] == "feat: Add conversation support"
 
         # Verify the messages were passed through correctly
         from gac.providers import PROVIDER_REGISTRY
@@ -449,11 +464,11 @@ class TestGenerateCommitMessage:
         assert "Failed to generate commit message" in str(exc_info.value)
         assert "Unexpected internal error" in str(exc_info.value)
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value='{"commits": []}')})
+    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=('{"commits": []}', 10, 5, 500))})
     def test_generate_grouped_commits(self):
         msgs = [{"role": "user", "content": "test"}]
         result = generate_grouped_commits("openai:gpt-4", msgs, 0.7, 500, 1, True, True)
-        assert result == '{"commits": []}'
+        assert result[0] == '{"commits": []}'
 
 
 class TestProviderRegistry:

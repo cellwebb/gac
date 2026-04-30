@@ -79,7 +79,7 @@ def base_cli_mocks(monkeypatch):
         lambda *a, **kw: calls["record_tokens"].append((a, kw)),
     )
 
-    monkeypatch.setattr("gac.main.generate_commit_message", lambda *a, **kw: "feat: add new thing")
+    monkeypatch.setattr("gac.main.generate_commit_message", lambda *a, **kw: ("feat: add new thing", 10, 5, 500))
 
     def mock_count_tokens(content, model):
         return 250 if isinstance(content, list) else 12
@@ -151,7 +151,7 @@ class TestGroupedWorkflowRecordsTokens:
         )
         monkeypatch.setattr(
             "gac.grouped_commit_workflow.generate_grouped_commits",
-            lambda **kwargs: valid_response,
+            lambda **kwargs: (valid_response, 500, 80, 500),
         )
 
         # count_tokens: 500 for the conversation list, 80 for the response string.
@@ -252,7 +252,7 @@ class TestMcpServerRecordsTokens:
     """Verify gac.mcp.server.gac_commit calls record_tokens for the AI call."""
 
     @patch("gac.postprocess.clean_commit_message", return_value="feat: x")
-    @patch("gac.ai.generate_commit_message", return_value="feat: x")
+    @patch("gac.ai.generate_commit_message", return_value=("feat: x", 10, 5, 500))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["a.py"])

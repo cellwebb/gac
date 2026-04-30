@@ -176,5 +176,5 @@ class TestFireworksIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

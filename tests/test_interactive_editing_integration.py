@@ -53,7 +53,9 @@ class TestInplaceEditingIntegration:
 
             with (
                 mock.patch("click.prompt", side_effect=mock_click_prompt),
-                mock.patch("gac.main.generate_commit_message", return_value="test: initial commit message"),
+                mock.patch(
+                    "gac.main.generate_commit_message", return_value=("test: initial commit message", 10, 5, 500)
+                ),
                 mock.patch("prompt_toolkit.Application.run", side_effect=mock_app_run),
                 mock.patch.dict("os.environ", {"GAC_MODEL": "anthropic:claude-haiku-4-5"}),
             ):
@@ -100,8 +102,8 @@ class TestInplaceEditingIntegration:
             def mock_generate(*args, **kwargs):
                 generation_count["count"] += 1
                 if generation_count["count"] == 1:
-                    return "test: first message"
-                return "test: regenerated message"
+                    return ("test: first message", 10, 5, 500)
+                return ("test: regenerated message", 10, 5, 500)
 
             import inspect
 
@@ -161,7 +163,7 @@ class TestInplaceEditingIntegration:
 
             with (
                 mock.patch("click.prompt", side_effect=mock_click_prompt),
-                mock.patch("gac.main.generate_commit_message", return_value="test: original message"),
+                mock.patch("gac.main.generate_commit_message", return_value=("test: original message", 10, 5, 500)),
                 mock.patch("prompt_toolkit.Application.run", side_effect=KeyboardInterrupt()),
                 mock.patch.dict("os.environ", {"GAC_MODEL": "anthropic:claude-haiku-4-5"}),
             ):

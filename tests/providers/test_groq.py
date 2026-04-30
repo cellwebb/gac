@@ -107,7 +107,7 @@ class TestGroqEdgeCases:
             mock_post.return_value = mock_response
 
             result = PROVIDER_REGISTRY["groq"]("llama-3.1-70b", [], 0.7, 1000)
-            assert result == "test content"
+            assert result[0] == "test content"
 
     def test_groq_unexpected_choice_structure(self):
         """Test handling of unexpected choice structure without message or text."""
@@ -178,5 +178,5 @@ class TestGroqIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

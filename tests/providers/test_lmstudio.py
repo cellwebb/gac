@@ -124,7 +124,7 @@ class TestLMStudioEdgeCases:
             mock_post.return_value = mock_response
 
             result = call_lmstudio_api("local-model", [], 0.7, 1000)
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_lmstudio_custom_api_url(self):
         """Test custom LMSTUDIO_API_URL environment variable."""
@@ -140,7 +140,7 @@ class TestLMStudioEdgeCases:
             # Verify custom URL was used
             call_args = mock_post.call_args
             assert "http://custom:8080/v1/chat/completions" in call_args[0][0]
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_lmstudio_with_api_key(self):
         """Test that API key is included in headers when provided."""
@@ -158,7 +158,7 @@ class TestLMStudioEdgeCases:
             headers = call_args.kwargs["headers"]
             assert "Authorization" in headers
             assert headers["Authorization"] == "Bearer test-key"
-            assert result == "test response"
+            assert result[0] == "test response"
 
     def test_lmstudio_without_api_key(self):
         """Test that Authorization header is not included when no API key."""
@@ -178,7 +178,7 @@ class TestLMStudioEdgeCases:
             call_args = mock_post.call_args
             headers = call_args.kwargs["headers"]
             assert "Authorization" not in headers
-            assert result == "test response"
+            assert result[0] == "test response"
 
 
 @pytest.mark.integration

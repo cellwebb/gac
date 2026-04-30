@@ -91,7 +91,9 @@ class TestOpenAICompatibleProvider:
                 max_tokens=100,
             )
 
-            assert result == "test content"
+            assert isinstance(result, tuple)
+            assert result[0] == "test content"
+            assert isinstance(result[3], int) and result[3] >= 0
             mock_post.assert_called_once()
             call_kwargs = mock_post.call_args[1]
             assert call_kwargs["verify"] is True
@@ -165,6 +167,28 @@ class TestOpenAICompatibleProvider:
 
             call_kwargs = mock_post.call_args[1]
             assert call_kwargs["timeout"] == 60
+
+    def test_generate_returns_duration_ms(self):
+        """Test that generate returns a non-negative integer duration_ms."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+
+        with (
+            patch("gac.providers.base.httpx.post") as mock_post,
+            patch.dict(os.environ, {"SIMPLE_API_KEY": "test-key"}),
+        ):
+            mock_post.return_value.json.return_value = {"choices": [{"message": {"content": "hello"}}]}
+            mock_post.return_value.raise_for_status = MagicMock()
+
+            result = provider.generate(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": "test"}],
+                temperature=0.7,
+                max_tokens=100,
+            )
+
+            content, prompt_tokens, completion_tokens, duration_ms = result
+            assert isinstance(duration_ms, int)
+            assert duration_ms >= 0
 
     def test_bearer_token_header(self):
         """Test that OpenAI-style Bearer token is added."""

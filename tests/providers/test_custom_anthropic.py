@@ -94,7 +94,11 @@ class TestCustomAnthropicProviderMocked(BaseProviderTest):
             ):
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
-            assert result == "feat: Add new feature"
+            assert isinstance(result, tuple)
+            assert len(result) == 4
+            content, prompt_tokens, completion_tokens, duration_ms = result
+            assert content == "feat: Add new feature"
+            assert isinstance(duration_ms, int) and duration_ms >= 0
             mock_post.assert_called_once()
 
     def test_empty_content_handling(self):
@@ -340,7 +344,7 @@ class TestCustomAnthropicEdgeCases:
                 assert payload["system"] == "System instruction"
                 assert len(payload["messages"]) == 1
                 assert payload["messages"][0]["role"] == "user"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_custom_anthropic_custom_version_header(self):
         """Test that custom API version header can be set."""
@@ -401,7 +405,7 @@ class TestCustomAnthropicEdgeCases:
 
                 result = call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
 
-                assert result == "actual response text"
+                assert result[0] == "actual response text"
 
     def test_base_url_with_v1_suffix(self):
         """Test that base URL ending with /v1 gets /messages appended."""
@@ -508,5 +512,5 @@ class TestCustomAnthropicIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0

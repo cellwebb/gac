@@ -122,8 +122,8 @@ class TestMistralProviderIntegration:
                 temperature=0.7,
                 max_tokens=10,
             )
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
             # Should contain some form of greeting
             assert any(word.lower() in response.lower() for word in ["hello", "mistral", "hi"])
         except Exception as e:

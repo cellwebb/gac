@@ -79,7 +79,7 @@ class TestSyntheticProviderMocked(BaseProviderTest):
             with patch.dict(os.environ, {"SYN_API_KEY": "alias-key"}, clear=True):
                 result = self.api_function(model="hf:model", messages=messages, temperature=0.7, max_tokens=100)
 
-        assert result == "feat: Add new feature"
+        assert result[0] == "feat: Add new feature"
         headers = mock_post.call_args.kwargs.get("headers", {})
         assert headers.get("Authorization") == "Bearer alias-key"
 
@@ -96,7 +96,7 @@ class TestSyntheticProviderMocked(BaseProviderTest):
                     max_tokens=256,
                 )
 
-        assert result == "feat: Add new feature"
+        assert result[0] == "feat: Add new feature"
         payload = mock_post.call_args.kwargs.get("json", {})
         assert payload.get("model") == "hf:zai-org/GLM-4.6"
         assert payload.get("max_completion_tokens") == 256
@@ -140,8 +140,8 @@ class TestSyntheticIntegration:
             )
 
             assert response is not None
-            assert isinstance(response, str)
-            assert len(response) > 0
+            assert isinstance(response, tuple)
+            assert len(response[0]) > 0
         except AIError as e:
             error_str = str(e).lower()
             if "429" in error_str or "rate limit" in error_str or "quota" in error_str:

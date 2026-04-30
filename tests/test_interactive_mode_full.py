@@ -24,7 +24,7 @@ class TestHandleInteractiveFlow:
         """Test complete flow with questions generated and user provides answers."""
         caplog.set_level(logging.INFO)
         # Mock dependencies
-        mock_generate.return_value = "1. What changed?\n2. Why did it change?"
+        mock_generate.return_value = ("1. What changed?\n2. Why did it change?", 10, 5, 500)
         mock_collect_answers.return_value = ["Files were modified", "To fix a bug"]
         mock_format_answers.return_value = "\n\nAdditional context: Files were modified to fix a bug."
 
@@ -70,7 +70,7 @@ class TestHandleInteractiveFlow:
     def test_handle_interactive_flow_no_questions_generated(self, mock_collect_answers, mock_generate, caplog):
         """Test when no questions are generated (empty response)."""
         # Mock dependencies
-        mock_generate.return_value = ""  # Empty response
+        mock_generate.return_value = ("", 0, 0, 0)  # Empty response
         mock_collect_answers.return_value = None
 
         # Create mock git state
@@ -102,7 +102,7 @@ class TestHandleInteractiveFlow:
     def test_handle_interactive_flow_user_aborted(self, mock_collect_answers, mock_generate, capsys):
         """Test when user aborts interactive mode."""
         # Mock dependencies
-        mock_generate.return_value = "1. What changed?"
+        mock_generate.return_value = ("1. What changed?", 10, 5, 500)
         mock_collect_answers.return_value = None  # User aborted
 
         # Create mock git state
@@ -133,7 +133,7 @@ class TestHandleInteractiveFlow:
     ):
         """Test when user skips all questions."""
         # Mock dependencies
-        mock_generate.return_value = "1. What changed?\n2. Why?"
+        mock_generate.return_value = ("1. What changed?\n2. Why?", 10, 5, 500)
         mock_collect_answers.return_value = []  # Empty list - user skipped all
         mock_format_answers.return_value = ""
 
@@ -162,7 +162,7 @@ class TestHandleInteractiveFlow:
     def test_handle_interactive_flow_quiet_mode(self, mock_collect_answers, mock_generate, capsys):
         """Test that quiet mode suppresses console output."""
         # Mock dependencies
-        mock_generate.return_value = ""  # Empty response
+        mock_generate.return_value = ("", 0, 0, 0)  # Empty response
         mock_collect_answers.return_value = None
 
         # Create mock git state
@@ -194,7 +194,7 @@ class TestHandleInteractiveFlow:
     ):
         """Test when there's no conversation messages to update."""
         # Mock dependencies
-        mock_generate.return_value = "1. What changed?"
+        mock_generate.return_value = ("1. What changed?", 10, 5, 500)
         mock_collect_answers.return_value = ["Files modified"]
         mock_format_answers.return_value = "\n\nContext: Files modified."
 

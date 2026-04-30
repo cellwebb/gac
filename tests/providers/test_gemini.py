@@ -214,7 +214,7 @@ class TestGeminiEdgeCases:
                 assert payload["contents"][0]["role"] == "user"
                 assert payload["systemInstruction"]["role"] == "system"
                 assert payload["systemInstruction"]["parts"][0]["text"] == "System instruction"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_gemini_blank_system_message_ignored(self):
         """Ensure blank system instructions are omitted from payload."""
@@ -277,7 +277,7 @@ class TestGeminiEdgeCases:
                 assert payload["contents"][0]["role"] == "user"
                 assert payload["contents"][1]["role"] == "model"  # assistant -> model
                 assert payload["contents"][2]["role"] == "user"
-                assert result == "test response"
+                assert result[0] == "test response"
 
     def test_gemini_ignores_empty_text_parts(self):
         """Ensure empty parts are skipped when extracting model text."""
@@ -306,7 +306,7 @@ class TestGeminiEdgeCases:
                     max_tokens=1000,
                 )
 
-                assert result == "final answer"
+                assert result[0] == "final answer"
 
     def test_gemini_non_dict_parts_are_skipped(self):
         """Ensure non-dict parts are ignored while still returning valid text."""
@@ -333,7 +333,7 @@ class TestGeminiEdgeCases:
                     "gemini-2.5-flash-lite", [{"role": "user", "content": "hi"}], 0.7, 1000
                 )
 
-                assert result == "use this"
+                assert result[0] == "use this"
 
     def test_gemini_none_content_converted_to_empty_string(self):
         """Ensure None content values are converted to empty strings in payload."""
@@ -380,5 +380,5 @@ class TestGeminiIntegration:
         )
 
         assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
+        assert isinstance(response, tuple)
+        assert len(response[0]) > 0
