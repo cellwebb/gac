@@ -70,9 +70,12 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
             usage = response.get("usage")
             prompt_tokens = -1
             completion_tokens = -1
+            reasoning_tokens = 0
             if isinstance(usage, dict):
-                prompt_tokens = usage.get("input_tokens", -1)
-                completion_tokens = usage.get("output_tokens", -1)
+                pt = usage.get("input_tokens", -1)
+                ct = usage.get("output_tokens", -1)
+                prompt_tokens = pt if isinstance(pt, int) else -1
+                completion_tokens = ct if isinstance(ct, int) else -1
 
             content_list = response.get("content", [])
             if not content_list:
@@ -96,7 +99,12 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
                 raise AIError.model_error("Custom Anthropic API returned null content")
             if content == "":
                 raise AIError.model_error("Custom Anthropic API returned empty content")
-            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+            return ParsedResponse(
+                content=content,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                reasoning_tokens=reasoning_tokens,
+            )
         except AIError:
             raise
         except (KeyError, IndexError, TypeError, StopIteration) as e:

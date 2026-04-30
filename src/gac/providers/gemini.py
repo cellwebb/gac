@@ -90,8 +90,18 @@ class GeminiProvider(GenericHTTPProvider):
         usage_meta = response.get("usageMetadata")
         prompt_tokens = -1
         completion_tokens = -1
+        reasoning_tokens = 0
         if isinstance(usage_meta, dict):
-            prompt_tokens = usage_meta.get("promptTokenCount", -1)
-            completion_tokens = usage_meta.get("candidatesTokenCount", -1)
+            pt = usage_meta.get("promptTokenCount", -1)
+            ct = usage_meta.get("candidatesTokenCount", -1)
+            prompt_tokens = pt if isinstance(pt, int) else -1
+            completion_tokens = ct if isinstance(ct, int) else -1
+            rt = usage_meta.get("thoughtsTokenCount", 0)
+            reasoning_tokens = rt if isinstance(rt, int) else 0
 
-        return ParsedResponse(content=content_text, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return ParsedResponse(
+            content=content_text,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            reasoning_tokens=reasoning_tokens,
+        )

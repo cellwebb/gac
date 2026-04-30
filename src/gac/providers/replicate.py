@@ -76,7 +76,7 @@ class ReplicateProvider(GenericHTTPProvider):
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> tuple[str, int, int, int]:
+    ) -> tuple[str, int, int, int, int]:
         """Override generate to handle Replicate's async polling mechanism."""
         try:
             url = self._get_api_url(model)
@@ -135,7 +135,7 @@ class ReplicateProvider(GenericHTTPProvider):
                         raise AIError.model_error("Replicate API returned empty content")
                     prompt_tokens = count_tokens(messages, model)
                     completion_tokens = count_tokens(content, model)
-                    return (content, prompt_tokens, completion_tokens, duration_ms)
+                    return (content, prompt_tokens, completion_tokens, duration_ms, 0)
                 elif status_data["status"] == "failed":
                     raise AIError.model_error(
                         f"Replicate prediction failed: {status_data.get('error', 'Unknown error')}"

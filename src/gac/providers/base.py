@@ -22,6 +22,7 @@ class ParsedResponse:
     content: str
     prompt_tokens: int = -1
     completion_tokens: int = -1
+    reasoning_tokens: int = 0
 
 
 logger = logging.getLogger(__name__)
@@ -178,7 +179,7 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> tuple[str, int, int, int]:
+    ) -> tuple[str, int, int, int, int]:
         """Generate text using the AI provider.
 
         Error handling is delegated to the @handle_provider_errors decorator
@@ -193,7 +194,7 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             **kwargs: Additional provider-specific parameters
 
         Returns:
-            Tuple of (content, prompt_tokens, completion_tokens, duration_ms)
+            Tuple of (content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens)
 
         Raises:
             AIError: For any API-related errors (via decorator)
@@ -217,7 +218,7 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             parsed.completion_tokens if parsed.completion_tokens >= 0 else count_tokens(parsed.content, model)
         )
 
-        return (parsed.content, prompt_tokens, completion_tokens, duration_ms)
+        return (parsed.content, prompt_tokens, completion_tokens, duration_ms, parsed.reasoning_tokens)
 
 
 class OpenAICompatibleProvider(BaseConfiguredProvider):
@@ -254,9 +255,24 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
         if content == "":
             raise AIError.model_error("Invalid response: empty content")
         usage = response.get("usage")
-        prompt_tokens = usage.get("prompt_tokens", -1) if isinstance(usage, dict) else -1
-        completion_tokens = usage.get("completion_tokens", -1) if isinstance(usage, dict) else -1
-        return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        prompt_tokens = -1
+        completion_tokens = -1
+        reasoning_tokens = 0
+        if isinstance(usage, dict):
+            pt = usage.get("prompt_tokens", -1)
+            ct = usage.get("completion_tokens", -1)
+            prompt_tokens = pt if isinstance(pt, int) else -1
+            completion_tokens = ct if isinstance(ct, int) else -1
+            details = usage.get("completion_tokens_details")
+            if isinstance(details, dict):
+                rt = details.get("reasoning_tokens", 0)
+                reasoning_tokens = rt if isinstance(rt, int) else 0
+        return ParsedResponse(
+            content=content,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            reasoning_tokens=reasoning_tokens,
+        )
 
 
 class AnthropicCompatibleProvider(BaseConfiguredProvider):
@@ -311,8 +327,13 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         if text_content == "":
             raise AIError.model_error("Invalid response: empty content")
         usage = response.get("usage")
-        prompt_tokens = usage.get("input_tokens", -1) if isinstance(usage, dict) else -1
-        completion_tokens = usage.get("output_tokens", -1) if isinstance(usage, dict) else -1
+        prompt_tokens = -1
+        completion_tokens = -1
+        if isinstance(usage, dict):
+            pt = usage.get("input_tokens", -1)
+            ct = usage.get("output_tokens", -1)
+            prompt_tokens = pt if isinstance(pt, int) else -1
+            completion_tokens = ct if isinstance(ct, int) else -1
         return ParsedResponse(content=text_content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
 
@@ -330,22 +351,35 @@ class GenericHTTPProvider(BaseConfiguredProvider):
         usage = response.get("usage")
         prompt_tokens: int = -1
         completion_tokens: int = -1
+        reasoning_tokens: int = 0
         if isinstance(usage, dict):
             pt = usage.get("prompt_tokens", usage.get("input_tokens", -1))
             ct = usage.get("completion_tokens", usage.get("output_tokens", -1))
             prompt_tokens = pt if isinstance(pt, int) else -1
             completion_tokens = ct if isinstance(ct, int) else -1
+            details = usage.get("completion_tokens_details")
+            if isinstance(details, dict):
+                rt = details.get("reasoning_tokens", 0)
+                reasoning_tokens = rt if isinstance(rt, int) else 0
 
         choices = response.get("choices")
         if choices and isinstance(choices, list):
             content = choices[0].get("message", {}).get("content")
             if content:
-                return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+                return ParsedResponse(
+                    content=content,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    reasoning_tokens=reasoning_tokens,
+                )
 
         content = response.get("content")
         if content and isinstance(content, list):
             return ParsedResponse(
-                content=content[0].get("text", ""), prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
+                content=content[0].get("text", ""),
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                reasoning_tokens=reasoning_tokens,
             )
 
         message = response.get("message", {})

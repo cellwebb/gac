@@ -16,7 +16,7 @@ class ProviderProtocol(Protocol):
 
     def generate(
         self, model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int, **kwargs: Any
-    ) -> tuple[str, int, int, int]:
+    ) -> tuple[str, int, int, int, int]:
         """Generate text using the AI model.
 
         Args:
@@ -27,7 +27,7 @@ class ProviderProtocol(Protocol):
             **kwargs: Additional provider-specific parameters
 
         Returns:
-            Tuple of (content, prompt_tokens, completion_tokens, duration_ms)
+            Tuple of (content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens)
 
         Raises:
             AIError: For any generation-related errors

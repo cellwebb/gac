@@ -59,8 +59,18 @@ class LMStudioProvider(OpenAICompatibleProvider):
         from gac.errors import AIError
 
         usage = response.get("usage")
-        prompt_tokens = usage.get("prompt_tokens", -1) if isinstance(usage, dict) else -1
-        completion_tokens = usage.get("completion_tokens", -1) if isinstance(usage, dict) else -1
+        prompt_tokens = -1
+        completion_tokens = -1
+        reasoning_tokens = 0
+        if isinstance(usage, dict):
+            pt = usage.get("prompt_tokens", -1)
+            ct = usage.get("completion_tokens", -1)
+            prompt_tokens = pt if isinstance(pt, int) else -1
+            completion_tokens = ct if isinstance(ct, int) else -1
+            details = usage.get("completion_tokens_details")
+            if isinstance(details, dict):
+                rt = details.get("reasoning_tokens", 0)
+                reasoning_tokens = rt if isinstance(rt, int) else 0
 
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
@@ -71,12 +81,22 @@ class LMStudioProvider(OpenAICompatibleProvider):
         if content is not None:
             if content == "":
                 raise AIError.model_error("Invalid response: empty content")
-            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+            return ParsedResponse(
+                content=content,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                reasoning_tokens=reasoning_tokens,
+            )
 
         content = choice.get("text")
         if content is not None:
             if content == "":
                 raise AIError.model_error("Invalid response: empty content")
-            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+            return ParsedResponse(
+                content=content,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                reasoning_tokens=reasoning_tokens,
+            )
 
         raise AIError.model_error("Invalid response: missing content")
