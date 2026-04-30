@@ -198,8 +198,8 @@ def show() -> None:
         models_table.add_column("Model", style="bold magenta")
         models_table.add_column("Gacs", style="bold cyan", justify="right")
         models_table.add_column("Speed", style="bold cyan", justify="right")
-        models_table.add_column("Prompt Tokens", style="bold cyan", justify="right")
-        models_table.add_column("Completion Tokens", style="bold cyan", justify="right")
+        models_table.add_column("Prompt", style="bold cyan", justify="right")
+        models_table.add_column("Completion", style="bold cyan", justify="right")
         models_table.add_column("Reasoning", style="bold cyan", justify="right")
 
         for model_name, data in top_models[:5]:
