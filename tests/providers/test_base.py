@@ -532,22 +532,22 @@ class TestGenericHTTPProviderParseResponse:
     def test_openai_style_response(self):
         provider = self._make_provider()
         response = {"choices": [{"message": {"content": "openai response"}}]}
-        assert provider._parse_response(response) == "openai response"
+        assert provider._parse_response(response).content == "openai response"
 
     def test_anthropic_style_response(self):
         provider = self._make_provider()
         response = {"content": [{"text": "anthropic response"}]}
-        assert provider._parse_response(response) == "anthropic response"
+        assert provider._parse_response(response).content == "anthropic response"
 
     def test_ollama_style_response(self):
         provider = self._make_provider()
         response = {"message": {"content": "ollama response"}}
-        assert provider._parse_response(response) == "ollama response"
+        assert provider._parse_response(response).content == "ollama response"
 
     def test_fallback_long_string_value(self):
         provider = self._make_provider()
         response = {"result": "this is a long response text for fallback detection"}
-        assert provider._parse_response(response) == "this is a long response text for fallback detection"
+        assert provider._parse_response(response).content == "this is a long response text for fallback detection"
 
     def test_no_content_raises_ai_error(self):
         provider = self._make_provider()
@@ -558,12 +558,12 @@ class TestGenericHTTPProviderParseResponse:
     def test_empty_choices_falls_through(self):
         provider = self._make_provider()
         response = {"choices": [], "message": {"content": "from ollama"}}
-        assert provider._parse_response(response) == "from ollama"
+        assert provider._parse_response(response).content == "from ollama"
 
     def test_choices_with_no_content_falls_through(self):
         provider = self._make_provider()
         response = {"choices": [{"message": {}}], "content": [{"text": "from anthropic"}]}
-        assert provider._parse_response(response) == "from anthropic"
+        assert provider._parse_response(response).content == "from anthropic"
 
     def test_empty_dict_raises_ai_error(self):
         provider = self._make_provider()
