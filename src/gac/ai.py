@@ -24,7 +24,7 @@ def generate_commit_message(
     is_group: bool = False,
     skip_success_message: bool = False,
     task_description: str = "commit message",
-) -> str:
+) -> tuple[str, int, int, int]:
     """Generate a commit message using direct API calls to AI providers.
 
     Args:
@@ -36,16 +36,10 @@ def generate_commit_message(
         quiet: If True, suppress progress indicators
 
     Returns:
-        A formatted commit message string
+        Tuple of (content, prompt_tokens, completion_tokens, duration_ms)
 
     Raises:
         AIError: If generation fails after max_retries attempts
-
-    Example:
-        >>> model = "anthropic:claude-haiku-4-5"
-        >>> system_prompt, user_prompt = build_prompt("On branch main", "diff --git a/README.md b/README.md")
-        >>> generate_commit_message(model, (system_prompt, user_prompt))
-        'docs: Update README with installation instructions'
     """
     # Handle both old (string) and new (tuple) prompt formats
     if isinstance(prompt, list):
@@ -94,7 +88,7 @@ def generate_grouped_commits(
     max_retries: int,
     quiet: bool = False,
     skip_success_message: bool = False,
-) -> str:
+) -> tuple[str, int, int, int]:
     """Generate grouped commits JSON response."""
     return generate_commit_message(
         model=model,

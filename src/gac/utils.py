@@ -6,13 +6,37 @@ import os
 import subprocess
 import sys
 from functools import lru_cache
-from typing import Any
+from typing import Any, cast
 
 from rich.console import Console
 from rich.theme import Theme
 
 from gac.constants import EnvDefaults, Logging
 from gac.errors import GacError
+
+
+def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -> str:
+    """Extract text content from various input formats."""
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, list):
+        return "\n".join(
+            msg["content"]
+            for msg in content
+            if isinstance(msg, dict) and "content" in msg and msg["content"] is not None
+        )
+    elif isinstance(content, dict) and "content" in content:
+        return cast(str, content["content"])
+    return ""
+
+
+def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
+    """Count tokens in content using character-based estimation (1 token per 3.4 characters)."""
+    text = extract_text_content(content)
+    if not text:
+        return 0
+    result = round(len(text) / 3.4)
+    return result if result > 0 else 1
 
 
 @lru_cache(maxsize=1)

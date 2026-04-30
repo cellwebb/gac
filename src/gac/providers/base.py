@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -11,7 +12,7 @@ import httpx
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.protocol import ProviderProtocol
-from gac.utils import get_ssl_verify
+from gac.utils import count_tokens, get_ssl_verify
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> str:
+    ) -> tuple[str, int, int, int]:
         """Generate text using the AI provider.
 
         Error handling is delegated to the @handle_provider_errors decorator
@@ -181,27 +182,29 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
             **kwargs: Additional provider-specific parameters
 
         Returns:
-            Generated text content
+            Tuple of (content, prompt_tokens, completion_tokens, duration_ms)
 
         Raises:
             AIError: For any API-related errors (via decorator)
         """
         logger.debug(f"Generating with {self.config.name} provider (model={model})")
 
-        # Build request components
         url = self._get_api_url(model)
         headers = self._build_headers()
         body = self._build_request_body(messages, temperature, max_tokens, model, **kwargs)
 
-        # Add model to body if not already present
         if "model" not in body:
             body["model"] = model
 
-        # Make HTTP request
+        start = time.perf_counter()
         response_data = self._make_http_request(url, body, headers)
+        duration_ms = int((time.perf_counter() - start) * 1000)
 
-        # Parse response
-        return self._parse_response(response_data)
+        content = self._parse_response(response_data)
+        prompt_tokens = count_tokens(messages, model)
+        completion_tokens = count_tokens(content, model)
+
+        return (content, prompt_tokens, completion_tokens, duration_ms)
 
 
 class OpenAICompatibleProvider(BaseConfiguredProvider):

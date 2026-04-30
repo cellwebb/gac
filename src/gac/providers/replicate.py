@@ -7,7 +7,7 @@ import httpx
 
 from gac.errors import AIError
 from gac.providers.base import GenericHTTPProvider, ProviderConfig
-from gac.utils import get_ssl_verify
+from gac.utils import count_tokens, get_ssl_verify
 
 
 class ReplicateProvider(GenericHTTPProvider):
@@ -76,9 +76,8 @@ class ReplicateProvider(GenericHTTPProvider):
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> str:
+    ) -> tuple[str, int, int, int]:
         """Override generate to handle Replicate's async polling mechanism."""
-        # Build request components
         try:
             url = self._get_api_url(model)
         except AIError:
@@ -100,7 +99,8 @@ class ReplicateProvider(GenericHTTPProvider):
         except Exception as e:
             raise AIError.model_error(f"Error calling {self.config.name} AI API: {e!s}") from e
 
-        # Create prediction
+        start = time.perf_counter()
+
         try:
             response = httpx.post(url, json=body, headers=headers, timeout=self.config.timeout, verify=get_ssl_verify())
             response.raise_for_status()
@@ -116,7 +116,8 @@ class ReplicateProvider(GenericHTTPProvider):
         except Exception as e:
             raise AIError.model_error(f"Error calling Replicate API: {str(e)}") from e
 
-        # Poll for completion
+        duration_ms = int((time.perf_counter() - start) * 1000)
+
         get_url = f"https://api.replicate.com/v1/predictions/{prediction_data['id']}"
         max_wait_time = 120
         wait_interval = 2
@@ -132,7 +133,9 @@ class ReplicateProvider(GenericHTTPProvider):
                     content = status_data["output"]
                     if not content:
                         raise AIError.model_error("Replicate API returned empty content")
-                    return content
+                    prompt_tokens = count_tokens(messages, model)
+                    completion_tokens = count_tokens(content, model)
+                    return (content, prompt_tokens, completion_tokens, duration_ms)
                 elif status_data["status"] == "failed":
                     raise AIError.model_error(
                         f"Replicate prediction failed: {status_data.get('error', 'Unknown error')}"

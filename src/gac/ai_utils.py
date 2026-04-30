@@ -7,7 +7,6 @@ import logging
 import os
 import time
 from collections.abc import Callable
-from typing import Any, cast
 
 from rich.console import Console
 from rich.status import Status
@@ -16,36 +15,16 @@ from gac.errors import AIError
 from gac.oauth import refresh_token_if_expired
 from gac.oauth.token_store import TokenStore
 from gac.providers import SUPPORTED_PROVIDERS
+from gac.utils import count_tokens, extract_text_content
+
+__all__ = ["generate_with_retries", "count_tokens", "extract_text_content"]
 
 logger = logging.getLogger(__name__)
 console = Console()
 
 
-def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
-    """Count tokens in content using character-based estimation (1 token per 3.4 characters)."""
-    text = extract_text_content(content)
-    if not text:
-        return 0
-
-    # Use simple character-based estimation: 1 token per 3.4 characters (rounded)
-    result = round(len(text) / 3.4)
-    # Ensure at least 1 token for non-empty text
-    return result if result > 0 else 1
-
-
-def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -> str:
-    """Extract text content from various input formats."""
-    if isinstance(content, str):
-        return content
-    elif isinstance(content, list):
-        return "\n".join(msg["content"] for msg in content if isinstance(msg, dict) and "content" in msg)
-    elif isinstance(content, dict) and "content" in content:
-        return cast(str, content["content"])
-    return ""
-
-
 def generate_with_retries(
-    provider_funcs: dict[str, Callable[..., str]],
+    provider_funcs: dict[str, Callable[..., tuple[str, int, int, int]]],
     model: str,
     messages: list[dict[str, str]],
     temperature: float,
@@ -55,7 +34,7 @@ def generate_with_retries(
     is_group: bool = False,
     skip_success_message: bool = False,
     task_description: str = "commit message",
-) -> str:
+) -> tuple[str, int, int, int]:
     """Generate content with retry logic using direct API calls."""
     # Parse model string to determine provider and actual model
     if ":" not in model:
@@ -122,17 +101,18 @@ def generate_with_retries(
             if not provider_func:
                 raise AIError.model_error(f"Provider function not found for: {provider}")
 
-            content = provider_func(model=model_name, messages=messages, temperature=temperature, max_tokens=max_tokens)
+            result = provider_func(model=model_name, messages=messages, temperature=temperature, max_tokens=max_tokens)
+            content, prompt_tokens, completion_tokens, duration_ms = result
 
             if spinner:
                 if skip_success_message:
-                    spinner.stop()  # Stop spinner without showing success/failure
+                    spinner.stop()
                 else:
                     spinner.stop()
                     console.print(f"✓ Generated {message_type} with {provider} {model_name}")
 
             if content is not None and content.strip():
-                return content.strip()
+                return (content.strip(), prompt_tokens, completion_tokens, duration_ms)
             else:
                 logger.warning(f"Empty or None content received from {provider} {model_name}: {repr(content)}")
                 raise AIError.model_error("Empty response from AI model")

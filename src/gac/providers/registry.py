@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from gac.providers.base import BaseConfiguredProvider
 
 # Global registry for provider functions
-PROVIDER_REGISTRY: dict[str, Callable[..., str]] = {}
+PROVIDER_REGISTRY: dict[str, Callable[..., tuple[str, int, int, int]]] = {}
 
 
-def create_provider_func(provider_class: type["BaseConfiguredProvider"]) -> Callable[..., str]:
+def create_provider_func(provider_class: type["BaseConfiguredProvider"]) -> Callable[..., tuple[str, int, int, int]]:
     """Create a provider function from a provider class.
 
     This function creates a callable that:
@@ -31,7 +31,9 @@ def create_provider_func(provider_class: type["BaseConfiguredProvider"]) -> Call
 
     @handle_provider_errors(provider_name)
     @wraps(provider_class.generate)
-    def provider_func(model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int) -> str:
+    def provider_func(
+        model: str, messages: list[dict[str, Any]], temperature: float, max_tokens: int
+    ) -> tuple[str, int, int, int]:
         provider = provider_class(provider_class.config)
         return provider.generate(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens)
 
