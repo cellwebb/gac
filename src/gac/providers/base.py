@@ -14,6 +14,16 @@ from gac.errors import AIError
 from gac.providers.protocol import ProviderProtocol
 from gac.utils import count_tokens, get_ssl_verify
 
+
+@dataclass
+class ParsedResponse:
+    """Structured result from parsing an API response."""
+
+    content: str
+    prompt_tokens: int = -1
+    completion_tokens: int = -1
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,14 +114,15 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         pass
 
     @abstractmethod
-    def _parse_response(self, response: dict[str, Any]) -> str:
-        """Parse the API response and extract content.
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
+        """Parse the API response and extract content plus token counts.
 
         Args:
             response: Response dictionary from API
 
         Returns:
-            Generated text content
+            ParsedResponse with content and optional token counts.
+            Set prompt_tokens/completion_tokens to -1 to request estimation.
         """
         pass
 
@@ -200,11 +211,13 @@ class BaseConfiguredProvider(ABC, ProviderProtocol):
         response_data = self._make_http_request(url, body, headers)
         duration_ms = int((time.perf_counter() - start) * 1000)
 
-        content = self._parse_response(response_data)
-        prompt_tokens = count_tokens(messages, model)
-        completion_tokens = count_tokens(content, model)
+        parsed = self._parse_response(response_data)
+        prompt_tokens = parsed.prompt_tokens if parsed.prompt_tokens >= 0 else count_tokens(messages, model)
+        completion_tokens = (
+            parsed.completion_tokens if parsed.completion_tokens >= 0 else count_tokens(parsed.content, model)
+        )
 
-        return (content, prompt_tokens, completion_tokens, duration_ms)
+        return (parsed.content, prompt_tokens, completion_tokens, duration_ms)
 
 
 class OpenAICompatibleProvider(BaseConfiguredProvider):
@@ -230,7 +243,7 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse OpenAI-style response."""
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
@@ -240,7 +253,10 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
             raise AIError.model_error("Invalid response: null content")
         if content == "":
             raise AIError.model_error("Invalid response: empty content")
-        return content
+        usage = response.get("usage")
+        prompt_tokens = usage.get("prompt_tokens", -1) if isinstance(usage, dict) else -1
+        completion_tokens = usage.get("completion_tokens", -1) if isinstance(usage, dict) else -1
+        return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
 
 class AnthropicCompatibleProvider(BaseConfiguredProvider):
@@ -283,7 +299,7 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
 
         return body
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse Anthropic-style response."""
         content = response.get("content")
         if not content or not isinstance(content, list):
@@ -294,7 +310,10 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
             raise AIError.model_error("Invalid response: null content")
         if text_content == "":
             raise AIError.model_error("Invalid response: empty content")
-        return text_content
+        usage = response.get("usage")
+        prompt_tokens = usage.get("input_tokens", -1) if isinstance(usage, dict) else -1
+        completion_tokens = usage.get("output_tokens", -1) if isinstance(usage, dict) else -1
+        return ParsedResponse(content=text_content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
 
 class GenericHTTPProvider(BaseConfiguredProvider):
@@ -306,29 +325,42 @@ class GenericHTTPProvider(BaseConfiguredProvider):
         """Default implementation - override this in subclasses."""
         return {"messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kwargs}
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Default implementation - override this in subclasses."""
-        # Try OpenAI-style first
+        usage = response.get("usage")
+        prompt_tokens: int = -1
+        completion_tokens: int = -1
+        if isinstance(usage, dict):
+            pt = usage.get("prompt_tokens", usage.get("input_tokens", -1))
+            ct = usage.get("completion_tokens", usage.get("output_tokens", -1))
+            prompt_tokens = pt if isinstance(pt, int) else -1
+            completion_tokens = ct if isinstance(ct, int) else -1
+
         choices = response.get("choices")
         if choices and isinstance(choices, list):
             content = choices[0].get("message", {}).get("content")
             if content:
-                return content
+                return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
-        # Try Anthropic-style
         content = response.get("content")
         if content and isinstance(content, list):
-            return content[0].get("text", "")
+            return ParsedResponse(
+                content=content[0].get("text", ""), prompt_tokens=prompt_tokens, completion_tokens=completion_tokens
+            )
 
-        # Try Ollama-style
         message = response.get("message", {})
         if "content" in message:
-            return message["content"]
+            ollama_prompt = response.get("prompt_eval_count", -1)
+            ollama_completion = response.get("eval_count", -1)
+            return ParsedResponse(
+                content=message["content"],
+                prompt_tokens=ollama_prompt if isinstance(ollama_prompt, int) else -1,
+                completion_tokens=ollama_completion if isinstance(ollama_completion, int) else -1,
+            )
 
-        # Fallback - try to find any string content
         for value in response.values():
-            if isinstance(value, str) and len(value) > 10:  # Assume longer strings are content
-                return value
+            if isinstance(value, str) and len(value) > 10:
+                return ParsedResponse(content=value, prompt_tokens=-1, completion_tokens=-1)
 
         raise AIError.model_error("Could not extract content from response")
 
@@ -338,5 +370,6 @@ __all__ = [
     "BaseConfiguredProvider",
     "GenericHTTPProvider",
     "OpenAICompatibleProvider",
+    "ParsedResponse",
     "ProviderConfig",
 ]
