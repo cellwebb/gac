@@ -384,7 +384,7 @@ You can customize gac's behavior with these optional environment variables:
 - `GAC_TRANSLATE_PREFIXES=true` - Translate conventional commit prefixes (feat, fix, etc.) into the target language (default: false, keeps prefixes in English)
 - `GAC_SKIP_SECRET_SCAN=true` - Disable automatic security scanning for secrets in staged changes (use with caution)
 - `GAC_NO_VERIFY_SSL=true` - Skip SSL certificate verification for API calls (useful for corporate proxies that intercept SSL traffic)
-- `GAC_DISABLE_STATS=true` - Disable usage statistics tracking (no stats file reads or writes; existing data is preserved)
+- `GAC_DISABLE_STATS=true` - Disable usage statistics tracking (no stats file reads or writes; existing data is preserved). Only truthy values disable stats; setting it to `false`/`0`/`no`/`off` keeps stats enabled, same as leaving it unset
 
 See `.gac.env.example` for a complete configuration template.
 
@@ -407,7 +407,7 @@ The following subcommands are available:
 - `gac language` (or `gac lang`) — Interactive language selector for commit messages (sets GAC_LANGUAGE)
 - `gac diff` — Show filtered git diff with options for staged/unstaged changes, color, and truncation
 - `gac serve` — Start GAC as an [MCP server](MCP.md) for AI agent integration (stdio transport)
-- `gac stats show` — View your gac usage statistics (totals, streaks, daily & weekly activity, top projects)
+- `gac stats show` — View your gac usage statistics (totals, streaks, daily & weekly activity, token usage, top projects, top models)
 - `gac stats project` — View stats for the current git project only
 - `gac stats reset` — Reset all statistics to zero (prompts for confirmation)
 
@@ -519,20 +519,29 @@ gac -i -v
 
 ## Usage Statistics
 
-gac tracks lightweight usage statistics so you can see your commit activity, streaks, and most-active projects. Stats are stored locally in `~/.gac_stats.json` and never sent anywhere.
+gac tracks lightweight usage statistics so you can see your commit activity, streaks, token usage, and most-active projects and models. Stats are stored locally in `~/.gac_stats.json` and never sent anywhere — there is no telemetry.
 
-**What's tracked:** total gac runs, total commits, first/last used dates, daily and weekly counts, current and longest streak, and per-project activity counts.
+**What's tracked:** total gac runs, total commits, total prompt and completion tokens, first/last used dates, daily and weekly counts (gacs, commits, tokens), current and longest streak, per-project activity (gacs, commits, prompt + completion tokens), and per-model activity (gacs, prompt + completion tokens).
 
-**What's NOT tracked:** commit messages, code content, file paths, personal information, or anything beyond counts and project names.
+**What's NOT tracked:** commit messages, code content, file paths, personal information, or anything beyond counts, dates, project names (derived from git remote or directory name), and model names.
+
+### Opting In or Out
+
+`gac init` asks whether to enable stats and explains exactly what's stored. You can change your mind at any time:
+
+- **Enable stats:** unset `GAC_DISABLE_STATS` or set it to `false`/`0`/`no`/`off`/empty.
+- **Disable stats:** set `GAC_DISABLE_STATS` to a truthy value (`true`, `1`, `yes`, `on`).
+
+When you decline stats during `gac init` and an existing `~/.gac_stats.json` is detected, you'll be offered the option to delete it.
 
 ### Stats Subcommands
 
-| Command             | Description                                                                |
-| ------------------- | -------------------------------------------------------------------------- |
-| `gac stats`         | Show your stats (same as `gac stats show`)                                 |
-| `gac stats show`    | Display full stats: totals, streaks, daily & weekly activity, top projects |
-| `gac stats project` | Show stats for the current git project only                                |
-| `gac stats reset`   | Reset all statistics to zero (prompts for confirmation)                    |
+| Command             | Description                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Show your stats (same as `gac stats show`)                                                          |
+| `gac stats show`    | Display full stats: totals, streaks, daily & weekly activity, token usage, top projects, top models |
+| `gac stats project` | Show stats for the current git project only                                                         |
+| `gac stats reset`   | Reset all statistics to zero (prompts for confirmation)                                             |
 
 ### Examples
 
@@ -553,24 +562,27 @@ Running `gac stats` displays:
 
 - **Total gacs and commits** — how many times you've used gac and how many commits it created
 - **Current and longest streak** — consecutive days with gac activity (🔥 at 5+ days)
-- **Activity summary** — today's and this week's gacs/commits vs your peak day and peak week
-- **Top projects** — your 5 most-active repos by gac + commit count
-- **High score celebrations** — 🏆 trophies when you set new daily, weekly, or streak records; 🥈 for tying them
+- **Activity summary** — today's and this week's gacs, commits, and tokens vs your peak day and peak week
+- **Top projects** — your 5 most-active repos by gac + commit count, with token usage per project
+- **Top models** — your 5 most-used models with prompt, completion, and total tokens consumed
+- **High score celebrations** — 🏆 trophies when you set new daily, weekly, token, or streak records; 🥈 for tying them
 - **Encouragement messages** — contextual nudges based on your activity
 
 ### Disabling Stats
 
-Set the `GAC_DISABLE_STATS` environment variable to any value:
+Set the `GAC_DISABLE_STATS` environment variable to a truthy value:
 
 ```sh
 # Disable stats tracking
-export GAC_DISABLE_STATS=1
+export GAC_DISABLE_STATS=true
 
 # Or in .gac.env
 GAC_DISABLE_STATS=true
 ```
 
-When disabled, gac skips all stats recording — no file reads or writes occur. Existing data is preserved but won't be updated until you unset the variable.
+Falsy values (`false`, `0`, `no`, `off`, empty) keep stats enabled — the same as leaving the variable unset.
+
+When disabled, gac skips all stats recording — no file reads or writes occur. Existing data is preserved but won't be updated until you re-enable.
 
 ---
 
