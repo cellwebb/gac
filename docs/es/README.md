@@ -104,10 +104,13 @@ uv tool upgrade gac
 ### 📊 **Estadísticas de Uso**
 
 - **Rastrea tus gacs**: Ve cuántos commits has hecho con gac, tu racha actual, pico de actividad diaria/semanal y proyectos principales
+- **Seguimiento de tokens**: Tokens de prompt y completion totales por día, semana, proyecto y modelo — con trofeos de récord también para el uso de tokens
+- **Modelos principales**: Ve qué modelos usas más y cuántos tokens consume cada uno
 - **Estadísticas por proyecto**: Ve las estadísticas del repositorio actual con `gac stats project`
-- **Celebraciones de récord**: 🏆 trofeos cuando estableces nuevos récords diarios, semanales o de racha; 🥈 por empatarlos
-- **Exclusión voluntaria**: Establece `GAC_DISABLE_STATS=1` para desactivar el seguimiento — no se escriben datos
-- **Privacidad primero**: Solo almacena conteos, fechas y nombres de proyectos (derivados del remoto/directorio de git) — sin mensajes de commit, código ni datos personales
+- **Celebraciones de récord**: 🏆 trofeos cuando estableces nuevos récords diarios, semanales, de tokens o de racha; 🥈 por empatarlos
+- **Opt-in durante la configuración**: `gac init` pregunta si deseas activar las estadísticas y explica exactamente qué se almacena
+- **Opt-out en cualquier momento**: Establece `GAC_DISABLE_STATS=true` (o `1`/`yes`/`on`) para desactivar. Establecerlo en `false`/`0`/`no` (o dejarlo sin establecer) mantiene las estadísticas activadas
+- **Privacidad primero**: Almacenado localmente en `~/.gac_stats.json`. Solo conteos, fechas, nombres de proyectos y nombres de modelos — sin mensajes de commit, código ni datos personales. Sin telemetría
 
 ### 🛡️ **Seguridad incorporada**
 

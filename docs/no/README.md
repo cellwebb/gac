@@ -104,10 +104,13 @@ uv tool upgrade gac
 ### 📊 **Bruksstatistikk**
 
 - **Spor dine gacs**: Se hvor mange committer du har gjort med gac, din nåværende streak, topp daglige/ukentlige aktivitet og topprosjekter
+- **Token-sporing**: Totalt antall prompt- og completion-tokens per dag, uke, prosjekt og modell — med highscore-trofeer for tokenbruk også
+- **Toppmodeller**: Se hvilke modeller du bruker mest og hvor mange tokens hver av dem forbruker
 - **Prosjektstatistikk**: Vis statistikk for nåværende repo med `gac stats project`
-- **Highscore-feiringer**: 🏆 trofeer når du setter nye daglige, ukentlige eller streak-rekorder; 🥈 for å tangere dem
-- **Opt-out-vennlig**: Sett `GAC_DISABLE_STATS=1` for å deaktivere sporing — ingen data skrives
-- **Personvern først**: Lagrer kun tellinger, datoer og prosjektnavn (avledet fra git remote/katalog) — ingen commit-meldinger, kode eller personopplysninger
+- **Highscore-feiringer**: 🏆 trofeer når du setter nye daglige, ukentlige, token- eller streak-rekorder; 🥈 for å tangere dem
+- **Opt-in under oppsett**: `gac init` spør om du vil aktivere statistikk og forklarer nøyaktig hva som lagres
+- **Opt-out når som helst**: Sett `GAC_DISABLE_STATS=true` (eller `1`/`yes`/`on`) for å deaktivere. Å sette den til `false`/`0`/`no` (eller fjerne den) holder statistikk aktivert
+- **Personvern først**: Lagret lokalt i `~/.gac_stats.json`. Kun tellinger, datoer, prosjektnavn og modellnavn — ingen commit-meldinger, kode eller personopplysninger. Ingen telemetri
 
 ### 🛡️ **Innebygd Sikkerhet**
 

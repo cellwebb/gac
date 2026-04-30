@@ -104,10 +104,13 @@ uv tool upgrade gac
 ### 📊 **Thống Kê Sử Dụng**
 
 - **Theo dõi các gac của bạn**: Xem bạn đã thực hiện bao nhiêu commit với gac, chuỗi hiện tại, hoạt động đỉnh hàng ngày/hàng tuần, và các dự án hàng đầu
+- **Theo dõi token**: Tổng token prompt và completion theo ngày, tuần, dự án và mô hình — với cúp kỷ lục cho việc sử dụng token
+- **Mô hình hàng đầu**: Xem mô hình nào bạn sử dụng nhiều nhất và mỗi mô hình tiêu thụ bao nhiêu token
 - **Thống kê theo dự án**: Xem thống kê cho repo hiện tại với `gac stats project`
-- **Ăn mừng điểm cao**: 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, hoặc chuỗi mới; 🥈 khi ngang bằng
-- **Dễ dàng từ chối**: Đặt `GAC_DISABLE_STATS=1` để vô hiệu hóa theo dõi — không có dữ liệu nào được ghi
-- **Ưu tiên quyền riêng tư**: Chỉ lưu trữ số lượng, ngày tháng và tên dự án (được lấy từ git remote/thư mục) — không có thông điệp commit, mã, hay dữ liệu cá nhân
+- **Ăn mừng điểm cao**: 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, token, hoặc chuỗi mới; 🥈 khi ngang bằng
+- **Chọn tham gia khi cài đặt**: `gac init` hỏi bạn có muốn bật thống kê và giải thích chính xác những gì được lưu trữ
+- **Từ chối bất cứ lúc nào**: Đặt `GAC_DISABLE_STATS=true` (hoặc `1`/`yes`/`on`) để vô hiệu hóa. Đặt thành `false`/`0`/`no` (hoặc bỏ đặt) giữ thống kê được bật
+- **Ưu tiên quyền riêng tư**: Lưu trữ cục bộ trong `~/.gac_stats.json`. Chỉ số lượng, ngày tháng, tên dự án và tên mô hình — không có thông điệp commit, mã, hay dữ liệu cá nhân. Không thu thập dữ liệu từ xa
 
 ### 🛡️ **Bảo Mật Tích Hợp**
 

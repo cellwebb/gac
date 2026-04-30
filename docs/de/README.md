@@ -104,10 +104,13 @@ uv tool upgrade gac
 ### 📊 **Nutzungsstatistiken**
 
 - **Verfolgen Sie Ihre gacs**: Sehen Sie, wie viele Commits Sie mit gac gemacht haben, Ihren aktuellen Streak, die höchste tägliche/wöchentliche Aktivität und Top-Projekte
+- **Token-Tracking**: Gesamtzahl der Prompt- und Completion-Tokens nach Tag, Woche, Projekt und Modell — mit Highscore-Trophäen auch für die Token-Nutzung
+- **Top-Modelle**: Sehen Sie, welche Modelle Sie am häufigsten verwenden und wie viele Tokens jedes verbraucht
 - **Projektspezifische Statistiken**: Zeigen Sie Statistiken für das aktuelle Repo mit `gac stats project` an
-- **Highscore-Feiern**: 🏆 Trophäen, wenn Sie neue tägliche, wöchentliche oder Streak-Rekorde aufstellen; 🥈 wenn Sie diese einstellen
-- **Opt-out-freundlich**: Setzen Sie `GAC_DISABLE_STATS=1`, um die Erfassung zu deaktivieren — es werden keine Daten geschrieben
-- **Datenschutz zuerst**: Speichert nur Zähler, Daten und Projektnamen (abgeleitet vom Git-Remote/Verzeichnis) — keine Commit-Nachrichten, Code oder persönliche Daten
+- **Highscore-Feiern**: 🏆 Trophäen, wenn Sie neue tägliche, wöchentliche, Token- oder Streak-Rekorde aufstellen; 🥈 wenn Sie diese einstellen
+- **Opt-in beim Setup**: `gac init` fragt, ob Sie Statistiken aktivieren möchten, und erklärt genau, was gespeichert wird
+- **Jederzeit Opt-out**: Setzen Sie `GAC_DISABLE_STATS=true` (oder `1`/`yes`/`on`), um zu deaktivieren. Die Einstellung auf `false`/`0`/`no` (oder das Entfernen) hält Statistiken aktiviert
+- **Datenschutz zuerst**: Lokal gespeichert in `~/.gac_stats.json`. Nur Zähler, Daten, Projektnamen und Modellnamen — keine Commit-Nachrichten, Code oder persönliche Daten. Keine Telemetrie
 
 ### 🛡️ **Eingebaute Sicherheit**
 
