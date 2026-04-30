@@ -744,7 +744,7 @@ class TestGacCommit:
         assert result.files_changed == ["a.py"]
 
     @patch("gac.postprocess.clean_commit_message", return_value="feat: add feature")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: add feature", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: add feature", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["src/app.py"])
@@ -765,7 +765,7 @@ class TestGacCommit:
         assert any("dry_run" in w for w in result.warnings)
 
     @patch("gac.postprocess.clean_commit_message", return_value="fix: patch bug")
-    @patch("gac.ai.generate_commit_message", return_value=("fix: patch bug", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("fix: patch bug", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["src/app.py"])
@@ -788,7 +788,7 @@ class TestGacCommit:
     @patch("gac.mcp.server._stderr_console_redirect")
     @patch("gac.commit_executor.CommitExecutor")
     @patch("gac.postprocess.clean_commit_message", return_value="feat: add login")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: add login", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: add login", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["src/auth.py"])
@@ -824,7 +824,7 @@ class TestGacCommit:
     @patch("gac.mcp.server._stderr_console_redirect")
     @patch("gac.commit_executor.CommitExecutor")
     @patch("gac.postprocess.clean_commit_message", return_value="feat: add push")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: add push", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: add push", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["src/push.py"])
@@ -856,7 +856,7 @@ class TestGacCommit:
         mock_executor_cls.return_value.push_to_remote.assert_called_once()
 
     @patch("gac.postprocess.clean_commit_message", return_value="")
-    @patch("gac.ai.generate_commit_message", return_value=("", 0, 0, 0))
+    @patch("gac.ai.generate_commit_message", return_value=("", 0, 0, 0, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["a.py"])
@@ -1012,7 +1012,7 @@ class TestGacCommit:
         assert "config explosion" in result.error
 
     @patch("gac.postprocess.clean_commit_message", return_value="feat: secret stuff")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: secret stuff", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: secret stuff", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["src/app.py"])
@@ -1043,7 +1043,7 @@ class TestGacCommit:
         mock_git.assert_any_call(["add", "--all"])
 
     @patch("gac.postprocess.clean_commit_message", return_value="feat: with model override")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: with model override", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: with model override", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["a.py"])

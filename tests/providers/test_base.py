@@ -186,9 +186,11 @@ class TestOpenAICompatibleProvider:
                 max_tokens=100,
             )
 
-            content, prompt_tokens, completion_tokens, duration_ms = result
+            content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens = result
             assert isinstance(duration_ms, int)
             assert duration_ms >= 0
+            assert isinstance(reasoning_tokens, int)
+            assert reasoning_tokens >= 0
 
     def test_bearer_token_header(self):
         """Test that OpenAI-style Bearer token is added."""

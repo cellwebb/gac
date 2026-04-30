@@ -69,8 +69,8 @@ def test_group_validation_errors(invalid_data):
         patch("gac.git.run_git_command", return_value="/fake/repo"),
         patch("gac.git.get_staged_files", return_value=["file.py"]),
         patch("gac.git_state_validator.get_staged_files", return_value=["file.py"]),
-        patch("gac.ai.generate_grouped_commits", return_value=(invalid_data, 10, 5, 500)),
-        patch("gac.grouped_commit_workflow.generate_grouped_commits", return_value=(invalid_data, 10, 5, 500)),
+        patch("gac.ai.generate_grouped_commits", return_value=(invalid_data, 10, 5, 500, 0)),
+        patch("gac.grouped_commit_workflow.generate_grouped_commits", return_value=(invalid_data, 10, 5, 500, 0)),
         patch("gac.main.console.print"),
         patch("gac.grouped_commit_workflow.console.print"),
     ):

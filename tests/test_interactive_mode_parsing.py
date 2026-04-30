@@ -210,7 +210,7 @@ class TestGenerateContextualQuestions:
             patch("gac.interactive_mode.generate_commit_message") as mock_generate,
         ):
             mock_build_prompt.return_value = ("system_prompt", "question_prompt")
-            mock_generate.return_value = ("1. What changed?\n2. Why did it change?", 10, 5, 500)
+            mock_generate.return_value = ("1. What changed?\n2. Why did it change?", 10, 5, 500, 0)
 
             # Create mock git state
             mock_git_state = MagicMock()
@@ -264,7 +264,7 @@ class TestGenerateContextualQuestions:
             patch("gac.ai_utils.time.sleep", return_value=None),
         ):
             mock_build_prompt.return_value = ("system_prompt", "question_prompt")
-            mock_generate.return_value = ("", 0, 0, 0)  # Empty response
+            mock_generate.return_value = ("", 0, 0, 0, 0)  # Empty response
 
             # Create mock git state
             mock_git_state = MagicMock()

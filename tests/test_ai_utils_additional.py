@@ -190,7 +190,7 @@ class TestAIUtilsMissingCoverage:
 
     def test_generate_with_retries_provider_function_not_found(self):
         """Test generate_with_retries when provider function not found."""
-        provider_funcs = {"openai": lambda **kwargs: ("response", 1, 1, 100)}  # Only openai available
+        provider_funcs = {"openai": lambda **kwargs: ("response", 1, 1, 100, 0)}  # Only openai available
 
         with pytest.raises(AIError) as exc_info:
             generate_with_retries(
@@ -205,7 +205,7 @@ class TestAIUtilsMissingCoverage:
 
     def test_generate_with_retries_empty_response(self):
         """Test generate_with_retries with empty response."""
-        provider_funcs = {"openai": lambda **kwargs: ("", 0, 0, 0)}  # Empty response
+        provider_funcs = {"openai": lambda **kwargs: ("", 0, 0, 0, 0)}  # Empty response
 
         with pytest.raises(AIError) as exc_info:
             generate_with_retries(
@@ -220,7 +220,7 @@ class TestAIUtilsMissingCoverage:
 
     def test_generate_with_retries_none_response(self):
         """Test generate_with_retries with None response."""
-        provider_funcs = {"openai": lambda **kwargs: (None, 0, 0, 0)}  # None response
+        provider_funcs = {"openai": lambda **kwargs: (None, 0, 0, 0, 0)}  # None response
 
         with pytest.raises(AIError) as exc_info:
             generate_with_retries(
@@ -235,7 +235,7 @@ class TestAIUtilsMissingCoverage:
 
     def test_generate_with_retries_whitespace_only_response(self):
         """Test generate_with_retries with whitespace-only response."""
-        provider_funcs = {"openai": lambda **kwargs: ("   \n  ", 0, 0, 0)}  # Whitespace only
+        provider_funcs = {"openai": lambda **kwargs: ("   \n  ", 0, 0, 0, 0)}  # Whitespace only
 
         with pytest.raises(AIError) as exc_info:
             generate_with_retries(
@@ -295,7 +295,7 @@ class TestAIUtilsMissingCoverage:
             call_count += 1
             if call_count == 1:
                 raise AIError.rate_limit_error("Rate limited")
-            return ("Success", 1, 1, 100)
+            return ("Success", 1, 1, 100, 0)
 
         provider_funcs = {"openai": rate_limit_provider}
 
@@ -321,7 +321,7 @@ class TestAIUtilsMissingCoverage:
             call_count += 1
             if call_count == 1:
                 raise AIError.timeout_error("Timeout")
-            return ("Success", 1, 1, 100)
+            return ("Success", 1, 1, 100, 0)
 
         provider_funcs = {"openai": timeout_provider}
 
@@ -347,7 +347,7 @@ class TestAIUtilsMissingCoverage:
             call_count += 1
             if call_count == 1:
                 raise AIError.connection_error("Connection failed")
-            return ("Success", 1, 1, 100)
+            return ("Success", 1, 1, 100, 0)
 
         provider_funcs = {"openai": connection_provider}
 

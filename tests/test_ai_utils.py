@@ -166,20 +166,20 @@ class TestGenerateWithRetries:
     def test_skip_success_message(self, mock_status):
         mock_spinner = MagicMock()
         mock_status.return_value = mock_spinner
-        funcs = {"openai": lambda **kw: ("ok", 1, 1, 100)}
+        funcs = {"openai": lambda **kw: ("ok", 1, 1, 100, 0)}
         ai_utils.generate_with_retries(
             funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, False, False, True
         )
         mock_spinner.stop.assert_called_once()
 
     def test_empty_content(self):
-        funcs = {"openai": lambda **kw: ("", 0, 0, 0)}
+        funcs = {"openai": lambda **kw: ("", 0, 0, 0, 0)}
         with pytest.raises(AIError) as e:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
         assert e.value.error_type == "model"
 
     def test_none_content(self):
-        funcs = {"openai": lambda **kw: (None, 0, 0, 0)}
+        funcs = {"openai": lambda **kw: (None, 0, 0, 0, 0)}
         with pytest.raises(AIError) as e:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 1, True)
         assert e.value.error_type == "model"
@@ -209,7 +209,7 @@ class TestGenerateWithRetries:
             call_count[0] += 1
             if call_count[0] < 2:
                 raise AIError.connection_error("fail")
-            return ("ok", 1, 1, 100)
+            return ("ok", 1, 1, 100, 0)
 
         funcs = {"openai": func}
         ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)

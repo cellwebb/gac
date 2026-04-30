@@ -55,7 +55,7 @@ class TestMessageOnlyFlag:
 
         # Mock generate_commit_message to return a predictable message
         def mock_generate_commit_message(**kwargs):
-            return ("feat: add new feature", 10, 5, 500)
+            return ("feat: add new feature", 10, 5, 500, 0)
 
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate_commit_message)
 
@@ -112,7 +112,7 @@ class TestMessageOnlyFlag:
 
         def mock_generate_commit_message_with_quiet_check(**kwargs):
             captured_quiet_values.append(kwargs.get("quiet", False))
-            return ("feat: test quiet propagation", 10, 5, 500)
+            return ("feat: test quiet propagation", 10, 5, 500, 0)
 
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate_commit_message_with_quiet_check)
 

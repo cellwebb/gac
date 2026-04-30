@@ -94,10 +94,11 @@ class TestCustomOpenAIProviderMocked(BaseProviderTest):
                 result = self.api_function(model=self.model_name, messages=messages, temperature=0.7, max_tokens=100)
 
             assert isinstance(result, tuple)
-            assert len(result) == 4
-            content, prompt_tokens, completion_tokens, duration_ms = result
+            assert len(result) == 5
+            content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens = result
             assert content == "feat: Add new feature"
             assert isinstance(duration_ms, int) and duration_ms >= 0
+            assert isinstance(reasoning_tokens, int) and reasoning_tokens >= 0
             mock_post.assert_called_once()
 
     def test_empty_content_handling(self):

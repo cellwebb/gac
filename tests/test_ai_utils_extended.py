@@ -141,7 +141,7 @@ class TestGenerateWithRetriesExtended:
     def test_first_provider_succeeds(self, mock_print):
         """Test when first provider succeeds."""
         provider_funcs = {
-            "openai": MagicMock(return_value=("success response", 10, 5, 500)),
+            "openai": MagicMock(return_value=("success response", 10, 5, 500, 0)),
             "anthropic": MagicMock(),  # Should not be called
         }
 
@@ -168,7 +168,7 @@ class TestGenerateWithRetriesExtended:
             provider_func.call_count += 1
             if provider_func.call_count == 1:
                 raise AIError.rate_limit_error("Rate limited")
-            return ("success after retry", 10, 5, 500)
+            return ("success after retry", 10, 5, 500, 0)
 
         provider_func.call_count = 0
 
@@ -242,7 +242,7 @@ class TestGenerateWithRetriesExtended:
             provider_func.call_count += 1
             if provider_func.call_count == 1:
                 raise AIError.rate_limit_error("Temporary rate limit")
-            return ("success after retry", 10, 5, 500)
+            return ("success after retry", 10, 5, 500, 0)
 
         provider_func.call_count = 0
         provider_funcs = {"openai": provider_func}
@@ -270,7 +270,7 @@ class TestGenerateWithRetriesExtended:
             provider_func.call_count += 1
             if provider_func.call_count == 1:
                 raise AIError.rate_limit_error("Temporary rate limit")
-            return ("success after retry", 10, 5, 500)
+            return ("success after retry", 10, 5, 500, 0)
 
         provider_func.call_count = 0
         provider_funcs = {"anthropic": provider_func}
@@ -323,7 +323,7 @@ class TestGenerateWithRetriesExtended:
             provider_func.call_count += 1
             if provider_func.call_count == 1:
                 raise AIError.rate_limit_error("Temporary rate limit")
-            return ("success after retry", 10, 5, 500)
+            return ("success after retry", 10, 5, 500, 0)
 
         provider_func.call_count = 0
         provider_funcs = {"openai": provider_func}
@@ -363,7 +363,7 @@ class TestGenerateWithRetriesExtended:
 
     def test_empty_messages_list(self):
         """Test with empty messages list should raise AIError."""
-        provider_func = MagicMock(return_value=("response", 10, 5, 500))
+        provider_func = MagicMock(return_value=("response", 10, 5, 500, 0))
         provider_funcs = {"openai": provider_func}
 
         with pytest.raises(AIError) as exc_info:
@@ -390,7 +390,7 @@ class TestGenerateWithRetriesExtended:
             provider_func.call_count += 1
             if provider_func.call_count == 1:
                 raise AIError.rate_limit_error("Temporary rate limit")
-            return ("success after retry", 10, 5, 500)
+            return ("success after retry", 10, 5, 500, 0)
 
         provider_func.call_count = 0
         provider_funcs = {"openai": provider_func}

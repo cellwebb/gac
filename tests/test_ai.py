@@ -136,7 +136,7 @@ class TestGenerateCommitMessage:
         assert "Invalid model format" in str(exc_info.value)
 
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("feat: Add new feature", 10, 5, 500))}
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("feat: Add new feature", 10, 5, 500, 0))}
     )
     def test_generate_commit_message_string_prompt(self):
         """Test generate_commit_message with string prompt using unified API."""
@@ -155,7 +155,7 @@ class TestGenerateCommitMessage:
         assert call_args[1]["messages"][0]["content"] == ""  # system message (empty for string prompt)
 
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value=("fix: Resolve bug", 10, 5, 500))}
+        "gac.providers.PROVIDER_REGISTRY", {"anthropic": MagicMock(return_value=("fix: Resolve bug", 10, 5, 500, 0))}
     )
     def test_generate_commit_message_tuple_prompt(self):
         """Test generate_commit_message with tuple prompt using unified API."""
@@ -182,7 +182,7 @@ class TestGenerateCommitMessage:
     @patch("gac.ai_utils.Status")
     @patch("gac.ai_utils.console")
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("docs: Update README", 10, 5, 500))}
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=("docs: Update README", 10, 5, 500, 0))}
     )
     def test_generate_commit_message_with_spinner(self, mock_console, mock_status_class):
         """Test generate_commit_message with spinner (non-quiet mode)."""
@@ -202,7 +202,7 @@ class TestGenerateCommitMessage:
         mock_console.print.assert_called_once_with("✓ Generated commit message with openai gpt-4")
 
     @patch.dict(
-        "gac.providers.PROVIDER_REGISTRY", {"openrouter": MagicMock(return_value=("chore: tidy config", 10, 5, 500))}
+        "gac.providers.PROVIDER_REGISTRY", {"openrouter": MagicMock(return_value=("chore: tidy config", 10, 5, 500, 0))}
     )
     def test_generate_commit_message_openrouter_provider(self):
         """Test that generate_commit_message routes openrouter provider correctly using unified API."""
@@ -225,7 +225,7 @@ class TestGenerateCommitMessage:
 
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY",
-        {"streamlake": MagicMock(return_value=("feat: summarize planets", 10, 5, 500))},
+        {"streamlake": MagicMock(return_value=("feat: summarize planets", 10, 5, 500, 0))},
     )
     def test_generate_commit_message_streamlake_provider(self):
         """Test that generate_commit_message routes streamlake provider correctly using unified API."""
@@ -254,7 +254,7 @@ class TestGenerateCommitMessage:
                 side_effect=[
                     AIError.connection_error("network connection failed"),
                     AIError.timeout_error("request timeout"),
-                    ("feat: Success after retries", 10, 5, 500),
+                    ("feat: Success after retries", 10, 5, 500, 0),
                 ]
             )
         },
@@ -366,7 +366,7 @@ class TestGenerateCommitMessage:
 
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY",
-        {"openai": MagicMock(return_value=("Alternative response format", 10, 5, 500))},
+        {"openai": MagicMock(return_value=("Alternative response format", 10, 5, 500, 0))},
     )
     def test_generate_commit_message_response_without_choices(self):
         """Test handling of normal response format."""
@@ -379,7 +379,7 @@ class TestGenerateCommitMessage:
     @patch("gac.ai_utils.console")
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY",
-        {"openai": MagicMock(side_effect=[AIError.connection_error("Temporary error"), ("Success", 1, 1, 100)])},
+        {"openai": MagicMock(side_effect=[AIError.connection_error("Temporary error"), ("Success", 1, 1, 100, 0)])},
     )
     def test_generate_commit_message_retry_with_spinner(self, mock_console, mock_status_class, mock_sleep):
         """Test retry logic with spinner animation."""
@@ -422,7 +422,7 @@ class TestGenerateCommitMessage:
 
     @patch.dict(
         "gac.providers.PROVIDER_REGISTRY",
-        {"anthropic": MagicMock(return_value=("feat: Add conversation support", 10, 5, 500))},
+        {"anthropic": MagicMock(return_value=("feat: Add conversation support", 10, 5, 500, 0))},
     )
     def test_generate_commit_message_list_prompt(self):
         """Test generate_commit_message with list of messages prompt format."""
@@ -464,7 +464,9 @@ class TestGenerateCommitMessage:
         assert "Failed to generate commit message" in str(exc_info.value)
         assert "Unexpected internal error" in str(exc_info.value)
 
-    @patch.dict("gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=('{"commits": []}', 10, 5, 500))})
+    @patch.dict(
+        "gac.providers.PROVIDER_REGISTRY", {"openai": MagicMock(return_value=('{"commits": []}', 10, 5, 500, 0))}
+    )
     def test_generate_grouped_commits(self):
         msgs = [{"role": "user", "content": "test"}]
         result = generate_grouped_commits("openai:gpt-4", msgs, 0.7, 500, 1, True, True)

@@ -79,7 +79,7 @@ def base_cli_mocks(monkeypatch):
         lambda *a, **kw: calls["record_tokens"].append((a, kw)),
     )
 
-    monkeypatch.setattr("gac.main.generate_commit_message", lambda *a, **kw: ("feat: add new thing", 10, 5, 500))
+    monkeypatch.setattr("gac.main.generate_commit_message", lambda *a, **kw: ("feat: add new thing", 10, 5, 500, 0))
 
     def mock_count_tokens(content, model):
         return 250 if isinstance(content, list) else 12
@@ -102,8 +102,8 @@ class TestMainWorkflowRecordsTokens:
         assert len(base_cli_mocks["record_tokens"]) == 1
         args, kwargs = base_cli_mocks["record_tokens"][0]
         # Signature: record_tokens(prompt_tokens, completion_tokens, model=...)
-        assert args[0] == 250  # prompt
-        assert args[1] == 12  # completion
+        assert args[0] == 10  # prompt (from provider)
+        assert args[1] == 5  # completion (from provider)
         assert kwargs.get("model") == "anthropic:test-model"
 
         # record_gac was passed the model too
@@ -151,7 +151,7 @@ class TestGroupedWorkflowRecordsTokens:
         )
         monkeypatch.setattr(
             "gac.grouped_commit_workflow.generate_grouped_commits",
-            lambda **kwargs: (valid_response, 500, 80, 500),
+            lambda **kwargs: (valid_response, 500, 80, 500, 0),
         )
 
         # count_tokens: 500 for the conversation list, 80 for the response string.
@@ -252,7 +252,7 @@ class TestMcpServerRecordsTokens:
     """Verify gac.mcp.server.gac_commit calls record_tokens for the AI call."""
 
     @patch("gac.postprocess.clean_commit_message", return_value="feat: x")
-    @patch("gac.ai.generate_commit_message", return_value=("feat: x", 10, 5, 500))
+    @patch("gac.ai.generate_commit_message", return_value=("feat: x", 10, 5, 500, 0))
     @patch("gac.prompt_builder.PromptBuilder")
     @patch("gac.git_state_validator.GitStateValidator")
     @patch("gac.git.get_staged_files", return_value=["a.py"])
@@ -296,6 +296,6 @@ class TestMcpServerRecordsTokens:
 
         assert len(captured) == 1
         args, kwargs = captured[0]
-        assert args[0] == 333
-        assert args[1] == 44
+        assert args[0] == 10
+        assert args[1] == 5
         assert kwargs.get("model") == "openai:gpt-test"

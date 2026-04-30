@@ -74,7 +74,7 @@ class TestTokenUsageDisplay:
         """Test that estimated token usage is displayed."""
         # Mock generate_commit_message
         monkeypatch.setattr(
-            "gac.main.generate_commit_message", lambda *args, **kwargs: ("feat: add new feature", 10, 5, 500)
+            "gac.main.generate_commit_message", lambda *args, **kwargs: ("feat: add new feature", 10, 5, 500, 0)
         )
 
         # Mock count_tokens to return predictable values
@@ -117,7 +117,9 @@ class TestTokenUsageDisplay:
     def test_token_usage_not_displayed_when_quiet(self, runner, mock_dependencies, monkeypatch):
         """Test that token usage is not displayed in quiet mode."""
         # Mock generate_commit_message
-        monkeypatch.setattr("gac.main.generate_commit_message", lambda **kwargs: ("feat: add new feature", 10, 5, 500))
+        monkeypatch.setattr(
+            "gac.main.generate_commit_message", lambda **kwargs: ("feat: add new feature", 10, 5, 500, 0)
+        )
 
         # Mock count_tokens
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 100)
@@ -167,7 +169,7 @@ class TestTokenUsageDisplay:
         monkeypatch.setattr("gac.ai_utils.count_tokens", fake_count_tokens)
 
         # Provide two commit messages, one for the initial generation and one for the reroll
-        commit_messages = iter([("feat: initial", 10, 5, 500), ("feat: rerolled", 10, 5, 500)])
+        commit_messages = iter([("feat: initial", 10, 5, 500, 0), ("feat: rerolled", 10, 5, 500, 0)])
 
         conversation_history: list[list[dict[str, str]]] = []
 
@@ -189,14 +191,12 @@ class TestTokenUsageDisplay:
         # Prompt should only be built once; rerolls reuse the conversation
         assert prompt_history == [("system-prompt-0", "user-prompt-0")]
 
-        # count_tokens should have been called with the conversation before each generation
-        assert len(counted_inputs) == 4
+        # count_tokens is called once per iteration for the token-warning check
+        assert len(counted_inputs) == 2
         assert isinstance(counted_inputs[0], list)
         assert len(counted_inputs[0]) == 2  # system + user
-        assert counted_inputs[1] == "feat: initial"
-        assert isinstance(counted_inputs[2], list)
-        assert len(counted_inputs[2]) == 4  # includes assistant reply + feedback message
-        assert counted_inputs[3] == "feat: rerolled"
+        assert isinstance(counted_inputs[1], list)
+        assert len(counted_inputs[1]) == 4  # includes assistant reply + feedback message
 
         # Verify conversation history sent to generate_commit_message follows message chain pattern
         assert len(conversation_history) == 2

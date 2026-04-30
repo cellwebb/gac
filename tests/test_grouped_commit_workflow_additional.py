@@ -152,8 +152,8 @@ def test_conversation_state_preservation():
             with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
                 # First call fails, second succeeds
                 mock_generate.side_effect = [
-                    ("Invalid JSON", 0, 0, 0),
-                    ('{"commits": [{"files": ["file1.py"], "message": "Fixed"}]}', 10, 5, 500),
+                    ("Invalid JSON", 0, 0, 0, 0),
+                    ('{"commits": [{"files": ["file1.py"], "message": "Fixed"}]}', 10, 5, 500, 0),
                 ]
 
                 staged_files_set = {"file1.py"}
@@ -307,6 +307,7 @@ def test_file_validation_failed_after_retries():
                 10,
                 5,
                 500,
+                0,
             )
 
             conversation_messages = [{"role": "user", "content": "Generate commits"}]

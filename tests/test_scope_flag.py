@@ -51,7 +51,7 @@ class TestScopeFlag:
 
         # Mock both generate_commit_message and clean_commit_message to handle the new flow
         monkeypatch.setattr(
-            "gac.main.generate_commit_message", lambda *args, **kwargs: ("feat(test): mock commit", 10, 5, 500)
+            "gac.main.generate_commit_message", lambda *args, **kwargs: ("feat(test): mock commit", 10, 5, 500, 0)
         )
         monkeypatch.setattr("gac.main.clean_commit_message", lambda msg, **kwargs: msg)
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
@@ -241,13 +241,13 @@ class TestScopeIntegration:
             # Check if scope inference is disabled by looking for the no-scope instruction
             # "Do NOT include a scope" only appears in the no-scope template
             if "do not include a scope" in prompt_text.lower():
-                return ("feat: add new feature", 10, 5, 500)
+                return ("feat: add new feature", 10, 5, 500, 0)
             else:
                 # Scope inference is enabled
                 if call_count == 1:
-                    return ("feat(auth): add login functionality", 10, 5, 500)
+                    return ("feat(auth): add login functionality", 10, 5, 500, 0)
                 else:
-                    return ("fix(api): handle null response", 10, 5, 500)
+                    return ("fix(api): handle null response", 10, 5, 500, 0)
 
         monkeypatch.setattr("gac.main.generate_commit_message", mock_generate)
         monkeypatch.setattr("gac.main.count_tokens", lambda content, model: 10)
