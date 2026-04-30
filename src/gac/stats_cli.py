@@ -200,19 +200,23 @@ def show() -> None:
         models_table.add_column("Speed", style="bold cyan", justify="right")
         models_table.add_column("Prompt Tokens", style="bold cyan", justify="right")
         models_table.add_column("Completion Tokens", style="bold cyan", justify="right")
+        models_table.add_column("Reasoning", style="bold cyan", justify="right")
 
         for model_name, data in top_models[:5]:
             gacs = data.get("gacs", 0)
             prompt_t = int(data.get("prompt_tokens", 0))
             completion_t = int(data.get("completion_tokens", 0))
+            reasoning_t = int(data.get("reasoning_tokens", 0))
             avg_tps = data.get("avg_tps")
             speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
+            reasoning_str = _format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
             models_table.add_row(
                 model_name,
                 str(gacs),
                 speed_str,
                 _format_tokens(prompt_t),
                 _format_tokens(completion_t),
+                reasoning_str,
             )
 
         console.print(models_table)
