@@ -179,6 +179,29 @@ def base_mocks(
 
 
 @pytest.fixture(autouse=True, scope="session")
+def isolate_stats_file():
+    """Redirect STATS_FILE to a temp directory so tests never write to ~/.gac_stats.json."""
+    import tempfile
+    from pathlib import Path
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="gac_test_stats_"))
+    temp_stats = temp_dir / ".gac_stats.json"
+
+    import gac.stats
+
+    original_stats_file = gac.stats.STATS_FILE
+    gac.stats.STATS_FILE = temp_stats
+
+    yield temp_stats
+
+    gac.stats.STATS_FILE = original_stats_file
+
+    import shutil
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+@pytest.fixture(autouse=True, scope="session")
 def silence_httpx_and_groq_loggers():
     """Silence httpx and groq loggers to suppress noisy shutdown errors."""
     for name in ("httpx", "httpcore", "groq"):
