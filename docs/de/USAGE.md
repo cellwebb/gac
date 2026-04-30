@@ -386,7 +386,7 @@ Sie können das Verhalten von gac mit diesen optionalen Umgebungsvariablen anpas
 - `GAC_TRANSLATE_PREFIXES=true` - Konventionelle Commit-Präfixe (feat, fix, etc.) in die Zielsprache übersetzen (Standard: false, behält Präfixe in Englisch)
 - `GAC_SKIP_SECRET_SCAN=true` - Automatisches Sicherheits-Scanning für Geheimnisse in gestageten Änderungen deaktivieren (mit Vorsicht verwenden)
 - `GAC_NO_VERIFY_SSL=true` - SSL-Zertifikatüberprüfung für API-Aufrufe überspringen (nützlich für Unternehmensproxys, die SSL-Verkehr abfangen)
-- `GAC_DISABLE_STATS=true` - Erfassung von Nutzungsstatistiken deaktivieren (keine Lese- oder Schreibzugriffe auf die Statistikdatei; bestehende Daten bleiben erhalten)
+- `GAC_DISABLE_STATS=true` - Erfassung von Nutzungsstatistiken deaktivieren (keine Lese- oder Schreibzugriffe auf die Statistikdatei; bestehende Daten bleiben erhalten). Nur truthy-Werte deaktivieren Statistiken; die Einstellung auf `false`/`0`/`no`/`off` hält Statistiken aktiviert, genauso wie das Weglassen der Variable
 
 Siehe `.gac.env.example` für eine vollständige Konfigurationsvorlage.
 
@@ -409,7 +409,7 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac language` (oder `gac lang`) — Interaktiver Sprachselektor für Commit-Nachrichten (setzt GAC_LANGUAGE)
 - `gac diff` — Gefiltertes git diff mit Optionen für gestufte/ungestufte Änderungen, Farbe und Kürzung anzeigen
 - `gac serve` — GAC als [MCP-Server](MCP.md) für KI-Agenten-Integration starten (stdio-Transport)
-- `gac stats show` — Ihre gac-Nutzungsstatistiken anzeigen (Summen, Streaks, tägliche & wöchentliche Aktivität, Top-Projekte)
+- `gac stats show` — Ihre gac-Nutzungsstatistiken anzeigen (Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle)
 - `gac stats project` — Statistiken nur für das aktuelle Git-Projekt anzeigen
 - `gac stats reset` — Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)
 
@@ -521,20 +521,29 @@ gac -i -v
 
 ## Nutzungsstatistiken
 
-gac erfasst leichtgewichtige Nutzungsstatistiken, damit Sie Ihre Commit-Aktivität, Streaks und aktivsten Projekte sehen können. Statistiken werden lokal in `~/.gac_stats.json` gespeichert und niemals versendet.
+gac erfasst leichtgewichtige Nutzungsstatistiken, damit Sie Ihre Commit-Aktivität, Streaks, Token-Nutzung und aktivsten Projekte und Modelle sehen können. Statistiken werden lokal in `~/.gac_stats.json` gespeichert und niemals versendet — es gibt keine Telemetrie.
 
-**Was erfasst wird:** Gesamtzahl der gac-Ausführungen, Gesamtzahl der Commits, erste/letzte Verwendungsdaten, tägliche und wöchentliche Zähler, aktuelle und längste Streak sowie Aktivitätszähler pro Projekt.
+**Was erfasst wird:** Gesamtzahl der gac-Ausführungen, Gesamtzahl der Commits, Gesamtzahl der Prompt- und Completion-Tokens, erste/letzte Verwendungsdaten, tägliche und wöchentliche Zähler (gacs, Commits, Tokens), aktuelle und längste Streak, Aktivitätszähler pro Projekt (gacs, Commits, Prompt + Completion-Tokens) sowie Aktivitätszähler pro Modell (gacs, Prompt + Completion-Tokens).
 
-**Was NICHT erfasst wird:** Commit-Nachrichten, Code-Inhalte, Dateipfade, persönliche Informationen oder sonst etwas über Zähler und Projektnamen hinaus.
+**Was NICHT erfasst wird:** Commit-Nachrichten, Code-Inhalte, Dateipfade, persönliche Informationen oder sonst etwas über Zähler, Daten, Projektnamen (abgeleitet vom Git-Remote/Verzeichnisnamen) und Modellnamen hinaus.
+
+### Opt-in oder Opt-out
+
+`gac init` fragt, ob Sie Statistiken aktivieren möchten, und erklärt genau, was gespeichert wird. Sie können Ihre Meinung jederzeit ändern:
+
+- **Statistiken aktivieren:** `GAC_DISABLE_STATS` entfernen oder auf `false`/`0`/`no`/`off`/leer setzen.
+- **Statistiken deaktivieren:** `GAC_DISABLE_STATS` auf einen truthy-Wert setzen (`true`, `1`, `yes`, `on`).
+
+Wenn Sie Statistiken während `gac init` ablehnen und eine vorhandene `~/.gac_stats.json` erkannt wird, wird Ihnen die Möglichkeit angeboten, diese zu löschen.
 
 ### Statistik-Unterbefehle
 
-| Befehl              | Beschreibung                                                                                        |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Ihre Statistiken anzeigen (gleich wie `gac stats show`)                                             |
-| `gac stats show`    | Vollständige Statistiken anzeigen: Summen, Streaks, tägliche & wöchentliche Aktivität, Top-Projekte |
-| `gac stats project` | Statistiken nur für das aktuelle Git-Projekt anzeigen                                               |
-| `gac stats reset`   | Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)                               |
+| Befehl              | Beschreibung                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Ihre Statistiken anzeigen (gleich wie `gac stats show`)                                                                         |
+| `gac stats show`    | Vollständige Statistiken anzeigen: Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle |
+| `gac stats project` | Statistiken nur für das aktuelle Git-Projekt anzeigen                                                                           |
+| `gac stats reset`   | Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)                                                           |
 
 ### Beispiele
 
@@ -555,24 +564,27 @@ Die Ausführung von `gac stats` zeigt:
 
 - **Gesamtanzahl gacs und Commits** — wie oft Sie gac verwendet haben und wie viele Commits es erstellt hat
 - **Aktuelle und längste Streak** — aufeinanderfolgende Tage mit gac-Aktivität (🔥 ab 5+ Tagen)
-- **Aktivitätszusammenfassung** — heutige und diese Woche gacs/commits im Vergleich zu Ihrem Spitzentag und Ihrer Spitzenwoche
-- **Top-Projekte** — Ihre 5 aktivsten Repos nach gac- + Commit-Anzahl
-- **Highscore-Feiern** — 🏆 Trophäen, wenn Sie neue tägliche, wöchentliche oder Streak-Rekorde aufstellen; 🥈 wenn Sie diese einstellen
+- **Aktivitätszusammenfassung** — heutige und diese Woche gacs, Commits und Tokens im Vergleich zu Ihrem Spitzentag und Ihrer Spitzenwoche
+- **Top-Projekte** — Ihre 5 aktivsten Repos nach gac- + Commit-Anzahl, mit Token-Nutzung pro Projekt
+- **Top-Modelle** — Ihre 5 am häufigsten verwendeten Modelle mit Prompt-, Completion- und insgesamt verbrauchten Tokens
+- **Highscore-Feiern** — 🏆 Trophäen, wenn Sie neue tägliche, wöchentliche, Token- oder Streak-Rekorde aufstellen; 🥈 wenn Sie diese einstellen
 - **Ermutigungsnachrichten** — kontextbezogene Ermutigungen basierend auf Ihrer Aktivität
 
 ### Statistiken deaktivieren
 
-Setzen Sie die Umgebungsvariable `GAC_DISABLE_STATS` auf einen beliebigen Wert:
+Setzen Sie die Umgebungsvariable `GAC_DISABLE_STATS` auf einen truthy-Wert:
 
 ```sh
 # Statistikerfassung deaktivieren
-export GAC_DISABLE_STATS=1
+export GAC_DISABLE_STATS=true
 
 # Oder in .gac.env
 GAC_DISABLE_STATS=true
 ```
 
-Wenn deaktiviert, überspringt gac die gesamte Statistikerfassung — es finden keine Lese- oder Schreibzugriffe auf Dateien statt. Bestehende Daten bleiben erhalten, werden jedoch erst aktualisiert, wenn Sie die Variable zurücksetzen.
+Falsy-Werte (`false`, `0`, `no`, `off`, leer) halten Statistiken aktiviert — genauso wie das Weglassen der Variable.
+
+Wenn deaktiviert, überspringt gac die gesamte Statistikerfassung — es finden keine Lese- oder Schreibzugriffe auf Dateien statt. Bestehende Daten bleiben erhalten, werden jedoch erst aktualisiert, wenn Sie sie wieder aktivieren.
 
 ---
 

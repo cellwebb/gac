@@ -386,7 +386,7 @@ Vous pouvez personnaliser le comportement de gac avec ces variables d'environnem
 - `GAC_TRANSLATE_PREFIXES=true` - Traduire les préfixes de commits conventionnels (feat, fix, etc.) dans la langue cible (par défaut : false, garde les préfixes en anglais)
 - `GAC_SKIP_SECRET_SCAN=true` - Désactiver l'analyse de sécurité automatique pour les secrets dans les changements indexés (utiliser avec prudence)
 - `GAC_NO_VERIFY_SSL=true` - Sauter la vérification des certificats SSL pour les appels API (utile pour les proxies d'entreprise qui interceptent le trafic SSL)
-- `GAC_DISABLE_STATS=true` - Désactiver le suivi des statistiques d'utilisation (aucune lecture ou écriture de fichier de statistiques ; les données existantes sont préservées)
+- `GAC_DISABLE_STATS=true` - Désactiver le suivi des statistiques d'utilisation (aucune lecture ou écriture de fichier de statistiques ; les données existantes sont préservées). Seules les valeurs truthy désactivent les statistiques ; définir à `false`/`0`/`no`/`off` les maintient activées, comme si la variable n'était pas définie
 
 Voir `.gac.env.example` pour un modèle de configuration complet.
 
@@ -409,7 +409,7 @@ Les sous-commandes suivantes sont disponibles :
 - `gac language` (ou `gac lang`) — Sélecteur de langue interactif pour les messages de commit (définit GAC_LANGUAGE)
 - `gac diff` — Afficher le git diff filtré avec des options pour les changements indexés/non indexés, la couleur et la troncature
 - `gac serve` — Démarrer GAC en tant que [serveur MCP](MCP.md) pour l'intégration d'agents IA (transport stdio)
-- `gac stats show` — Voir vos statistiques d'utilisation de gac (totaux, séries, activité quotidienne et hebdomadaire, projets principaux)
+- `gac stats show` — Voir vos statistiques d'utilisation de gac (totaux, séries, activité quotidienne et hebdomadaire, utilisation des tokens, projets principaux, modèles principaux)
 - `gac stats project` — Voir les statistiques du projet git actuel uniquement
 - `gac stats reset` — Réinitialiser toutes les statistiques à zéro (demande confirmation)
 
@@ -521,20 +521,29 @@ gac -i -v
 
 ## Statistiques d'utilisation
 
-gac suit des statistiques d'utilisation légères pour que vous puissiez voir votre activité de commits, séries et projets les plus actifs. Les statistiques sont stockées localement dans `~/.gac_stats.json` et ne sont jamais envoyées nulle part.
+gac suit des statistiques d'utilisation légères pour que vous puissiez voir votre activité de commits, séries, utilisation des tokens, et projets et modèles les plus actifs. Les statistiques sont stockées localement dans `~/.gac_stats.json` et ne sont jamais envoyées nulle part — il n'y a pas de télémétrie.
 
-**Ce qui est suivi :** nombre total d'exécutions gac, nombre total de commits, dates de première/dernière utilisation, comptes quotidiens et hebdomadaires, série actuelle et la plus longue, et comptes d'activité par projet.
+**Ce qui est suivi :** nombre total d'exécutions gac, nombre total de commits, total des tokens de prompt et de completion, dates de première/dernière utilisation, comptes quotidiens et hebdomadaires (gacs, commits, tokens), série actuelle et la plus longue, activité par projet (gacs, commits, tokens de prompt + completion) et activité par modèle (gacs, tokens de prompt + completion).
 
-**Ce qui n'est PAS suivi :** messages de commit, contenu de code, chemins de fichiers, informations personnelles ou quoi que ce soit au-delà des comptes et noms de projets.
+**Ce qui n'est PAS suivi :** messages de commit, contenu de code, chemins de fichiers, informations personnelles ou quoi que ce soit au-delà des comptes, dates, noms de projets (dérivés du remote ou du répertoire git) et noms de modèles.
+
+### Opt-in ou Opt-out
+
+`gac init` vous demande si vous souhaitez activer les statistiques et explique exactement ce qui est stocké. Vous pouvez changer d'avis à tout moment :
+
+- **Activer les statistiques :** supprimez `GAC_DISABLE_STATS` ou définissez-le à `false`/`0`/`no`/`off`/vide.
+- **Désactiver les statistiques :** définissez `GAC_DISABLE_STATS` à une valeur truthy (`true`, `1`, `yes`, `on`).
+
+Lorsque vous refusez les statistiques lors de `gac init` et qu'un fichier `~/.gac_stats.json` existant est détecté, il vous sera proposé de le supprimer.
 
 ### Sous-commandes de statistiques
 
-| Commande            | Description                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Afficher vos statistiques (identique à `gac stats show`)                                                       |
-| `gac stats show`    | Afficher les statistiques complètes : totaux, séries, activité quotidienne et hebdomadaire, projets principaux |
-| `gac stats project` | Afficher les statistiques du projet git actuel uniquement                                                      |
-| `gac stats reset`   | Réinitialiser toutes les statistiques à zéro (demande confirmation)                                            |
+| Commande            | Description                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Afficher vos statistiques (identique à `gac stats show`)                                                                                                   |
+| `gac stats show`    | Afficher les statistiques complètes : totaux, séries, activité quotidienne et hebdomadaire, utilisation des tokens, projets principaux, modèles principaux |
+| `gac stats project` | Afficher les statistiques du projet git actuel uniquement                                                                                                  |
+| `gac stats reset`   | Réinitialiser toutes les statistiques à zéro (demande confirmation)                                                                                        |
 
 ### Exemples
 
@@ -555,24 +564,27 @@ Exécuter `gac stats` affiche :
 
 - **Gacs et commits totaux** — combien de fois vous avez utilisé gac et combien de commits il a créés
 - **Série actuelle et la plus longue** — jours consécutifs avec activité gac (🔥 à 5+ jours)
-- **Résumé d'activité** — gacs/commits d'aujourd'hui et de cette semaine vs votre pic quotidien et hebdomadaire
-- **Projets principaux** — vos 5 dépôts les plus actifs par comptes gac + commits
-- **Célébrations de records** — 🏆 trophées quand vous établissez de nouveaux records quotidiens, hebdomadaires ou de série ; 🥈 pour les égaler
+- **Résumé d'activité** — gacs, commits et tokens d'aujourd'hui et de cette semaine vs votre pic quotidien et hebdomadaire
+- **Projets principaux** — vos 5 dépôts les plus actifs par comptes gac + commits, avec utilisation des tokens par projet
+- **Modèles principaux** — vos 5 modèles les plus utilisés avec tokens de prompt, completion et totaux consommés
+- **Célébrations de records** — 🏆 trophées quand vous établissez de nouveaux records quotidiens, hebdomadaires, de tokens ou de série ; 🥈 pour les égaler
 - **Messages d'encouragement** — suggestions contextuelles basées sur votre activité
 
 ### Désactiver les statistiques
 
-Définissez la variable d'environnement `GAC_DISABLE_STATS` avec n'importe quelle valeur :
+Définissez la variable d'environnement `GAC_DISABLE_STATS` avec une valeur truthy :
 
 ```sh
 # Désactiver le suivi des statistiques
-export GAC_DISABLE_STATS=1
+export GAC_DISABLE_STATS=true
 
 # Ou dans .gac.env
 GAC_DISABLE_STATS=true
 ```
 
-Quand désactivé, gac ignore tout enregistrement de statistiques — aucune lecture ou écriture de fichier n'a lieu. Les données existantes sont préservées mais ne seront pas mises à jour tant que la variable n'est pas supprimée.
+Les valeurs falsy (`false`, `0`, `no`, `off`, vide) maintiennent les statistiques activées — comme si la variable n'était pas définie.
+
+Quand désactivé, gac ignore tout enregistrement de statistiques — aucune lecture ou écriture de fichier n'a lieu. Les données existantes sont préservées mais ne seront pas mises à jour tant que vous ne les réactivez pas.
 
 ---
 

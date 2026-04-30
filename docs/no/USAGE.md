@@ -337,7 +337,7 @@ Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 - `GAC_TRANSLATE_PREFIXES=true` - Oversett konvensjonelle commit-prefikser (feat, fix, etc.) til målspråket (default: false, beholder prefikser på engelsk)
 - `GAC_SKIP_SECRET_SCAN=true` - Deaktiver automatisk sikkerhetsskanning for hemmeligheter i staged endringer (bruk med forsiktighet)
 - `GAC_NO_VERIFY_SSL=true` - Hopp over SSL-sertifikatverifisering for API-kall (nyttig for bedriftsproxyer som avlytter SSL-trafikk)
-- `GAC_DISABLE_STATS=true` - Deaktiver sporing av bruksstatistikk (ingen lesing eller skriving av statistikkfil; eksisterende data bevares)
+- `GAC_DISABLE_STATS=true` - Deaktiver sporing av bruksstatistikk (ingen lesing eller skriving av statistikkfil; eksisterende data bevares). Bare truthy-verdier deaktiverer statistikk; å sette den til `false`/`0`/`no`/`off` holder statistikk aktivert, det samme som å la variabelen være udefinert
 
 Se `.gac.env.example` for en komplett konfigurasjonsmal.
 
@@ -360,7 +360,7 @@ Følgende underkommandoer er tilgjengelige:
 - `gac language` (eller `gac lang`) — Interaktivt språkvalg for commit-meldinger (setter GAC_LANGUAGE)
 - `gac diff` — Vis filtrert git diff med alternativer for staged/unstaged endringer, farge og trunkering
 - `gac serve` — Start GAC som [MCP-server](MCP.md) for AI-agent integrasjon (stdio transport)
-- `gac stats show` — Vis din gac-bruksstatistikk (totaler, streaks, daglig & ukentlig aktivitet, topprosjekter)
+- `gac stats show` — Vis din gac-bruksstatistikk (totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller)
 - `gac stats project` — Vis statistikk kun for det nåværende git-prosjektet
 - `gac stats reset` — Tilbakestill all statistikk til null (ber om bekreftelse)
 
@@ -472,20 +472,29 @@ gac -i -v
 
 ## Bruksstatistikk
 
-gac sporer lettvektig bruksstatistikk slik at du kan se din commit-aktivitet, streaks og mest aktive prosjekter. Statistikk lagres lokalt i `~/.gac_stats.json` og sendes aldri noe sted.
+gac sporer lettvektig bruksstatistikk slik at du kan se din commit-aktivitet, streaks, tokenbruk og mest aktive prosjekter og modeller. Statistikk lagres lokalt i `~/.gac_stats.json` og sendes aldri noe sted — det er ingen telemetri.
 
-**Hva spores:** totalt antall gac-kjøringer, totalt antall committer, første/siste bruk-datoer, daglige og ukentlige tellinger, nåværende og lengste streak, samt aktivitetstelling per prosjekt.
+**Hva spores:** totalt antall gac-kjøringer, totalt antall committer, totale prompt- og completion-tokens, første/siste bruk-datoer, daglige og ukentlige tellinger (gacs, committer, tokens), nåværende og lengste streak, aktivitet per prosjekt (gacs, committer, prompt + completion-tokens) og aktivitet per modell (gacs, prompt + completion-tokens).
 
-**Hva IKKE spores:** commit-meldinger, kodeinnhold, filstier, personlig informasjon eller noe utover tellinger og prosjektnavn.
+**Hva IKKE spores:** commit-meldinger, kodeinnhold, filstier, personlig informasjon eller noe utover tellinger, datoer, prosjektnavn (avledet fra git remote eller mappenavn) og modellnavn.
+
+### Opt-in eller Opt-out
+
+`gac init` spør om du vil aktivere statistikk og forklarer nøyaktig hva som lagres. Du kan når som helst ombestemme deg:
+
+- **Aktiver statistikk:** fjern `GAC_DISABLE_STATS` eller sett den til `false`/`0`/`no`/`off`/tom.
+- **Deaktiver statistikk:** sett `GAC_DISABLE_STATS` til en truthy-verdi (`true`, `1`, `yes`, `on`).
+
+Når du avslår statistikk under `gac init` og en eksisterende `~/.gac_stats.json` oppdages, blir du tilbudt muligheten til å slette den.
 
 ### Statistikk-underkommandoer
 
-| Kommando            | Beskrivelse                                                                              |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| `gac stats`         | Vis din statistikk (samme som `gac stats show`)                                          |
-| `gac stats show`    | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, topprosjekter |
-| `gac stats project` | Vis statistikk kun for det nåværende git-prosjektet                                      |
-| `gac stats reset`   | Tilbakestill all statistikk til null (ber om bekreftelse)                                |
+| Kommando            | Beskrivelse                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `gac stats`         | Vis din statistikk (samme som `gac stats show`)                                                                   |
+| `gac stats show`    | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
+| `gac stats project` | Vis statistikk kun for det nåværende git-prosjektet                                                               |
+| `gac stats reset`   | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
 
 ### Eksempler
 
@@ -506,24 +515,27 @@ gac stats reset
 
 - **Totalt antall gacs og committer** — hvor mange ganger du har brukt gac og hvor mange committer det har opprettet
 - **Nåværende og lengste streak** — etterfølgende dager med gac-aktivitet (🔥 ved 5+ dager)
-- **Aktivitetssammendrag** — dagens og denne ukens gacs/committer sammenlignet med din toppedag og toppeuke
-- **Topprosjekter** — dine 5 mest aktive repos etter gac- + commit-antall
-- **Highscore-feiringer** — 🏆 trofeer når du setter nye daglige, ukentlige eller streak-rekorder; 🥈 for å tangere dem
+- **Aktivitetssammendrag** — dagens og denne ukens gacs, committer og tokens sammenlignet med din toppedag og toppeuke
+- **Topprosjekter** — dine 5 mest aktive repos etter gac- + commit-antall, med tokenbruk per prosjekt
+- **Toppmodeller** — dine 5 mest brukte modeller med prompt-, completion- og totale tokens forbruk
+- **Highscore-feiringer** — 🏆 trofeer når du setter nye daglige, ukentlige, token- eller streak-rekorder; 🥈 for å tangere dem
 - **Oppmuntringsmeldinger** — kontekstuelle oppmuntringer basert på din aktivitet
 
 ### Deaktivere statistikk
 
-Sett miljøvariabelen `GAC_DISABLE_STATS` til en vilkårlig verdi:
+Sett miljøvariabelen `GAC_DISABLE_STATS` til en truthy-verdi:
 
 ```sh
 # Deaktiver statistikksporing
-export GAC_DISABLE_STATS=1
+export GAC_DISABLE_STATS=true
 
 # Eller i .gac.env
 GAC_DISABLE_STATS=true
 ```
 
-Når deaktivert, hopper gac over all statistikkregistrering — ingen fillesing eller skriving skjer. Eksisterende data bevares men oppdateres ikke før du fjerner variabelen.
+Falsy-verdier (`false`, `0`, `no`, `off`, tom) holder statistikk aktivert — det samme som å la variabelen være udefinert.
+
+Når deaktivert, hopper gac over all statistikkregistrering — ingen fillesing eller skriving skjer. Eksisterende data bevares men oppdateres ikke før du reaktiverer dem.
 
 ---
 
