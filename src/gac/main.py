@@ -80,7 +80,13 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
         commit_message = clean_commit_message(raw_commit_message, fifty_seventy_two=ctx.flags.fifty_seventy_two)
         logger.info("Generated commit message:")
         logger.info(commit_message)
-        record_tokens(prov_prompt_tokens, prov_completion_tokens, model=ctx.model, duration_ms=duration_ms)
+        record_tokens(
+            prov_prompt_tokens,
+            prov_completion_tokens,
+            model=ctx.model,
+            duration_ms=duration_ms,
+            reasoning_tokens=reasoning_tokens,
+        )
         conversation_messages.append({"role": "assistant", "content": commit_message})
 
         if ctx.message_only:

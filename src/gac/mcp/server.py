@@ -791,7 +791,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             max_retries=max_retries,
             quiet=True,
         )
-        record_tokens(prov_pt, prov_ct, model=model, duration_ms=duration_ms)
+        record_tokens(prov_pt, prov_ct, model=model, duration_ms=duration_ms, reasoning_tokens=_reasoning_tokens)
         commit_message = clean_commit_message(raw_commit_message)
 
         if not commit_message:

@@ -192,7 +192,13 @@ class GroupedCommitWorkflow:
                 )
             )
 
-            record_tokens(prov_prompt_tokens, prov_completion_tokens, model=model, duration_ms=duration_ms)
+            record_tokens(
+                prov_prompt_tokens,
+                prov_completion_tokens,
+                model=model,
+                duration_ms=duration_ms,
+                reasoning_tokens=reasoning_tokens,
+            )
 
             try:
                 parsed = self.parse_and_validate_json_response(raw_response)
