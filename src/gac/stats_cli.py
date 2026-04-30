@@ -128,7 +128,7 @@ def show() -> None:
 
     # Details table
     table = Table(show_header=False, box=None)
-    table.add_column("Metric", style="dim")
+    table.add_column("Metric", style="bold magenta")
     table.add_column("Value", style="bold")
 
     first_used = "/".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["first_used"].split("-"))
@@ -153,7 +153,7 @@ def show() -> None:
     console.print()
     console.print("[bold]Activity Summary:[/bold]")
     activity_table = Table(show_header=True, box=None)
-    activity_table.add_column("Period", style="dim")
+    activity_table.add_column("Period", style="bold magenta")
     activity_table.add_column("Gacs", style="bold cyan", justify="right")
     activity_table.add_column("Commits", style="bold cyan", justify="right")
     activity_table.add_column("Tokens", style="bold cyan", justify="right")
@@ -174,7 +174,7 @@ def show() -> None:
         console.print()
         console.print("[bold]Top Projects:[/bold]")
         projects_table = Table(show_header=True, box=None)
-        projects_table.add_column("Project", style="dim")
+        projects_table.add_column("Project", style="bold magenta")
         projects_table.add_column("Gacs", style="bold cyan", justify="right")
         projects_table.add_column("Commits", style="bold cyan", justify="right")
         projects_table.add_column("Tokens", style="bold cyan", justify="right")
@@ -196,7 +196,7 @@ def show() -> None:
     if models:
         console.print("[bold]Top Models:[/bold]")
         models_table = Table(show_header=True, box=None)
-        models_table.add_column("Model", style="dim")
+        models_table.add_column("Model", style="bold magenta")
         models_table.add_column("Gacs", style="bold cyan", justify="right")
         models_table.add_column("Prompt", style="bold cyan", justify="right")
         models_table.add_column("Completion", style="bold cyan", justify="right")
@@ -348,7 +348,7 @@ def project() -> None:
     if total_t > 0:
         console.print()
         token_table = Table(show_header=False, box=None)
-        token_table.add_column("Metric", style="dim")
+        token_table.add_column("Metric", style="bold magenta")
         token_table.add_column("Value", style="bold cyan", justify="right")
         token_table.add_row("Prompt tokens", _format_tokens(prompt_t))
         token_table.add_row("Completion tokens", _format_tokens(completion_t))
