@@ -24,7 +24,7 @@ console = Console()
 
 
 def generate_with_retries(
-    provider_funcs: dict[str, Callable[..., tuple[str, int, int, int]]],
+    provider_funcs: dict[str, Callable[..., tuple[str, int, int, int, int]]],
     model: str,
     messages: list[dict[str, str]],
     temperature: float,
@@ -34,7 +34,7 @@ def generate_with_retries(
     is_group: bool = False,
     skip_success_message: bool = False,
     task_description: str = "commit message",
-) -> tuple[str, int, int, int]:
+) -> tuple[str, int, int, int, int]:
     """Generate content with retry logic using direct API calls."""
     # Parse model string to determine provider and actual model
     if ":" not in model:
@@ -102,7 +102,7 @@ def generate_with_retries(
                 raise AIError.model_error(f"Provider function not found for: {provider}")
 
             result = provider_func(model=model_name, messages=messages, temperature=temperature, max_tokens=max_tokens)
-            content, prompt_tokens, completion_tokens, duration_ms = result
+            content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens = result
 
             if spinner:
                 if skip_success_message:
@@ -112,7 +112,7 @@ def generate_with_retries(
                     console.print(f"✓ Generated {message_type} with {provider} {model_name}")
 
             if content is not None and content.strip():
-                return (content.strip(), prompt_tokens, completion_tokens, duration_ms)
+                return (content.strip(), prompt_tokens, completion_tokens, duration_ms, reasoning_tokens)
             else:
                 logger.warning(f"Empty or None content received from {provider} {model_name}: {repr(content)}")
                 raise AIError.model_error("Empty response from AI model")

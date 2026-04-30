@@ -32,6 +32,9 @@ class GroupedCommitResult(NamedTuple):
 
     commits: list[dict[str, Any]]
     raw_response: str
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    reasoning_tokens: int = 0
 
 
 class GroupedCommitWorkflow:
@@ -177,18 +180,19 @@ class GroupedCommitWorkflow:
                     return 0  # User declined due to token warning
             first_iteration = False
 
-            raw_response, _prov_pt, _prov_ct, duration_ms = generate_grouped_commits(
-                model=model,
-                prompt=conversation_messages,
-                temperature=temperature,
-                max_tokens=max_output_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
-                skip_success_message=True,
+            raw_response, prov_prompt_tokens, prov_completion_tokens, duration_ms, reasoning_tokens = (
+                generate_grouped_commits(
+                    model=model,
+                    prompt=conversation_messages,
+                    temperature=temperature,
+                    max_tokens=max_output_tokens,
+                    max_retries=max_retries,
+                    quiet=quiet,
+                    skip_success_message=True,
+                )
             )
 
-            completion_tokens = count_tokens(raw_response, model)
-            record_tokens(prompt_tokens, completion_tokens, model=model, duration_ms=duration_ms)
+            record_tokens(prov_prompt_tokens, prov_completion_tokens, model=model, duration_ms=duration_ms)
 
             try:
                 parsed = self.parse_and_validate_json_response(raw_response)
@@ -231,9 +235,23 @@ class GroupedCommitWorkflow:
             conversation_messages.append({"role": "assistant", "content": raw_response})
             # Assert parsed is not None for mypy - ValueError would have been raised earlier
             assert parsed is not None
-            return GroupedCommitResult(commits=parsed["commits"], raw_response=raw_response)
+            return GroupedCommitResult(
+                commits=parsed["commits"],
+                raw_response=raw_response,
+                prompt_tokens=prov_prompt_tokens,
+                completion_tokens=prov_completion_tokens,
+                reasoning_tokens=reasoning_tokens,
+            )
 
-    def display_grouped_commits(self, result: GroupedCommitResult, model: str, prompt_tokens: int, quiet: bool) -> None:
+    def display_grouped_commits(
+        self,
+        result: GroupedCommitResult,
+        model: str,
+        prompt_tokens: int,
+        quiet: bool,
+        completion_tokens: int = 0,
+        reasoning_tokens: int = 0,
+    ) -> None:
         """Display the generated grouped commits to the user."""
         model_id = ModelIdentifier.parse(model)
 
@@ -249,11 +267,18 @@ class GroupedCommitWorkflow:
                 console.print(Panel(commit_msg, title=f"Commit Message {idx}/{num_commits}", border_style="cyan"))
                 console.print()
 
-            completion_tokens = count_tokens(result.raw_response, model)
+            if completion_tokens == 0:
+                completion_tokens = count_tokens(result.raw_response, model)
             total_tokens = prompt_tokens + completion_tokens
-            console.print(
-                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
-            )
+            if reasoning_tokens > 0:
+                output_tokens = completion_tokens - reasoning_tokens
+                console.print(
+                    f"[dim]Token usage: {prompt_tokens} prompt + {output_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
+                )
+            else:
+                console.print(
+                    f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
+                )
 
     def handle_grouped_commit_confirmation(
         self, result: GroupedCommitResult, conversation_messages: list[dict[str, str]]
@@ -481,8 +506,14 @@ class GroupedCommitWorkflow:
                 return result
 
             # Display results
-            prompt_tokens = count_tokens(conversation_messages, model)
-            self.display_grouped_commits(result, model, prompt_tokens, quiet)
+            self.display_grouped_commits(
+                result,
+                model,
+                result.prompt_tokens,
+                quiet,
+                completion_tokens=result.completion_tokens,
+                reasoning_tokens=result.reasoning_tokens,
+            )
 
             # Handle confirmation
             if require_confirmation:

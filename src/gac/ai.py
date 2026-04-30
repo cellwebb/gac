@@ -24,7 +24,7 @@ def generate_commit_message(
     is_group: bool = False,
     skip_success_message: bool = False,
     task_description: str = "commit message",
-) -> tuple[str, int, int, int]:
+) -> tuple[str, int, int, int, int]:
     """Generate a commit message using direct API calls to AI providers.
 
     Args:
@@ -36,7 +36,7 @@ def generate_commit_message(
         quiet: If True, suppress progress indicators
 
     Returns:
-        Tuple of (content, prompt_tokens, completion_tokens, duration_ms)
+        Tuple of (content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens)
 
     Raises:
         AIError: If generation fails after max_retries attempts
@@ -88,7 +88,7 @@ def generate_grouped_commits(
     max_retries: int,
     quiet: bool = False,
     skip_success_message: bool = False,
-) -> tuple[str, int, int, int]:
+) -> tuple[str, int, int, int, int]:
     """Generate grouped commits JSON response."""
     return generate_commit_message(
         model=model,

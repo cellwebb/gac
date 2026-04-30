@@ -67,19 +67,20 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
                 return 0  # User declined due to token warning
         first_iteration = False
 
-        raw_commit_message, _prov_pt, _prov_ct, duration_ms = generate_commit_message(
-            model=ctx.model,
-            prompt=conversation_messages,
-            temperature=ctx.temperature,
-            max_tokens=ctx.max_output_tokens,
-            max_retries=ctx.max_retries,
-            quiet=ctx.quiet or ctx.message_only,
+        raw_commit_message, prov_prompt_tokens, prov_completion_tokens, duration_ms, reasoning_tokens = (
+            generate_commit_message(
+                model=ctx.model,
+                prompt=conversation_messages,
+                temperature=ctx.temperature,
+                max_tokens=ctx.max_output_tokens,
+                max_retries=ctx.max_retries,
+                quiet=ctx.quiet or ctx.message_only,
+            )
         )
         commit_message = clean_commit_message(raw_commit_message, fifty_seventy_two=ctx.flags.fifty_seventy_two)
         logger.info("Generated commit message:")
         logger.info(commit_message)
-        completion_tokens = count_tokens(raw_commit_message, ctx.model)
-        record_tokens(prompt_tokens, completion_tokens, model=ctx.model, duration_ms=duration_ms)
+        record_tokens(prov_prompt_tokens, prov_completion_tokens, model=ctx.model, duration_ms=duration_ms)
         conversation_messages.append({"role": "assistant", "content": commit_message})
 
         if ctx.message_only:
@@ -90,10 +91,11 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
         if not ctx.quiet:
             display_commit_message(
                 commit_message,
-                prompt_tokens,
+                prov_prompt_tokens,
                 ctx.model,
                 ctx.quiet,
-                completion_tokens=completion_tokens,
+                completion_tokens=prov_completion_tokens,
+                reasoning_tokens=reasoning_tokens,
             )
 
         # Handle confirmation

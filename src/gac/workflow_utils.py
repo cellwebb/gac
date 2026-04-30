@@ -98,6 +98,7 @@ def display_commit_message(
     model: str,
     quiet: bool,
     completion_tokens: int | None = None,
+    reasoning_tokens: int = 0,
 ) -> None:
     console.print("[bold green]Generated commit message:[/bold green]")
     console.print(Panel(commit_message, title="Commit Message", border_style="cyan"))
@@ -108,9 +109,15 @@ def display_commit_message(
 
             completion_tokens = count_tokens(commit_message, model)
         total_tokens = prompt_tokens + completion_tokens
-        console.print(
-            f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
-        )
+        if reasoning_tokens > 0:
+            output_tokens = completion_tokens - reasoning_tokens
+            console.print(
+                f"[dim]Token usage: {prompt_tokens} prompt + {output_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
+            )
+        else:
+            console.print(
+                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
+            )
 
 
 def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> None:
