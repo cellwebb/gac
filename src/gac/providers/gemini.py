@@ -3,7 +3,7 @@
 from typing import Any
 
 from gac.errors import AIError
-from gac.providers.base import GenericHTTPProvider, ProviderConfig
+from gac.providers.base import GenericHTTPProvider, ParsedResponse, ProviderConfig
 
 
 class GeminiProvider(GenericHTTPProvider):
@@ -66,7 +66,7 @@ class GeminiProvider(GenericHTTPProvider):
 
         return body
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse Gemini response format: candidates[0].content.parts[0].text."""
         candidates = response.get("candidates")
         if not candidates:
@@ -87,4 +87,11 @@ class GeminiProvider(GenericHTTPProvider):
         if content_text is None:
             raise AIError.model_error("Gemini API response missing text content")
 
-        return content_text
+        usage_meta = response.get("usageMetadata")
+        prompt_tokens = -1
+        completion_tokens = -1
+        if isinstance(usage_meta, dict):
+            prompt_tokens = usage_meta.get("promptTokenCount", -1)
+            completion_tokens = usage_meta.get("candidatesTokenCount", -1)
+
+        return ParsedResponse(content=content_text, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)

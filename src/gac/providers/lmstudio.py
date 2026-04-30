@@ -3,7 +3,7 @@
 import os
 from typing import Any
 
-from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig
 
 
 class LMStudioProvider(OpenAICompatibleProvider):
@@ -54,27 +54,29 @@ class LMStudioProvider(OpenAICompatibleProvider):
         body["stream"] = False
         return body
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse OpenAI-compatible response with text field fallback."""
         from gac.errors import AIError
+
+        usage = response.get("usage")
+        prompt_tokens = usage.get("prompt_tokens", -1) if isinstance(usage, dict) else -1
+        completion_tokens = usage.get("completion_tokens", -1) if isinstance(usage, dict) else -1
 
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
             raise AIError.model_error("Invalid response: missing choices")
 
-        # First try message.content (standard OpenAI format)
         choice = choices[0]
         content = choice.get("message", {}).get("content")
         if content is not None:
             if content == "":
                 raise AIError.model_error("Invalid response: empty content")
-            return content
+            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
-        # Fallback to text field (some OpenAI-compatible servers use this)
         content = choice.get("text")
         if content is not None:
             if content == "":
                 raise AIError.model_error("Invalid response: empty content")
-            return content
+            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
 
         raise AIError.model_error("Invalid response: missing content")

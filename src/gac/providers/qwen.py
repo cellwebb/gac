@@ -12,7 +12,7 @@ https://github.com/QwenLM/qwen-code/issues/3203.
 from typing import Any
 
 from gac.errors import AIError
-from gac.providers.base import BaseConfiguredProvider, OpenAICompatibleProvider, ProviderConfig
+from gac.providers.base import BaseConfiguredProvider, OpenAICompatibleProvider, ParsedResponse, ProviderConfig
 
 QWEN_CLOUD_INTL_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 QWEN_CLOUD_CN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
@@ -43,7 +43,7 @@ class QwenProvider(BaseConfiguredProvider):
     ) -> dict[str, Any]:
         raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         raise AIError.authentication_error(_QWEN_OAUTH_DEPRECATION_MESSAGE)
 
     def generate(

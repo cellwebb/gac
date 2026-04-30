@@ -3,7 +3,7 @@
 import os
 from typing import Any
 
-from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
+from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig
 
 
 class OllamaProvider(OpenAICompatibleProvider):
@@ -52,17 +52,22 @@ class OllamaProvider(OpenAICompatibleProvider):
             return ""  # Optional API key
         return api_key
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse Ollama response with flexible format support."""
         from gac.errors import AIError
 
-        # Handle different response formats from Ollama
+        prompt_tokens = response.get("prompt_eval_count", -1)
+        completion_tokens = response.get("eval_count", -1)
+        if not isinstance(prompt_tokens, int):
+            prompt_tokens = -1
+        if not isinstance(completion_tokens, int):
+            completion_tokens = -1
+
         if "message" in response and "content" in response["message"]:
             content = response["message"]["content"]
         elif "response" in response:
             content = response["response"]
         else:
-            # Fallback: try to serialize response
             content = str(response) if response else ""
 
         if content is None:
@@ -70,4 +75,4 @@ class OllamaProvider(OpenAICompatibleProvider):
         if content == "":
             raise AIError.model_error("Ollama API returned empty content")
 
-        return content
+        return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)

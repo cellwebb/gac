@@ -10,7 +10,7 @@ import os
 from typing import Any
 
 from gac.errors import AIError
-from gac.providers.base import AnthropicCompatibleProvider, ProviderConfig
+from gac.providers.base import AnthropicCompatibleProvider, ParsedResponse, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
         headers["anthropic-version"] = self.custom_version
         return headers
 
-    def _parse_response(self, response: dict[str, Any]) -> str:
+    def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse response with support for extended format (e.g., MiniMax with thinking).
 
         Handles both:
@@ -67,15 +67,20 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
         - Extended format: first item with type="text"
         """
         try:
+            usage = response.get("usage")
+            prompt_tokens = -1
+            completion_tokens = -1
+            if isinstance(usage, dict):
+                prompt_tokens = usage.get("input_tokens", -1)
+                completion_tokens = usage.get("output_tokens", -1)
+
             content_list = response.get("content", [])
             if not content_list:
                 raise AIError.model_error("Custom Anthropic API returned empty content array")
 
-            # Try standard Anthropic format first: content[0].text
             if "text" in content_list[0]:
                 content = content_list[0]["text"]
             else:
-                # Extended format (e.g., MiniMax with thinking): find first item with type="text"
                 text_item = next((item for item in content_list if item.get("type") == "text"), None)
                 if text_item and "text" in text_item:
                     content = text_item["text"]
@@ -91,7 +96,7 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
                 raise AIError.model_error("Custom Anthropic API returned null content")
             if content == "":
                 raise AIError.model_error("Custom Anthropic API returned empty content")
-            return content
+            return ParsedResponse(content=content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
         except AIError:
             raise
         except (KeyError, IndexError, TypeError, StopIteration) as e:
