@@ -24,6 +24,7 @@ _DURATION_DEFAULTS: dict[str, int] = {
     "timed_completion_tokens": 0,
     "min_duration_ms": 0,
     "max_duration_ms": 0,
+    "reasoning_tokens": 0,
 }
 
 
@@ -331,6 +332,7 @@ def record_tokens(
     model: str | None = None,
     project_name: str | None = None,
     duration_ms: int | None = None,
+    reasoning_tokens: int = 0,
 ) -> None:
     """Record token usage for an AI generation call.
 
@@ -341,6 +343,7 @@ def record_tokens(
         project_name: Name of the project. Auto-detected from git if not provided.
         duration_ms: Wall-clock duration of the API call in milliseconds. When provided and > 0,
             per-model speed tracking fields are updated.
+        reasoning_tokens: Number of reasoning/thinking tokens used by the model.
 
     Does nothing if GAC_DISABLE_STATS environment variable is set.
     """
@@ -385,6 +388,7 @@ def record_tokens(
                 "gacs": 0,
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
+                "reasoning_tokens": 0,
                 "total_duration_ms": 0,
                 "duration_count": 0,
                 "timed_completion_tokens": 0,
@@ -394,6 +398,7 @@ def record_tokens(
         m = stats["models"][model]
         m["prompt_tokens"] = m.get("prompt_tokens", 0) + prompt_tokens
         m["completion_tokens"] = m.get("completion_tokens", 0) + completion_tokens
+        m["reasoning_tokens"] = m.get("reasoning_tokens", 0) + reasoning_tokens
         if duration_ms is not None and duration_ms > 0:
             m["total_duration_ms"] = m.get("total_duration_ms", 0) + duration_ms
             m["duration_count"] = m.get("duration_count", 0) + 1

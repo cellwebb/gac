@@ -691,6 +691,39 @@ class TestModelSpeedTracking:
             model_data = next(data for name, data in top_models if name == "openai:gpt-4")
             assert model_data["avg_tps"] is None
 
+    def test_record_tokens_reasoning_accumulates(self, tmp_path):
+        """reasoning_tokens accumulates per model."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 80, model="openai:o3", reasoning_tokens=30)
+            record_tokens(100, 60, model="openai:o3", reasoning_tokens=20)
+            stats = load_stats()
+            assert stats["models"]["openai:o3"]["reasoning_tokens"] == 50
+            assert stats["models"]["openai:o3"]["completion_tokens"] == 140
+
+    def test_record_tokens_reasoning_defaults_zero(self, tmp_path):
+        """reasoning_tokens defaults to 0 when not provided."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4")
+            stats = load_stats()
+            assert stats["models"]["openai:gpt-4"]["reasoning_tokens"] == 0
+
+    def test_get_stats_summary_reasoning_in_top_models(self, tmp_path):
+        """reasoning_tokens appears in top_models from get_stats_summary."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 80, model="openai:o3", reasoning_tokens=30)
+            summary = get_stats_summary()
+            top_models = summary["top_models"]
+            model_data = next(data for name, data in top_models if name == "openai:o3")
+            assert model_data["reasoning_tokens"] == 30
+
+    def test_normalize_models_backfills_reasoning_tokens(self, tmp_path):
+        """Old stats files without reasoning_tokens get it defaulted to 0."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            raw_stats = {"models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}}}
+            (tmp_path / "stats.json").write_text(json.dumps(raw_stats))
+            stats = load_stats()
+            assert stats["models"]["openai:gpt-4"]["reasoning_tokens"] == 0
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
