@@ -270,39 +270,89 @@ def test_configure_stats_disable_from_default():
 
 
 def test_configure_stats_re_enable_removes_key():
-    """Test that confirming when previously disabled removes the key."""
+    """When previously disabled, choosing 'Enable gac stats' removes the key."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.write_text("GAC_DISABLE_STATS='true'\n")
         with _patch_env_paths(env_path):
-            with mock.patch("questionary.confirm") as mconfirm:
-                mconfirm.return_value.ask.side_effect = [True]
+            with mock.patch("questionary.select") as mselect:
+                mselect.return_value.ask.side_effect = ["Enable gac stats"]
                 existing_env = {"GAC_DISABLE_STATS": "true"}
                 _configure_stats(existing_env, env_path)
-                # default should be False (currently disabled)
-                args, kwargs = mconfirm.call_args
-                assert kwargs.get("default") is False
+                # The select prompt should advertise the current state.
+                args, kwargs = mselect.call_args
+                assert "stats are disabled" in args[0]
                 env_text = env_path.read_text()
                 assert "GAC_DISABLE_STATS" not in env_text
                 assert "GAC_DISABLE_STATS" not in existing_env
 
 
 def test_configure_stats_keep_disabled():
-    """Test that declining when previously disabled re-asserts the key."""
+    """When previously disabled, choosing 'Keep stats disabled' is a no-op."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.write_text("GAC_DISABLE_STATS='true'\n")
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.select") as mselect:
+                mselect.return_value.ask.side_effect = ["Keep stats disabled"]
+                existing_env = {"GAC_DISABLE_STATS": "true"}
+                _configure_stats(existing_env, env_path)
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS='true'" in env_text
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_keep_enabled_when_explicitly_set_false():
+    """When previously enabled via GAC_DISABLE_STATS=false, offer Keep / Disable."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GAC_DISABLE_STATS='false'\n")
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.select") as mselect:
+                mselect.return_value.ask.side_effect = ["Keep stats enabled"]
+                existing_env = {"GAC_DISABLE_STATS": "false"}
+                _configure_stats(existing_env, env_path)
+                args, _ = mselect.call_args
+                assert "stats are enabled" in args[0]
+                env_text = env_path.read_text()
+                # Existing falsy value preserved (still enabled)
+                assert "GAC_DISABLE_STATS='false'" in env_text
+
+
+def test_configure_stats_disable_when_explicitly_enabled():
+    """When previously enabled via GAC_DISABLE_STATS=false, choosing Disable writes true."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GAC_DISABLE_STATS='false'\n")
         stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
             with (
                 mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                mconfirm.return_value.ask.side_effect = [False]
+                mselect.return_value.ask.side_effect = ["Disable gac stats"]
+                # No history file exists, so the delete prompt should not run.
+                existing_env = {"GAC_DISABLE_STATS": "false"}
+                _configure_stats(existing_env, env_path)
+                assert mconfirm.call_count == 0
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS='true'" in env_text
+                assert existing_env.get("GAC_DISABLE_STATS") == "true"
+
+
+def test_configure_stats_select_cancelled():
+    """When user cancels (Esc) the existing-setting select, env is unchanged."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.write_text("GAC_DISABLE_STATS='true'\n")
+        before = env_path.read_text()
+        with _patch_env_paths(env_path):
+            with mock.patch("questionary.select") as mselect:
+                mselect.return_value.ask.side_effect = [None]
                 existing_env = {"GAC_DISABLE_STATS": "true"}
                 _configure_stats(existing_env, env_path)
-                env_text = env_path.read_text()
-                assert "GAC_DISABLE_STATS" in env_text
+                assert env_path.read_text() == before
                 assert existing_env.get("GAC_DISABLE_STATS") == "true"
 
 
