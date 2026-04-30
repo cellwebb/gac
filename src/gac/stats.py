@@ -18,6 +18,32 @@ STATS_FILE = Path.home() / ".gac_stats.json"
 
 _FALSY_VALUES = {"", "0", "false", "no", "off", "n"}
 
+_DURATION_DEFAULTS: dict[str, int] = {
+    "total_duration_ms": 0,
+    "duration_count": 0,
+    "timed_completion_tokens": 0,
+    "min_duration_ms": 0,
+    "max_duration_ms": 0,
+}
+
+
+def _normalize_models(models: dict[str, Any]) -> dict[str, Any]:
+    for _name, data in models.items():
+        for field, default in _DURATION_DEFAULTS.items():
+            data.setdefault(field, default)
+    return models
+
+
+def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, Any]]:
+    enriched: list[tuple[str, Any]] = []
+    for name, data in models:
+        if data.get("duration_count", 0) > 0 and data.get("total_duration_ms", 0) > 0:
+            avg_tps = round(data["timed_completion_tokens"] * 1000 / data["total_duration_ms"])
+        else:
+            avg_tps = None
+        enriched.append((name, {**data, "avg_tps": avg_tps}))
+    return enriched
+
 
 def stats_enabled() -> bool:
     """Check if stats tracking is enabled.
@@ -140,7 +166,7 @@ def load_stats() -> GACStats:
             "weekly_prompt_tokens": data.get("weekly_prompt_tokens", {}),
             "weekly_completion_tokens": data.get("weekly_completion_tokens", {}),
             "projects": data.get("projects", {}),
-            "models": data.get("models", {}),
+            "models": _normalize_models(data.get("models", {})),
         }
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(f"Failed to load stats: {e}")
@@ -230,7 +256,16 @@ def record_gac(project_name: str | None = None, model: str | None = None) -> Non
     # Update model stats
     if model:
         if model not in stats["models"]:
-            stats["models"][model] = {"gacs": 0, "prompt_tokens": 0, "completion_tokens": 0}
+            stats["models"][model] = {
+                "gacs": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_duration_ms": 0,
+                "duration_count": 0,
+                "timed_completion_tokens": 0,
+                "min_duration_ms": 0,
+                "max_duration_ms": 0,
+            }
         stats["models"][model]["gacs"] += 1
 
     save_stats(stats)
@@ -295,6 +330,7 @@ def record_tokens(
     completion_tokens: int,
     model: str | None = None,
     project_name: str | None = None,
+    duration_ms: int | None = None,
 ) -> None:
     """Record token usage for an AI generation call.
 
@@ -303,6 +339,8 @@ def record_tokens(
         completion_tokens: Number of completion (output) tokens used.
         model: Name of the AI model used (e.g. 'anthropic:claude-haiku-4-5').
         project_name: Name of the project. Auto-detected from git if not provided.
+        duration_ms: Wall-clock duration of the API call in milliseconds. When provided and > 0,
+            per-model speed tracking fields are updated.
 
     Does nothing if GAC_DISABLE_STATS environment variable is set.
     """
@@ -343,10 +381,29 @@ def record_tokens(
 
     if model:
         if model not in stats["models"]:
-            stats["models"][model] = {"gacs": 0, "prompt_tokens": 0, "completion_tokens": 0}
+            stats["models"][model] = {
+                "gacs": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_duration_ms": 0,
+                "duration_count": 0,
+                "timed_completion_tokens": 0,
+                "min_duration_ms": 0,
+                "max_duration_ms": 0,
+            }
         m = stats["models"][model]
         m["prompt_tokens"] = m.get("prompt_tokens", 0) + prompt_tokens
         m["completion_tokens"] = m.get("completion_tokens", 0) + completion_tokens
+        if duration_ms is not None and duration_ms > 0:
+            m["total_duration_ms"] = m.get("total_duration_ms", 0) + duration_ms
+            m["duration_count"] = m.get("duration_count", 0) + 1
+            m["timed_completion_tokens"] = m.get("timed_completion_tokens", 0) + completion_tokens
+            if m.get("duration_count", 0) == 1:
+                m["min_duration_ms"] = duration_ms
+                m["max_duration_ms"] = duration_ms
+            else:
+                m["min_duration_ms"] = min(m.get("min_duration_ms", 0), duration_ms)
+                m["max_duration_ms"] = max(m.get("max_duration_ms", 0), duration_ms)
 
     save_stats(stats)
     logger.debug(
@@ -443,9 +500,8 @@ def get_stats_summary() -> dict[str, Any]:
 
     top_projects = sorted(projects.items(), key=project_activity, reverse=True)
 
-    # Get models and sort by gacs (uses)
     models = stats.get("models", {})
-    top_models = sorted(models.items(), key=model_activity, reverse=True)
+    top_models = _enrich_models_with_speed(sorted(models.items(), key=model_activity, reverse=True))
 
     # Calculate peak single-day stats
     peak_daily_gacs: int = max(daily_gacs.values()) if daily_gacs else 0

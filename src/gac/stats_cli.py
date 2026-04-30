@@ -11,7 +11,6 @@ from gac.stats import (
     get_current_project_name,
     get_stats_summary,
     load_stats,
-    model_activity,
     project_activity,
     reset_stats,
     stats_enabled,
@@ -191,30 +190,29 @@ def show() -> None:
         console.print(projects_table)
         console.print()
 
-    # Top models
-    models = stats_data.get("models", {})
-    if models:
+    # Top models (from summary which includes computed avg_tps)
+    top_models = summary.get("top_models", [])
+    if top_models:
         console.print("[bold]Top Models:[/bold]")
         models_table = Table(show_header=True, box=None)
         models_table.add_column("Model", style="bold magenta")
         models_table.add_column("Gacs", style="bold cyan", justify="right")
-        models_table.add_column("Prompt", style="bold cyan", justify="right")
-        models_table.add_column("Completion", style="bold cyan", justify="right")
-        models_table.add_column("Tokens", style="bold cyan", justify="right")
+        models_table.add_column("Speed", style="bold cyan", justify="right")
+        models_table.add_column("Prompt Tokens", style="bold cyan", justify="right")
+        models_table.add_column("Completion Tokens", style="bold cyan", justify="right")
 
-        sorted_models = sorted(models.items(), key=model_activity, reverse=True)
-
-        for model_name, data in sorted_models[:5]:
+        for model_name, data in top_models[:5]:
             gacs = data.get("gacs", 0)
             prompt_t = int(data.get("prompt_tokens", 0))
             completion_t = int(data.get("completion_tokens", 0))
-            total_t = prompt_t + completion_t
+            avg_tps = data.get("avg_tps")
+            speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
             models_table.add_row(
                 model_name,
                 str(gacs),
+                speed_str,
                 _format_tokens(prompt_t),
                 _format_tokens(completion_t),
-                _format_tokens(total_t),
             )
 
         console.print(models_table)

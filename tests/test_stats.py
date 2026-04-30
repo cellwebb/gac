@@ -548,5 +548,149 @@ class TestStatsEnabled:
         assert stats_enabled() is True
 
 
+class TestModelSpeedTracking:
+    """Tests for per-model speed (tokens/sec) tracking."""
+
+    def test_record_tokens_with_duration_updates_speed_fields(self, tmp_path):
+        """record_tokens with duration_ms > 0 updates timing fields."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=1000)
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 1000
+            assert m["duration_count"] == 1
+            assert m["timed_completion_tokens"] == 50
+            assert m["min_duration_ms"] == 1000
+            assert m["max_duration_ms"] == 1000
+
+    def test_record_tokens_duration_accumulates(self, tmp_path):
+        """Multiple calls with duration_ms accumulate correctly."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=500)
+            record_tokens(100, 100, model="openai:gpt-4", duration_ms=1000)
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 1500
+            assert m["duration_count"] == 2
+            assert m["timed_completion_tokens"] == 150
+            assert m["min_duration_ms"] == 500
+            assert m["max_duration_ms"] == 1000
+
+    def test_record_tokens_non_extreme_duration_preserves_bounds(self, tmp_path):
+        """A non-extreme duration leaves prior min/max unchanged."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=200)
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=800)
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=400)
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["min_duration_ms"] == 200
+            assert m["max_duration_ms"] == 800
+            assert m["duration_count"] == 3
+
+    def test_record_tokens_without_duration_leaves_fields_untouched(self, tmp_path):
+        """record_tokens without duration_ms leaves timing fields at zero."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4")
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 0
+            assert m["duration_count"] == 0
+            assert m["timed_completion_tokens"] == 0
+            assert m["min_duration_ms"] == 0
+            assert m["max_duration_ms"] == 0
+
+    def test_record_tokens_zero_duration_leaves_fields_untouched(self, tmp_path):
+        """record_tokens with duration_ms=0 leaves timing fields at zero."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4", duration_ms=0)
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 0
+            assert m["duration_count"] == 0
+
+    def test_load_stats_defaults_missing_duration_fields(self, tmp_path):
+        """load_stats defaults new timing fields when missing from on-disk file."""
+        stats_file = tmp_path / "stats.json"
+        old_data = {
+            "total_gacs": 1,
+            "total_commits": 0,
+            "total_prompt_tokens": 0,
+            "total_completion_tokens": 0,
+            "first_used": "2025-01-01",
+            "last_used": "2025-01-01",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}},
+        }
+        stats_file.write_text(json.dumps(old_data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 0
+            assert m["duration_count"] == 0
+            assert m["timed_completion_tokens"] == 0
+            assert m["min_duration_ms"] == 0
+            assert m["max_duration_ms"] == 0
+
+    def test_old_format_then_timed_record_tokens(self, tmp_path):
+        """After loading an old-format file, a timed record_tokens updates cleanly."""
+        stats_file = tmp_path / "stats.json"
+        old_data = {
+            "total_gacs": 1,
+            "total_commits": 0,
+            "total_prompt_tokens": 0,
+            "total_completion_tokens": 0,
+            "first_used": "2025-01-01",
+            "last_used": "2025-01-01",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}},
+        }
+        stats_file.write_text(json.dumps(old_data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            load_stats()
+            record_tokens(200, 80, model="openai:gpt-4", duration_ms=500)
+            stats = load_stats()
+            m = stats["models"]["openai:gpt-4"]
+            assert m["total_duration_ms"] == 500
+            assert m["duration_count"] == 1
+            assert m["timed_completion_tokens"] == 80
+            assert m["min_duration_ms"] == 500
+            assert m["max_duration_ms"] == 500
+
+    def test_get_stats_summary_avg_tps(self, tmp_path):
+        """get_stats_summary computes avg_tps when timing data is available."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 100, model="openai:gpt-4", duration_ms=1000)
+            summary = get_stats_summary()
+            top_models = summary["top_models"]
+            model_data = next(data for name, data in top_models if name == "openai:gpt-4")
+            assert model_data["avg_tps"] == 100
+
+    def test_get_stats_summary_avg_tps_none_when_no_timing(self, tmp_path):
+        """get_stats_summary sets avg_tps to None when no timing data."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(100, 50, model="openai:gpt-4")
+            summary = get_stats_summary()
+            top_models = summary["top_models"]
+            model_data = next(data for name, data in top_models if name == "openai:gpt-4")
+            assert model_data["avg_tps"] is None
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

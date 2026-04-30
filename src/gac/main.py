@@ -67,7 +67,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
                 return 0  # User declined due to token warning
         first_iteration = False
 
-        raw_commit_message = generate_commit_message(
+        raw_commit_message, _prov_pt, _prov_ct, duration_ms = generate_commit_message(
             model=ctx.model,
             prompt=conversation_messages,
             temperature=ctx.temperature,
@@ -79,7 +79,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
         logger.info("Generated commit message:")
         logger.info(commit_message)
         completion_tokens = count_tokens(raw_commit_message, ctx.model)
-        record_tokens(prompt_tokens, completion_tokens, model=ctx.model)
+        record_tokens(prompt_tokens, completion_tokens, model=ctx.model, duration_ms=duration_ms)
         conversation_messages.append({"role": "assistant", "content": commit_message})
 
         if ctx.message_only:

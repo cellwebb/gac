@@ -53,7 +53,7 @@ class InteractiveMode:
 
             # Generate questions using existing infrastructure
             logger.info("Generating contextual questions about staged changes...")
-            questions_text = generate_commit_message(
+            questions_text, _prov_pt, _prov_ct, _dur_ms = generate_commit_message(
                 model=model,
                 prompt=(system_prompt, question_prompt),
                 temperature=temperature,

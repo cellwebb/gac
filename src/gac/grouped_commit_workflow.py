@@ -177,7 +177,7 @@ class GroupedCommitWorkflow:
                     return 0  # User declined due to token warning
             first_iteration = False
 
-            raw_response = generate_grouped_commits(
+            raw_response, _prov_pt, _prov_ct, duration_ms = generate_grouped_commits(
                 model=model,
                 prompt=conversation_messages,
                 temperature=temperature,
@@ -188,7 +188,7 @@ class GroupedCommitWorkflow:
             )
 
             completion_tokens = count_tokens(raw_response, model)
-            record_tokens(prompt_tokens, completion_tokens, model=model)
+            record_tokens(prompt_tokens, completion_tokens, model=model, duration_ms=duration_ms)
 
             try:
                 parsed = self.parse_and_validate_json_response(raw_response)

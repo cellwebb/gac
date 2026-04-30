@@ -785,7 +785,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         from gac.stats import record_tokens
 
         prompt_tokens = count_tokens(conversation_messages, model)
-        raw_commit_message = generate_commit_message(
+        raw_commit_message, _prov_pt, _prov_ct, duration_ms = generate_commit_message(
             model=model,
             prompt=conversation_messages,
             temperature=temperature,
@@ -794,7 +794,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             quiet=True,
         )
         completion_tokens = count_tokens(raw_commit_message, model)
-        record_tokens(prompt_tokens, completion_tokens, model=model)
+        record_tokens(prompt_tokens, completion_tokens, model=model, duration_ms=duration_ms)
         commit_message = clean_commit_message(raw_commit_message)
 
         if not commit_message:
