@@ -868,6 +868,163 @@ class TestBiggestGac:
             assert stats["biggest_gac_tokens"] == 0
             assert stats["biggest_gac_date"] is None
 
+    def test_reset_gac_token_accumulator_prevents_leak(self, tmp_path):
+        """reset_gac_token_accumulator prevents tokens leaking into the next gac.
+
+        Simulates the MCP server scenario: record_tokens on a non-committing
+        request, then reset, then a new request with fewer tokens.
+        """
+        import gac.stats
+        from gac.stats import reset_gac_token_accumulator
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # First request (e.g. dry_run): tokens recorded but no gac
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
+            reset_gac_token_accumulator()
+
+            # Second request: a smaller successful gac
+            gac.stats._current_gac_tokens = 0
+            record_tokens(50, 10, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            # Should only be 60 (the second request), not 660 (both)
+            assert stats["biggest_gac_tokens"] == 60
+
+    def test_accumulator_leak_without_reset(self, tmp_path):
+        """Without reset, tokens DO leak into the next gac (the bug we fixed)."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # First request (e.g. dry_run): tokens recorded but no gac
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
+            # Intentionally NOT calling reset_gac_token_accumulator()
+
+            # Second request: a smaller successful gac
+            record_tokens(50, 10, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            # Without reset, the accumulator held 650 from the first request
+            # plus 60 from the second = 710 (inflated!)
+            assert stats["biggest_gac_tokens"] == 710
+
+
+class TestMalformedStats:
+    """Tests for defensive handling of malformed persisted stats values."""
+
+    def test_malformed_biggest_gac_date_graceful(self, tmp_path):
+        """A non-ISO biggest_gac_date doesn't crash get_stats_summary."""
+        stats_file = tmp_path / "stats.json"
+        data = {
+            "total_gacs": 1,
+            "total_commits": 1,
+            "biggest_gac_tokens": 500,
+            "biggest_gac_date": "not-a-date",
+            "first_used": "2025-01-01T00:00:00",
+            "last_used": "2025-01-01T00:00:00",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+        stats_file.write_text(json.dumps(data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            # Should not crash; date falls back to "?"
+            assert summary["biggest_gac_tokens"] == 500
+            assert summary["biggest_gac_date"] == "?"
+
+    def test_malformed_biggest_gac_tokens_graceful(self, tmp_path):
+        """A non-numeric biggest_gac_tokens coerces to 0 in the summary."""
+        stats_file = tmp_path / "stats.json"
+        data = {
+            "total_gacs": 1,
+            "total_commits": 1,
+            "biggest_gac_tokens": "not-a-number",
+            "biggest_gac_date": None,
+            "first_used": "2025-01-01T00:00:00",
+            "last_used": "2025-01-01T00:00:00",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+        stats_file.write_text(json.dumps(data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            # Should not crash; tokens coerce to 0
+            assert summary["biggest_gac_tokens"] == 0
+
+    def test_malformed_first_used_date_graceful(self, tmp_path):
+        """A non-ISO first_used/last_used doesn't crash get_stats_summary."""
+        stats_file = tmp_path / "stats.json"
+        data = {
+            "total_gacs": 1,
+            "total_commits": 1,
+            "first_used": "bogus",
+            "last_used": "also-bogus",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+        stats_file.write_text(json.dumps(data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            # Should fall back to "?" instead of crashing
+            assert summary["first_used"] == "?"
+            assert summary["last_used"] == "?"
+
+    def test_non_string_first_used_date_graceful(self, tmp_path):
+        """A non-string first_used/last_used (e.g. int) doesn't crash stats_cli."""
+        stats_file = tmp_path / "stats.json"
+        data = {
+            "total_gacs": 1,
+            "total_commits": 1,
+            "first_used": 123,
+            "last_used": 456,
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+        stats_file.write_text(json.dumps(data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            # Should fall back to "?" instead of passing through the int
+            assert summary["first_used"] == "?"
+            assert summary["last_used"] == "?"
+            # Verify it's actually a string (won't crash .split("-"))
+            assert isinstance(summary["first_used"], str)
+            assert isinstance(summary["last_used"], str)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

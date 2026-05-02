@@ -322,6 +322,54 @@ class TestStatsCLI:
             assert "New biggest gac record" in result.output
             assert "8,000" in result.output
 
+    def test_stats_show_survives_non_string_dates(self, runner):
+        """Test stats show doesn't crash when summary returns non-string dates.
+
+        This can happen when a persisted stats file has malformed first_used/
+        last_used values that get_stats_summary() couldn't parse.
+        """
+        with patch("gac.stats_cli.get_stats_summary") as mock_summary, patch("gac.stats_cli.load_stats") as mock_load:
+            mock_summary.return_value = {
+                "total_gacs": 5,
+                "total_commits": 8,
+                "total_tokens": 20000,
+                "biggest_gac_tokens": 0,
+                "biggest_gac_date": None,
+                "first_used": "?",
+                "last_used": "?",
+                "today_gacs": 1,
+                "today_commits": 2,
+                "today_tokens": 500,
+                "week_gacs": 3,
+                "week_commits": 5,
+                "week_tokens": 1500,
+                "streak": 0,
+                "longest_streak": 0,
+                "peak_daily_gacs": 3,
+                "peak_daily_commits": 5,
+                "peak_daily_tokens": 1000,
+                "peak_weekly_gacs": 5,
+                "peak_weekly_commits": 8,
+                "peak_weekly_tokens": 3000,
+                "daily_gacs": {"2024-06-15": 1},
+                "daily_commits": {"2024-06-15": 2},
+                "daily_total_tokens": {"2024-06-15": 500},
+                "weekly_gacs": {},
+                "weekly_commits": {},
+                "weekly_total_tokens": {},
+                "daily_prompt_tokens": {},
+                "daily_completion_tokens": {},
+                "weekly_prompt_tokens": {},
+                "weekly_completion_tokens": {},
+                "top_projects": [],
+                "top_models": [],
+            }
+            mock_load.return_value = {"projects": {}, "models": {}}
+            result = runner.invoke(cli, ["stats", "show"])
+            assert result.exit_code == 0
+            # Should not crash on .split("-") with the "?" fallback
+            assert "You've gac'd" in result.output
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

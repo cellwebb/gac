@@ -17,9 +17,28 @@ STATS_FILE = Path.home() / ".gac_stats.json"
 
 # Module-level accumulator for per-gac token totals.
 # record_tokens() adds to this; record_gac() finalizes it and resets.
+# In long-lived processes (e.g. MCP server), non-committing return paths
+# must call reset_gac_token_accumulator() to avoid leaking tokens into
+# the next request.
 _current_gac_tokens: int = 0
 # Flag set by record_gac when this run beat the previous biggest_gac_tokens record.
 _new_biggest_gac: bool = False
+
+
+def reset_gac_token_accumulator() -> None:
+    """Reset the per-gac token accumulator.
+
+    Call this on code paths where ``record_tokens()`` was invoked but
+    ``record_gac()`` will not be (e.g. ``message_only``, ``dry_run``,
+    user abort).  Without this, a long-lived process (MCP server) would
+    leak leftover tokens into the next successful request and inflate
+    ``biggest_gac_tokens``.
+
+    One-shot CLI invocations do not strictly need this (the process
+    exits), but calling it is good hygiene.
+    """
+    global _current_gac_tokens
+    _current_gac_tokens = 0
 
 
 _FALSY_VALUES = {"", "0", "false", "no", "off", "n"}
@@ -50,6 +69,21 @@ def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, 
             avg_tps = None
         enriched.append((name, {**data, "avg_tps": avg_tps}))
     return enriched
+
+
+def _safe_format_date(iso_str: Any) -> str:
+    """Format an ISO datetime string to YYYY-MM-DD, returning a safe fallback on failure.
+
+    If the input is not a string or cannot be parsed, returns "?" to prevent
+    downstream code from crashing on ``.split("-")`` or similar string ops.
+    """
+    if not isinstance(iso_str, str):
+        return "?"
+    try:
+        return datetime.fromisoformat(iso_str).strftime("%Y-%m-%d")
+    except (ValueError, TypeError):
+        # Return a fallback that .split("-") won't crash on
+        return "?"
 
 
 def stats_enabled() -> bool:
@@ -523,12 +557,16 @@ def get_stats_summary() -> dict[str, Any]:
     week_commits = weekly_commits.get(week_key, 0)
     week_tokens = weekly_total_tokens.get(week_key, 0)
 
-    # Format dates
-    first_used_str = "Never" if first_used is None else datetime.fromisoformat(first_used).strftime("%Y-%m-%d")
-    last_used_str = "Never" if last_used is None else datetime.fromisoformat(last_used).strftime("%Y-%m-%d")
-    biggest_gac_date_str = (
-        None if biggest_gac_date is None else datetime.fromisoformat(biggest_gac_date).strftime("%Y-%m-%d")
-    )
+    # Format dates (defensive: malformed persisted values degrade gracefully)
+    first_used_str = "Never" if first_used is None else _safe_format_date(first_used)
+    last_used_str = "Never" if last_used is None else _safe_format_date(last_used)
+    biggest_gac_date_str = None if biggest_gac_date is None else _safe_format_date(biggest_gac_date)
+
+    # Coerce biggest_gac_tokens to int safely
+    try:
+        biggest_gac_tokens = int(biggest_gac_tokens)
+    except (ValueError, TypeError):
+        biggest_gac_tokens = 0
 
     # Get projects and sort by total activity
     projects = stats.get("projects", {})
@@ -638,7 +676,7 @@ def reset_stats() -> None:
         "models": {},
     }
     save_stats(empty_stats)
-    global _current_gac_tokens, _new_biggest_gac
-    _current_gac_tokens = 0
+    global _new_biggest_gac
+    reset_gac_token_accumulator()
     _new_biggest_gac = False
     logger.info("Statistics reset")

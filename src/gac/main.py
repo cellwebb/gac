@@ -19,7 +19,7 @@ from gac.interactive_mode import InteractiveMode
 from gac.oauth_retry import handle_oauth_retry
 from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
-from gac.stats import record_commit, record_gac, record_tokens
+from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
 from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
@@ -91,6 +91,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
 
         if ctx.message_only:
             print(commit_message)
+            reset_gac_token_accumulator()  # Don't leak tokens into next request
             return 0
 
         # Display commit message panel (always show, regardless of confirmation mode)
@@ -117,6 +118,7 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
                 break
             elif decision == "no":
                 console.print("[yellow]Commit aborted.[/yellow]")
+                reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return 0  # User aborted
             # decision == "regenerate": continue the loop
         else:

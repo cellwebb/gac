@@ -659,6 +659,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # =====================================================================
         if request.group:
             from gac.grouped_commit_workflow import GroupedCommitWorkflow
+            from gac.stats import reset_gac_token_accumulator
 
             workflow = GroupedCommitWorkflow(config)
 
@@ -695,6 +696,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             )
 
             if isinstance(group_result, int):
+                reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return CommitResult(
                     success=False,
                     commit_message="",
@@ -716,6 +718,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
             # ── message_only: return grouped suggestions, don't commit ──────
             if request.message_only:
+                reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return CommitResult(
                     success=True,
                     commit_message=f"[{num_groups} grouped commits]",
@@ -726,6 +729,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
             # ── dry_run: return grouped suggestions, don't commit ───────────
             if request.dry_run:
+                reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return CommitResult(
                     success=True,
                     commit_message=f"[{num_groups} grouped commits]",
@@ -746,6 +750,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 )
 
             if exit_code != 0:
+                reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return CommitResult(
                     success=False,
                     commit_message="",
@@ -781,7 +786,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         conversation_messages.append({"role": "user", "content": prompt_bundle.user_prompt})
 
         # Generate commit message using AI
-        from gac.stats import record_tokens
+        from gac.stats import record_tokens, reset_gac_token_accumulator
 
         raw_commit_message, prov_pt, prov_ct, duration_ms, _reasoning_tokens = generate_commit_message(
             model=model,
@@ -795,6 +800,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         commit_message = clean_commit_message(raw_commit_message)
 
         if not commit_message:
+            reset_gac_token_accumulator()  # Don't leak tokens into next request
             return CommitResult(
                 success=False,
                 commit_message="",
@@ -804,6 +810,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
         # ── message_only: return message, don't commit ───────────────────────
         if request.message_only:
+            reset_gac_token_accumulator()  # Don't leak tokens into next request
             return CommitResult(
                 success=True,
                 commit_message=commit_message,
@@ -814,6 +821,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
         # ── dry_run: return message, don't commit ────────────────────────────
         if request.dry_run:
+            reset_gac_token_accumulator()  # Don't leak tokens into next request
             return CommitResult(
                 success=True,
                 commit_message=commit_message,
