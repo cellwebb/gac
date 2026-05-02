@@ -92,13 +92,15 @@ def _configure_stats(existing_env: dict[str, str], env_path: Path = GAC_ENV_PATH
 
     raw = existing_env.get("GAC_DISABLE_STATS")
     explicitly_set = raw is not None
-    currently_disabled = raw is not None and raw.strip().lower() not in _STATS_FALSY_VALUES
 
     if explicitly_set:
+        # Returning user — offer keep / toggle via select.
+        currently_disabled = raw is not None and raw.strip().lower() not in _STATS_FALSY_VALUES
         current_label = "disabled" if currently_disabled else "enabled"
         toggle_label = "Enable gac stats" if currently_disabled else "Disable gac stats"
+
         choice = questionary.select(
-            f"Found existing setting: stats are {current_label}. How would you like to proceed?",
+            f"Stats are {current_label}. How would you like to proceed?",
             choices=[
                 f"Keep stats {current_label}",
                 toggle_label,
@@ -123,19 +125,18 @@ def _configure_stats(existing_env: dict[str, str], env_path: Path = GAC_ENV_PATH
             click.echo("Removed GAC_DISABLE_STATS. Stats enabled.")
         else:
             _disable_stats_with_history_prompt(existing_env, env_path)
-        return
-
-    # First-time configuration: no prior setting in env file.
-    response = questionary.confirm("Enable gac stats?", default=True).ask()
-
-    if response is None:
-        click.echo("Stats configuration cancelled. Leaving setting unchanged.")
-        return
-
-    if response:
-        click.echo("Stats enabled.")
     else:
-        _disable_stats_with_history_prompt(existing_env, env_path)
+        # First time — quick Y/n.
+        response = questionary.confirm("Enable gac stats?", default=True).ask()
+
+        if response is None:
+            click.echo("Stats configuration cancelled. Leaving setting unchanged.")
+            return
+
+        if response:
+            click.echo("Stats enabled.")
+        else:
+            _disable_stats_with_history_prompt(existing_env, env_path)
 
 
 @click.command()

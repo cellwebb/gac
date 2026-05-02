@@ -123,7 +123,7 @@ def test_init_cli_complete_workflow_with_english_language(monkeypatch):
                 mock.patch("questionary.password") as mpass,
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                # Complete workflow: provider selection + language selection (no existing config)
+                # Complete workflow: provider selection + language selection + stats confirm (first time)
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
@@ -150,7 +150,7 @@ def test_init_cli_complete_workflow_simple(monkeypatch):
                 mock.patch("questionary.password") as mpass,
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                # Simple workflow: provider selection + English language
+                # Simple workflow: provider selection + English language + stats confirm
                 mselect.return_value.ask.side_effect = ["OpenAI", "English"]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
@@ -177,8 +177,12 @@ def test_init_cli_existing_language_keep(monkeypatch):
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                # Provider, API key action, language action (Keep existing)
-                mselect.return_value.ask.side_effect = ["OpenAI", "Keep existing key", "Keep existing language"]
+                # Provider, API key action, language action, stats confirm (first time)
+                mselect.return_value.ask.side_effect = [
+                    "OpenAI",
+                    "Keep existing key",
+                    "Keep existing language",
+                ]
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
@@ -233,7 +237,7 @@ def test_init_cli_provider_selection_cancelled():
 
 
 def test_configure_stats_enable_from_default():
-    """Test that confirming with no prior setting leaves env file unchanged."""
+    """First time (no GAC_DISABLE_STATS): confirming with Y leaves env unchanged."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -242,16 +246,14 @@ def test_configure_stats_enable_from_default():
                 mconfirm.return_value.ask.side_effect = [True]
                 existing_env: dict[str, str] = {}
                 _configure_stats(existing_env, env_path)
-                # questionary.confirm called with default=True
                 args, kwargs = mconfirm.call_args
                 assert kwargs.get("default") is True
-                # No GAC_DISABLE_STATS written
                 assert "GAC_DISABLE_STATS" not in env_path.read_text()
                 assert "GAC_DISABLE_STATS" not in existing_env
 
 
 def test_configure_stats_disable_from_default():
-    """Test that declining writes GAC_DISABLE_STATS=true to the env file."""
+    """First time (no GAC_DISABLE_STATS): declining writes GAC_DISABLE_STATS=true."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -281,7 +283,7 @@ def test_configure_stats_re_enable_removes_key():
                 _configure_stats(existing_env, env_path)
                 # The select prompt should advertise the current state.
                 args, kwargs = mselect.call_args
-                assert "stats are disabled" in args[0]
+                assert "Stats are disabled" in args[0]
                 env_text = env_path.read_text()
                 assert "GAC_DISABLE_STATS" not in env_text
                 assert "GAC_DISABLE_STATS" not in existing_env
@@ -313,7 +315,7 @@ def test_configure_stats_keep_enabled_when_explicitly_set_false():
                 existing_env = {"GAC_DISABLE_STATS": "false"}
                 _configure_stats(existing_env, env_path)
                 args, _ = mselect.call_args
-                assert "stats are enabled" in args[0]
+                assert "Stats are enabled" in args[0]
                 env_text = env_path.read_text()
                 # Existing falsy value preserved (still enabled)
                 assert "GAC_DISABLE_STATS='false'" in env_text
@@ -357,7 +359,7 @@ def test_configure_stats_select_cancelled():
 
 
 def test_configure_stats_user_cancels():
-    """Test that cancelling (Ctrl-C / None) leaves env unchanged."""
+    """First time: cancelling confirm leaves env unchanged."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -372,7 +374,7 @@ def test_configure_stats_user_cancels():
 
 
 def test_configure_stats_disable_offers_to_delete_existing_history():
-    """When disabling, offer to delete existing stats file. User accepts."""
+    """When disabling from first-time, offer to delete existing stats file. User accepts."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -384,8 +386,7 @@ def test_configure_stats_disable_offers_to_delete_existing_history():
                 mock.patch("gac.stats.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                # 1) disable stats, 2) confirm delete
-                mconfirm.return_value.ask.side_effect = [False, True]
+                mconfirm.return_value.ask.side_effect = [False, True]  # decline stats, confirm delete
                 existing_env: dict[str, str] = {}
                 _configure_stats(existing_env, env_path)
                 assert not stats_file.exists()
@@ -393,7 +394,7 @@ def test_configure_stats_disable_offers_to_delete_existing_history():
 
 
 def test_configure_stats_disable_keeps_existing_history_when_user_declines():
-    """When disabling, user can keep the existing stats file."""
+    """When disabling from first-time, user can keep the existing stats file."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -405,8 +406,7 @@ def test_configure_stats_disable_keeps_existing_history_when_user_declines():
                 mock.patch("gac.stats.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
-                # 1) disable stats, 2) keep file
-                mconfirm.return_value.ask.side_effect = [False, False]
+                mconfirm.return_value.ask.side_effect = [False, False]  # decline stats, keep file
                 existing_env: dict[str, str] = {}
                 _configure_stats(existing_env, env_path)
                 assert stats_file.exists()
@@ -415,7 +415,7 @@ def test_configure_stats_disable_keeps_existing_history_when_user_declines():
 
 
 def test_configure_stats_disable_no_prompt_when_no_history():
-    """When disabling and no stats file exists, the delete prompt is skipped."""
+    """When disabling from first-time and no stats file exists, the delete prompt is skipped."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -451,8 +451,7 @@ def test_init_cli_language_action_cancelled(monkeypatch):
                 mselect.return_value.ask.side_effect = ["OpenAI", None]  # Cancels at language step
                 mtext.return_value.ask.side_effect = ["gpt-4"]
                 mpass.return_value.ask.side_effect = ["openai-key"]
-                # Stats step still runs after language; user enables stats.
-                mconfirm.return_value.ask.side_effect = [True]
+                mconfirm.return_value.ask.side_effect = [True]  # enable stats
 
                 result = runner.invoke(init)
                 # Should complete model config but cancel language part
