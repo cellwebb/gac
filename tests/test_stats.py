@@ -25,6 +25,8 @@ def _empty_stats() -> GACStats:
         "total_commits": 0,
         "total_prompt_tokens": 0,
         "total_completion_tokens": 0,
+        "biggest_gac_tokens": 0,
+        "biggest_gac_date": None,
         "first_used": None,
         "last_used": None,
         "daily_gacs": {},
@@ -723,6 +725,148 @@ class TestModelSpeedTracking:
             (tmp_path / "stats.json").write_text(json.dumps(raw_stats))
             stats = load_stats()
             assert stats["models"]["openai:gpt-4"]["reasoning_tokens"] == 0
+
+
+class TestBiggestGac:
+    """Tests for biggest-gac token tracking."""
+
+    def test_biggest_gac_records_on_first_gac(self, tmp_path):
+        """First gac with tokens becomes the biggest gac."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0  # Reset accumulator
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 650  # 500+100+50
+            assert stats["biggest_gac_date"] is not None
+
+    def test_biggest_gac_updates_on_larger_gac(self, tmp_path):
+        """A bigger gac overwrites the previous record."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # First gac: small
+            record_tokens(100, 50, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            gac.stats._current_gac_tokens = 0
+            # Second gac: much bigger
+            record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 5700  # 5000+500+200
+
+    def test_biggest_gac_preserved_on_smaller_gac(self, tmp_path):
+        """A smaller gac doesn't overwrite the record."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # Big gac first
+            record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
+            record_gac(model="openai:gpt-4")
+
+            gac.stats._current_gac_tokens = 0
+            # Smaller gac
+            record_tokens(100, 50, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 5700  # Still the big one
+
+    def test_biggest_gac_accumulates_multiple_record_tokens(self, tmp_path):
+        """Tokens from multiple record_tokens calls in one gac accumulate."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # Simulate grouped workflow with multiple AI calls
+            record_tokens(1000, 200, model="openai:gpt-4", reasoning_tokens=50)
+            record_tokens(2000, 400, model="openai:gpt-4", reasoning_tokens=100)
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=25)
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 4375  # 3500+700+175
+
+    def test_biggest_gac_in_summary(self, tmp_path):
+        """get_stats_summary includes biggest_gac_tokens and biggest_gac_date."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
+            record_gac(model="openai:gpt-4")
+
+            summary = get_stats_summary()
+            assert summary["biggest_gac_tokens"] == 650
+            assert summary["biggest_gac_date"] is not None
+
+    def test_biggest_gac_defaults_zero(self, tmp_path):
+        """biggest_gac_tokens defaults to 0 on fresh stats."""
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 0
+            assert stats["biggest_gac_date"] is None
+
+    def test_biggest_gac_backfills_from_old_stats_file(self, tmp_path):
+        """Old stats files without biggest_gac fields get defaults."""
+        stats_file = tmp_path / "stats.json"
+        old_data = {
+            "total_gacs": 5,
+            "total_commits": 10,
+            "first_used": "2025-01-01",
+            "last_used": "2025-01-01",
+            "daily_gacs": {},
+            "daily_commits": {},
+            "daily_prompt_tokens": {},
+            "daily_completion_tokens": {},
+            "weekly_gacs": {},
+            "weekly_commits": {},
+            "weekly_prompt_tokens": {},
+            "weekly_completion_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+        stats_file.write_text(json.dumps(old_data))
+        with patch("gac.stats.STATS_FILE", stats_file):
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 0
+            assert stats["biggest_gac_date"] is None
+
+    def test_biggest_gac_reset(self, tmp_path):
+        """reset_stats clears biggest_gac fields."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 650
+
+            reset_stats()
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 0
+            assert stats["biggest_gac_date"] is None
+
+    def test_biggest_gac_no_tokens(self, tmp_path):
+        """A gac with no tokens doesn't set biggest_gac."""
+        import gac.stats
+
+        gac.stats._current_gac_tokens = 0
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            assert stats["biggest_gac_tokens"] == 0
+            assert stats["biggest_gac_date"] is None
 
 
 if __name__ == "__main__":

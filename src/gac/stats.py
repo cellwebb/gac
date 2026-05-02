@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 STATS_FILE = Path.home() / ".gac_stats.json"
 
+# Module-level accumulator for per-gac token totals.
+# record_tokens() adds to this; record_gac() finalizes it and resets.
+_current_gac_tokens: int = 0
+# Flag set by record_gac when this run beat the previous biggest_gac_tokens record.
+_new_biggest_gac: bool = False
+
 
 _FALSY_VALUES = {"", "0", "false", "no", "off", "n"}
 
@@ -106,6 +112,8 @@ class GACStats(TypedDict):
     total_commits: int  # Number of actual commits created
     total_prompt_tokens: int  # Total prompt tokens consumed
     total_completion_tokens: int  # Total completion tokens consumed
+    biggest_gac_tokens: int  # Most tokens (prompt+completion+reasoning) in a single gac run
+    biggest_gac_date: str | None  # ISO datetime when the biggest gac occurred
     first_used: str | None
     last_used: str | None
     daily_gacs: dict[str, int]  # date -> gac count
@@ -131,6 +139,8 @@ def load_stats() -> GACStats:
         "total_commits": 0,
         "total_prompt_tokens": 0,
         "total_completion_tokens": 0,
+        "biggest_gac_tokens": 0,
+        "biggest_gac_date": None,
         "first_used": None,
         "last_used": None,
         "daily_gacs": {},
@@ -156,6 +166,8 @@ def load_stats() -> GACStats:
             "total_commits": data.get("total_commits", 0),
             "total_prompt_tokens": data.get("total_prompt_tokens", 0),
             "total_completion_tokens": data.get("total_completion_tokens", 0),
+            "biggest_gac_tokens": data.get("biggest_gac_tokens", 0),
+            "biggest_gac_date": data.get("biggest_gac_date"),
             "first_used": data.get("first_used"),
             "last_used": data.get("last_used"),
             "daily_gacs": data.get("daily_gacs", {}),
@@ -269,6 +281,15 @@ def record_gac(project_name: str | None = None, model: str | None = None) -> Non
             }
         stats["models"][model]["gacs"] += 1
 
+    # Finalize per-gac token total: check if this gac is the biggest ever
+    global _current_gac_tokens, _new_biggest_gac
+    _new_biggest_gac = False
+    if _current_gac_tokens > 0 and _current_gac_tokens > stats.get("biggest_gac_tokens", 0):
+        stats["biggest_gac_tokens"] = _current_gac_tokens
+        stats["biggest_gac_date"] = now.isoformat()
+        _new_biggest_gac = True
+    _current_gac_tokens = 0  # Reset accumulator for the next gac
+
     save_stats(stats)
     logger.debug(f"Recorded gac. Total gacs: {stats['total_gacs']}")
 
@@ -365,6 +386,10 @@ def record_tokens(
     stats["total_prompt_tokens"] += prompt_tokens
     stats["total_completion_tokens"] += completion_tokens
 
+    # Accumulate into per-gac token total (finalized by record_gac)
+    global _current_gac_tokens
+    _current_gac_tokens += prompt_tokens + completion_tokens + reasoning_tokens
+
     stats["daily_prompt_tokens"][today] = stats["daily_prompt_tokens"].get(today, 0) + prompt_tokens
     stats["daily_completion_tokens"][today] = stats["daily_completion_tokens"].get(today, 0) + completion_tokens
     stats["weekly_prompt_tokens"][week_key] = stats["weekly_prompt_tokens"].get(week_key, 0) + prompt_tokens
@@ -429,6 +454,8 @@ def get_stats_summary() -> dict[str, Any]:
     total_prompt_tokens = stats.get("total_prompt_tokens", 0)
     total_completion_tokens = stats.get("total_completion_tokens", 0)
     total_tokens = total_prompt_tokens + total_completion_tokens
+    biggest_gac_tokens = stats.get("biggest_gac_tokens", 0)
+    biggest_gac_date = stats.get("biggest_gac_date")
     first_used = stats["first_used"]
     last_used = stats["last_used"]
     daily_gacs = stats["daily_gacs"]
@@ -499,6 +526,9 @@ def get_stats_summary() -> dict[str, Any]:
     # Format dates
     first_used_str = "Never" if first_used is None else datetime.fromisoformat(first_used).strftime("%Y-%m-%d")
     last_used_str = "Never" if last_used is None else datetime.fromisoformat(last_used).strftime("%Y-%m-%d")
+    biggest_gac_date_str = (
+        None if biggest_gac_date is None else datetime.fromisoformat(biggest_gac_date).strftime("%Y-%m-%d")
+    )
 
     # Get projects and sort by total activity
     projects = stats.get("projects", {})
@@ -524,6 +554,8 @@ def get_stats_summary() -> dict[str, Any]:
         "total_prompt_tokens": total_prompt_tokens,
         "total_completion_tokens": total_completion_tokens,
         "total_tokens": total_tokens,
+        "biggest_gac_tokens": biggest_gac_tokens,
+        "biggest_gac_date": biggest_gac_date_str,
         "first_used": first_used_str,
         "last_used": last_used_str,
         "today_gacs": today_gacs,
@@ -590,6 +622,8 @@ def reset_stats() -> None:
         "total_commits": 0,
         "total_prompt_tokens": 0,
         "total_completion_tokens": 0,
+        "biggest_gac_tokens": 0,
+        "biggest_gac_date": None,
         "first_used": None,
         "last_used": None,
         "daily_gacs": {},
@@ -604,4 +638,7 @@ def reset_stats() -> None:
         "models": {},
     }
     save_stats(empty_stats)
+    global _current_gac_tokens, _new_biggest_gac
+    _current_gac_tokens = 0
+    _new_biggest_gac = False
     logger.info("Statistics reset")
