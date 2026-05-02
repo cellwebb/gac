@@ -260,6 +260,8 @@ def show() -> None:
     )
 
     if today_gacs > 0 or any_trophy or any_tie:
+        if new_biggest_gac:
+            console.print("[bold yellow]🏆 New biggest gac record![/bold yellow]")
         if new_streak_record:
             console.print("[bold yellow]🏆 New longest streak record![/bold yellow]")
         elif tied_streak_record:
@@ -288,8 +290,6 @@ def show() -> None:
             console.print("[bold yellow]🏆 New weekly high score for tokens![/bold yellow]")
         elif tied_peak_weekly_tokens:
             console.print("[yellow]🥈 Tied your weekly high score for tokens![/yellow]")
-        if new_biggest_gac:
-            console.print("[bold yellow]🏆 New biggest gac record![/bold yellow]")
         if not (any_trophy or any_tie):
             if today_commits >= 5:
                 console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")
