@@ -66,10 +66,12 @@ def report(weeks: int) -> None:
     daily_prompt = stats.get("daily_prompt_tokens", {})
     daily_completion = stats.get("daily_completion_tokens", {})
     daily_reasoning = stats.get("daily_reasoning_tokens", {})
-    # NOTE: reasoning is a subset of completion per provider contract,
-    # so total = prompt + completion — reasoning is NOT additive.
+    # completion_tokens excludes reasoning (normalized at provider parse time),
+    # so total = prompt + completion + reasoning (three distinct numbers).
     for day_key in set(daily_prompt) | set(daily_completion) | set(daily_reasoning):
-        daily_total_tokens[day_key] = daily_prompt.get(day_key, 0) + daily_completion.get(day_key, 0)
+        daily_total_tokens[day_key] = (
+            daily_prompt.get(day_key, 0) + daily_completion.get(day_key, 0) + daily_reasoning.get(day_key, 0)
+        )
 
     if not daily_gacs and not daily_commits and not daily_total_tokens:
         console.print("[yellow]No activity yet! Time to start gaccing! 🚀[/yellow]")
@@ -265,7 +267,11 @@ def report(weeks: int) -> None:
             for name, data in sorted(active_projects, key=project_activity, reverse=True)[:5]:
                 g = int(data.get("gacs", 0))
                 c = int(data.get("commits", 0))
-                t = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+                t = (
+                    int(data.get("prompt_tokens", 0))
+                    + int(data.get("completion_tokens", 0))
+                    + int(data.get("reasoning_tokens", 0))
+                )
                 proj_table.add_row(name, str(g), str(c), _fmt(t))
 
             console.print(proj_table)

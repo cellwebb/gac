@@ -434,10 +434,10 @@ def record_tokens(
     stats["total_reasoning_tokens"] = stats.get("total_reasoning_tokens", 0) + reasoning_tokens
 
     # Accumulate into per-gac token total (finalized by record_gac)
-    # NOTE: reasoning_tokens is a subset of completion_tokens (per provider
-    # contract), so total = prompt + completion — reasoning is NOT additive.
+    # completion_tokens excludes reasoning (normalized at provider parse time),
+    # so total = prompt + completion + reasoning (three distinct numbers).
     global _current_gac_tokens
-    _current_gac_tokens += prompt_tokens + completion_tokens
+    _current_gac_tokens += prompt_tokens + completion_tokens + reasoning_tokens
 
     stats["daily_prompt_tokens"][today] = stats["daily_prompt_tokens"].get(today, 0) + prompt_tokens
     stats["daily_completion_tokens"][today] = stats["daily_completion_tokens"].get(today, 0) + completion_tokens
@@ -509,9 +509,9 @@ def get_stats_summary() -> dict[str, Any]:
     total_prompt_tokens = stats.get("total_prompt_tokens", 0)
     total_completion_tokens = stats.get("total_completion_tokens", 0)
     total_reasoning_tokens = stats.get("total_reasoning_tokens", 0)
-    # NOTE: reasoning_tokens is a subset of completion_tokens (per provider
-    # contract), so total = prompt + completion — reasoning is NOT additive.
-    total_tokens = total_prompt_tokens + total_completion_tokens
+    # completion_tokens excludes reasoning (normalized at provider parse time),
+    # so total = prompt + completion + reasoning (three distinct numbers).
+    total_tokens = total_prompt_tokens + total_completion_tokens + total_reasoning_tokens
     biggest_gac_tokens = stats.get("biggest_gac_tokens", 0)
     biggest_gac_date = stats.get("biggest_gac_date")
     first_used = stats["first_used"]
@@ -527,14 +527,20 @@ def get_stats_summary() -> dict[str, Any]:
     weekly_completion_tokens = stats.get("weekly_completion_tokens", {})
     weekly_reasoning_tokens = stats.get("weekly_reasoning_tokens", {})
 
-    # Combine daily/weekly token totals (prompt + completion; reasoning is a
-    # subset of completion per provider contract, so NOT additive).
+    # Combine daily/weekly token totals.  completion_tokens excludes reasoning
+    # (normalized at provider parse time), so total = prompt + completion + reasoning.
     daily_total_tokens: dict[str, int] = {}
     for day_key in set(daily_prompt_tokens) | set(daily_completion_tokens) | set(daily_reasoning_tokens):
-        daily_total_tokens[day_key] = daily_prompt_tokens.get(day_key, 0) + daily_completion_tokens.get(day_key, 0)
+        daily_total_tokens[day_key] = (
+            daily_prompt_tokens.get(day_key, 0)
+            + daily_completion_tokens.get(day_key, 0)
+            + daily_reasoning_tokens.get(day_key, 0)
+        )
     weekly_total_tokens: dict[str, int] = {}
     for wk in set(weekly_prompt_tokens) | set(weekly_completion_tokens) | set(weekly_reasoning_tokens):
-        weekly_total_tokens[wk] = weekly_prompt_tokens.get(wk, 0) + weekly_completion_tokens.get(wk, 0)
+        weekly_total_tokens[wk] = (
+            weekly_prompt_tokens.get(wk, 0) + weekly_completion_tokens.get(wk, 0) + weekly_reasoning_tokens.get(wk, 0)
+        )
     today = datetime.now().strftime("%Y-%m-%d")
     streak = 0
     longest_streak = 0
@@ -669,7 +675,9 @@ def project_activity(project_data: tuple[str, Any]) -> tuple[int, int]:
     """
     data = project_data[1]
     activity = int(data.get("gacs", 0)) + int(data.get("commits", 0))
-    total_tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+    total_tokens = (
+        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
+    )
     return (activity, total_tokens)
 
 
@@ -688,7 +696,9 @@ def model_activity(model_data: tuple[str, Any]) -> tuple[int, int]:
     """
     data = model_data[1]
     gacs = int(data.get("gacs", 0))
-    total_tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+    total_tokens = (
+        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
+    )
     return (gacs, total_tokens)
 
 
