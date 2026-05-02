@@ -135,8 +135,8 @@ def show() -> None:
     table.add_column("Metric", style="bold magenta")
     table.add_column("Value", style="bold")
 
-    first_used = "/".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["first_used"].split("-"))
-    last_used = "/".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["last_used"].split("-"))
+    first_used = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["first_used"].split("-"))
+    last_used = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["last_used"].split("-"))
     table.add_row("First gac", first_used)
     table.add_row("Last gac", last_used)
     streak_emoji = (
@@ -153,7 +153,8 @@ def show() -> None:
     if biggest_gac_tokens > 0:
         biggest_gac_display = _format_tokens(biggest_gac_tokens) + " tokens"
         if biggest_gac_date:
-            biggest_gac_display += f"  ({biggest_gac_date})"
+            biggest_gac_date_fmt = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in biggest_gac_date.split("-"))
+            biggest_gac_display += f"  ({biggest_gac_date_fmt})"
         table.add_row(
             "Biggest gac",
             f"[bold cyan]{biggest_gac_display}[/bold cyan] 🐘",
