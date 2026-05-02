@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from gac.stats import load_stats, stats_enabled
+from gac.stats import compute_total_tokens, format_tokens, load_stats, stats_enabled
 
 console = Console()
 
@@ -34,11 +34,6 @@ def _bar(value: float, max_value: float, width: int = 20) -> str:
     # Pad with spaces
     bar = bar.ljust(width)
     return f"[cyan]{bar}[/cyan]"
-
-
-def _fmt(n: int) -> str:
-    """Format a number with thousands separators."""
-    return f"{n:,}"
 
 
 def _day_name(date_str: str) -> str:
@@ -113,7 +108,7 @@ def report(weeks: int) -> None:
             f"{start_fmt} → {end_fmt}: "
             f"[bold cyan]{total_gacs}[/bold cyan] gacs, "
             f"[bold cyan]{total_commits}[/bold cyan] commits, "
-            f"[bold cyan]{_fmt(total_tokens)}[/bold cyan] tokens",
+            f"[bold cyan]{format_tokens(total_tokens)}[/bold cyan] tokens",
             title="📊 GAC Report",
             border_style="green",
         )
@@ -178,7 +173,7 @@ def report(weeks: int) -> None:
         token_chart.add_row(
             f"{day_style}{day_abbr}{day_close}",
             date_display,
-            _fmt(t),
+            format_tokens(t),
             t_bar,
         )
 
@@ -226,9 +221,9 @@ def report(weeks: int) -> None:
                 dt_val = wt - (prev_tokens or 0)
                 dg_str = f"[green]+{dg}[/green]" if dg > 0 else f"[red]{dg}[/red]" if dg < 0 else "[dim]0[/dim]"
                 dt_str = (
-                    f"[green]+{_fmt(dt_val)}[/green]"
+                    f"[green]+{format_tokens(dt_val)}[/green]"
                     if dt_val > 0
-                    else f"[red]{_fmt(dt_val)}[/red]"
+                    else f"[red]{format_tokens(dt_val)}[/red]"
                     if dt_val < 0
                     else "[dim]0[/dim]"
                 )
@@ -236,7 +231,7 @@ def report(weeks: int) -> None:
                 dg_str = "[dim]—[/dim]"
                 dt_str = "[dim]—[/dim]"
 
-            week_table.add_row(wk_key, str(wg), str(wc), _fmt(wt), dg_str, dt_str)
+            week_table.add_row(wk_key, str(wg), str(wc), format_tokens(wt), dg_str, dt_str)
             prev_gacs = wg
             prev_tokens = wt
 
@@ -267,12 +262,8 @@ def report(weeks: int) -> None:
             for name, data in sorted(active_projects, key=project_activity, reverse=True)[:5]:
                 g = int(data.get("gacs", 0))
                 c = int(data.get("commits", 0))
-                t = (
-                    int(data.get("prompt_tokens", 0))
-                    + int(data.get("completion_tokens", 0))
-                    + int(data.get("reasoning_tokens", 0))
-                )
-                proj_table.add_row(name, str(g), str(c), _fmt(t))
+                t = compute_total_tokens(data)
+                proj_table.add_row(name, str(g), str(c), format_tokens(t))
 
             console.print(proj_table)
 
@@ -290,8 +281,11 @@ def report(weeks: int) -> None:
             model_table = Table(show_header=True, box=None, padding=(0, 1))
             model_table.add_column("Model", style="bold magenta")
             model_table.add_column("Gacs", style="bold cyan", justify="right")
-            model_table.add_column("Avg Speed", style="bold cyan", justify="right")
-            model_table.add_column("Tokens", style="bold cyan", justify="right")
+            model_table.add_column("Speed", style="bold cyan", justify="right")
+            model_table.add_column("Prompt", style="bold cyan", justify="right")
+            model_table.add_column("Completion", style="bold cyan", justify="right")
+            model_table.add_column("Reasoning", style="bold cyan", justify="right")
+            model_table.add_column("Total", style="bold cyan", justify="right")
 
             from gac.stats import model_activity
 
@@ -300,16 +294,21 @@ def report(weeks: int) -> None:
                 pt = int(data.get("prompt_tokens", 0))
                 ct = int(data.get("completion_tokens", 0))
                 rt = int(data.get("reasoning_tokens", 0))
-                total = pt + ct + rt
+                total = compute_total_tokens(data)
                 dur = int(data.get("total_duration_ms", 0))
                 dur_count = int(data.get("duration_count", 0))
                 timed_ct = int(data.get("timed_completion_tokens", 0))
+                timed_rt = int(data.get("timed_reasoning_tokens", 0))
                 if dur > 0 and dur_count > 0:
-                    avg_tps = round(timed_ct * 1000 / dur)
+                    timed_output = timed_ct + timed_rt
+                    avg_tps = round(timed_output * 1000 / dur)
                     speed = f"{avg_tps} tps"
                 else:
-                    speed = "—"
-                model_table.add_row(name, str(g), speed, _fmt(total))
+                    speed = "\u2014"
+                reasoning_str = format_tokens(rt) if rt > 0 else "\u2014"
+                model_table.add_row(
+                    name, str(g), speed, format_tokens(pt), format_tokens(ct), reasoning_str, format_tokens(total)
+                )
 
             console.print(model_table)
 

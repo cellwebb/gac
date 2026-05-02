@@ -8,6 +8,8 @@ from rich.panel import Panel
 from rich.table import Table
 
 from gac.stats import (
+    compute_total_tokens,
+    format_tokens,
     get_current_project_name,
     get_stats_summary,
     load_stats,
@@ -15,12 +17,6 @@ from gac.stats import (
     reset_stats,
     stats_enabled,
 )
-
-
-def _format_tokens(n: int) -> str:
-    """Format a token count with thousands separators (e.g. 1,234,567)."""
-    return f"{n:,}"
-
 
 console = Console()
 
@@ -140,7 +136,7 @@ def show() -> None:
     table.add_row("First gac", first_used)
     table.add_row("Last gac", last_used)
     if biggest_gac_tokens > 0:
-        token_part = f"[bold cyan]{_format_tokens(biggest_gac_tokens)}[/bold cyan] [cyan]tokens[/cyan]"
+        token_part = f"[bold cyan]{format_tokens(biggest_gac_tokens)}[/bold cyan] [cyan]tokens[/cyan]"
         if biggest_gac_date:
             date_part = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in biggest_gac_date.split("-"))
             display = f"{token_part}  ({date_part})"
@@ -170,11 +166,11 @@ def show() -> None:
     activity_table.add_column("Commits", style="bold cyan", justify="right")
     activity_table.add_column("Tokens", style="bold cyan", justify="right")
 
-    activity_table.add_row("Today", str(today_gacs), str(today_commits), _format_tokens(today_tokens))
-    activity_table.add_row("Peak Day", str(peak_daily_gacs), str(peak_daily_commits), _format_tokens(peak_daily_tokens))
-    activity_table.add_row("This Week", str(week_gacs), str(week_commits), _format_tokens(week_tokens))
+    activity_table.add_row("Today", str(today_gacs), str(today_commits), format_tokens(today_tokens))
+    activity_table.add_row("Peak Day", str(peak_daily_gacs), str(peak_daily_commits), format_tokens(peak_daily_tokens))
+    activity_table.add_row("This Week", str(week_gacs), str(week_commits), format_tokens(week_tokens))
     activity_table.add_row(
-        "Peak Week", str(peak_weekly_gacs), str(peak_weekly_commits), _format_tokens(peak_weekly_tokens)
+        "Peak Week", str(peak_weekly_gacs), str(peak_weekly_commits), format_tokens(peak_weekly_tokens)
     )
 
     console.print(activity_table)
@@ -197,12 +193,8 @@ def show() -> None:
         for project, data in sorted_projects[:5]:
             gacs = data.get("gacs", 0)
             commits = data.get("commits", 0)
-            tokens = (
-                int(data.get("prompt_tokens", 0))
-                + int(data.get("completion_tokens", 0))
-                + int(data.get("reasoning_tokens", 0))
-            )
-            projects_table.add_row(project, str(gacs), str(commits), _format_tokens(tokens))
+            tokens = compute_total_tokens(data)
+            projects_table.add_row(project, str(gacs), str(commits), format_tokens(tokens))
 
         console.print(projects_table)
         console.print()
@@ -225,18 +217,18 @@ def show() -> None:
             prompt_t = int(data.get("prompt_tokens", 0))
             completion_t = int(data.get("completion_tokens", 0))
             reasoning_t = int(data.get("reasoning_tokens", 0))
-            total_t = prompt_t + completion_t + reasoning_t
+            total_t = compute_total_tokens(data)
             avg_tps = data.get("avg_tps")
             speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
-            reasoning_str = _format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
+            reasoning_str = format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
             models_table.add_row(
                 model_name,
                 str(gacs),
                 speed_str,
-                _format_tokens(prompt_t),
-                _format_tokens(completion_t),
+                format_tokens(prompt_t),
+                format_tokens(completion_t),
                 reasoning_str,
-                _format_tokens(total_t),
+                format_tokens(total_t),
             )
 
         console.print(models_table)
@@ -348,8 +340,7 @@ def project() -> None:
     commits = project_data.get("commits", 0)
     prompt_t = int(project_data.get("prompt_tokens", 0))
     completion_t = int(project_data.get("completion_tokens", 0))
-    reasoning_t = int(project_data.get("reasoning_tokens", 0))
-    total_t = prompt_t + completion_t + reasoning_t
+    total_t = compute_total_tokens(project_data)
 
     console.print()
 
@@ -377,9 +368,9 @@ def project() -> None:
         token_table = Table(show_header=False, box=None)
         token_table.add_column("Metric", style="bold magenta")
         token_table.add_column("Value", style="bold cyan", justify="right")
-        token_table.add_row("Prompt tokens", _format_tokens(prompt_t))
-        token_table.add_row("Completion tokens", _format_tokens(completion_t))
-        token_table.add_row("Total tokens", _format_tokens(total_t))
+        token_table.add_row("Prompt tokens", format_tokens(prompt_t))
+        token_table.add_row("Completion tokens", format_tokens(completion_t))
+        token_table.add_row("Total tokens", format_tokens(total_t))
         console.print(token_table)
 
     console.print()
