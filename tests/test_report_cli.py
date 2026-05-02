@@ -126,6 +126,49 @@ class TestReportCLI:
             assert "Top Models" in result.output
             assert "openai:gpt-4" in result.output
 
+    def test_report_model_token_columns(self, runner):
+        """Test report shows granular token columns for top models."""
+        with patch("gac.report_cli.load_stats") as mock_load:
+            mock_load.return_value = {
+                "daily_gacs": {"2026-05-02": 3},
+                "daily_commits": {"2026-05-02": 3},
+                "daily_prompt_tokens": {"2026-05-02": 5000},
+                "daily_completion_tokens": {"2026-05-02": 1500},
+                "daily_reasoning_tokens": {"2026-05-02": 500},
+                "projects": {},
+                "models": {
+                    "anthropic:claude-3-5-sonnet": {
+                        "gacs": 3,
+                        "prompt_tokens": 5000,
+                        "completion_tokens": 1500,
+                        "reasoning_tokens": 500,
+                        "total_duration_ms": 2000,
+                        "duration_count": 2,
+                        "timed_completion_tokens": 1500,
+                    },
+                    "openai:gpt-4o": {
+                        "gacs": 2,
+                        "prompt_tokens": 3000,
+                        "completion_tokens": 800,
+                        "reasoning_tokens": 0,
+                        "total_duration_ms": 0,
+                        "duration_count": 0,
+                        "timed_completion_tokens": 0,
+                    },
+                },
+            }
+            result = runner.invoke(cli, ["report"])
+            assert result.exit_code == 0
+            # Column headers should appear
+            assert "Prompt" in result.output
+            assert "Completion" in result.output
+            assert "Reasoning" in result.output
+            assert "Total" in result.output
+            # Model with reasoning should show the value
+            assert "500" in result.output
+            # Model without reasoning should show em dash, not "0"
+            assert "\u2014" in result.output
+
     def test_report_stats_disabled(self, runner):
         """Test report when stats are disabled."""
         with patch("gac.report_cli.stats_enabled", return_value=False):
