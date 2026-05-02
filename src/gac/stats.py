@@ -629,18 +629,20 @@ def get_stats_summary() -> dict[str, Any]:
     }
 
 
-def project_activity(project_data: tuple[str, Any]) -> int:
-    """Sort key for projects by total activity (gacs + commits).
+def project_activity(project_data: tuple[str, Any]) -> tuple[int, int]:
+    """Sort key for projects by total activity (gacs + commits), then by total tokens.
 
     Args:
         project_data: Tuple of (project_name, data) where data is a dict
-            with 'gacs' and 'commits' keys.
+            with 'gacs', 'commits', 'prompt_tokens', and 'completion_tokens' keys.
 
     Returns:
-        Total activity count for sorting.
+        Tuple of (activity, total_tokens) — higher sorts first when reverse=True.
     """
     data = project_data[1]
-    return int(data.get("gacs", 0)) + int(data.get("commits", 0))
+    activity = int(data.get("gacs", 0)) + int(data.get("commits", 0))
+    total_tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+    return (activity, total_tokens)
 
 
 def model_activity(model_data: tuple[str, Any]) -> tuple[int, int]:
