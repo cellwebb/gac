@@ -23,6 +23,7 @@ class TestReportCLI:
                 "daily_commits": {},
                 "daily_prompt_tokens": {},
                 "daily_completion_tokens": {},
+                "daily_reasoning_tokens": {},
             }
             result = runner.invoke(cli, ["report"])
             assert result.exit_code == 0
@@ -36,6 +37,7 @@ class TestReportCLI:
                 "daily_commits": {"2026-05-01": 4, "2026-05-02": 7},
                 "daily_prompt_tokens": {"2026-05-01": 1000, "2026-05-02": 2000},
                 "daily_completion_tokens": {"2026-05-01": 200, "2026-05-02": 400},
+                "daily_reasoning_tokens": {},
                 "projects": {},
                 "models": {},
             }
@@ -59,10 +61,12 @@ class TestReportCLI:
                 "daily_commits": {"2026-05-02": 7},
                 "daily_prompt_tokens": {"2026-05-02": 2000},
                 "daily_completion_tokens": {"2026-05-02": 400},
+                "daily_reasoning_tokens": {},
                 "weekly_gacs": {"2026-W18": 5},
                 "weekly_commits": {"2026-W18": 7},
                 "weekly_prompt_tokens": {"2026-W18": 2000},
                 "weekly_completion_tokens": {"2026-W18": 400},
+                "weekly_reasoning_tokens": {},
                 "projects": {},
                 "models": {},
             }
@@ -78,8 +82,15 @@ class TestReportCLI:
                 "daily_commits": {"2026-05-02": 7},
                 "daily_prompt_tokens": {"2026-05-02": 2000},
                 "daily_completion_tokens": {"2026-05-02": 400},
+                "daily_reasoning_tokens": {},
                 "projects": {
-                    "my-proj": {"gacs": 5, "commits": 7, "prompt_tokens": 2000, "completion_tokens": 400},
+                    "my-proj": {
+                        "gacs": 5,
+                        "commits": 7,
+                        "prompt_tokens": 2000,
+                        "completion_tokens": 400,
+                        "reasoning_tokens": 100,
+                    },
                 },
                 "models": {},
             }
@@ -96,6 +107,7 @@ class TestReportCLI:
                 "daily_commits": {"2026-05-02": 7},
                 "daily_prompt_tokens": {"2026-05-02": 2000},
                 "daily_completion_tokens": {"2026-05-02": 400},
+                "daily_reasoning_tokens": {},
                 "projects": {},
                 "models": {
                     "openai:gpt-4": {
@@ -135,6 +147,7 @@ class TestReportCLI:
                 "daily_commits": {},
                 "daily_prompt_tokens": {"2026-05-02": 1000},
                 "daily_completion_tokens": {"2026-05-02": 200},
+                "daily_reasoning_tokens": {},
                 "projects": {},
                 "models": {},
             }
