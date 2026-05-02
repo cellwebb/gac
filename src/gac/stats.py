@@ -51,6 +51,7 @@ _DURATION_DEFAULTS: dict[str, int] = {
     "total_duration_ms": 0,
     "duration_count": 0,
     "timed_completion_tokens": 0,
+    "timed_reasoning_tokens": 0,
     "min_duration_ms": 0,
     "max_duration_ms": 0,
     "reasoning_tokens": 0,
@@ -68,7 +69,12 @@ def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, 
     enriched: list[tuple[str, Any]] = []
     for name, data in models:
         if data.get("duration_count", 0) > 0 and data.get("total_duration_ms", 0) > 0:
-            avg_tps = round(data["timed_completion_tokens"] * 1000 / data["total_duration_ms"])
+            # Speed = all output tokens (completion + reasoning) per second.
+            # Reasoning tokens are generated during the same wall-clock
+            # duration, so excluding them understates throughput for
+            # thinking models like o3, deepseek-r1, etc.
+            timed_output = data["timed_completion_tokens"] + data.get("timed_reasoning_tokens", 0)
+            avg_tps = round(timed_output * 1000 / data["total_duration_ms"])
         else:
             avg_tps = None
         enriched.append((name, {**data, "avg_tps": avg_tps}))
@@ -420,6 +426,7 @@ def record_gac(project_name: str | None = None, model: str | None = None) -> Non
                 "total_duration_ms": 0,
                 "duration_count": 0,
                 "timed_completion_tokens": 0,
+                "timed_reasoning_tokens": 0,
                 "min_duration_ms": 0,
                 "max_duration_ms": 0,
             }
@@ -570,6 +577,7 @@ def record_tokens(
                 "total_duration_ms": 0,
                 "duration_count": 0,
                 "timed_completion_tokens": 0,
+                "timed_reasoning_tokens": 0,
                 "min_duration_ms": 0,
                 "max_duration_ms": 0,
             }
@@ -581,6 +589,7 @@ def record_tokens(
             m["total_duration_ms"] = m.get("total_duration_ms", 0) + duration_ms
             m["duration_count"] = m.get("duration_count", 0) + 1
             m["timed_completion_tokens"] = m.get("timed_completion_tokens", 0) + completion_tokens
+            m["timed_reasoning_tokens"] = m.get("timed_reasoning_tokens", 0) + reasoning_tokens
             if m.get("duration_count", 0) == 1:
                 m["min_duration_ms"] = duration_ms
                 m["max_duration_ms"] = duration_ms
@@ -757,6 +766,23 @@ def get_stats_summary() -> dict[str, Any]:
     }
 
 
+def compute_total_tokens(data: dict[str, Any]) -> int:
+    """Compute total tokens from a stats dict with prompt/completion/reasoning keys.
+
+    In v2 stats schema, completion_tokens excludes reasoning_tokens
+    (normalized at provider parse time), so total = prompt + completion +
+    reasoning (three distinct additive components).
+    """
+    return (
+        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
+    )
+
+
+def format_tokens(n: int) -> str:
+    """Format a token count with thousands separators (e.g. 1,234,567)."""
+    return f"{n:,}"
+
+
 def project_activity(project_data: tuple[str, Any]) -> tuple[int, int]:
     """Sort key for projects by total activity (gacs + commits), then by total tokens.
 
@@ -768,14 +794,13 @@ def project_activity(project_data: tuple[str, Any]) -> tuple[int, int]:
     Returns:
         Tuple of (activity, total_tokens) — higher sorts first when reverse=True.
 
-    NOTE: reasoning_tokens is a subset of completion_tokens (per provider
-    contract), so total = prompt + completion — reasoning is NOT additive.
+    NOTE: In v2 stats schema, completion_tokens excludes reasoning_tokens
+    (normalized at provider parse time), so total = prompt + completion +
+    reasoning (three distinct additive components).
     """
     data = project_data[1]
     activity = int(data.get("gacs", 0)) + int(data.get("commits", 0))
-    total_tokens = (
-        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
-    )
+    total_tokens = compute_total_tokens(data)
     return (activity, total_tokens)
 
 
@@ -789,14 +814,13 @@ def model_activity(model_data: tuple[str, Any]) -> tuple[int, int]:
     Returns:
         Tuple of (gacs, total_tokens) — higher sorts first when reverse=True.
 
-    NOTE: reasoning_tokens is a subset of completion_tokens (per provider
-    contract), so total = prompt + completion — reasoning is NOT additive.
+    NOTE: In v2 stats schema, completion_tokens excludes reasoning_tokens
+    (normalized at provider parse time), so total = prompt + completion +
+    reasoning (three distinct additive components).
     """
     data = model_data[1]
     gacs = int(data.get("gacs", 0))
-    total_tokens = (
-        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
-    )
+    total_tokens = compute_total_tokens(data)
     return (gacs, total_tokens)
 
 
