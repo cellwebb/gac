@@ -139,6 +139,14 @@ def show() -> None:
     last_used = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in summary["last_used"].split("-"))
     table.add_row("First gac", first_used)
     table.add_row("Last gac", last_used)
+    if biggest_gac_tokens > 0:
+        token_part = f"[bold cyan]{_format_tokens(biggest_gac_tokens)}[/bold cyan] [cyan]tokens[/cyan]"
+        if biggest_gac_date:
+            date_part = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in biggest_gac_date.split("-"))
+            display = f"{token_part}  ({date_part})"
+        else:
+            display = f"{token_part}"
+        table.add_row("Biggest gac", display)
     streak_emoji = (
         " 🔥🏆" if new_streak_record and streak >= 5 else " 🏆" if new_streak_record else " 🔥" if streak >= 5 else ""
     )
@@ -150,15 +158,6 @@ def show() -> None:
         "Longest streak",
         f"[bold cyan]{longest_streak}[/bold cyan] [cyan]day{'s' if longest_streak != 1 else ''}[/cyan]",
     )
-    if biggest_gac_tokens > 0:
-        biggest_gac_display = _format_tokens(biggest_gac_tokens) + " tokens"
-        if biggest_gac_date:
-            biggest_gac_date_fmt = "[dim]/[/]".join(f"[bold cyan]{p}[/bold cyan]" for p in biggest_gac_date.split("-"))
-            biggest_gac_display += f"  ({biggest_gac_date_fmt})"
-        table.add_row(
-            "Biggest gac",
-            f"[bold cyan]{biggest_gac_display}[/bold cyan] 🐘",
-        )
 
     console.print(table)
 
@@ -290,9 +289,7 @@ def show() -> None:
         elif tied_peak_weekly_tokens:
             console.print("[yellow]🥈 Tied your weekly high score for tokens![/yellow]")
         if new_biggest_gac:
-            console.print(
-                f"[bold yellow]🐘 New biggest gac record! {_format_tokens(biggest_gac_tokens)} tokens![/bold yellow]"
-            )
+            console.print("[bold yellow]🏆 New biggest gac record![/bold yellow]")
         if not (any_trophy or any_tie):
             if today_commits >= 5:
                 console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")
