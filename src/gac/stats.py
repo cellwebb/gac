@@ -166,6 +166,88 @@ class GACStats(TypedDict):
     weekly_reasoning_tokens: dict[str, int]  # ISO week -> reasoning token count
     projects: dict[str, Any]  # project_name -> {gacs, commits, prompt_tokens, completion_tokens, reasoning_tokens}
     models: dict[str, Any]  # model_name -> {gacs, prompt_tokens, completion_tokens, reasoning_tokens}
+    _version: int  # Schema version for migrations
+
+
+_CURRENT_STATS_VERSION = 2  # v2: completion_tokens excludes reasoning_tokens
+
+
+def _migrate_v1_to_v2(data: dict[str, Any]) -> dict[str, Any]:
+    """Migrate stats from v1 (inclusive completion) to v2 (exclusive).
+
+    In v1, provider APIs returned ``completion_tokens`` inclusive of
+    ``reasoning_tokens``, and we stored both verbatim.  In v2, we
+    normalize at parse time so ``completion_tokens`` excludes reasoning.
+    This migration subtracts stored ``reasoning_tokens`` from every
+    completion field so old data matches the new contract.
+
+    Fields migrated:
+    - models: completion_tokens -= reasoning_tokens
+    - projects: completion_tokens -= reasoning_tokens (if present)
+    - daily/weekly: completion_tokens[key] -= reasoning_tokens[key]
+    - total_completion_tokens -= total_reasoning_tokens
+    - biggest_gac_tokens: reset to 0 since per-gac reasoning breakdown
+      is not stored; the correct value will be set on the next gac that
+      exceeds all prior *correct* per-gac totals
+    """
+    # Skip if already migrated
+    if data.get("_version", 0) >= 2:
+        return data
+
+    # 1. Migrate models
+    for _name, m in data.get("models", {}).items():
+        rt = int(m.get("reasoning_tokens", 0))
+        if rt > 0:
+            m["completion_tokens"] = max(int(m.get("completion_tokens", 0)) - rt, 0)
+            # Proportionally adjust timed_completion_tokens to match
+            tc = int(m.get("timed_completion_tokens", 0))
+            if tc > 0:
+                old_total = int(m.get("completion_tokens", 0)) + rt  # original inclusive
+                if old_total > 0:
+                    ratio = int(m["completion_tokens"]) / old_total
+                    m["timed_completion_tokens"] = max(round(tc * ratio), 0)
+
+    # 2. Migrate projects
+    for _name, p in data.get("projects", {}).items():
+        rt = int(p.get("reasoning_tokens", 0))
+        if rt > 0:
+            p["completion_tokens"] = max(int(p.get("completion_tokens", 0)) - rt, 0)
+
+    # 3. Migrate daily
+    daily_comp = data.get("daily_completion_tokens", {})
+    daily_reason = data.get("daily_reasoning_tokens", {})
+    for key in daily_comp:
+        rt = int(daily_reason.get(key, 0))
+        if rt > 0:
+            daily_comp[key] = max(int(daily_comp[key]) - rt, 0)
+
+    # 4. Migrate weekly
+    weekly_comp = data.get("weekly_completion_tokens", {})
+    weekly_reason = data.get("weekly_reasoning_tokens", {})
+    for key in weekly_comp:
+        rt = int(weekly_reason.get(key, 0))
+        if rt > 0:
+            weekly_comp[key] = max(int(weekly_comp[key]) - rt, 0)
+
+    # 5. Migrate total_completion_tokens
+    total_rt = int(data.get("total_reasoning_tokens", 0))
+    if total_rt > 0:
+        data["total_completion_tokens"] = max(int(data.get("total_completion_tokens", 0)) - total_rt, 0)
+
+    # 6. Reset biggest_gac_tokens when reasoning existed — the per-gac
+    #    reasoning breakdown is not stored, so we can't reconstruct the
+    #    correct value.  It will be recalculated on the next gac that sets
+    #    a new record.
+    #    Check both the top-level aggregate AND per-model reasoning, since
+    #    older stats files may have model-level reasoning without the
+    #    top-level total_reasoning_tokens field.
+    has_reasoning = total_rt > 0 or any(int(m.get("reasoning_tokens", 0)) > 0 for m in data.get("models", {}).values())
+    if has_reasoning:
+        data["biggest_gac_tokens"] = 0
+        data["biggest_gac_date"] = None
+
+    data["_version"] = _CURRENT_STATS_VERSION
+    return data
 
 
 def load_stats() -> GACStats:
@@ -196,6 +278,7 @@ def load_stats() -> GACStats:
         "weekly_reasoning_tokens": {},
         "projects": {},
         "models": {},
+        "_version": _CURRENT_STATS_VERSION,
     }
 
     if not STATS_FILE.exists():
@@ -204,6 +287,20 @@ def load_stats() -> GACStats:
     try:
         with open(STATS_FILE) as f:
             data = json.load(f)
+
+        # Migrate old data where completion_tokens included reasoning
+        data = _migrate_v1_to_v2(data)
+        # Persist the migration so it only runs once
+        if data.get("_version", 0) >= _CURRENT_STATS_VERSION:
+            try:
+                STATS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                tmp = STATS_FILE.with_suffix(".tmp")
+                with open(tmp, "w") as f:
+                    json.dump(data, f, indent=2)
+                os.replace(tmp, STATS_FILE)
+            except OSError:
+                pass  # non-fatal: migration will re-run next time
+
         return {
             "total_gacs": data.get("total_gacs", 0),
             "total_commits": data.get("total_commits", 0),
@@ -226,6 +323,7 @@ def load_stats() -> GACStats:
             "weekly_reasoning_tokens": data.get("weekly_reasoning_tokens", {}),
             "projects": data.get("projects", {}),
             "models": _normalize_models(data.get("models", {})),
+            "_version": data.get("_version", _CURRENT_STATS_VERSION),
         }
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(f"Failed to load stats: {e}")
@@ -726,6 +824,7 @@ def reset_stats() -> None:
         "weekly_reasoning_tokens": {},
         "projects": {},
         "models": {},
+        "_version": _CURRENT_STATS_VERSION,
     }
     save_stats(empty_stats)
     global _new_biggest_gac

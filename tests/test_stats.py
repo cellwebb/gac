@@ -42,6 +42,7 @@ def _empty_stats() -> GACStats:
         "weekly_reasoning_tokens": {},
         "projects": {},
         "models": {},
+        "_version": 2,
     }
 
 
@@ -1071,6 +1072,125 @@ class TestMalformedStats:
             stats = load_stats()
             # Should be 150, not 10149 (9999 stale + 150 new)
             assert stats["biggest_gac_tokens"] == 150
+
+    def test_migration_v1_to_v2_subtracts_reasoning_from_completion(self, tmp_path):
+        """V1 stats (inclusive completion) are migrated to V2 (exclusive)."""
+        from gac.stats import _CURRENT_STATS_VERSION, _migrate_v1_to_v2
+
+        v1_data = {
+            "total_prompt_tokens": 1000,
+            "total_completion_tokens": 800,  # inclusive of reasoning
+            "total_reasoning_tokens": 200,
+            "biggest_gac_tokens": 210,  # was prompt+completion+reasoning (double-counted)
+            "biggest_gac_date": "2026-05-01T12:00:00",
+            "daily_completion_tokens": {"2026-05-01": 800},
+            "daily_reasoning_tokens": {"2026-05-01": 200},
+            "weekly_completion_tokens": {"2026-W18": 800},
+            "weekly_reasoning_tokens": {"2026-W18": 200},
+            "projects": {
+                "my-proj": {
+                    "prompt_tokens": 1000,
+                    "completion_tokens": 800,
+                    "reasoning_tokens": 200,
+                },
+            },
+            "models": {
+                "openai:o3": {
+                    "prompt_tokens": 1000,
+                    "completion_tokens": 800,  # inclusive of reasoning
+                    "reasoning_tokens": 200,
+                    "timed_completion_tokens": 600,
+                    "total_duration_ms": 3000,
+                    "duration_count": 2,
+                },
+            },
+        }
+
+        migrated = _migrate_v1_to_v2(v1_data)
+
+        # completion should be reduced by reasoning
+        assert migrated["total_completion_tokens"] == 600
+        assert migrated["daily_completion_tokens"]["2026-05-01"] == 600
+        assert migrated["weekly_completion_tokens"]["2026-W18"] == 600
+        assert migrated["projects"]["my-proj"]["completion_tokens"] == 600
+        assert migrated["models"]["openai:o3"]["completion_tokens"] == 600
+        # reasoning unchanged
+        assert migrated["total_reasoning_tokens"] == 200
+        assert migrated["models"]["openai:o3"]["reasoning_tokens"] == 200
+        # timed_completion_tokens proportionally adjusted (600 * 600/800 = 450)
+        assert migrated["models"]["openai:o3"]["timed_completion_tokens"] == 450
+        # biggest_gac_tokens reset (can't reconstruct per-gac reasoning)
+        assert migrated["biggest_gac_tokens"] == 0
+        assert migrated["biggest_gac_date"] is None
+        # version set
+        assert migrated["_version"] == _CURRENT_STATS_VERSION
+
+    def test_migration_idempotent(self, tmp_path):
+        """Running migration on already-v2 data is a no-op."""
+        from gac.stats import _CURRENT_STATS_VERSION, _migrate_v1_to_v2
+
+        v2_data = {
+            "_version": _CURRENT_STATS_VERSION,
+            "total_completion_tokens": 600,
+            "total_reasoning_tokens": 200,
+            "models": {
+                "openai:o3": {
+                    "completion_tokens": 600,
+                    "reasoning_tokens": 200,
+                },
+            },
+        }
+
+        migrated = _migrate_v1_to_v2(v2_data)
+        assert migrated["total_completion_tokens"] == 600  # unchanged
+        assert migrated["models"]["openai:o3"]["completion_tokens"] == 600
+
+    def test_migration_no_reasoning_is_noop(self):
+        """Data with zero reasoning tokens is not changed by migration."""
+        from gac.stats import _migrate_v1_to_v2
+
+        v1_data = {
+            "total_completion_tokens": 800,
+            "total_reasoning_tokens": 0,
+            "daily_completion_tokens": {"2026-05-01": 800},
+            "daily_reasoning_tokens": {},
+            "weekly_completion_tokens": {},
+            "weekly_reasoning_tokens": {},
+            "projects": {},
+            "models": {},
+        }
+
+        migrated = _migrate_v1_to_v2(v1_data)
+        assert migrated["total_completion_tokens"] == 800  # unchanged
+
+    def test_migration_model_reasoning_without_total_resets_biggest(self):
+        """Legacy stats with per-model reasoning but no total_reasoning_tokens
+        still get biggest_gac_tokens reset."""
+        from gac.stats import _migrate_v1_to_v2
+
+        v1_data = {
+            "total_completion_tokens": 80,
+            # No total_reasoning_tokens field at all
+            "biggest_gac_tokens": 210,  # inflated
+            "biggest_gac_date": "2026-05-01T12:00:00",
+            "daily_completion_tokens": {},
+            "daily_reasoning_tokens": {},
+            "weekly_completion_tokens": {},
+            "weekly_reasoning_tokens": {},
+            "projects": {},
+            "models": {
+                "openai:o3": {
+                    "completion_tokens": 80,
+                    "reasoning_tokens": 30,
+                },
+            },
+        }
+
+        migrated = _migrate_v1_to_v2(v1_data)
+        assert migrated["biggest_gac_tokens"] == 0
+        assert migrated["biggest_gac_date"] is None
+        # Model completion still migrated
+        assert migrated["models"]["openai:o3"]["completion_tokens"] == 50
 
 
 if __name__ == "__main__":
