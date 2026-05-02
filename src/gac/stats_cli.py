@@ -197,7 +197,11 @@ def show() -> None:
         for project, data in sorted_projects[:5]:
             gacs = data.get("gacs", 0)
             commits = data.get("commits", 0)
-            tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+            tokens = (
+                int(data.get("prompt_tokens", 0))
+                + int(data.get("completion_tokens", 0))
+                + int(data.get("reasoning_tokens", 0))
+            )
             projects_table.add_row(project, str(gacs), str(commits), _format_tokens(tokens))
 
         console.print(projects_table)
@@ -332,7 +336,8 @@ def project() -> None:
     project_data = projects.get(project_name, {})
 
     has_activity = bool(project_data) and any(
-        int(project_data.get(field, 0)) > 0 for field in ("gacs", "commits", "prompt_tokens", "completion_tokens")
+        int(project_data.get(field, 0)) > 0
+        for field in ("gacs", "commits", "prompt_tokens", "completion_tokens", "reasoning_tokens")
     )
     if not has_activity:
         console.print(f"[yellow]No gacs yet for project '{project_name}'![/yellow]")
@@ -343,7 +348,8 @@ def project() -> None:
     commits = project_data.get("commits", 0)
     prompt_t = int(project_data.get("prompt_tokens", 0))
     completion_t = int(project_data.get("completion_tokens", 0))
-    total_t = prompt_t + completion_t
+    reasoning_t = int(project_data.get("reasoning_tokens", 0))
+    total_t = prompt_t + completion_t + reasoning_t
 
     console.print()
 

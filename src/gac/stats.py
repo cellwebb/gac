@@ -149,6 +149,7 @@ class GACStats(TypedDict):
     total_commits: int  # Number of actual commits created
     total_prompt_tokens: int  # Total prompt tokens consumed
     total_completion_tokens: int  # Total completion tokens consumed
+    total_reasoning_tokens: int  # Total reasoning/thinking tokens consumed
     biggest_gac_tokens: int  # Most tokens (prompt+completion+reasoning) in a single gac run
     biggest_gac_date: str | None  # ISO datetime when the biggest gac occurred
     first_used: str | None
@@ -157,12 +158,14 @@ class GACStats(TypedDict):
     daily_commits: dict[str, int]  # date -> commit count
     daily_prompt_tokens: dict[str, int]  # date -> prompt token count
     daily_completion_tokens: dict[str, int]  # date -> completion token count
+    daily_reasoning_tokens: dict[str, int]  # date -> reasoning token count
     weekly_gacs: dict[str, int]  # ISO week (e.g. 2026-W18) -> gac count
     weekly_commits: dict[str, int]  # ISO week -> commit count
     weekly_prompt_tokens: dict[str, int]  # ISO week -> prompt token count
     weekly_completion_tokens: dict[str, int]  # ISO week -> completion token count
-    projects: dict[str, Any]  # project_name -> {gacs, commits, prompt_tokens, completion_tokens}
-    models: dict[str, Any]  # model_name -> {gacs, prompt_tokens, completion_tokens}
+    weekly_reasoning_tokens: dict[str, int]  # ISO week -> reasoning token count
+    projects: dict[str, Any]  # project_name -> {gacs, commits, prompt_tokens, completion_tokens, reasoning_tokens}
+    models: dict[str, Any]  # model_name -> {gacs, prompt_tokens, completion_tokens, reasoning_tokens}
 
 
 def load_stats() -> GACStats:
@@ -176,6 +179,7 @@ def load_stats() -> GACStats:
         "total_commits": 0,
         "total_prompt_tokens": 0,
         "total_completion_tokens": 0,
+        "total_reasoning_tokens": 0,
         "biggest_gac_tokens": 0,
         "biggest_gac_date": None,
         "first_used": None,
@@ -184,10 +188,12 @@ def load_stats() -> GACStats:
         "daily_commits": {},
         "daily_prompt_tokens": {},
         "daily_completion_tokens": {},
+        "daily_reasoning_tokens": {},
         "weekly_gacs": {},
         "weekly_commits": {},
         "weekly_prompt_tokens": {},
         "weekly_completion_tokens": {},
+        "weekly_reasoning_tokens": {},
         "projects": {},
         "models": {},
     }
@@ -203,6 +209,7 @@ def load_stats() -> GACStats:
             "total_commits": data.get("total_commits", 0),
             "total_prompt_tokens": data.get("total_prompt_tokens", 0),
             "total_completion_tokens": data.get("total_completion_tokens", 0),
+            "total_reasoning_tokens": data.get("total_reasoning_tokens", 0),
             "biggest_gac_tokens": data.get("biggest_gac_tokens", 0),
             "biggest_gac_date": data.get("biggest_gac_date"),
             "first_used": data.get("first_used"),
@@ -211,10 +218,12 @@ def load_stats() -> GACStats:
             "daily_commits": data.get("daily_commits", {}),
             "daily_prompt_tokens": data.get("daily_prompt_tokens", {}),
             "daily_completion_tokens": data.get("daily_completion_tokens", {}),
+            "daily_reasoning_tokens": data.get("daily_reasoning_tokens", {}),
             "weekly_gacs": data.get("weekly_gacs", {}),
             "weekly_commits": data.get("weekly_commits", {}),
             "weekly_prompt_tokens": data.get("weekly_prompt_tokens", {}),
             "weekly_completion_tokens": data.get("weekly_completion_tokens", {}),
+            "weekly_reasoning_tokens": data.get("weekly_reasoning_tokens", {}),
             "projects": data.get("projects", {}),
             "models": _normalize_models(data.get("models", {})),
         }
@@ -422,6 +431,7 @@ def record_tokens(
 
     stats["total_prompt_tokens"] += prompt_tokens
     stats["total_completion_tokens"] += completion_tokens
+    stats["total_reasoning_tokens"] = stats.get("total_reasoning_tokens", 0) + reasoning_tokens
 
     # Accumulate into per-gac token total (finalized by record_gac)
     global _current_gac_tokens
@@ -429,8 +439,12 @@ def record_tokens(
 
     stats["daily_prompt_tokens"][today] = stats["daily_prompt_tokens"].get(today, 0) + prompt_tokens
     stats["daily_completion_tokens"][today] = stats["daily_completion_tokens"].get(today, 0) + completion_tokens
+    stats["daily_reasoning_tokens"][today] = stats.get("daily_reasoning_tokens", {}).get(today, 0) + reasoning_tokens
     stats["weekly_prompt_tokens"][week_key] = stats["weekly_prompt_tokens"].get(week_key, 0) + prompt_tokens
     stats["weekly_completion_tokens"][week_key] = stats["weekly_completion_tokens"].get(week_key, 0) + completion_tokens
+    stats["weekly_reasoning_tokens"][week_key] = (
+        stats.get("weekly_reasoning_tokens", {}).get(week_key, 0) + reasoning_tokens
+    )
 
     if project_name:
         if project_name not in stats["projects"]:
@@ -439,10 +453,12 @@ def record_tokens(
                 "commits": 0,
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
+                "reasoning_tokens": 0,
             }
         proj = stats["projects"][project_name]
         proj["prompt_tokens"] = proj.get("prompt_tokens", 0) + prompt_tokens
         proj["completion_tokens"] = proj.get("completion_tokens", 0) + completion_tokens
+        proj["reasoning_tokens"] = proj.get("reasoning_tokens", 0) + reasoning_tokens
 
     if model:
         if model not in stats["models"]:
@@ -490,7 +506,8 @@ def get_stats_summary() -> dict[str, Any]:
     total_commits = stats["total_commits"]
     total_prompt_tokens = stats.get("total_prompt_tokens", 0)
     total_completion_tokens = stats.get("total_completion_tokens", 0)
-    total_tokens = total_prompt_tokens + total_completion_tokens
+    total_reasoning_tokens = stats.get("total_reasoning_tokens", 0)
+    total_tokens = total_prompt_tokens + total_completion_tokens + total_reasoning_tokens
     biggest_gac_tokens = stats.get("biggest_gac_tokens", 0)
     biggest_gac_date = stats.get("biggest_gac_date")
     first_used = stats["first_used"]
@@ -499,18 +516,26 @@ def get_stats_summary() -> dict[str, Any]:
     daily_commits = stats["daily_commits"]
     daily_prompt_tokens = stats.get("daily_prompt_tokens", {})
     daily_completion_tokens = stats.get("daily_completion_tokens", {})
+    daily_reasoning_tokens = stats.get("daily_reasoning_tokens", {})
     weekly_gacs = stats["weekly_gacs"]
     weekly_commits = stats["weekly_commits"]
     weekly_prompt_tokens = stats.get("weekly_prompt_tokens", {})
     weekly_completion_tokens = stats.get("weekly_completion_tokens", {})
+    weekly_reasoning_tokens = stats.get("weekly_reasoning_tokens", {})
 
-    # Combine daily/weekly token totals (prompt + completion) for peak/period display
+    # Combine daily/weekly token totals (prompt + completion + reasoning) for peak/period display
     daily_total_tokens: dict[str, int] = {}
-    for day_key in set(daily_prompt_tokens) | set(daily_completion_tokens):
-        daily_total_tokens[day_key] = daily_prompt_tokens.get(day_key, 0) + daily_completion_tokens.get(day_key, 0)
+    for day_key in set(daily_prompt_tokens) | set(daily_completion_tokens) | set(daily_reasoning_tokens):
+        daily_total_tokens[day_key] = (
+            daily_prompt_tokens.get(day_key, 0)
+            + daily_completion_tokens.get(day_key, 0)
+            + daily_reasoning_tokens.get(day_key, 0)
+        )
     weekly_total_tokens: dict[str, int] = {}
-    for wk in set(weekly_prompt_tokens) | set(weekly_completion_tokens):
-        weekly_total_tokens[wk] = weekly_prompt_tokens.get(wk, 0) + weekly_completion_tokens.get(wk, 0)
+    for wk in set(weekly_prompt_tokens) | set(weekly_completion_tokens) | set(weekly_reasoning_tokens):
+        weekly_total_tokens[wk] = (
+            weekly_prompt_tokens.get(wk, 0) + weekly_completion_tokens.get(wk, 0) + weekly_reasoning_tokens.get(wk, 0)
+        )
 
     # Calculate streaks (based on gacs, not commits)
     today = datetime.now().strftime("%Y-%m-%d")
@@ -594,6 +619,7 @@ def get_stats_summary() -> dict[str, Any]:
         "total_commits": total_commits,
         "total_prompt_tokens": total_prompt_tokens,
         "total_completion_tokens": total_completion_tokens,
+        "total_reasoning_tokens": total_reasoning_tokens,
         "total_tokens": total_tokens,
         "biggest_gac_tokens": biggest_gac_tokens,
         "biggest_gac_date": biggest_gac_date_str,
@@ -611,11 +637,13 @@ def get_stats_summary() -> dict[str, Any]:
         "daily_commits": daily_commits,
         "daily_prompt_tokens": daily_prompt_tokens,
         "daily_completion_tokens": daily_completion_tokens,
+        "daily_reasoning_tokens": daily_reasoning_tokens,
         "daily_total_tokens": daily_total_tokens,
         "weekly_gacs": weekly_gacs,
         "weekly_commits": weekly_commits,
         "weekly_prompt_tokens": weekly_prompt_tokens,
         "weekly_completion_tokens": weekly_completion_tokens,
+        "weekly_reasoning_tokens": weekly_reasoning_tokens,
         "weekly_total_tokens": weekly_total_tokens,
         "peak_daily_gacs": peak_daily_gacs,
         "peak_daily_commits": peak_daily_commits,
@@ -633,14 +661,16 @@ def project_activity(project_data: tuple[str, Any]) -> tuple[int, int]:
 
     Args:
         project_data: Tuple of (project_name, data) where data is a dict
-            with 'gacs', 'commits', 'prompt_tokens', and 'completion_tokens' keys.
+            with 'gacs', 'commits', 'prompt_tokens', 'completion_tokens', and 'reasoning_tokens' keys.
 
     Returns:
         Tuple of (activity, total_tokens) — higher sorts first when reverse=True.
     """
     data = project_data[1]
     activity = int(data.get("gacs", 0)) + int(data.get("commits", 0))
-    total_tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
+    total_tokens = (
+        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
+    )
     return (activity, total_tokens)
 
 
@@ -669,6 +699,7 @@ def reset_stats() -> None:
         "total_commits": 0,
         "total_prompt_tokens": 0,
         "total_completion_tokens": 0,
+        "total_reasoning_tokens": 0,
         "biggest_gac_tokens": 0,
         "biggest_gac_date": None,
         "first_used": None,
@@ -677,10 +708,12 @@ def reset_stats() -> None:
         "daily_commits": {},
         "daily_prompt_tokens": {},
         "daily_completion_tokens": {},
+        "daily_reasoning_tokens": {},
         "weekly_gacs": {},
         "weekly_commits": {},
         "weekly_prompt_tokens": {},
         "weekly_completion_tokens": {},
+        "weekly_reasoning_tokens": {},
         "projects": {},
         "models": {},
     }
