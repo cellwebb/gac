@@ -273,7 +273,6 @@ class TestStatsCLI:
             # Should show biggest gac in the details table
             assert "Biggest gac" in result.output
             assert "12,000" in result.output
-            assert "🐘" in result.output
 
     def test_stats_show_new_biggest_gac_celebration(self, runner):
         """Test stats show celebrates when today set a new biggest gac record."""

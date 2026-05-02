@@ -463,7 +463,7 @@ class TestSummaryWithTokens:
             assert summary["week_tokens"] == 300
 
     def test_summary_includes_top_models(self, tmp_path):
-        """Test summary returns top_models sorted by gacs."""
+        """Test summary returns top_models sorted by gacs then total tokens."""
         stats_file = tmp_path / "stats.json"
 
         stats: GACStats = _empty_stats()
@@ -478,6 +478,26 @@ class TestSummaryWithTokens:
             top = summary["top_models"]
             assert top[0][0] == "model-b"
             assert top[1][0] == "model-a"
+
+    def test_top_models_tiebreak_by_total_tokens(self, tmp_path):
+        """When models have equal gacs, the one with more total tokens sorts first."""
+        stats_file = tmp_path / "stats.json"
+
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "model-a": {"gacs": 5, "prompt_tokens": 500, "completion_tokens": 100, "reasoning_tokens": 50},
+            "model-b": {"gacs": 5, "prompt_tokens": 1000, "completion_tokens": 200, "reasoning_tokens": 100},
+            "model-c": {"gacs": 5, "prompt_tokens": 200, "completion_tokens": 50, "reasoning_tokens": 0},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            top = summary["top_models"]
+            # All have 5 gacs; sort by total tokens: b=1300, a=650, c=250
+            assert top[0][0] == "model-b"
+            assert top[1][0] == "model-a"
+            assert top[2][0] == "model-c"
 
 
 class TestDisableStats:

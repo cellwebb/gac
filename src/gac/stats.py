@@ -643,18 +643,22 @@ def project_activity(project_data: tuple[str, Any]) -> int:
     return int(data.get("gacs", 0)) + int(data.get("commits", 0))
 
 
-def model_activity(model_data: tuple[str, Any]) -> int:
-    """Sort key for models by gacs (workflow uses).
+def model_activity(model_data: tuple[str, Any]) -> tuple[int, int]:
+    """Sort key for models by gacs (workflow uses), then by total tokens.
 
     Args:
         model_data: Tuple of (model_name, data) where data is a dict
-            with 'gacs', 'prompt_tokens', and 'completion_tokens' keys.
+            with 'gacs', 'prompt_tokens', 'completion_tokens', and 'reasoning_tokens' keys.
 
     Returns:
-        Number of gacs run with this model.
+        Tuple of (gacs, total_tokens) — higher sorts first when reverse=True.
     """
     data = model_data[1]
-    return int(data.get("gacs", 0))
+    gacs = int(data.get("gacs", 0))
+    total_tokens = (
+        int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0)) + int(data.get("reasoning_tokens", 0))
+    )
+    return (gacs, total_tokens)
 
 
 def reset_stats() -> None:
