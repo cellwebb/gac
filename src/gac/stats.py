@@ -205,13 +205,17 @@ def _migrate_v1_to_v2(data: dict[str, Any]) -> dict[str, Any]:
         rt = int(m.get("reasoning_tokens", 0))
         if rt > 0:
             m["completion_tokens"] = max(int(m.get("completion_tokens", 0)) - rt, 0)
-            # Proportionally adjust timed_completion_tokens to match
+            # Proportionally adjust timed_completion_tokens and derive
+            # timed_reasoning_tokens so that speed (which sums both)
+            # stays consistent across the migration boundary.
             tc = int(m.get("timed_completion_tokens", 0))
             if tc > 0:
                 old_total = int(m.get("completion_tokens", 0)) + rt  # original inclusive
                 if old_total > 0:
                     ratio = int(m["completion_tokens"]) / old_total
-                    m["timed_completion_tokens"] = max(round(tc * ratio), 0)
+                    new_timed_comp = max(round(tc * ratio), 0)
+                    m["timed_reasoning_tokens"] = max(tc - new_timed_comp, 0)
+                    m["timed_completion_tokens"] = new_timed_comp
 
     # 2. Migrate projects
     for _name, p in data.get("projects", {}).items():

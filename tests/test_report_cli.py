@@ -169,6 +169,34 @@ class TestReportCLI:
             # Model without reasoning should show em dash, not "0"
             assert "\u2014" in result.output
 
+    def test_report_speed_includes_reasoning_tokens(self, runner):
+        """Speed in report must count reasoning tokens in throughput."""
+        with patch("gac.report_cli.load_stats") as mock_load:
+            mock_load.return_value = {
+                "daily_gacs": {"2026-05-02": 1},
+                "daily_commits": {"2026-05-02": 1},
+                "daily_prompt_tokens": {"2026-05-02": 1000},
+                "daily_completion_tokens": {"2026-05-02": 500},
+                "daily_reasoning_tokens": {"2026-05-02": 1500},
+                "projects": {},
+                "models": {
+                    "deepseek:deepseek-r1": {
+                        "gacs": 5,
+                        "prompt_tokens": 5000,
+                        "completion_tokens": 500,
+                        "reasoning_tokens": 1500,
+                        "total_duration_ms": 2000,
+                        "duration_count": 1,
+                        "timed_completion_tokens": 500,
+                        "timed_reasoning_tokens": 1500,
+                    },
+                },
+            }
+            result = runner.invoke(cli, ["report"])
+            assert result.exit_code == 0
+            # (500+1500)/2s = 1000 tps, NOT 500/2s = 250 tps
+            assert "1000 tps" in result.output
+
     def test_report_stats_disabled(self, runner):
         """Test report when stats are disabled."""
         with patch("gac.report_cli.stats_enabled", return_value=False):

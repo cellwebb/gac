@@ -1119,6 +1119,8 @@ class TestMalformedStats:
         assert migrated["models"]["openai:o3"]["reasoning_tokens"] == 200
         # timed_completion_tokens proportionally adjusted (600 * 600/800 = 450)
         assert migrated["models"]["openai:o3"]["timed_completion_tokens"] == 450
+        # timed_reasoning_tokens backfilled so speed stays consistent (600-450=150)
+        assert migrated["models"]["openai:o3"]["timed_reasoning_tokens"] == 150
         # biggest_gac_tokens reset (can't reconstruct per-gac reasoning)
         assert migrated["biggest_gac_tokens"] == 0
         assert migrated["biggest_gac_date"] is None
@@ -1191,6 +1193,84 @@ class TestMalformedStats:
         assert migrated["biggest_gac_date"] is None
         # Model completion still migrated
         assert migrated["models"]["openai:o3"]["completion_tokens"] == 50
+
+    def test_migration_preserves_speed_with_timed_reasoning(self):
+        """V1 migration must backfill timed_reasoning_tokens so speed stays consistent.
+
+        Before this fix, migration reduced timed_completion_tokens but left
+        timed_reasoning_tokens at 0, causing speed = (450+0)/3s = 150 tps
+        instead of the original 600/3s = 200 tps.
+        """
+        from gac.stats import _migrate_v1_to_v2
+
+        v1_data = {
+            "total_prompt_tokens": 1000,
+            "total_completion_tokens": 800,
+            "total_reasoning_tokens": 200,
+            "daily_completion_tokens": {},
+            "daily_reasoning_tokens": {},
+            "weekly_completion_tokens": {},
+            "weekly_reasoning_tokens": {},
+            "projects": {},
+            "models": {
+                "openai:o3": {
+                    "prompt_tokens": 1000,
+                    "completion_tokens": 800,
+                    "reasoning_tokens": 200,
+                    "timed_completion_tokens": 600,
+                    "total_duration_ms": 3000,
+                    "duration_count": 2,
+                },
+            },
+        }
+
+        migrated = _migrate_v1_to_v2(v1_data)
+        m = migrated["models"]["openai:o3"]
+        timed_output = m["timed_completion_tokens"] + m.get("timed_reasoning_tokens", 0)
+        speed = round(timed_output * 1000 / m["total_duration_ms"])
+        # Original speed was 600 tokens / 3000ms = 200 tps
+        assert speed == 200, f"Speed regressed: {speed} tps (expected 200)"
+
+    def test_speed_includes_reasoning_tokens(self):
+        """_enrich_models_with_speed must count reasoning tokens in throughput.
+
+        For thinking models, speed = (completion + reasoning) / seconds,
+        not just completion / seconds.
+        """
+        from gac.stats import _enrich_models_with_speed
+
+        models = [
+            (
+                "deepseek:deepseek-r1",
+                {
+                    "timed_completion_tokens": 500,
+                    "timed_reasoning_tokens": 1500,
+                    "total_duration_ms": 2000,
+                    "duration_count": 1,
+                },
+            ),
+        ]
+        enriched = _enrich_models_with_speed(models)
+        # (500 + 1500) / 2.0 = 1000 tps
+        assert enriched[0][1]["avg_tps"] == 1000
+
+    def test_speed_uses_zero_reasoning_when_absent(self):
+        """Old stats files without timed_reasoning_tokens default to 0."""
+        from gac.stats import _enrich_models_with_speed
+
+        models = [
+            (
+                "openai:gpt-4",
+                {
+                    "timed_completion_tokens": 600,
+                    "total_duration_ms": 3000,
+                    "duration_count": 2,
+                },
+            ),
+        ]
+        enriched = _enrich_models_with_speed(models)
+        # 600 / 3.0 = 200 tps (no reasoning, backward compat)
+        assert enriched[0][1]["avg_tps"] == 200
 
 
 if __name__ == "__main__":
