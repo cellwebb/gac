@@ -144,11 +144,11 @@ def show() -> None:
     )
     table.add_row(
         "Current streak",
-        f"[bold cyan]{streak}[/bold cyan] day{'s' if streak != 1 else ''}{streak_emoji}",
+        f"[bold cyan]{streak}[/bold cyan] [cyan]day{'s' if streak != 1 else ''}[/cyan]{streak_emoji}",
     )
     table.add_row(
         "Longest streak",
-        f"[bold cyan]{longest_streak}[/bold cyan] day{'s' if longest_streak != 1 else ''}",
+        f"[bold cyan]{longest_streak}[/bold cyan] [cyan]day{'s' if longest_streak != 1 else ''}[/cyan]",
     )
     if biggest_gac_tokens > 0:
         biggest_gac_display = _format_tokens(biggest_gac_tokens) + " tokens"
