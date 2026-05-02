@@ -17,11 +17,17 @@ from gac.utils import count_tokens, get_ssl_verify
 
 @dataclass
 class ParsedResponse:
-    """Structured result from parsing an API response."""
+    """Structured result from parsing an API response.
+
+    ``completion_tokens`` excludes reasoning tokens.  The provider APIs
+    return ``completion_tokens`` inclusive of reasoning; we subtract
+    ``reasoning_tokens`` at parse time so downstream code always gets two
+    distinct, non-overlapping numbers.
+    """
 
     content: str
     prompt_tokens: int = -1
-    completion_tokens: int = -1
+    completion_tokens: int = -1  # output tokens only (excludes reasoning)
     reasoning_tokens: int = 0
 
 
@@ -270,7 +276,11 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
         return ParsedResponse(
             content=content,
             prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
+            # Normalize: API completion_tokens includes reasoning; subtract it
+            # so downstream gets two distinct, non-overlapping numbers.
+            completion_tokens=max(completion_tokens - reasoning_tokens, 0)
+            if completion_tokens >= 0
+            else completion_tokens,
             reasoning_tokens=reasoning_tokens,
         )
 
@@ -362,6 +372,10 @@ class GenericHTTPProvider(BaseConfiguredProvider):
                 rt = details.get("reasoning_tokens", 0)
                 reasoning_tokens = rt if isinstance(rt, int) else 0
 
+        # Normalize: API completion_tokens includes reasoning; subtract it
+        # so downstream gets two distinct, non-overlapping numbers.
+        norm_completion = max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+
         choices = response.get("choices")
         if choices and isinstance(choices, list):
             content = choices[0].get("message", {}).get("content")
@@ -369,7 +383,7 @@ class GenericHTTPProvider(BaseConfiguredProvider):
                 return ParsedResponse(
                     content=content,
                     prompt_tokens=prompt_tokens,
-                    completion_tokens=completion_tokens,
+                    completion_tokens=norm_completion,
                     reasoning_tokens=reasoning_tokens,
                 )
 
@@ -378,7 +392,7 @@ class GenericHTTPProvider(BaseConfiguredProvider):
             return ParsedResponse(
                 content=content[0].get("text", ""),
                 prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
+                completion_tokens=norm_completion,
                 reasoning_tokens=reasoning_tokens,
             )
 

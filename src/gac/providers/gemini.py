@@ -95,9 +95,14 @@ class GeminiProvider(GenericHTTPProvider):
             pt = usage_meta.get("promptTokenCount", -1)
             ct = usage_meta.get("candidatesTokenCount", -1)
             prompt_tokens = pt if isinstance(pt, int) else -1
-            completion_tokens = ct if isinstance(ct, int) else -1
+            raw_completion = ct if isinstance(ct, int) else -1
             rt = usage_meta.get("thoughtsTokenCount", 0)
             reasoning_tokens = rt if isinstance(rt, int) else 0
+            # Normalize: candidatesTokenCount includes thoughts; subtract
+            # so completion = output tokens only (excludes reasoning).
+            completion_tokens = max(raw_completion - reasoning_tokens, 0) if raw_completion >= 0 else raw_completion
+        else:
+            completion_tokens = -1
 
         return ParsedResponse(
             content=content_text,

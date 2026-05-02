@@ -72,6 +72,10 @@ class LMStudioProvider(OpenAICompatibleProvider):
                 rt = details.get("reasoning_tokens", 0)
                 reasoning_tokens = rt if isinstance(rt, int) else 0
 
+        # Normalize: API completion_tokens includes reasoning; subtract it
+        # so downstream gets two distinct, non-overlapping numbers.
+        norm_completion = max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
             raise AIError.model_error("Invalid response: missing choices")
@@ -84,7 +88,7 @@ class LMStudioProvider(OpenAICompatibleProvider):
             return ParsedResponse(
                 content=content,
                 prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
+                completion_tokens=norm_completion,
                 reasoning_tokens=reasoning_tokens,
             )
 
@@ -95,7 +99,7 @@ class LMStudioProvider(OpenAICompatibleProvider):
             return ParsedResponse(
                 content=content,
                 prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
+                completion_tokens=norm_completion,
                 reasoning_tokens=reasoning_tokens,
             )
 
