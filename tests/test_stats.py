@@ -497,7 +497,7 @@ class TestSummaryWithTokens:
         with patch("gac.stats.STATS_FILE", stats_file):
             summary = get_stats_summary()
             top = summary["top_models"]
-            # All have 5 gacs; sort by total tokens: b=1300, a=650, c=250
+            # All have 5 gacs; sort by total tokens (prompt+completion): b=1200, a=600, c=250
             assert top[0][0] == "model-b"
             assert top[1][0] == "model-a"
             assert top[2][0] == "model-c"
@@ -763,7 +763,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            assert stats["biggest_gac_tokens"] == 650  # 500+100+50
+            assert stats["biggest_gac_tokens"] == 600  # 500+100 (reasoning is a subset of completion)
             assert stats["biggest_gac_date"] is not None
 
     def test_biggest_gac_updates_on_larger_gac(self, tmp_path):
@@ -782,7 +782,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            assert stats["biggest_gac_tokens"] == 5700  # 5000+500+200
+            assert stats["biggest_gac_tokens"] == 5500  # 5000+500 (reasoning is a subset of completion)
 
     def test_biggest_gac_preserved_on_smaller_gac(self, tmp_path):
         """A smaller gac doesn't overwrite the record."""
@@ -800,7 +800,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            assert stats["biggest_gac_tokens"] == 5700  # Still the big one
+            assert stats["biggest_gac_tokens"] == 5500  # Still the big one (reasoning excluded)
 
     def test_biggest_gac_accumulates_multiple_record_tokens(self, tmp_path):
         """Tokens from multiple record_tokens calls in one gac accumulate."""
@@ -815,7 +815,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            assert stats["biggest_gac_tokens"] == 4375  # 3500+700+175
+            assert stats["biggest_gac_tokens"] == 4200  # 3500+700 (reasoning is a subset of completion)
 
     def test_biggest_gac_in_summary(self, tmp_path):
         """get_stats_summary includes biggest_gac_tokens and biggest_gac_date."""
@@ -827,7 +827,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             summary = get_stats_summary()
-            assert summary["biggest_gac_tokens"] == 650
+            assert summary["biggest_gac_tokens"] == 600  # 500+100 (reasoning excluded)
             assert summary["biggest_gac_date"] is not None
 
     def test_biggest_gac_defaults_zero(self, tmp_path):
@@ -872,7 +872,7 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            assert stats["biggest_gac_tokens"] == 650
+            assert stats["biggest_gac_tokens"] == 600  # 500+100 (reasoning excluded)
 
             reset_stats()
             stats = load_stats()
@@ -930,9 +930,9 @@ class TestBiggestGac:
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
-            # Without reset, the accumulator held 650 from the first request
-            # plus 60 from the second = 710 (inflated!)
-            assert stats["biggest_gac_tokens"] == 710
+            # Without reset, the accumulator held 600 from the first request
+            # plus 60 from the second = 660 (inflated!)
+            assert stats["biggest_gac_tokens"] == 660
 
 
 class TestMalformedStats:

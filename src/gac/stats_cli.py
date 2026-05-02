@@ -197,11 +197,7 @@ def show() -> None:
         for project, data in sorted_projects[:5]:
             gacs = data.get("gacs", 0)
             commits = data.get("commits", 0)
-            tokens = (
-                int(data.get("prompt_tokens", 0))
-                + int(data.get("completion_tokens", 0))
-                + int(data.get("reasoning_tokens", 0))
-            )
+            tokens = int(data.get("prompt_tokens", 0)) + int(data.get("completion_tokens", 0))
             projects_table.add_row(project, str(gacs), str(commits), _format_tokens(tokens))
 
         console.print(projects_table)
@@ -225,7 +221,7 @@ def show() -> None:
             prompt_t = int(data.get("prompt_tokens", 0))
             completion_t = int(data.get("completion_tokens", 0))
             reasoning_t = int(data.get("reasoning_tokens", 0))
-            total_t = prompt_t + completion_t + reasoning_t
+            total_t = prompt_t + completion_t
             avg_tps = data.get("avg_tps")
             speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
             reasoning_str = _format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
