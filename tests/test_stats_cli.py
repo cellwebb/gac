@@ -334,8 +334,8 @@ class TestStatsCLI:
                 "total_tokens": 20000,
                 "biggest_gac_tokens": 0,
                 "biggest_gac_date": None,
-                "first_used": "?",
-                "last_used": "?",
+                "first_used": "<invalid>",
+                "last_used": "<invalid>",
                 "today_gacs": 1,
                 "today_commits": 2,
                 "today_tokens": 500,
@@ -366,7 +366,7 @@ class TestStatsCLI:
             mock_load.return_value = {"projects": {}, "models": {}}
             result = runner.invoke(cli, ["stats", "show"])
             assert result.exit_code == 0
-            # Should not crash on .split("-") with the "?" fallback
+            # Should not crash on .split("-") with the "<invalid>" fallback
             assert "You've gac'd" in result.output
 
 

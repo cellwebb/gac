@@ -590,6 +590,11 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         from gac.git_state_validator import GitStateValidator
         from gac.postprocess import clean_commit_message
         from gac.prompt_builder import PromptBuilder
+        from gac.stats import reset_gac_token_accumulator
+
+        # Reset accumulator at the start of every request so stale tokens from
+        # a failed previous request can never leak into this one.
+        reset_gac_token_accumulator()
 
         # Load configuration
         config = load_config()
@@ -659,7 +664,6 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # =====================================================================
         if request.group:
             from gac.grouped_commit_workflow import GroupedCommitWorkflow
-            from gac.stats import reset_gac_token_accumulator
 
             workflow = GroupedCommitWorkflow(config)
 
@@ -786,7 +790,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         conversation_messages.append({"role": "user", "content": prompt_bundle.user_prompt})
 
         # Generate commit message using AI
-        from gac.stats import record_tokens, reset_gac_token_accumulator
+        from gac.stats import record_tokens
 
         raw_commit_message, prov_pt, prov_ct, duration_ms, _reasoning_tokens = generate_commit_message(
             model=model,
@@ -866,6 +870,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
 
     except Exception as e:
         logger.exception("Error in commit workflow")
+        reset_gac_token_accumulator()  # Don't leak tokens into next request
         return CommitResult(
             success=False,
             commit_message="",

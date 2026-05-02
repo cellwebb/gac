@@ -961,7 +961,7 @@ class TestMalformedStats:
             summary = get_stats_summary()
             # Should not crash; date falls back to "?"
             assert summary["biggest_gac_tokens"] == 500
-            assert summary["biggest_gac_date"] == "?"
+            assert summary["biggest_gac_date"] == "<invalid>"
 
     def test_malformed_biggest_gac_tokens_graceful(self, tmp_path):
         """A non-numeric biggest_gac_tokens coerces to 0 in the summary."""
@@ -1013,8 +1013,8 @@ class TestMalformedStats:
         with patch("gac.stats.STATS_FILE", stats_file):
             summary = get_stats_summary()
             # Should fall back to "?" instead of crashing
-            assert summary["first_used"] == "?"
-            assert summary["last_used"] == "?"
+            assert summary["first_used"] == "<invalid>"
+            assert summary["last_used"] == "<invalid>"
 
     def test_non_string_first_used_date_graceful(self, tmp_path):
         """A non-string first_used/last_used (e.g. int) doesn't crash stats_cli."""
@@ -1038,12 +1038,34 @@ class TestMalformedStats:
         stats_file.write_text(json.dumps(data))
         with patch("gac.stats.STATS_FILE", stats_file):
             summary = get_stats_summary()
-            # Should fall back to "?" instead of passing through the int
-            assert summary["first_used"] == "?"
-            assert summary["last_used"] == "?"
+            # Should fall back to "<invalid>" instead of passing through the int
+            assert summary["first_used"] == "<invalid>"
+            assert summary["last_used"] == "<invalid>"
             # Verify it's actually a string (won't crash .split("-"))
             assert isinstance(summary["first_used"], str)
             assert isinstance(summary["last_used"], str)
+
+    def test_reset_gac_token_accumulator_at_request_start(self, tmp_path):
+        """Simulates MCP server: stale tokens from a failed request are cleared
+        when the next request starts (reset_gac_token_accumulator at try top)."""
+        import gac.stats
+        from gac.stats import reset_gac_token_accumulator
+
+        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+            # Simulate leftover stale tokens from a failed previous request
+            gac.stats._current_gac_tokens = 9999
+
+            # MCP server resets at the start of each request
+            reset_gac_token_accumulator()
+
+            # Now a normal request
+            gac.stats._current_gac_tokens = 0
+            record_tokens(100, 50, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            # Should be 150, not 10149 (9999 stale + 150 new)
+            assert stats["biggest_gac_tokens"] == 150
 
 
 if __name__ == "__main__":

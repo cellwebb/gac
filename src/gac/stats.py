@@ -78,16 +78,15 @@ def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, 
 def _safe_format_date(iso_str: Any) -> str:
     """Format an ISO datetime string to YYYY-MM-DD, returning a safe fallback on failure.
 
-    If the input is not a string or cannot be parsed, returns "?" to prevent
-    downstream code from crashing on ``.split("-")`` or similar string ops.
+    If the input is not a string or cannot be parsed, returns ``<invalid>`` to
+    prevent downstream code from crashing on ``.split("-")`` or similar string ops.
     """
     if not isinstance(iso_str, str):
-        return "?"
+        return "<invalid>"
     try:
         return datetime.fromisoformat(iso_str).strftime("%Y-%m-%d")
     except (ValueError, TypeError):
-        # Return a fallback that .split("-") won't crash on
-        return "?"
+        return "<invalid>"
 
 
 def stats_enabled() -> bool:
