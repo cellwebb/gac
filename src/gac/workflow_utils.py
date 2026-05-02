@@ -108,11 +108,10 @@ def display_commit_message(
             from gac.ai_utils import count_tokens
 
             completion_tokens = count_tokens(commit_message, model)
-        total_tokens = prompt_tokens + completion_tokens
+        total_tokens = prompt_tokens + completion_tokens + reasoning_tokens
         if reasoning_tokens > 0:
-            output_tokens = completion_tokens - reasoning_tokens
             console.print(
-                f"[dim]Token usage: {prompt_tokens} prompt + {output_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
+                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
             )
         else:
             console.print(
