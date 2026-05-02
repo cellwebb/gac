@@ -134,6 +134,8 @@ def _configure_stats(existing_env: dict[str, str], env_path: Path = GAC_ENV_PATH
             return
 
         if response:
+            set_key(str(env_path), "GAC_DISABLE_STATS", "false")
+            existing_env["GAC_DISABLE_STATS"] = "false"
             click.echo("Stats enabled.")
         else:
             _disable_stats_with_history_prompt(existing_env, env_path)

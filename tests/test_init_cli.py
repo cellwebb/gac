@@ -237,7 +237,7 @@ def test_init_cli_provider_selection_cancelled():
 
 
 def test_configure_stats_enable_from_default():
-    """First time (no GAC_DISABLE_STATS): confirming with Y leaves env unchanged."""
+    """First time (no GAC_DISABLE_STATS): confirming with Y writes GAC_DISABLE_STATS=false."""
     with tempfile.TemporaryDirectory() as tmpdir:
         env_path = Path(tmpdir) / ".gac.env"
         env_path.touch()
@@ -248,8 +248,9 @@ def test_configure_stats_enable_from_default():
                 _configure_stats(existing_env, env_path)
                 args, kwargs = mconfirm.call_args
                 assert kwargs.get("default") is True
-                assert "GAC_DISABLE_STATS" not in env_path.read_text()
-                assert "GAC_DISABLE_STATS" not in existing_env
+                env_text = env_path.read_text()
+                assert "GAC_DISABLE_STATS='false'" in env_text
+                assert existing_env.get("GAC_DISABLE_STATS") == "false"
 
 
 def test_configure_stats_disable_from_default():
