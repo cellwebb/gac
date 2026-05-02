@@ -17,9 +17,12 @@ STATS_FILE = Path.home() / ".gac_stats.json"
 
 # Module-level accumulator for per-gac token totals.
 # record_tokens() adds to this; record_gac() finalizes it and resets.
-# In long-lived processes (e.g. MCP server), non-committing return paths
-# must call reset_gac_token_accumulator() to avoid leaking tokens into
-# the next request.
+#
+# ⚠️  MAINTAINER NOTE: Any code path that calls record_tokens() but does NOT
+# call record_gac() (e.g. dry_run, message_only, user abort, generation
+# failure) MUST call reset_gac_token_accumulator() before returning.
+# Without this, a long-lived process (MCP server) will leak leftover
+# tokens into the next successful request and inflate biggest_gac_tokens.
 _current_gac_tokens: int = 0
 # Flag set by record_gac when this run beat the previous biggest_gac_tokens record.
 _new_biggest_gac: bool = False
@@ -28,14 +31,15 @@ _new_biggest_gac: bool = False
 def reset_gac_token_accumulator() -> None:
     """Reset the per-gac token accumulator.
 
-    Call this on code paths where ``record_tokens()`` was invoked but
-    ``record_gac()`` will not be (e.g. ``message_only``, ``dry_run``,
-    user abort).  Without this, a long-lived process (MCP server) would
-    leak leftover tokens into the next successful request and inflate
-    ``biggest_gac_tokens``.
+    Call this on **every** code path where ``record_tokens()`` was invoked
+    but ``record_gac()`` will not be (e.g. ``message_only``, ``dry_run``,
+    user abort, generation failure).  Without this, a long-lived process
+    (MCP server) would leak leftover tokens into the next successful
+    request and inflate ``biggest_gac_tokens``.
 
     One-shot CLI invocations do not strictly need this (the process
-    exits), but calling it is good hygiene.
+    exits), but calling it is good hygiene and keeps code paths
+    consistent between CLI and MCP.
     """
     global _current_gac_tokens
     _current_gac_tokens = 0
