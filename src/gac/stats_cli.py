@@ -58,6 +58,8 @@ def show() -> None:
     today_tokens = summary.get("today_tokens", 0)
     streak = summary["streak"]
     longest_streak = summary.get("longest_streak", 0)
+    biggest_gac_tokens = summary.get("biggest_gac_tokens", 0)
+    biggest_gac_date = summary.get("biggest_gac_date")
     peak_daily_gacs = summary.get("peak_daily_gacs", 0)
     peak_daily_commits = summary.get("peak_daily_commits", 0)
     peak_daily_tokens = summary.get("peak_daily_tokens", 0)
@@ -103,6 +105,9 @@ def show() -> None:
     new_streak_record = streak > 0 and streak > prev_longest
     tied_streak_record = streak > 0 and streak == prev_longest
 
+    # Detect if today set a new biggest-gac record
+    new_biggest_gac = biggest_gac_tokens > 0 and biggest_gac_date == today_str
+
     console.print()
 
     # Format the gac'd message (handles pluralization)
@@ -145,6 +150,14 @@ def show() -> None:
         "Longest streak",
         f"[bold cyan]{longest_streak}[/bold cyan] day{'s' if longest_streak != 1 else ''}",
     )
+    if biggest_gac_tokens > 0:
+        biggest_gac_display = _format_tokens(biggest_gac_tokens) + " tokens"
+        if biggest_gac_date:
+            biggest_gac_display += f"  ({biggest_gac_date})"
+        table.add_row(
+            "Biggest gac",
+            f"[bold cyan]{biggest_gac_display}[/bold cyan] 🐘",
+        )
 
     console.print(table)
 
@@ -234,6 +247,7 @@ def show() -> None:
         or new_peak_weekly_commits
         or new_peak_weekly_tokens
         or new_streak_record
+        or new_biggest_gac
     )
     any_tie = (
         tied_peak_gacs
@@ -274,6 +288,10 @@ def show() -> None:
             console.print("[bold yellow]🏆 New weekly high score for tokens![/bold yellow]")
         elif tied_peak_weekly_tokens:
             console.print("[yellow]🥈 Tied your weekly high score for tokens![/yellow]")
+        if new_biggest_gac:
+            console.print(
+                f"[bold yellow]🐘 New biggest gac record! {_format_tokens(biggest_gac_tokens)} tokens![/bold yellow]"
+            )
         if not (any_trophy or any_tie):
             if today_commits >= 5:
                 console.print("[green]🔥 You're on fire today! Keep those commits flowing![/green]")

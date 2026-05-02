@@ -22,18 +22,24 @@ class TestStatsCLI:
             mock_summary.return_value = {
                 "total_gacs": 0,
                 "total_commits": 0,
+                "biggest_gac_tokens": 0,
+                "biggest_gac_date": None,
                 "first_used": "Never",
                 "last_used": "Never",
                 "today_gacs": 0,
                 "today_commits": 0,
+                "today_tokens": 0,
                 "week_gacs": 0,
                 "week_commits": 0,
+                "week_tokens": 0,
                 "streak": 0,
                 "longest_streak": 0,
                 "peak_daily_gacs": 0,
                 "peak_daily_commits": 0,
+                "peak_daily_tokens": 0,
                 "peak_weekly_gacs": 0,
                 "peak_weekly_commits": 0,
+                "peak_weekly_tokens": 0,
                 "daily_gacs": {},
                 "daily_commits": {},
                 "weekly_gacs": {},
@@ -50,22 +56,36 @@ class TestStatsCLI:
             mock_summary.return_value = {
                 "total_gacs": 15,
                 "total_commits": 42,
+                "biggest_gac_tokens": 5000,
+                "biggest_gac_date": "2024-06-15",
                 "first_used": "2024-01-01",
                 "last_used": "2024-06-15",
                 "today_gacs": 2,
                 "today_commits": 5,
+                "today_tokens": 1000,
                 "week_gacs": 10,
                 "week_commits": 25,
+                "week_tokens": 3000,
                 "streak": 7,
                 "longest_streak": 12,
                 "peak_daily_gacs": 5,
                 "peak_daily_commits": 10,
+                "peak_daily_tokens": 2000,
                 "peak_weekly_gacs": 15,
                 "peak_weekly_commits": 30,
+                "peak_weekly_tokens": 4000,
                 "daily_gacs": {"2024-06-15": 2},
                 "daily_commits": {"2024-06-15": 5},
+                "daily_total_tokens": {"2024-06-15": 1000},
                 "weekly_gacs": {},
                 "weekly_commits": {},
+                "weekly_total_tokens": {},
+                "daily_prompt_tokens": {},
+                "daily_completion_tokens": {},
+                "weekly_prompt_tokens": {},
+                "weekly_completion_tokens": {},
+                "top_projects": [],
+                "top_models": [],
             }
             result = runner.invoke(cli, ["stats", "show"])
             assert result.exit_code == 0
@@ -79,22 +99,36 @@ class TestStatsCLI:
             mock_summary.return_value = {
                 "total_gacs": 5,
                 "total_commits": 10,
+                "biggest_gac_tokens": 0,
+                "biggest_gac_date": None,
                 "first_used": "2024-01-01",
                 "last_used": "2024-06-15",
                 "today_gacs": 1,
                 "today_commits": 2,
+                "today_tokens": 500,
                 "week_gacs": 3,
                 "week_commits": 6,
+                "week_tokens": 1500,
                 "streak": 3,
                 "longest_streak": 5,
                 "peak_daily_gacs": 3,
                 "peak_daily_commits": 6,
+                "peak_daily_tokens": 1000,
                 "peak_weekly_gacs": 8,
                 "peak_weekly_commits": 15,
+                "peak_weekly_tokens": 3000,
                 "daily_gacs": {"2024-06-15": 1},
                 "daily_commits": {"2024-06-15": 2},
+                "daily_total_tokens": {"2024-06-15": 500},
                 "weekly_gacs": {},
                 "weekly_commits": {},
+                "weekly_total_tokens": {},
+                "daily_prompt_tokens": {},
+                "daily_completion_tokens": {},
+                "weekly_prompt_tokens": {},
+                "weekly_completion_tokens": {},
+                "top_projects": [],
+                "top_models": [],
             }
             result = runner.invoke(cli, ["stats"])
             assert result.exit_code == 0
@@ -132,6 +166,8 @@ class TestStatsCLI:
             mock_summary.return_value = {
                 "total_gacs": 0,
                 "total_commits": 0,
+                "biggest_gac_tokens": 0,
+                "biggest_gac_date": None,
                 "total_prompt_tokens": 1000,
                 "total_completion_tokens": 200,
                 "total_tokens": 1200,
@@ -192,6 +228,99 @@ class TestStatsCLI:
             assert "950" in result.output  # 800 + 150 total
             assert "800" in result.output
             assert "150" in result.output
+
+    def test_stats_show_biggest_gac(self, runner):
+        """Test stats show displays biggest gac when it exists."""
+        with patch("gac.stats_cli.get_stats_summary") as mock_summary, patch("gac.stats_cli.load_stats") as mock_load:
+            mock_summary.return_value = {
+                "total_gacs": 10,
+                "total_commits": 15,
+                "total_tokens": 50000,
+                "biggest_gac_tokens": 12000,
+                "biggest_gac_date": "2025-05-20",
+                "first_used": "2024-01-01",
+                "last_used": "2025-05-20",
+                "today_gacs": 3,
+                "today_commits": 5,
+                "today_tokens": 12000,
+                "week_gacs": 8,
+                "week_commits": 12,
+                "week_tokens": 30000,
+                "streak": 2,
+                "longest_streak": 5,
+                "peak_daily_gacs": 5,
+                "peak_daily_commits": 8,
+                "peak_daily_tokens": 15000,
+                "peak_weekly_gacs": 10,
+                "peak_weekly_commits": 20,
+                "peak_weekly_tokens": 40000,
+                "daily_gacs": {"2025-05-20": 3},
+                "daily_commits": {"2025-05-20": 5},
+                "daily_total_tokens": {"2025-05-20": 12000},
+                "weekly_gacs": {},
+                "weekly_commits": {},
+                "weekly_total_tokens": {},
+                "daily_prompt_tokens": {},
+                "daily_completion_tokens": {},
+                "weekly_prompt_tokens": {},
+                "weekly_completion_tokens": {},
+                "top_projects": [],
+                "top_models": [],
+            }
+            mock_load.return_value = {"projects": {}, "models": {}}
+            result = runner.invoke(cli, ["stats", "show"])
+            assert result.exit_code == 0
+            # Should show biggest gac in the details table
+            assert "Biggest gac" in result.output
+            assert "12,000" in result.output
+            assert "🐘" in result.output
+
+    def test_stats_show_new_biggest_gac_celebration(self, runner):
+        """Test stats show celebrates when today set a new biggest gac record."""
+        from datetime import datetime
+
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        with patch("gac.stats_cli.get_stats_summary") as mock_summary, patch("gac.stats_cli.load_stats") as mock_load:
+            mock_summary.return_value = {
+                "total_gacs": 5,
+                "total_commits": 8,
+                "total_tokens": 20000,
+                "biggest_gac_tokens": 8000,
+                "biggest_gac_date": today_str,
+                "first_used": "2024-01-01",
+                "last_used": today_str,
+                "today_gacs": 1,
+                "today_commits": 2,
+                "today_tokens": 8000,
+                "week_gacs": 3,
+                "week_commits": 5,
+                "week_tokens": 12000,
+                "streak": 1,
+                "longest_streak": 3,
+                "peak_daily_gacs": 3,
+                "peak_daily_commits": 5,
+                "peak_daily_tokens": 10000,
+                "peak_weekly_gacs": 5,
+                "peak_weekly_commits": 8,
+                "peak_weekly_tokens": 15000,
+                "daily_gacs": {today_str: 1},
+                "daily_commits": {today_str: 2},
+                "daily_total_tokens": {today_str: 8000},
+                "weekly_gacs": {},
+                "weekly_commits": {},
+                "weekly_total_tokens": {},
+                "daily_prompt_tokens": {},
+                "daily_completion_tokens": {},
+                "weekly_prompt_tokens": {},
+                "weekly_completion_tokens": {},
+                "top_projects": [],
+                "top_models": [],
+            }
+            mock_load.return_value = {"projects": {}, "models": {}}
+            result = runner.invoke(cli, ["stats", "show"])
+            assert result.exit_code == 0
+            assert "New biggest gac record" in result.output
+            assert "8,000" in result.output
 
 
 if __name__ == "__main__":
