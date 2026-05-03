@@ -196,7 +196,7 @@ class TestBiggestGac:
         """First gac with tokens becomes the biggest gac."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0  # Reset accumulator
+        gac.stats.recorder._accumulator.reset()  # Reset accumulator
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
@@ -211,13 +211,13 @@ class TestBiggestGac:
         """A bigger gac overwrites the previous record."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First gac: small
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 
-            gac.stats.recorder._current_gac_tokens = 0
+            gac.stats.recorder._accumulator.reset()
             # Second gac: much bigger
             record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
             record_gac(model="openai:gpt-4")
@@ -229,13 +229,13 @@ class TestBiggestGac:
         """A smaller gac doesn't overwrite the record."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Big gac first
             record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
             record_gac(model="openai:gpt-4")
 
-            gac.stats.recorder._current_gac_tokens = 0
+            gac.stats.recorder._accumulator.reset()
             # Smaller gac
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
@@ -247,7 +247,7 @@ class TestBiggestGac:
         """Tokens from multiple record_tokens calls in one gac accumulate."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Simulate grouped workflow with multiple AI calls
             record_tokens(1000, 200, model="openai:gpt-4", reasoning_tokens=50)
@@ -262,7 +262,7 @@ class TestBiggestGac:
         """get_stats_summary includes biggest_gac_tokens and biggest_gac_date."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
@@ -307,7 +307,7 @@ class TestBiggestGac:
         """reset_stats clears biggest_gac fields."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
@@ -324,7 +324,7 @@ class TestBiggestGac:
         """A gac with no tokens doesn't set biggest_gac."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_gac(model="openai:gpt-4")
 
@@ -341,14 +341,14 @@ class TestBiggestGac:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First request (e.g. dry_run): tokens recorded but no gac
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             reset_gac_token_accumulator()
 
             # Second request: a smaller successful gac
-            gac.stats.recorder._current_gac_tokens = 0
+            gac.stats.recorder._accumulator.reset()
             record_tokens(50, 10, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 
@@ -360,7 +360,7 @@ class TestBiggestGac:
         """Without reset, tokens DO leak into the next gac (the bug we fixed)."""
         import gac.stats
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First request (e.g. dry_run): tokens recorded but no gac
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)

@@ -15,9 +15,36 @@ logger = logging.getLogger(__name__)
 # failure) MUST call reset_gac_token_accumulator() before returning.
 # Without this, a long-lived process (MCP server) will leak leftover
 # tokens into the next successful request and inflate biggest_gac_tokens.
-_current_gac_tokens: int = 0
-# Flag set by record_gac when this run beat the previous biggest_gac_tokens record.
-_new_biggest_gac: bool = False
+
+
+class TokenAccumulator:
+    """Encapsulated mutable state for per-gac token tracking."""
+
+    def __init__(self) -> None:
+        self._current_tokens: int = 0
+        self._is_new_biggest: bool = False
+
+    def add(self, tokens: int) -> None:
+        self._current_tokens += tokens
+
+    def reset(self) -> None:
+        self._current_tokens = 0
+
+    @property
+    def current(self) -> int:
+        return self._current_tokens
+
+    @property
+    def is_new_biggest(self) -> bool:
+        return self._is_new_biggest
+
+    @is_new_biggest.setter
+    def is_new_biggest(self, value: bool) -> None:
+        self._is_new_biggest = value
+
+
+# Module-level singleton — existing code continues to work
+_accumulator = TokenAccumulator()
 
 
 def reset_gac_token_accumulator() -> None:
@@ -33,14 +60,12 @@ def reset_gac_token_accumulator() -> None:
     exits), but calling it is good hygiene and keeps code paths
     consistent between CLI and MCP.
     """
-    global _current_gac_tokens
-    _current_gac_tokens = 0
+    _accumulator.reset()
 
 
 def _set_new_biggest_gac(value: bool) -> None:
     """Internal setter for _new_biggest_gac flag (used by reset_stats)."""
-    global _new_biggest_gac
-    _new_biggest_gac = value
+    _accumulator.is_new_biggest = value
 
 
 def record_gac(project_name: str | None = None, model: str | None = None) -> None:
@@ -114,13 +139,12 @@ def record_gac(project_name: str | None = None, model: str | None = None) -> Non
         stats["models"][model]["gacs"] += 1
 
     # Finalize per-gac token total: check if this gac is the biggest ever
-    global _current_gac_tokens, _new_biggest_gac
-    _new_biggest_gac = False
-    if _current_gac_tokens > 0 and _current_gac_tokens > stats.get("biggest_gac_tokens", 0):
-        stats["biggest_gac_tokens"] = _current_gac_tokens
+    _accumulator.is_new_biggest = False
+    if _accumulator.current > 0 and _accumulator.current > stats.get("biggest_gac_tokens", 0):
+        stats["biggest_gac_tokens"] = _accumulator.current
         stats["biggest_gac_date"] = now.isoformat()
-        _new_biggest_gac = True
-    _current_gac_tokens = 0  # Reset accumulator for the next gac
+        _accumulator.is_new_biggest = True
+    _accumulator.reset()
 
     store.save_stats(stats)
     logger.debug(f"Recorded gac. Total gacs: {stats['total_gacs']}")
@@ -220,8 +244,7 @@ def record_tokens(
     stats["total_reasoning_tokens"] = stats.get("total_reasoning_tokens", 0) + reasoning_tokens
 
     # Accumulate into per-gac token total (finalized by record_gac)
-    global _current_gac_tokens
-    _current_gac_tokens += prompt_tokens + completion_tokens + reasoning_tokens
+    _accumulator.add(prompt_tokens + completion_tokens + reasoning_tokens)
 
     stats["daily_prompt_tokens"][today] = stats["daily_prompt_tokens"].get(today, 0) + prompt_tokens
     stats["daily_completion_tokens"][today] = stats["daily_completion_tokens"].get(today, 0) + completion_tokens

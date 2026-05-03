@@ -132,13 +132,13 @@ class TestMalformedStats:
 
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Simulate leftover stale tokens from a failed previous request
-            gac.stats.recorder._current_gac_tokens = 9999
+            gac.stats.recorder._accumulator._current_tokens = 9999
 
             # MCP server resets at the start of each request
             reset_gac_token_accumulator()
 
             # Now a normal request
-            gac.stats.recorder._current_gac_tokens = 0
+            gac.stats.recorder._accumulator.reset()
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 
@@ -350,7 +350,7 @@ class TestRetryTokenInflation:
     """Tests that content-level retries don't inflate biggest_gac_tokens.
 
     Before the fix, record_tokens() accumulated tokens from EVERY API call
-    (including failed validation retries) into _current_gac_tokens.
+    (including failed validation retries) into _accumulator.
     When record_gac() ran, it compared this inflated total against
     biggest_gac_tokens — so a 170k-token prompt with 1 retry would show
     as a 340k "biggest gac".
@@ -364,7 +364,7 @@ class TestRetryTokenInflation:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Simulate: first AI call fails validation (100k tokens)
             record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
@@ -385,7 +385,7 @@ class TestRetryTokenInflation:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First call (will be retried)
             record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
@@ -408,7 +408,7 @@ class TestRetryTokenInflation:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        gac.stats.recorder._current_gac_tokens = 0
+        gac.stats.recorder._accumulator.reset()
         with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First call fails
             record_tokens(50000, 100, model="openai:gpt-4")
