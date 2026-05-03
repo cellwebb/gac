@@ -9,6 +9,8 @@ import logging
 import re
 from dataclasses import dataclass
 
+from gac.constants import Utility
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,20 +94,18 @@ class SecretPatterns:
         re.compile(r"Test Bearer Token", re.IGNORECASE),  # Documentation text
     ]
 
+    _cached_patterns: dict[str, re.Pattern[str]] | None = None
+
     @classmethod
     def get_all_patterns(cls) -> dict[str, re.Pattern[str]]:
-        """Get all secret detection patterns.
-
-        Returns:
-            Dictionary mapping pattern names to compiled regex patterns
-        """
-        patterns = {}
-        for name, value in vars(cls).items():
-            if isinstance(value, re.Pattern) and not name.startswith("EXCLUDED"):
-                # Convert pattern name to human-readable format
-                readable_name = name.replace("_", " ").title()
-                patterns[readable_name] = value
-        return patterns
+        """Get all secret detection patterns."""
+        if cls._cached_patterns is None:
+            cls._cached_patterns = {
+                name.replace("_", " ").title(): value
+                for name, value in vars(cls).items()
+                if isinstance(value, re.Pattern) and not name.startswith("EXCLUDED") and name != "_cached_patterns"
+            }
+        return cls._cached_patterns
 
 
 def is_false_positive(matched_text: str, file_path: str = "") -> bool:
@@ -219,9 +219,6 @@ def scan_diff_section(section: str) -> list[DetectedSecret]:
                     if is_false_positive(matched_text, file_path):
                         logger.debug(f"Skipping false positive: {matched_text}")
                         continue
-
-                    # Truncate matched text for display (avoid showing full secrets)
-                    from gac.constants import Utility
 
                     display_text = (
                         matched_text[: Utility.MAX_DISPLAYED_SECRET_LENGTH] + "..."
