@@ -11,11 +11,9 @@ import sys
 from typing import Any
 
 import click
-from rich.console import Console
 
 from gac import __version__
 from gac.auth_cli import auth as auth_cli
-from gac.config import GACConfig, load_config
 from gac.config_cli import config as config_cli
 from gac.constants import Languages, Logging
 from gac.diff_cli import diff as diff_cli
@@ -27,12 +25,10 @@ from gac.model_cli import model as model_cli
 from gac.prompt_cli import prompt as prompt_cli
 from gac.report_cli import report as report_cli
 from gac.stats_cli import stats as stats_cli
-from gac.utils import setup_logging
+from gac.utils import console, setup_logging
 from gac.workflow_context import CLIOptions
 
-config: GACConfig = load_config()
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 @click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
@@ -72,9 +68,9 @@ console = Console()
 )
 @click.option(
     "--log-level",
-    default=config["log_level"],
+    default=None,
     type=click.Choice(Logging.LEVELS, case_sensitive=False),
-    help=f"Set log level (default: {config['log_level']})",
+    help="Set log level",
 )
 # Commit options
 @click.option("--signoff", is_flag=True, help="Add Signed-off-by line to the commit message")
@@ -107,7 +103,7 @@ def cli(
     fifty_seventy_two: bool = False,
     group: bool = False,
     interactive: bool = False,
-    log_level: str = str(config["log_level"]),
+    log_level: str | None = None,
     one_liner: bool = False,
     push: bool = False,
     show_prompt: bool = False,
@@ -128,11 +124,14 @@ def cli(
     signoff: bool = False,
 ) -> None:
     """Git Auto Commit - Generate commit messages with AI."""
+    from gac.config import load_config
+
+    config = load_config()
     if ctx.invoked_subcommand is None:
         if version:
             print(f"Git Auto Commit (gac) version: {__version__}")
             sys.exit(0)
-        effective_log_level = log_level
+        effective_log_level = log_level or config["log_level"]
         if quiet:
             effective_log_level = "ERROR"
         setup_logging(effective_log_level)
@@ -188,7 +187,7 @@ def cli(
                 fifty_seventy_two=use_fifty_seventy_two,
                 signoff=use_signoff,
             )
-            exit_code = main(opts)
+            exit_code = main(opts, config)
             sys.exit(exit_code)
         except Exception as e:
             handle_error(e, exit_program=True)

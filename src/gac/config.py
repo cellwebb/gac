@@ -38,6 +38,11 @@ class GACConfig(TypedDict, total=False):
     signoff: bool
 
 
+def _parse_bool_env(key: str, default: bool) -> bool:
+    """Parse a boolean environment variable with standard truthy values."""
+    return os.getenv(key, str(default)).lower() in ("true", "1", "yes", "on")
+
+
 def validate_config(config: GACConfig) -> None:
     """Validate configuration values at load time.
 
@@ -107,21 +112,17 @@ def load_config() -> GACConfig:
         "max_retries": int(os.getenv("GAC_RETRIES", EnvDefaults.MAX_RETRIES)),
         "log_level": os.getenv("GAC_LOG_LEVEL", Logging.DEFAULT_LEVEL),
         "warning_limit_tokens": int(os.getenv("GAC_WARNING_LIMIT_TOKENS", EnvDefaults.WARNING_LIMIT_TOKENS)),
-        "always_include_scope": os.getenv("GAC_ALWAYS_INCLUDE_SCOPE", str(EnvDefaults.ALWAYS_INCLUDE_SCOPE)).lower()
-        in ("true", "1", "yes", "on"),
-        "skip_secret_scan": os.getenv("GAC_SKIP_SECRET_SCAN", str(EnvDefaults.SKIP_SECRET_SCAN)).lower()
-        in ("true", "1", "yes", "on"),
-        "no_verify_ssl": os.getenv("GAC_NO_VERIFY_SSL", str(EnvDefaults.NO_VERIFY_SSL)).lower()
-        in ("true", "1", "yes", "on"),
-        "verbose": os.getenv("GAC_VERBOSE", str(EnvDefaults.VERBOSE)).lower() in ("true", "1", "yes", "on"),
+        "always_include_scope": _parse_bool_env("GAC_ALWAYS_INCLUDE_SCOPE", EnvDefaults.ALWAYS_INCLUDE_SCOPE),
+        "skip_secret_scan": _parse_bool_env("GAC_SKIP_SECRET_SCAN", EnvDefaults.SKIP_SECRET_SCAN),
+        "no_verify_ssl": _parse_bool_env("GAC_NO_VERIFY_SSL", EnvDefaults.NO_VERIFY_SSL),
+        "verbose": _parse_bool_env("GAC_VERBOSE", EnvDefaults.VERBOSE),
         "system_prompt_path": os.getenv("GAC_SYSTEM_PROMPT_PATH"),
         "language": os.getenv("GAC_LANGUAGE"),
-        "translate_prefixes": os.getenv("GAC_TRANSLATE_PREFIXES", "false").lower() in ("true", "1", "yes", "on"),
-        "rtl_confirmed": os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on"),
+        "translate_prefixes": _parse_bool_env("GAC_TRANSLATE_PREFIXES", False),
+        "rtl_confirmed": _parse_bool_env("GAC_RTL_CONFIRMED", False),
         "hook_timeout": int(os.getenv("GAC_HOOK_TIMEOUT", EnvDefaults.HOOK_TIMEOUT)),
-        "use_50_72_rule": os.getenv("GAC_USE_50_72_RULE", str(EnvDefaults.USE_50_72_RULE)).lower()
-        in ("true", "1", "yes", "on"),
-        "signoff": os.getenv("GAC_SIGNOFF", str(EnvDefaults.SIGNOFF)).lower() in ("true", "1", "yes", "on"),
+        "use_50_72_rule": _parse_bool_env("GAC_USE_50_72_RULE", EnvDefaults.USE_50_72_RULE),
+        "signoff": _parse_bool_env("GAC_SIGNOFF", EnvDefaults.SIGNOFF),
     }
 
     validate_config(config)

@@ -10,15 +10,14 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from rich.console import Console
-
+from gac.config import GACConfig
 from gac.errors import AIError, ConfigError
+from gac.utils import console
 
 if TYPE_CHECKING:
     from gac.workflow_context import WorkflowContext
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 @dataclass
@@ -108,7 +107,7 @@ def _attempt_reauth_and_retry(
         return 1
 
 
-def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> int:
+def handle_oauth_retry(e: AIError, ctx: WorkflowContext, config: GACConfig) -> int:
     """Handle OAuth retry logic for expired tokens.
 
     Checks if the error is an OAuth-related authentication error for a known
@@ -132,6 +131,6 @@ def handle_oauth_retry(e: AIError, ctx: WorkflowContext) -> int:
     def retry_workflow() -> int:
         from gac.main import _execute_single_commit_workflow
 
-        return _execute_single_commit_workflow(ctx)
+        return _execute_single_commit_workflow(ctx, config)
 
     return _attempt_reauth_and_retry(provider, ctx.quiet, retry_workflow)

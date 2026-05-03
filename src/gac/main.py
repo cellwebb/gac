@@ -5,12 +5,10 @@ prompt building, AI generation, and commit/push operations. This module contains
 
 import logging
 
-from rich.console import Console
-
 from gac.ai import generate_commit_message
 from gac.ai_utils import count_tokens
 from gac.commit_executor import CommitExecutor
-from gac.config import GACConfig, load_config
+from gac.config import GACConfig
 from gac.errors import AIError, ConfigError, handle_error
 from gac.git import run_lefthook_hooks, run_pre_commit_hooks
 from gac.git_state_validator import GitStateValidator
@@ -20,20 +18,19 @@ from gac.oauth_retry import handle_oauth_retry
 from gac.postprocess import clean_commit_message
 from gac.prompt_builder import PromptBuilder
 from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
+from gac.utils import console
 from gac.workflow_context import CLIOptions, GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 from gac.workflow_utils import check_token_warning, display_commit_message
 
 logger = logging.getLogger(__name__)
 
-config: GACConfig = load_config()
-console = Console()  # Initialize console globally to prevent undefined access
 
-
-def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
+def _execute_single_commit_workflow(ctx: WorkflowContext, config: GACConfig) -> int:
     """Execute single commit workflow using extracted components.
 
     Args:
         ctx: WorkflowContext containing all configuration, flags, and state
+        config: Application configuration
 
     Returns:
         Exit code: 0 for success, non-zero for failure/abort
@@ -150,15 +147,21 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     return 0
 
 
-def main(opts: CLIOptions) -> int:
+def main(opts: CLIOptions, config: GACConfig | None = None) -> int:
     """Main application logic for gac.
 
     Args:
         opts: CLI options bundled in a dataclass
+        config: Application configuration. If None, loaded via load_config().
 
     Returns:
         Exit code: 0 for success, non-zero for failure
     """
+    if config is None:
+        from gac.config import load_config
+
+        config = load_config()
+
     # Initialize components
     git_validator = GitStateValidator(config)
     prompt_builder = PromptBuilder(config)
@@ -277,64 +280,8 @@ def main(opts: CLIOptions) -> int:
     if opts.show_prompt:
         prompt_builder.display_prompts(prompts.system_prompt, prompts.user_prompt)
 
-    try:
-        if opts.group:
-            # Execute grouped workflow
-            return grouped_workflow.execute_workflow(
-                system_prompt=prompts.system_prompt,
-                user_prompt=prompts.user_prompt,
-                model=model,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                max_retries=max_retries,
-                require_confirmation=opts.require_confirmation,
-                quiet=opts.quiet,
-                no_verify=opts.no_verify,
-                dry_run=opts.dry_run,
-                push=opts.push,
-                show_prompt=opts.show_prompt,
-                interactive=opts.interactive,
-                message_only=opts.message_only,
-                hook_timeout=opts.hook_timeout,
-                git_state=git_state,
-                hint=opts.hint,
-                fifty_seventy_two=opts.fifty_seventy_two,
-                signoff=opts.signoff,
-            )
-        else:
-            # Build workflow context
-            gen_config = GenerationConfig(
-                model=model,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                max_retries=max_retries,
-            )
-            flags = WorkflowFlags(
-                require_confirmation=opts.require_confirmation,
-                quiet=opts.quiet,
-                no_verify=opts.no_verify,
-                dry_run=opts.dry_run,
-                message_only=opts.message_only,
-                push=opts.push,
-                show_prompt=opts.show_prompt,
-                interactive=opts.interactive,
-                hook_timeout=opts.hook_timeout,
-                fifty_seventy_two=opts.fifty_seventy_two,
-                signoff=opts.signoff,
-            )
-            state = WorkflowState(
-                prompts=prompts,
-                git_state=git_state,
-                hint=opts.hint,
-                commit_executor=commit_executor,
-                interactive_mode=interactive_mode,
-            )
-            ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
-
-            # Execute single commit workflow
-            return _execute_single_commit_workflow(ctx)
-    except AIError as e:
-        # Build context for retry
+    def _build_context() -> WorkflowContext:
+        """Build WorkflowContext for the single-commit path."""
         gen_config = GenerationConfig(
             model=model,
             temperature=temperature,
@@ -361,9 +308,40 @@ def main(opts: CLIOptions) -> int:
             commit_executor=commit_executor,
             interactive_mode=interactive_mode,
         )
-        ctx = WorkflowContext(config=gen_config, flags=flags, state=state)
-        return handle_oauth_retry(e=e, ctx=ctx)
+        return WorkflowContext(config=gen_config, flags=flags, state=state)
+
+    try:
+        if opts.group:
+            # Execute grouped workflow
+            return grouped_workflow.execute_workflow(
+                system_prompt=prompts.system_prompt,
+                user_prompt=prompts.user_prompt,
+                model=model,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                max_retries=max_retries,
+                require_confirmation=opts.require_confirmation,
+                quiet=opts.quiet,
+                no_verify=opts.no_verify,
+                dry_run=opts.dry_run,
+                push=opts.push,
+                show_prompt=opts.show_prompt,
+                interactive=opts.interactive,
+                message_only=opts.message_only,
+                hook_timeout=opts.hook_timeout,
+                git_state=git_state,
+                hint=opts.hint,
+                fifty_seventy_two=opts.fifty_seventy_two,
+                signoff=opts.signoff,
+            )
+        else:
+            # Execute single commit workflow
+            return _execute_single_commit_workflow(_build_context(), config)
+    except AIError as e:
+        return handle_oauth_retry(e=e, ctx=_build_context(), config=config)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(CLIOptions()))
+    from gac.config import load_config
+
+    raise SystemExit(main(CLIOptions(), load_config()))

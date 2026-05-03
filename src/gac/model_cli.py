@@ -1,12 +1,13 @@
 """CLI for managing gac model configuration in $HOME/.gac.env."""
 
-import os
 from pathlib import Path
 from typing import cast
 
 import click
 import questionary
 from dotenv import dotenv_values, load_dotenv, set_key
+
+from gac.config import _parse_bool_env
 
 GAC_ENV_PATH = Path.home() / ".gac.env"
 
@@ -19,7 +20,7 @@ def _should_show_rtl_warning_for_init() -> bool:
     """
     if GAC_ENV_PATH.exists():
         load_dotenv(GAC_ENV_PATH)
-        rtl_confirmed = os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on")
+        rtl_confirmed = _parse_bool_env("GAC_RTL_CONFIRMED", False)
         return not rtl_confirmed
     return True  # Show warning if no config exists
 

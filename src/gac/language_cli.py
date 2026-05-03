@@ -8,6 +8,7 @@ import click
 import questionary
 from dotenv import load_dotenv, set_key
 
+from gac.config import _parse_bool_env
 from gac.constants import Languages
 
 GAC_ENV_PATH = Path.home() / ".gac.env"
@@ -193,7 +194,7 @@ def should_show_rtl_warning() -> bool:
     # Load the current config to check RTL confirmation
     if GAC_ENV_PATH.exists():
         load_dotenv(GAC_ENV_PATH)
-        rtl_confirmed = os.getenv("GAC_RTL_CONFIRMED", "false").lower() in ("true", "1", "yes", "on")
+        rtl_confirmed = _parse_bool_env("GAC_RTL_CONFIRMED", False)
         return not rtl_confirmed
     return True  # Show warning if no config exists
 
@@ -366,7 +367,7 @@ def language() -> None:
 
     # Check prefix translation setting
     load_dotenv(GAC_ENV_PATH)
-    translate_prefixes = os.getenv("GAC_TRANSLATE_PREFIXES", "false").lower() in ("true", "1", "yes", "on")
+    translate_prefixes = _parse_bool_env("GAC_TRANSLATE_PREFIXES", False)
     if translate_prefixes:
         click.echo("  GAC_TRANSLATE_PREFIXES=true")
         click.echo("\n  Prefixes will be translated (e.g., 'corrección:' instead of 'fix:')")
