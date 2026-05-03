@@ -95,7 +95,7 @@ def mock_build_prompt():
         yield mock
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def clean_env_state():
     """Clean environment state to avoid cross-test contamination."""
     import os

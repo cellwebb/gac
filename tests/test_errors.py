@@ -89,8 +89,7 @@ class TestErrors(unittest.TestCase):
 
     @patch("sys.exit")
     @patch("gac.errors.logger")
-    @patch("gac.errors.console.print")
-    def test_handle_error(self, mock_print, mock_logger, mock_exit):
+    def test_handle_error(self, mock_logger, mock_exit):
         """Test handle_error function processes errors appropriately."""
         # Test with GACError
         error = ConfigError("Configuration error")
@@ -106,7 +105,6 @@ class TestErrors(unittest.TestCase):
 
         # Reset mocks for next test
         mock_logger.reset_mock()
-        mock_print.reset_mock()
         mock_exit.reset_mock()
 
         # Test with standard Exception
@@ -123,7 +121,6 @@ class TestErrors(unittest.TestCase):
 
         # Reset mocks for next test
         mock_logger.reset_mock()
-        mock_print.reset_mock()
         mock_exit.reset_mock()
 
         # Test without exit

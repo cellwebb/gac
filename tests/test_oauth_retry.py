@@ -178,7 +178,7 @@ class TestOAuthRetry:
         ctx.quiet = False
 
         with patch("gac.oauth_retry.console") as mock_console, patch("gac.oauth_retry.logger") as mock_logger:
-            result = handle_oauth_retry(error, ctx)
+            result = handle_oauth_retry(error, ctx, {})
             assert result == 1
 
             mock_logger.error.assert_called_once()
@@ -203,7 +203,7 @@ class TestOAuthRetry:
             mock_retry.return_value = 0
             mock_attempt.return_value = 0
 
-            result = handle_oauth_retry(error, ctx)
+            result = handle_oauth_retry(error, ctx, {})
             assert result == 0
 
             mock_find_provider.assert_called_once_with("claude-code:claude-3-haiku", error)
@@ -250,8 +250,8 @@ class TestOAuthRetry:
         with patch("gac.main._execute_single_commit_workflow") as mock_retry:
             mock_retry.return_value = 0  # Success
 
-            result = handle_oauth_retry(error, ctx)
+            result = handle_oauth_retry(error, ctx, {})
             assert result == 0
 
-            # Verify the retry workflow was called
-            mock_retry.assert_called_once_with(ctx)
+            # Verify the retry workflow was called with ctx and config
+            mock_retry.assert_called_once_with(ctx, {})

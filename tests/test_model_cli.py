@@ -47,7 +47,7 @@ def test_should_show_rtl_warning_for_init_not_confirmed() -> None:
     with (
         mock.patch("gac.model_cli.GAC_ENV_PATH") as mock_path,
         mock.patch("gac.model_cli.load_dotenv"),
-        mock.patch("gac.model_cli.os.getenv", return_value="false"),
+        mock.patch("gac.model_cli._parse_bool_env", return_value=False),
     ):
         mock_path.exists.return_value = True
 
@@ -60,7 +60,7 @@ def test_should_show_rtl_warning_for_init_already_confirmed() -> None:
     with (
         mock.patch("gac.model_cli.GAC_ENV_PATH") as mock_path,
         mock.patch("gac.model_cli.load_dotenv"),
-        mock.patch("gac.model_cli.os.getenv", return_value="true"),
+        mock.patch("gac.model_cli._parse_bool_env", return_value=True),
     ):
         mock_path.exists.return_value = True
 

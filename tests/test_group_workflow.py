@@ -201,7 +201,7 @@ def test_group_token_scaling(num_files, expected_multiplier):
         patch("gac.git.run_git_command", return_value="/fake/repo"),
         patch("gac.git.get_staged_files", return_value=[f"file{i}.py" for i in range(num_files)]),
         patch("gac.git_state_validator.get_staged_files", return_value=[f"file{i}.py" for i in range(num_files)]),
-        patch("gac.main.config", mock_config),
+        patch("gac.config.load_config", return_value=mock_config),
         patch("gac.grouped_commit_workflow.GroupedCommitWorkflow.execute_workflow") as mock_exec,
     ):
         main(CLIOptions(group=True, model="openai:gpt-4", require_confirmation=True))

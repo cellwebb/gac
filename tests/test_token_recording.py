@@ -41,9 +41,15 @@ def base_cli_mocks(monkeypatch):
         "max_retries": 2,
         "log_level": "ERROR",
         "warning_limit_tokens": 10000,
+        "no_verify_ssl": False,
+        "always_include_scope": False,
+        "verbose": False,
+        "use_50_72_rule": False,
+        "signoff": False,
+        "skip_secret_scan": False,
+        "hook_timeout": 120,
     }
-    monkeypatch.setattr("gac.main.load_config", lambda: mocked_config)
-    monkeypatch.setattr("gac.main.config", mocked_config)
+    monkeypatch.setattr("gac.config.load_config", lambda: mocked_config)
 
     def mock_run_git_command(args, **kwargs):
         if args == ["rev-parse", "--show-toplevel"]:

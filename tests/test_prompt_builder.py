@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for PromptBuilder class."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -70,15 +70,12 @@ class TestPromptBuilder:
         mock_build_group_prompt.assert_called_once()
 
     @patch("gac.prompt_builder.Panel")
-    @patch("gac.prompt_builder.Console")
+    @patch("gac.prompt_builder.console")
     def test_display_prompts(self, mock_console, mock_panel, builder):
         """Test displaying prompts."""
-        mock_console_instance = Mock()
-        mock_console.return_value = mock_console_instance
-
         builder.display_prompts("system", "user")
 
-        mock_console.assert_called_once()
+        mock_console.print.assert_called_once()
         mock_panel.assert_called_once()
 
     def test_build_prompts_with_language_override(self, builder, mock_git_state):

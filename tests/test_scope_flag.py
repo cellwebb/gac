@@ -28,13 +28,18 @@ class TestScopeFlag:
             "max_retries": 2,
             "log_level": "ERROR",
             "warning_limit_tokens": 10000,
+            "no_verify_ssl": False,
+            "always_include_scope": False,
+            "verbose": False,
+            "use_50_72_rule": False,
+            "signoff": False,
+            "skip_secret_scan": False,
+            "hook_timeout": 120,
         }
         monkeypatch.setattr(
-            "gac.main.load_config",
+            "gac.config.load_config",
             lambda: mocked_config,
         )
-        # Also patch the already-loaded config instance in gac.main
-        monkeypatch.setattr("gac.main.config", mocked_config)
 
         def mock_run_git_command(args, **kwargs):
             if args == ["rev-parse", "--show-toplevel"]:
@@ -189,13 +194,16 @@ class TestScopeIntegration:
             "max_retries": 1,
             "log_level": "ERROR",
             "warning_limit_tokens": 10000,
+            "no_verify_ssl": False,
+            "always_include_scope": False,
+            "verbose": False,
+            "use_50_72_rule": False,
+            "signoff": False,
+            "skip_secret_scan": False,
+            "hook_timeout": 120,
         }
 
-        # Patch the already-loaded config in main module
-        monkeypatch.setattr("gac.main.config", test_config)
-
-        # Also patch load_config in case it's called again
-        monkeypatch.setattr("gac.main.load_config", lambda: test_config)
+        # Patch load_config so main() gets the test config
         monkeypatch.setattr("gac.config.load_config", lambda: test_config)
 
         # Set up a spy for the git commit command

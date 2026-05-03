@@ -367,7 +367,7 @@ def test_run_pre_commit_hooks_exception_handling():
         result = run_pre_commit_hooks()
         assert result is True  # Should return True on exception
         mock_logger.debug.assert_called()
-        assert "Error running pre-commit:" in mock_logger.debug.call_args[0][0]
+        assert "Error running Pre-commit:" in mock_logger.debug.call_args[0][0]
 
 
 def test_run_lefthook_hooks_no_config():

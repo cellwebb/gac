@@ -57,10 +57,9 @@ class TestMainCommand:
             "signoff": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
-        monkeypatch.setattr("gac.cli.config", mock_config)
         # Patch the main function in 'gac.cli' module, as this is what Click calls.
         # main() now takes a CLIOptions positional argument
-        monkeypatch.setattr("gac.cli.main", lambda opts: 0)
+        monkeypatch.setattr("gac.cli.main", lambda opts, config=None: 0)
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
         result = runner.invoke(cli, [])
         assert result.exit_code == 0
@@ -77,7 +76,7 @@ class TestInteractiveFlag:
 
         captured_kwargs = {}
 
-        def capture_main(opts):
+        def capture_main(opts, config=None):
             captured_kwargs.update(asdict(opts))
             return 0
 
@@ -99,7 +98,6 @@ class TestInteractiveFlag:
             "signoff": False,
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
-        monkeypatch.setattr("gac.cli.config", mock_config)
         monkeypatch.setattr("rich.console.Console.print", lambda self, *a, **kw: None)
 
     def test_interactive_flag_long_form(self, mock_config_and_console, mock_main_function):

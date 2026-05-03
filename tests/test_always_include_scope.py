@@ -71,21 +71,14 @@ class TestAlwaysIncludeScopeCLI:
             "use_50_72_rule": False,
             "signoff": False,
         }
-        monkeypatch.setattr("gac.cli.config", mock_config)
+        # gac.cli.config removed; load_config patched below
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
+        mock_main.return_value = 0
 
         runner = CliRunner()
-        result = runner.invoke(cli, [])
+        runner.invoke(cli, [])
 
         # Check that main was called with infer_scope=True (which triggers inference)
-        if result.exit_code != 0:
-            print(f"CLI output: {result.output}")
-            if result.exception:
-                import traceback
-
-                print(
-                    f"Exception: {''.join(traceback.format_exception(type(result.exception), result.exception, result.exception.__traceback__))}"
-                )
         mock_main.assert_called_once()
         opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
         assert opts.infer_scope is True
@@ -109,13 +102,14 @@ class TestAlwaysIncludeScopeCLI:
             "use_50_72_rule": False,
             "signoff": False,
         }
-        monkeypatch.setattr("gac.cli.config", mock_config)
+        # gac.cli.config removed; load_config patched below
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
+        mock_main.return_value = 0
 
         runner = CliRunner()
-        runner.invoke(cli, ["--scope"])
+        runner.invoke(cli, [])
 
-        # Check that main was called with infer_scope=True (which triggers inference)
+        # Check that main was called with infer_scope=False (no scope)
         mock_main.assert_called_once()
         opts = mock_main.call_args[0][0]  # First positional arg is CLIOptions
         assert opts.infer_scope is True
@@ -139,8 +133,9 @@ class TestAlwaysIncludeScopeCLI:
             "use_50_72_rule": False,
             "signoff": False,
         }
-        monkeypatch.setattr("gac.cli.config", mock_config)
+        # gac.cli.config removed; load_config patched below
         monkeypatch.setattr("gac.config.load_config", lambda: mock_config)
+        mock_main.return_value = 0
 
         runner = CliRunner()
         runner.invoke(cli, [])

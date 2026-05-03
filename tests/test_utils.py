@@ -296,7 +296,7 @@ class TestEditCommitMessageInplace:
     def test_edit_commit_message_generic_exception(self, mock_print):
         """Test handling of generic exception."""
         with mock.patch("prompt_toolkit.Application", side_effect=Exception("Test error")):
-            with mock.patch("gac.utils.logger") as mock_logger:
+            with mock.patch("gac.editor.logger") as mock_logger:
                 result = edit_commit_message_inplace("feat: test")
                 assert result is None
                 mock_logger.error.assert_called_with("Error during in-place editing: Test error")
