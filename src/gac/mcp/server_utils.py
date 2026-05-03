@@ -200,7 +200,7 @@ def _stderr_console_redirect() -> contextlib.AbstractContextManager[None]:
         import gac.workflow_utils as _wu
 
         stderr_con = RichConsole(stderr=True)
-        saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}
+        saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}  # type: ignore[attr-defined]
         for mod in saved:
             mod.console = stderr_con  # type: ignore[attr-defined]
         try:

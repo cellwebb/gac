@@ -3,14 +3,12 @@
 
 import logging
 
-from rich.console import Console
-
 from gac.errors import GitError
 from gac.git import get_staged_files, push_changes
+from gac.utils import console
 from gac.workflow_utils import execute_commit
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 class CommitExecutor:

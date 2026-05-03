@@ -5,16 +5,14 @@ import logging
 import subprocess
 from typing import Any, NamedTuple
 
-from rich.console import Console
-
 from gac.config import GACConfig
 from gac.errors import ConfigError, GitError, handle_error
 from gac.git import get_staged_files, get_staged_status, run_git_command
 from gac.preprocess import preprocess_diff
 from gac.security import get_affected_files, scan_staged_diff
+from gac.utils import console
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 class GitState(NamedTuple):

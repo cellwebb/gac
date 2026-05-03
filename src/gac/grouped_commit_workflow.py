@@ -9,7 +9,6 @@ from collections import Counter
 from typing import Any, NamedTuple
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 
 from gac.ai import generate_grouped_commits
@@ -21,10 +20,10 @@ from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
 from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
-from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
+from gac.utils import console
+from gac.workflow_utils import check_token_warning, execute_commit, format_token_usage, restore_staging
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 class GroupedCommitResult(NamedTuple):
@@ -282,15 +281,9 @@ class GroupedCommitWorkflow:
 
             if completion_tokens == 0:
                 completion_tokens = count_tokens(result.raw_response, model)
-            total_tokens = prompt_tokens + completion_tokens + reasoning_tokens
-            if reasoning_tokens > 0:
-                console.print(
-                    f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
-                )
-            else:
-                console.print(
-                    f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
-                )
+            console.print(
+                f"[dim]Token usage: {format_token_usage(prompt_tokens, completion_tokens, reasoning_tokens)}[/dim]"
+            )
 
     def handle_grouped_commit_confirmation(
         self, result: GroupedCommitResult, conversation_messages: list[dict[str, str]]

@@ -2,11 +2,9 @@
 
 import locale
 import logging
-import os
 import subprocess
 import sys
-from functools import lru_cache
-from typing import Any, cast
+from typing import Any
 
 from rich.console import Console
 from rich.theme import Theme
@@ -15,31 +13,19 @@ from gac.constants import EnvDefaults, Logging
 from gac.errors import GacError
 
 
-def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -> str:
-    """Extract text content from various input formats."""
-    if isinstance(content, str):
-        return content
-    elif isinstance(content, list):
-        return "\n".join(
-            msg["content"]
-            for msg in content
-            if isinstance(msg, dict) and "content" in msg and msg["content"] is not None
-        )
-    elif isinstance(content, dict) and "content" in content:
-        return cast(str, content["content"])
-    return ""
+def __getattr__(name: str) -> Any:
+    """Lazy re-exports for backward compatibility."""
+    if name in ("count_tokens", "extract_text_content"):
+        from gac.ai_utils import count_tokens, extract_text_content
+
+        return count_tokens if name == "count_tokens" else extract_text_content
+    if name == "edit_commit_message_inplace":
+        from gac.editor import edit_commit_message_inplace
+
+        return edit_commit_message_inplace
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
-    """Count tokens in content using character-based estimation (1 token per 3.4 characters)."""
-    text = extract_text_content(content)
-    if not text:
-        return 0
-    result = round(len(text) / 3.4)
-    return result if result > 0 else 1
-
-
-@lru_cache(maxsize=1)
 def should_skip_ssl_verification() -> bool:
     """Return True when SSL certificate verification should be skipped.
 
@@ -53,8 +39,9 @@ def should_skip_ssl_verification() -> bool:
     Returns:
         True if SSL verification should be skipped, False otherwise.
     """
-    value = os.getenv("GAC_NO_VERIFY_SSL", str(EnvDefaults.NO_VERIFY_SSL))
-    return value.lower() in ("true", "1", "yes", "on")
+    from gac.config import _parse_bool_env
+
+    return _parse_bool_env("GAC_NO_VERIFY_SSL", EnvDefaults.NO_VERIFY_SSL)
 
 
 def get_ssl_verify() -> bool:
@@ -285,141 +272,3 @@ def run_subprocess(
         raise subprocess.CalledProcessError(1, command, "", f"Encoding error: {last_exception}") from last_exception
     else:
         raise subprocess.CalledProcessError(1, command, "", "All encoding attempts failed")
-
-
-def edit_commit_message_inplace(message: str) -> str | None:
-    """Edit commit message in-place using rich terminal editing.
-
-    Uses prompt_toolkit to provide a rich editing experience with:
-    - Multi-line editing
-    - Vi/Emacs key bindings
-    - Line editing capabilities
-    - Esc+Enter or Ctrl+S to submit
-    - Ctrl+C to cancel
-
-    Args:
-        message: The initial commit message
-
-    Returns:
-        The edited commit message, or None if editing was cancelled
-
-    Example:
-        >>> edited = edit_commit_message_inplace("feat: add feature")
-        >>> # User can edit the message using vi/emacs key bindings
-        >>> # Press Esc+Enter or Ctrl+S to submit
-    """
-    from prompt_toolkit import Application
-    from prompt_toolkit.buffer import Buffer
-    from prompt_toolkit.document import Document
-    from prompt_toolkit.enums import EditingMode
-    from prompt_toolkit.key_binding import KeyBindings
-    from prompt_toolkit.layout import HSplit, Layout, Window
-    from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
-    from prompt_toolkit.layout.margins import ScrollbarMargin
-    from prompt_toolkit.styles import Style
-
-    try:
-        console.print("\n[info]Edit commit message:[/info]")
-        console.print()
-
-        # Create buffer for text editing
-        text_buffer = Buffer(
-            document=Document(text=message, cursor_position=0),
-            multiline=True,
-            enable_history_search=False,
-        )
-
-        # Track submission state
-        cancelled = {"value": False}
-        submitted = {"value": False}
-
-        # Create text editor window
-        text_window = Window(
-            content=BufferControl(
-                buffer=text_buffer,
-                focus_on_click=True,
-            ),
-            height=lambda: max(5, message.count("\n") + 3),
-            wrap_lines=True,
-            right_margins=[ScrollbarMargin()],
-        )
-
-        # Create hint window
-        hint_window = Window(
-            content=FormattedTextControl(
-                text=[("class:hint", " Esc+Enter or Ctrl+S to submit | Ctrl+C to cancel ")],
-            ),
-            height=1,
-            dont_extend_height=True,
-        )
-
-        # Create layout
-        root_container = HSplit(
-            [
-                text_window,
-                hint_window,
-            ]
-        )
-
-        layout = Layout(root_container, focused_element=text_window)
-
-        # Create key bindings
-        kb = KeyBindings()
-
-        @kb.add("c-s")
-        def _(event: Any) -> None:
-            """Submit with Ctrl+S."""
-            submitted["value"] = True
-            event.app.exit()
-
-        @kb.add("c-c")
-        def _(event: Any) -> None:
-            """Cancel editing."""
-            cancelled["value"] = True
-            event.app.exit()
-
-        @kb.add("escape", "enter")
-        def _(event: Any) -> None:
-            """Submit with Esc+Enter."""
-            submitted["value"] = True
-            event.app.exit()
-
-        # Create and run application
-        custom_style = Style.from_dict(
-            {
-                "hint": "#888888",
-            }
-        )
-
-        app: Application[None] = Application(
-            layout=layout,
-            key_bindings=kb,
-            full_screen=False,
-            mouse_support=False,
-            editing_mode=EditingMode.VI,  # Enable vi key bindings
-            style=custom_style,
-        )
-
-        app.run()
-
-        # Handle result
-        if cancelled["value"]:
-            console.print("\n[yellow]Edit cancelled.[/yellow]")
-            return None
-
-        if submitted["value"]:
-            edited_message = text_buffer.text.strip()
-            if not edited_message:
-                console.print("[yellow]Commit message cannot be empty. Edit cancelled.[/yellow]")
-                return None
-            return edited_message
-
-        return None
-
-    except (EOFError, KeyboardInterrupt):
-        console.print("\n[yellow]Edit cancelled.[/yellow]")
-        return None
-    except Exception as e:
-        logger.error(f"Error during in-place editing: {e}")
-        console.print(f"[error]Failed to edit commit message: {e}[/error]")
-        return None

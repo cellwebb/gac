@@ -5,9 +5,10 @@ from typing import Any
 
 import httpx
 
+from gac.ai_utils import count_tokens
 from gac.errors import AIError
 from gac.providers.base import GenericHTTPProvider, ProviderConfig
-from gac.utils import count_tokens, get_ssl_verify
+from gac.utils import get_ssl_verify
 
 
 class ReplicateProvider(GenericHTTPProvider):

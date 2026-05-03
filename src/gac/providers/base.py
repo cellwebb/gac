@@ -9,10 +9,11 @@ from typing import Any
 
 import httpx
 
+from gac.ai_utils import count_tokens
 from gac.constants import ProviderDefaults
 from gac.errors import AIError
 from gac.providers.protocol import ProviderProtocol
-from gac.utils import count_tokens, get_ssl_verify
+from gac.utils import get_ssl_verify
 
 
 @dataclass

@@ -3,7 +3,6 @@
 from datetime import datetime
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
@@ -17,8 +16,7 @@ from gac.stats import (
     reset_stats,
     stats_enabled,
 )
-
-console = Console()
+from gac.utils import console
 
 
 @click.group(invoke_without_command=True)

@@ -4,13 +4,11 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 from gac.stats import compute_total_tokens, format_tokens, load_stats, stats_enabled
-
-console = Console()
+from gac.utils import console
 
 # Unicode block characters for bar charts (8 sub-levels per cell)
 _BAR_BLOCKS = " ▏▎▍▌▋▊▉█"

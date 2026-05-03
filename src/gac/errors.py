@@ -5,10 +5,7 @@ import sys
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from rich.console import Console
-
 logger = logging.getLogger(__name__)
-console = Console()
 T = TypeVar("T")
 
 

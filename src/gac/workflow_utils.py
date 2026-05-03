@@ -4,13 +4,20 @@ from pathlib import Path
 
 import click
 from prompt_toolkit import prompt
-from rich.console import Console
 from rich.panel import Panel
 
 from gac.constants import EnvDefaults
+from gac.utils import console
 
 logger = logging.getLogger(__name__)
-console = Console()
+
+
+def format_token_usage(prompt_tokens: int, completion_tokens: int, reasoning_tokens: int = 0) -> str:
+    """Format token usage for display."""
+    total = prompt_tokens + completion_tokens + reasoning_tokens
+    if reasoning_tokens > 0:
+        return f"{prompt_tokens} prompt + {completion_tokens} completion + {reasoning_tokens} reasoning = {total} total"
+    return f"{prompt_tokens} prompt + {completion_tokens} completion = {total} total"
 
 
 def handle_confirmation_loop(
@@ -19,7 +26,7 @@ def handle_confirmation_loop(
     quiet: bool,
     model: str,
 ) -> tuple[str, str, list[dict[str, str]]]:
-    from gac.utils import edit_commit_message_inplace
+    from gac.editor import edit_commit_message_inplace
 
     while True:
         response = click.prompt(
@@ -108,15 +115,9 @@ def display_commit_message(
             from gac.ai_utils import count_tokens
 
             completion_tokens = count_tokens(commit_message, model)
-        total_tokens = prompt_tokens + completion_tokens + reasoning_tokens
-        if reasoning_tokens > 0:
-            console.print(
-                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion + {reasoning_tokens} reasoning = {total_tokens} total[/dim]"
-            )
-        else:
-            console.print(
-                f"[dim]Token usage: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total[/dim]"
-            )
+        console.print(
+            f"[dim]Token usage: {format_token_usage(prompt_tokens, completion_tokens, reasoning_tokens)}[/dim]"
+        )
 
 
 def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> None:

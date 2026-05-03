@@ -7,20 +7,42 @@ import logging
 import os
 import time
 from collections.abc import Callable
+from typing import Any, cast
 
-from rich.console import Console
 from rich.status import Status
 
 from gac.errors import AIError
 from gac.oauth import refresh_token_if_expired
 from gac.oauth.token_store import TokenStore
-from gac.providers import SUPPORTED_PROVIDERS
-from gac.utils import count_tokens, extract_text_content
+from gac.utils import console
 
 __all__ = ["generate_with_retries", "count_tokens", "extract_text_content"]
 
 logger = logging.getLogger(__name__)
-console = Console()
+
+
+def extract_text_content(content: str | list[dict[str, str]] | dict[str, Any]) -> str:
+    """Extract text content from various input formats."""
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, list):
+        return "\n".join(
+            msg["content"]
+            for msg in content
+            if isinstance(msg, dict) and "content" in msg and msg["content"] is not None
+        )
+    elif isinstance(content, dict) and "content" in content:
+        return cast(str, content["content"])
+    return ""
+
+
+def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: str) -> int:
+    """Count tokens in content using character-based estimation (1 token per 3.4 characters)."""
+    text = extract_text_content(content)
+    if not text:
+        return 0
+    result = round(len(text) / 3.4)
+    return result if result > 0 else 1
 
 
 def generate_with_retries(
@@ -43,6 +65,8 @@ def generate_with_retries(
     provider, model_name = model.split(":", 1)
 
     # Validate provider
+    from gac.providers import SUPPORTED_PROVIDERS
+
     if provider not in SUPPORTED_PROVIDERS:
         raise AIError.model_error(f"Unsupported provider: {provider}. Supported providers: {SUPPORTED_PROVIDERS}")
 

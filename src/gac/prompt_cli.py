@@ -5,11 +5,12 @@ import os
 from pathlib import Path
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 
+from gac.utils import console
+
 logger = logging.getLogger(__name__)
-console = Console()
+
 
 GAC_CONFIG_DIR = Path.home() / ".config" / "gac"
 CUSTOM_PROMPT_FILE = GAC_CONFIG_DIR / "custom_system_prompt.txt"

@@ -4,11 +4,10 @@
 import logging
 import re
 
-from rich.console import Console
-
 from gac.ai import generate_commit_message
 from gac.config import GACConfig
 from gac.git_state_validator import GitState
+from gac.utils import console
 from gac.workflow_utils import (
     collect_interactive_answers,
     format_answers_for_prompt,
@@ -16,7 +15,6 @@ from gac.workflow_utils import (
 )
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 class InteractiveMode:
