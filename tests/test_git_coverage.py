@@ -235,17 +235,29 @@ class TestDetectRenameMappingsEdgeCases:
         assert mappings == {}
 
     def test_rename_with_similarity_but_no_b_in_header(self):
-        """Similarity index found but header has no ' b/' — fallback rfind returns -1."""
+        """Similarity index without rename from/to lines produces no mapping."""
         diff = "diff --git a/file.txt\nsimilarity index 100%"
         mappings = detect_rename_mappings(diff)
-        # is_rename=True but no rename from/to, and rfind(' b/') returns -1
+        # No rename from/to → can't determine paths unambiguously
         assert mappings == {}
 
-    def test_header_fallback_equal_paths(self):
-        """Fallback with ' b/' in header but old_path == new_path produces no mapping."""
-        # is_rename=True (similarity index), no rename from/to, header has ' b/'
-        # but old_path == new_path
-        diff = "diff --git a/same.py b/same.py\nsimilarity index 100%"
+    def test_similarity_index_without_rename_lines_no_mapping(self):
+        """When only similarity index is present (no rename from/to), no mapping is produced.
+
+        Header parsing is fundamentally ambiguous when paths contain ' a/' or ' b/',
+        so we only produce mappings from rename from/to lines.
+        """
+        diff = "diff --git a/old.py b/new.py\nsimilarity index 100%"
+        mappings = detect_rename_mappings(diff)
+        assert mappings == {}
+
+    def test_header_with_b_in_new_path_no_rename_lines(self):
+        """New path containing ' b/' without rename lines produces no mapping.
+
+        Previously the rfind(' b/') fallback would misparse this header,
+        splitting at the wrong ' b/' and producing a bogus mapping.
+        """
+        diff = "diff --git a/old.py b/new b/new.py\nsimilarity index 100%"
         mappings = detect_rename_mappings(diff)
         assert mappings == {}
 
@@ -291,17 +303,8 @@ class TestDetectRenameMappingsEdgeCases:
         mappings = detect_rename_mappings(diff)
         assert mappings == {"new.py": "path b/file.py"}
 
-    def test_header_fallback_with_rfind(self):
-        """When rename from/to lines are absent, header fallback uses rfind(' b/')."""
-        # No rename from/to lines, only similarity index — must parse header
-        diff = "diff --git a/old.py b/new.py\nsimilarity index 100%"
+    def test_rename_with_b_in_new_path_via_rename_lines(self):
+        """New path containing ' b/' is parsed correctly via rename from/to lines."""
+        diff = "diff --git a/old.py b/new b/new.py\nsimilarity index 100%\nrename from old.py\nrename to new b/new.py"
         mappings = detect_rename_mappings(diff)
-        assert mappings == {"new.py": "old.py"}
-
-    def test_header_fallback_with_b_in_old_path(self):
-        """Header fallback with rfind handles ' b/' inside old path."""
-        # No rename from/to, old path contains ' b/'
-        diff = "diff --git a/path b/old.py b/new.py\nsimilarity index 95%"
-        mappings = detect_rename_mappings(diff)
-        # rfind finds the LAST ' b/', so old_path='path b/old.py', new_path='new.py'
-        assert mappings == {"new.py": "path b/old.py"}
+        assert mappings == {"new b/new.py": "old.py"}

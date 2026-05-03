@@ -363,20 +363,12 @@ def detect_rename_mappings(staged_diff: str) -> dict[str, str]:
 
             if is_rename:
                 if rename_from and rename_to:
-                    # Unambiguous paths from rename lines
+                    # Only use rename-from/to lines — they are unambiguous.
+                    # Header parsing (split on " a/" or " b/") is fundamentally
+                    # ambiguous when paths contain those substrings, so we
+                    # produce no mapping when rename lines are absent.
                     if rename_from != rename_to:
                         rename_mappings[rename_to] = rename_from
-                else:
-                    # Fallback: parse from the diff header.
-                    # Use rfind(" b/") since the new-path separator is the
-                    # LAST " b/" in the line (old paths can contain " b/").
-                    rest = line[len("diff --git a/") :]
-                    b_sep = rest.rfind(" b/")
-                    if b_sep >= 0:
-                        old_path = rest[:b_sep]
-                        new_path = rest[b_sep + 3 :]
-                        if old_path and new_path and old_path != new_path:
-                            rename_mappings[new_path] = old_path
 
         i += 1
 
