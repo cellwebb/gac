@@ -64,7 +64,7 @@ def parse_json_response(raw_response: str) -> dict[str, Any]:
     return parsed
 
 
-def validate_file_coverage(staged: set[str], grouped_result: dict[str, Any]) -> tuple[bool, str, str]:
+def validate_file_coverage(staged: set[str], grouped_result: Any) -> tuple[bool, str, str]:
     """Validate that grouped commits cover all staged files exactly.
 
     Args:
@@ -80,6 +80,8 @@ def validate_file_coverage(staged: set[str], grouped_result: dict[str, Any]) -> 
           (empty when valid).
         - **detail** – Short summary of problems (empty when valid).
     """
+    if not isinstance(grouped_result, dict):
+        return True, "", ""
     commits = grouped_result.get("commits", [])
     if not commits:  # pragma: no cover
         return True, "", ""
