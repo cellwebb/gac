@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
+from gac.git import GitCommandResult
 from gac.grouped_commit_workflow import WorkflowResult
 from gac.mcp.models import (
     CommitInfo,
@@ -12,6 +13,7 @@ from gac.mcp.models import (
     StatusResult,
 )
 from gac.mcp.server import gac_commit, gac_status
+from gac.mcp.server_utils import CommitListResult
 
 
 class TestGacStatus:
@@ -46,13 +48,14 @@ class TestGacStatus:
             "unstaged": ["src/b.py"],
             "untracked": ["new.py"],
             "conflicts": [],
+            "error": "",
         }
-        mock_git_cmd.return_value = "+added\n-removed"
+        mock_git_cmd.return_value = GitCommandResult.ok("+added\n-removed")
         mock_truncate.return_value = ("+added\n-removed", False)
         mock_stats.return_value = DiffStats(files_changed=1, insertions=1, deletions=1, file_stats=[])
-        mock_commits.return_value = [
-            CommitInfo(hash="abc1234", message="feat: init", author="Alice", date="1 hour ago")
-        ]
+        mock_commits.return_value = CommitListResult(
+            commits=[CommitInfo(hash="abc1234", message="feat: init", author="Alice", date="1 hour ago")]
+        )
 
         result = gac_status(StatusRequest(include_diff=True, include_stats=True, include_history=3))
 
@@ -68,7 +71,7 @@ class TestGacStatus:
         assert result.is_clean is False
 
     @patch("gac.mcp.server._truncate_diff", return_value=("line1\nline2\nline3", True))
-    @patch("gac.git.run_git_command", return_value="line1\nline2\nline3\nline4\nline5")
+    @patch("gac.git.run_git_command", return_value=GitCommandResult.ok("line1\nline2\nline3\nline4\nline5"))
     @patch(
         "gac.mcp.server._get_file_status",
         return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
@@ -90,6 +93,46 @@ class TestGacStatus:
         assert result.error is not None
         assert "branch error" in result.error
 
+    @patch("gac.mcp.server._get_recent_commits")
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": [], "error": ""},
+    )
+    @patch("gac.git.get_current_branch", return_value="main")
+    @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
+    def test_history_error_surfaces_in_status_error(self, mock_check, mock_branch, mock_file_status, mock_commits):
+        """When _get_recent_commits fails, the error should appear in StatusResult.error."""
+        mock_commits.return_value = CommitListResult(commits=[], error="git log failed: not a repo")
+
+        result = gac_status(StatusRequest(include_history=5))
+
+        assert result.recent_commits == []
+        assert result.error is not None
+        assert "git log failed" in result.error
+
+    @patch("gac.mcp.server._get_recent_commits")
+    @patch(
+        "gac.mcp.server._get_file_status",
+        return_value={
+            "staged": ["a.py"],
+            "unstaged": [],
+            "untracked": [],
+            "conflicts": [],
+            "error": "file status degraded",
+        },
+    )
+    @patch("gac.git.get_current_branch", return_value="main")
+    @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
+    def test_both_errors_combined_in_status(self, mock_check, mock_branch, mock_file_status, mock_commits):
+        """When both file status and history fail, both errors appear in StatusResult.error."""
+        mock_commits.return_value = CommitListResult(commits=[], error="git log failed")
+
+        result = gac_status(StatusRequest(include_history=5))
+
+        assert result.error is not None
+        assert "file status degraded" in result.error
+        assert "git log failed" in result.error
+
     @patch("gac.git.run_git_command")
     @patch(
         "gac.mcp.server._get_file_status",
@@ -98,7 +141,7 @@ class TestGacStatus:
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_staged_only_diff(self, mock_check, mock_branch, mock_file_status, mock_git_cmd):
-        mock_git_cmd.return_value = "+staged change"
+        mock_git_cmd.return_value = GitCommandResult.ok("+staged change")
         result = gac_status(StatusRequest(include_diff=True, staged_only=True, include_stats=False))
 
         mock_git_cmd.assert_called_with(["diff", "--cached"])
@@ -112,7 +155,7 @@ class TestGacStatus:
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
     def test_diff_head_when_not_staged_only(self, mock_check, mock_branch, mock_file_status, mock_git_cmd):
-        mock_git_cmd.return_value = "+change"
+        mock_git_cmd.return_value = GitCommandResult.ok("+change")
         gac_status(StatusRequest(include_diff=True, staged_only=False, include_stats=False))
 
         mock_git_cmd.assert_called_with(["diff", "HEAD"])
@@ -287,7 +330,7 @@ class TestGacCommit:
     ):
         mock_validator_cls.return_value.get_git_state.return_value = _make_git_state()
         mock_pb_cls.return_value.build_prompts.return_value = _make_prompt_bundle()
-        mock_git.return_value = "abc1234fullhash"
+        mock_git.return_value = GitCommandResult.ok("abc1234fullhash")
         mock_redirect.return_value.__enter__ = MagicMock(return_value=None)
         mock_redirect.return_value.__exit__ = MagicMock(return_value=False)
 
@@ -323,7 +366,7 @@ class TestGacCommit:
     ):
         mock_validator_cls.return_value.get_git_state.return_value = _make_git_state()
         mock_pb_cls.return_value.build_prompts.return_value = _make_prompt_bundle()
-        mock_git.return_value = "def5678fullhash"
+        mock_git.return_value = GitCommandResult.ok("def5678fullhash")
         mock_redirect.return_value.__enter__ = MagicMock(return_value=None)
         mock_redirect.return_value.__exit__ = MagicMock(return_value=False)
 
