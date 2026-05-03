@@ -241,7 +241,7 @@ def is_rtl_text(text: str) -> bool:
         if unicodedata.name(char, "").startswith(("ARABIC", "HEBREW")):
             return True
         script = unicodedata.name(char, "").split()[0] if unicodedata.name(char, "") else ""
-        if script in rtl_scripts:
+        if script.title() in rtl_scripts or script in rtl_scripts:
             return True
     return False
 
