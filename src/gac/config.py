@@ -5,7 +5,7 @@ Handles environment variable and .gac.env file precedence for application settin
 
 import os
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, cast
 
 from dotenv import load_dotenv
 
@@ -43,6 +43,21 @@ def _parse_bool_env(key: str, default: bool) -> bool:
     return os.getenv(key, str(default)).lower() in ("true", "1", "yes", "on")
 
 
+_TYPE_DISPLAY_NAMES: dict[type, str] = {
+    int: "integer",
+    float: "number",
+}
+
+_CONFIG_VALIDATORS: list[tuple[str, type | tuple[type, ...], float | int | None, float | int | None]] = [
+    # (field_name, expected_type, min_value, max_value) — None means no bound
+    ("temperature", (int, float), 0.0, 2.0),
+    ("max_output_tokens", int, 1, 100000),
+    ("max_retries", int, 1, 10),
+    ("warning_limit_tokens", int, 1, None),
+    ("hook_timeout", int, 1, None),
+]
+
+
 def validate_config(config: GACConfig) -> None:
     """Validate configuration values at load time.
 
@@ -52,45 +67,24 @@ def validate_config(config: GACConfig) -> None:
     Raises:
         ConfigError: If any configuration value is invalid
     """
-    # Validate temperature (0.0 to 2.0)
-    if config.get("temperature") is not None:
-        temp = config["temperature"]
-        if not isinstance(temp, (int, float)):
-            raise ConfigError(f"temperature must be a number, got {type(temp).__name__}")
-        if not 0.0 <= temp <= 2.0:
-            raise ConfigError(f"temperature must be between 0.0 and 2.0, got {temp}")
-
-    # Validate max_output_tokens (1 to 100000)
-    if config.get("max_output_tokens") is not None:
-        tokens = config["max_output_tokens"]
-        if not isinstance(tokens, int):
-            raise ConfigError(f"max_output_tokens must be an integer, got {type(tokens).__name__}")
-        if tokens < 1 or tokens > 100000:
-            raise ConfigError(f"max_output_tokens must be between 1 and 100000, got {tokens}")
-
-    # Validate max_retries (1 to 10)
-    if config.get("max_retries") is not None:
-        retries = config["max_retries"]
-        if not isinstance(retries, int):
-            raise ConfigError(f"max_retries must be an integer, got {type(retries).__name__}")
-        if retries < 1 or retries > 10:
-            raise ConfigError(f"max_retries must be between 1 and 10, got {retries}")
-
-    # Validate warning_limit_tokens (must be positive)
-    if config.get("warning_limit_tokens") is not None:
-        warning_limit = config["warning_limit_tokens"]
-        if not isinstance(warning_limit, int):
-            raise ConfigError(f"warning_limit_tokens must be an integer, got {type(warning_limit).__name__}")
-        if warning_limit < 1:
-            raise ConfigError(f"warning_limit_tokens must be positive, got {warning_limit}")
-
-    # Validate hook_timeout (must be positive)
-    if config.get("hook_timeout") is not None:
-        hook_timeout = config["hook_timeout"]
-        if not isinstance(hook_timeout, int):
-            raise ConfigError(f"hook_timeout must be an integer, got {type(hook_timeout).__name__}")
-        if hook_timeout < 1:
-            raise ConfigError(f"hook_timeout must be positive, got {hook_timeout}")
+    for field, expected_type, min_val, max_val in _CONFIG_VALIDATORS:
+        value = config.get(field)
+        if value is None:
+            continue
+        if not isinstance(value, expected_type):
+            type_name = (
+                "number"
+                if isinstance(expected_type, tuple)
+                else _TYPE_DISPLAY_NAMES.get(expected_type, expected_type.__name__)
+            )
+            article = "an" if type_name[0].lower() in "aeiou" else "a"
+            raise ConfigError(f"{field} must be {article} {type_name}, got {type(value).__name__}")
+        # isinstance check above guarantees value is numeric; cast for mypy
+        numeric_value = cast(float, value)
+        if min_val is not None and numeric_value < min_val:
+            raise ConfigError(f"{field} must be >= {min_val}, got {value}")
+        if max_val is not None and numeric_value > max_val:
+            raise ConfigError(f"{field} must be <= {max_val}, got {value}")
 
 
 def load_config() -> GACConfig:

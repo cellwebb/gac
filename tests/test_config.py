@@ -132,13 +132,13 @@ class TestValidateConfig:
     def test_temperature_too_low(self):
         """Test that temperature below 0.0 raises ConfigError."""
         config = {"temperature": -0.1}
-        with pytest.raises(ConfigError, match=r"temperature must be between 0\.0 and 2\.0, got -0\.1"):
+        with pytest.raises(ConfigError, match=r"temperature must be >= 0\.0, got -0\.1"):
             validate_config(config)
 
     def test_temperature_too_high(self):
         """Test that temperature above 2.0 raises ConfigError."""
         config = {"temperature": 2.1}
-        with pytest.raises(ConfigError, match=r"temperature must be between 0\.0 and 2\.0, got 2\.1"):
+        with pytest.raises(ConfigError, match=r"temperature must be <= 2\.0, got 2\.1"):
             validate_config(config)
 
     def test_temperature_boundary_values(self):
@@ -160,19 +160,19 @@ class TestValidateConfig:
     def test_max_output_tokens_too_low(self):
         """Test that max_output_tokens below 1 raises ConfigError."""
         config = {"max_output_tokens": 0}
-        with pytest.raises(ConfigError, match=r"max_output_tokens must be between 1 and 100000, got 0"):
+        with pytest.raises(ConfigError, match=r"max_output_tokens must be >= 1, got 0"):
             validate_config(config)
 
     def test_max_output_tokens_negative(self):
         """Test that negative max_output_tokens raises ConfigError."""
         config = {"max_output_tokens": -100}
-        with pytest.raises(ConfigError, match=r"max_output_tokens must be between 1 and 100000, got -100"):
+        with pytest.raises(ConfigError, match=r"max_output_tokens must be >= 1, got -100"):
             validate_config(config)
 
     def test_max_output_tokens_too_high(self):
         """Test that max_output_tokens above 100000 raises ConfigError."""
         config = {"max_output_tokens": 100001}
-        with pytest.raises(ConfigError, match=r"max_output_tokens must be between 1 and 100000, got 100001"):
+        with pytest.raises(ConfigError, match=r"max_output_tokens must be <= 100000, got 100001"):
             validate_config(config)
 
     def test_max_output_tokens_boundary_values(self):
@@ -190,13 +190,13 @@ class TestValidateConfig:
     def test_max_retries_too_low(self):
         """Test that max_retries below 1 raises ConfigError."""
         config = {"max_retries": 0}
-        with pytest.raises(ConfigError, match=r"max_retries must be between 1 and 10, got 0"):
+        with pytest.raises(ConfigError, match=r"max_retries must be >= 1, got 0"):
             validate_config(config)
 
     def test_max_retries_too_high(self):
         """Test that max_retries above 10 raises ConfigError."""
         config = {"max_retries": 11}
-        with pytest.raises(ConfigError, match=r"max_retries must be between 1 and 10, got 11"):
+        with pytest.raises(ConfigError, match=r"max_retries must be <= 10, got 11"):
             validate_config(config)
 
     def test_max_retries_boundary_values(self):
@@ -214,13 +214,13 @@ class TestValidateConfig:
     def test_warning_limit_tokens_zero(self):
         """Test that warning_limit_tokens of 0 raises ConfigError."""
         config = {"warning_limit_tokens": 0}
-        with pytest.raises(ConfigError, match=r"warning_limit_tokens must be positive, got 0"):
+        with pytest.raises(ConfigError, match=r"warning_limit_tokens must be >= 1, got 0"):
             validate_config(config)
 
     def test_warning_limit_tokens_negative(self):
         """Test that negative warning_limit_tokens raises ConfigError."""
         config = {"warning_limit_tokens": -500}
-        with pytest.raises(ConfigError, match=r"warning_limit_tokens must be positive, got -500"):
+        with pytest.raises(ConfigError, match=r"warning_limit_tokens must be >= 1, got -500"):
             validate_config(config)
 
     def test_warning_limit_tokens_positive(self):
@@ -238,13 +238,13 @@ class TestValidateConfig:
     def test_hook_timeout_zero(self):
         """Test that hook_timeout of 0 raises ConfigError."""
         config = {"hook_timeout": 0}
-        with pytest.raises(ConfigError, match=r"hook_timeout must be positive, got 0"):
+        with pytest.raises(ConfigError, match=r"hook_timeout must be >= 1, got 0"):
             validate_config(config)
 
     def test_hook_timeout_negative(self):
         """Test that negative hook_timeout raises ConfigError."""
         config = {"hook_timeout": -30}
-        with pytest.raises(ConfigError, match=r"hook_timeout must be positive, got -30"):
+        with pytest.raises(ConfigError, match=r"hook_timeout must be >= 1, got -30"):
             validate_config(config)
 
     def test_hook_timeout_positive(self):
@@ -270,5 +270,5 @@ class TestValidateConfig:
         with patch("gac.config.Path.home") as mock_home:
             mock_home.return_value = tmp_path / "nonexistent_home"
 
-            with pytest.raises(ConfigError, match=r"temperature must be between 0\.0 and 2\.0, got 3\.0"):
+            with pytest.raises(ConfigError, match=r"temperature must be <= 2\.0, got 3\.0"):
                 load_config()
