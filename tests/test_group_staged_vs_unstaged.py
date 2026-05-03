@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from gac.git import GitCommandResult
 from gac.main import main
 from gac.workflow_context import CLIOptions
 
@@ -13,8 +14,12 @@ def skip_git_hooks(monkeypatch):
     """Ensure group staging tests don't call real git hooks or git commands."""
     monkeypatch.setattr("gac.main.run_lefthook_hooks", lambda *_, **__: True)
     monkeypatch.setattr("gac.main.run_pre_commit_hooks", lambda *_, **__: True)
-    monkeypatch.setattr("gac.git.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
-    monkeypatch.setattr("gac.git_state_validator.run_git_command", lambda *_, **__: "/fake/repo", raising=False)
+
+    def _ok(*_, **__):
+        return GitCommandResult.ok("/fake/repo")
+
+    monkeypatch.setattr("gac.git.run_git_command", _ok, raising=False)
+    monkeypatch.setattr("gac.git_state_validator.run_git_command", _ok, raising=False)
 
 
 def test_group_without_add_all_only_shows_staged():
@@ -22,7 +27,7 @@ def test_group_without_add_all_only_shows_staged():
     staged_status = "Changes to be committed:\n\tmodified:   file1.py"
 
     with (
-        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.run_git_command", return_value=GitCommandResult.ok("/fake/repo")),
         patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.git_state_validator.get_staged_files", return_value=["file1.py"]),
         patch("gac.git.get_staged_status", return_value=staged_status),
@@ -45,7 +50,10 @@ def test_group_with_add_all_stages_everything():
         nonlocal git_add_called
         if args == ["add", "--all"]:
             git_add_called = True
-        return "/fake/repo" if args == ["rev-parse", "--show-toplevel"] else ""
+            return GitCommandResult.ok("")
+        return (
+            GitCommandResult.ok("/fake/repo") if args == ["rev-parse", "--show-toplevel"] else GitCommandResult.ok("")
+        )
 
     with (
         patch("gac.git.run_git_command", side_effect=mock_git_cmd),
@@ -66,7 +74,7 @@ def test_normal_mode_uses_staged_status():
     """Normal mode also uses staged-only status."""
     status = "Changes to be committed:\n\tmodified:   file1.py"
     with (
-        patch("gac.git.run_git_command", return_value="/fake/repo"),
+        patch("gac.git.run_git_command", return_value=GitCommandResult.ok("/fake/repo")),
         patch("gac.git.get_staged_files", return_value=["file1.py"]),
         patch("gac.git.get_staged_status", return_value=status),
         patch("gac.git_state_validator.get_staged_files", return_value=["file1.py"]),

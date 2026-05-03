@@ -7,6 +7,7 @@ from unittest import mock
 
 from gac.config import GACConfig
 from gac.errors import GitError
+from gac.git import GitCommandResult
 from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow, WorkflowResult
 from gac.workflow_context import GenerationConfig, WorkflowContext, WorkflowFlags, WorkflowState
 
@@ -65,13 +66,13 @@ def test_push_failure_returns_false():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command", return_value="diff data"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command", return_value=GitCommandResult.ok("diff data")):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit"):
                     with mock.patch("gac.git.push_changes", return_value=False):
-                        with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
-                            with mock.patch("gac.grouped_commit_workflow.console.print"):
+                        with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
+                            with mock.patch("gac.grouped_commit_executor.console.print"):
                                 exit_code = workflow.execute_grouped_commits(
                                     result=result,
                                     dry_run=False,
@@ -94,13 +95,13 @@ def test_push_git_error_triggers_restore():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command", return_value="diff data"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command", return_value=GitCommandResult.ok("diff data")):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit"):
                     with mock.patch("gac.git.push_changes", side_effect=GitError("push failed")):
-                        with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
-                            with mock.patch("gac.grouped_commit_workflow.console.print"):
+                        with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
+                            with mock.patch("gac.grouped_commit_executor.console.print"):
                                 exit_code = workflow.execute_grouped_commits(
                                     result=result,
                                     dry_run=False,
@@ -123,13 +124,13 @@ def test_push_os_error_triggers_restore():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command", return_value="diff data"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command", return_value=GitCommandResult.ok("diff data")):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit"):
                     with mock.patch("gac.git.push_changes", side_effect=OSError("os error")):
-                        with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
-                            with mock.patch("gac.grouped_commit_workflow.console.print"):
+                        with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
+                            with mock.patch("gac.grouped_commit_executor.console.print"):
                                 exit_code = workflow.execute_grouped_commits(
                                     result=result,
                                     dry_run=False,
@@ -152,12 +153,12 @@ def test_push_success():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command", return_value="diff data"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command", return_value=GitCommandResult.ok("diff data")):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit"):
                     with mock.patch("gac.git.push_changes", return_value=True):
-                        with mock.patch("gac.grouped_commit_workflow.console.print"):
+                        with mock.patch("gac.grouped_commit_executor.console.print"):
                             exit_code = workflow.execute_grouped_commits(
                                 result=result,
                                 dry_run=False,
@@ -175,8 +176,8 @@ def test_execute_workflow_show_prompt():
     workflow = GroupedCommitWorkflow(config)
     ctx = _build_ctx(show_prompt=True)
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print") as mock_print:
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print") as mock_print:
             with mock.patch.object(
                 workflow,
                 "generate_grouped_commits_with_retry",
@@ -199,8 +200,8 @@ def test_execute_workflow_interactive_mode():
     workflow = GroupedCommitWorkflow(config)
     ctx = _build_ctx(interactive=True)
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print"):
             with mock.patch.object(
                 workflow,
                 "generate_grouped_commits_with_retry",
@@ -223,8 +224,8 @@ def test_execute_workflow_accept_decision():
         raw_response="test",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
                 with mock.patch.object(
                     workflow,
@@ -251,8 +252,8 @@ def test_execute_workflow_reject_decision():
         raw_response="test",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
                 with mock.patch.object(
                     workflow,
@@ -286,8 +287,8 @@ def test_execute_workflow_regenerate_then_accept():
             return "regenerate"
         return "accept"
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
                 with mock.patch.object(
                     workflow,
@@ -316,8 +317,8 @@ def test_execute_workflow_no_confirmation():
         raw_response="test",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=["file1.py"]):
-        with mock.patch("gac.grouped_commit_workflow.console.print"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=["file1.py"]):
+        with mock.patch("gac.grouped_commit_executor.console.print"):
             with mock.patch("gac.grouped_commit_workflow.count_tokens", return_value=100):
                 with mock.patch.object(
                     workflow,

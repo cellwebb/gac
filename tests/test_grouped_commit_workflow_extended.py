@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from gac.config import GACConfig
 from gac.errors import GitError
+from gac.git import GitCommandResult
 from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow, WorkflowResult
 
 
@@ -226,17 +227,17 @@ class TestFileRenameHandling:
         )
         self.workflow = GroupedCommitWorkflow(self.config)
 
-    @patch("gac.grouped_commit_workflow.get_staged_files")
-    @patch("gac.grouped_commit_workflow.run_git_command")
-    @patch("gac.grouped_commit_workflow.detect_rename_mappings")
-    @patch("gac.grouped_commit_workflow.execute_commit")
+    @patch("gac.grouped_commit_executor.get_staged_files")
+    @patch("gac.grouped_commit_executor.run_git_command")
+    @patch("gac.grouped_commit_executor.detect_rename_mappings")
+    @patch("gac.grouped_commit_executor.execute_commit")
     @patch("gac.grouped_commit_workflow.console.print")
     def test_file_rename_staging(self, mock_print, mock_commit, mock_rename_detect, mock_git_cmd, mock_get_files):
         """Test that file renames are handled correctly during staging."""
         # Mock rename detection
         mock_rename_detect.return_value = {"new_file.py": "old_file.py"}
         mock_get_files.return_value = ["old_file.py", "new_file.py"]
-        mock_git_cmd.return_value = "fake diff"
+        mock_git_cmd.return_value = GitCommandResult.ok("fake diff")
 
         result = GroupedCommitResult(
             commits=[{"files": ["new_file.py"], "message": "Rename file"}], raw_response="test response"
@@ -259,11 +260,11 @@ class TestFileRenameHandling:
 
         mock_commit.assert_called_once_with("Rename file", False, 120, False)
 
-    @patch("gac.grouped_commit_workflow.get_staged_files")
-    @patch("gac.grouped_commit_workflow.run_git_command")
-    @patch("gac.grouped_commit_workflow.detect_rename_mappings")
-    @patch("gac.grouped_commit_workflow.execute_commit")
-    @patch("gac.grouped_commit_workflow.restore_staging")
+    @patch("gac.grouped_commit_executor.get_staged_files")
+    @patch("gac.grouped_commit_executor.run_git_command")
+    @patch("gac.grouped_commit_executor.detect_rename_mappings")
+    @patch("gac.grouped_commit_executor.execute_commit")
+    @patch("gac.grouped_commit_executor.restore_staging")
     @patch("gac.grouped_commit_workflow.console.print")
     def test_commit_failure_triggers_restore(
         self, mock_print, mock_restore, mock_commit, mock_rename_detect, mock_git_cmd, mock_get_files
@@ -271,7 +272,7 @@ class TestFileRenameHandling:
         """Test that staging is restored when commit fails."""
         mock_rename_detect.return_value = {}
         mock_get_files.return_value = ["file1.py"]
-        mock_git_cmd.return_value = "fake diff"
+        mock_git_cmd.return_value = GitCommandResult.ok("fake diff")
 
         # Make commit fail
         mock_commit.side_effect = GitError("Commit failed")

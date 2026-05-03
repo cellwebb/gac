@@ -38,11 +38,11 @@ def test_keyboard_interrupt_handling():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit", side_effect=KeyboardInterrupt()):
-                    with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=[]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command"):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit", side_effect=KeyboardInterrupt()):
+                    with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
                         with mock.patch("gac.grouped_commit_workflow.console.print"):
                             exit_code = workflow.execute_grouped_commits(
                                 result=result,
@@ -66,11 +66,11 @@ def test_oserror_handling():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit", side_effect=OSError("Permission denied")):
-                    with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=[]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command"):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit", side_effect=OSError("Permission denied")):
+                    with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
                         with mock.patch("gac.grouped_commit_workflow.console.print"):
                             exit_code = workflow.execute_grouped_commits(
                                 result=result,
@@ -149,7 +149,7 @@ def test_conversation_state_preservation():
 
     with mock.patch("gac.grouped_commit_workflow.check_token_warning", return_value=True):
         with mock.patch("gac.grouped_commit_workflow.generate_grouped_commits") as mock_generate:
-            with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
+            with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=[]):
                 # First call fails, second succeeds
                 mock_generate.side_effect = [
                     ("Invalid JSON", 0, 0, 0, 0),
@@ -238,12 +238,12 @@ def test_push_failure_triggers_restore():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
-                with mock.patch("gac.grouped_commit_workflow.execute_commit"):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=[]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command"):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
+                with mock.patch("gac.grouped_commit_executor.execute_commit"):
                     with mock.patch("gac.git.push_changes", return_value=False):
-                        with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
+                        with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
                             with mock.patch("gac.grouped_commit_workflow.console.print"):
                                 exit_code = workflow.execute_grouped_commits(
                                     result=result,
@@ -271,9 +271,9 @@ def test_multiple_commit_failures():
         raw_response="test response",
     )
 
-    with mock.patch("gac.grouped_commit_workflow.get_staged_files", return_value=[]):
-        with mock.patch("gac.grouped_commit_workflow.run_git_command"):
-            with mock.patch("gac.grouped_commit_workflow.detect_rename_mappings", return_value={}):
+    with mock.patch("gac.grouped_commit_executor.get_staged_files", return_value=[]):
+        with mock.patch("gac.grouped_commit_executor.run_git_command"):
+            with mock.patch("gac.grouped_commit_executor.detect_rename_mappings", return_value={}):
                 commit_call_count = 0
 
                 def fail_on_second(*args, **kwargs):
@@ -282,8 +282,8 @@ def test_multiple_commit_failures():
                     if commit_call_count == 2:
                         raise GitError("Commit failed")
 
-                with mock.patch("gac.grouped_commit_workflow.execute_commit", side_effect=fail_on_second):
-                    with mock.patch("gac.grouped_commit_workflow.restore_staging") as mock_restore:
+                with mock.patch("gac.grouped_commit_executor.execute_commit", side_effect=fail_on_second):
+                    with mock.patch("gac.grouped_commit_executor.restore_staging") as mock_restore:
                         with mock.patch("gac.grouped_commit_workflow.console.print"):
                             exit_code = workflow.execute_grouped_commits(
                                 result=result,
