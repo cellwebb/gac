@@ -10,6 +10,7 @@ import contextlib
 import logging
 import re
 from collections.abc import Generator
+from typing import NamedTuple
 
 from rich.console import Console as RichConsole
 
@@ -32,26 +33,41 @@ def _check_git_repo() -> tuple[bool, str]:
     try:
         from gac.git import run_git_command
 
-        run_git_command(["rev-parse", "--show-toplevel"])
+        run_git_command(["rev-parse", "--show-toplevel"]).require_success()
         return True, ""
     except Exception as e:
         return False, str(e)
 
 
-def _get_file_status() -> dict[str, list[str]]:
-    """Get file status categories (staged, unstaged, untracked, conflicts)."""
+class FileStatus(NamedTuple):
+    """Typed result from _get_file_status."""
+
+    staged: list[str]
+    unstaged: list[str]
+    untracked: list[str]
+    conflicts: list[str]
+    error: str = ""
+
+
+def _get_file_status() -> FileStatus:
+    """Get file status categories (staged, unstaged, untracked, conflicts).
+
+    Returns:
+        A :class:`FileStatus` with file lists and an ``error`` field
+        that is empty on success or a diagnostic message on failure.
+        Consumers can check ``error`` to distinguish "no staged files"
+        from "git failed".
+    """
     try:
         from gac.git import run_git_command
 
-        result: dict[str, list[str]] = {
-            "staged": [],
-            "unstaged": [],
-            "untracked": [],
-            "conflicts": [],
-        }
+        staged: list[str] = []
+        unstaged: list[str] = []
+        untracked: list[str] = []
+        conflicts: list[str] = []
 
         # Get porcelain status
-        status_output = run_git_command(["status", "--porcelain"])
+        status_output = run_git_command(["status", "--porcelain"]).require_success()
 
         for line in status_output.splitlines():
             if not line.strip():
@@ -67,17 +83,19 @@ def _get_file_status() -> dict[str, list[str]]:
 
             # Check for conflicts
             if index_status in "U" or worktree_status in "U" or xy in ("AA", "DD"):
-                result["conflicts"].append(filename)
+                conflicts.append(filename)
             elif index_status in "MADRC":
-                result["staged"].append(filename)
+                staged.append(filename)
             elif worktree_status in "MAD":
-                result["unstaged"].append(filename)
+                unstaged.append(filename)
             elif index_status == "?":
-                result["untracked"].append(filename)
+                untracked.append(filename)
 
-        return result
-    except Exception:
-        return {"staged": [], "unstaged": [], "untracked": [], "conflicts": []}
+        return FileStatus(staged=staged, unstaged=unstaged, untracked=untracked, conflicts=conflicts)
+    except Exception as e:
+        error_msg = str(e)
+        logger.debug("git status --porcelain failed; returning empty file status", exc_info=True)
+        return FileStatus(staged=[], unstaged=[], untracked=[], conflicts=[], error=error_msg)
 
 
 def _get_diff_stats(diff_output: str) -> DiffStats:
@@ -127,14 +145,26 @@ def _get_diff_stats(diff_output: str) -> DiffStats:
     )
 
 
-def _get_recent_commits(count: int) -> list[CommitInfo]:
-    """Get N most recent commits."""
+class CommitListResult(NamedTuple):
+    """Result from _get_recent_commits, distinguishing empty history from git failure."""
+
+    commits: list[CommitInfo]
+    error: str = ""
+
+
+def _get_recent_commits(count: int) -> CommitListResult:
+    """Get N most recent commits.
+
+    Returns:
+        A :class:`CommitListResult` with ``commits`` and an ``error`` field
+        that is empty on success or contains a diagnostic on failure.
+    """
     try:
         from gac.git import run_git_command
 
         # Format: hash|message|author|date
         format_str = "%h|%s|%an|%cr"
-        output = run_git_command(["log", f"-{count}", f"--format={format_str}"])
+        output = run_git_command(["log", f"-{count}", f"--format={format_str}"]).require_success()
 
         commits: list[CommitInfo] = []
         for line in output.splitlines():
@@ -150,9 +180,11 @@ def _get_recent_commits(count: int) -> list[CommitInfo]:
                         date=parts[3],
                     )
                 )
-        return commits
-    except Exception:
-        return []
+        return CommitListResult(commits=commits)
+    except Exception as e:
+        error_msg = str(e)
+        logger.debug("git log --oneline failed; returning empty commit list", exc_info=True)
+        return CommitListResult(commits=[], error=error_msg)
 
 
 # =============================================================================
@@ -200,7 +232,7 @@ def _stderr_console_redirect() -> contextlib.AbstractContextManager[None]:
         import gac.workflow_utils as _wu
 
         stderr_con = RichConsole(stderr=True)
-        saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}  # type: ignore[attr-defined]
+        saved = {_ce: _ce.console, _gcw: _gcw.console, _wu: _wu.console}  # type: ignore[attr-defined, unused-ignore]
         for mod in saved:
             mod.console = stderr_con  # type: ignore[attr-defined]
         try:

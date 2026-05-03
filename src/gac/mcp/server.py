@@ -118,10 +118,11 @@ def gac_status(request: StatusRequest) -> StatusResult:
         branch = get_current_branch()
         file_status = _get_file_status()
 
-        staged = file_status["staged"]
-        unstaged = file_status["unstaged"]
-        untracked = file_status["untracked"] if request.include_untracked else []
-        conflicts = file_status["conflicts"]
+        staged = file_status.staged
+        unstaged = file_status.unstaged
+        untracked = file_status.untracked if request.include_untracked else []
+        conflicts = file_status.conflicts
+        status_error = file_status.error
 
         # Determine if clean
         is_clean = not staged and not unstaged and (not untracked or not request.include_untracked) and not conflicts
@@ -138,7 +139,7 @@ def gac_status(request: StatusRequest) -> StatusResult:
             else:
                 diff_args.append("HEAD")
 
-            raw_diff = run_git_command(diff_args)
+            raw_diff = run_git_command(diff_args).require_success()
             diff_output, diff_truncated = _truncate_diff(raw_diff, request.max_diff_lines)
 
             # Include stats
@@ -148,7 +149,12 @@ def gac_status(request: StatusRequest) -> StatusResult:
         # Get history if requested
         recent_commits = None
         if request.include_history > 0:
-            recent_commits = _get_recent_commits(request.include_history)
+            commit_result = _get_recent_commits(request.include_history)
+            recent_commits = commit_result.commits
+            if commit_result.error:
+                status_error = (
+                    f"{status_error}; {commit_result.error}".strip("; ") if status_error else commit_result.error
+                )
 
         # Generate formatted summary
         summary = _format_status_summary(
@@ -182,6 +188,7 @@ def gac_status(request: StatusRequest) -> StatusResult:
             diff_stats=diff_stats,
             recent_commits=recent_commits,
             diff_truncated=diff_truncated,
+            error=status_error or None,
         )
 
     except Exception as e:
@@ -289,7 +296,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # Stage files if requested
         # NOTE: We stage even for dry_run/message_only to see what WOULD be committed
         if request.stage_all:
-            run_git_command(["add", "--all"])
+            run_git_command(["add", "--all"]).require_success()
 
         # Get staged files
         staged_files = get_staged_files(existing_only=False)
@@ -529,7 +536,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         record_gac(model=model)
 
         # Get commit hash
-        commit_hash = run_git_command(["rev-parse", "HEAD"])[:7]
+        commit_hash = run_git_command(["rev-parse", "HEAD"]).require_success()[:7]
 
         # Push if requested
         if request.push:
