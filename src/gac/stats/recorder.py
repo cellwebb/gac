@@ -22,7 +22,7 @@ class TokenAccumulator:
 
     def __init__(self) -> None:
         self._current_tokens: int = 0
-        self._is_new_biggest: bool = False
+        self.is_new_biggest: bool = False
 
     def add(self, tokens: int) -> None:
         self._current_tokens += tokens
@@ -33,14 +33,6 @@ class TokenAccumulator:
     @property
     def current(self) -> int:
         return self._current_tokens
-
-    @property
-    def is_new_biggest(self) -> bool:
-        return self._is_new_biggest
-
-    @is_new_biggest.setter
-    def is_new_biggest(self, value: bool) -> None:
-        self._is_new_biggest = value
 
 
 # Module-level singleton — existing code continues to work

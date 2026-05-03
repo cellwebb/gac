@@ -18,6 +18,7 @@ from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
+from gac.prompt_builder import PromptBuilder
 from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
 from gac.utils import console
 from gac.workflow_context import WorkflowContext
@@ -467,8 +468,7 @@ class GroupedCommitWorkflow:
             Exit code: 0 for success, non-zero for failure.
         """
         if ctx.flags.show_prompt:
-            full_prompt = f"SYSTEM PROMPT:\n{ctx.system_prompt}\n\nUSER PROMPT:\n{ctx.user_prompt}"
-            console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
+            PromptBuilder.display_prompts(ctx.system_prompt, ctx.user_prompt)
 
         conversation_messages: list[dict[str, str]] = []
         if ctx.system_prompt:

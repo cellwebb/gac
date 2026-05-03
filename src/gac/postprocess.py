@@ -18,10 +18,7 @@ def _remove_think_tags(message: str) -> str:
     Returns:
         Message with <think> tags removed
     """
-    while re.search(r"<think>(?:(?!</think>)[^\n])*\n.*?</think>", message, flags=re.DOTALL | re.IGNORECASE):
-        message = re.sub(
-            r"<think>(?:(?!</think>)[^\n])*\n.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE, count=1
-        )
+    message = re.sub(r"<think>(?:(?!</think>)[^\n])*\n.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE)
 
     message = re.sub(r"\n\n+\s*<think>.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE)
     message = re.sub(r"<think>.*?</think>\s*\n\n+", "", message, flags=re.DOTALL | re.IGNORECASE)

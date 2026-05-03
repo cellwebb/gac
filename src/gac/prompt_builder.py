@@ -84,7 +84,8 @@ class PromptBuilder:
 
         return PromptBundle(system_prompt=system_prompt, user_prompt=user_prompt)
 
-    def display_prompts(self, system_prompt: str, user_prompt: str) -> None:
+    @staticmethod
+    def display_prompts(system_prompt: str, user_prompt: str) -> None:
         """Display prompts for debugging purposes."""
         full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
         console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))

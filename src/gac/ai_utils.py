@@ -169,18 +169,16 @@ def generate_with_retries(
                 else:
                     time.sleep(wait_time)
             else:
-                num_retries = max_retries
-                retry_word = "retry" if num_retries == 1 else "retries"
-                logger.error(f"AI generation failed after {num_retries} {retry_word}: {e}")
+                retry_word = "retry" if max_retries == 1 else "retries"
+                logger.error(f"AI generation failed after {max_retries} {retry_word}: {e}")
 
     if spinner and not skip_success_message:
         spinner.stop()
         console.print(f"✗ Failed to generate {message_type} with {provider} {model_name}")
 
     # If we get here, all retries failed - use the last classified error type
-    num_retries = max_retries
-    retry_word = "retry" if num_retries == 1 else "retries"
-    error_message = f"Failed to generate {message_type} after {num_retries} {retry_word}"
+    retry_word = "retry" if max_retries == 1 else "retries"
+    error_message = f"Failed to generate {message_type} after {max_retries} {retry_word}"
     if last_error_type == "authentication":
         raise AIError.authentication_error(error_message) from last_exception
     elif last_error_type == "rate_limit":

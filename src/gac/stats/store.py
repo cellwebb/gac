@@ -284,10 +284,9 @@ def load_stats() -> GACStats:
         with open(STATS_FILE) as f:
             data = json.load(f)
 
-        # Migrate old data where completion_tokens included reasoning
+        pre_version = data.get("_version", 0)
         data = _migrate_v1_to_v2(data)
-        # Persist the migration so it only runs once
-        if data.get("_version", 0) >= _CURRENT_STATS_VERSION:
+        if pre_version < _CURRENT_STATS_VERSION:
             try:
                 STATS_FILE.parent.mkdir(parents=True, exist_ok=True)
                 tmp = STATS_FILE.with_suffix(".tmp")
