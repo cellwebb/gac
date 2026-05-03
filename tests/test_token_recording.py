@@ -15,6 +15,7 @@ import pytest
 from click.testing import CliRunner
 
 from gac.cli import cli
+from gac.git import GitCommandResult
 from gac.mcp.models import CommitRequest, CommitResult
 from gac.mcp.server import gac_commit
 
@@ -51,16 +52,18 @@ def base_cli_mocks(monkeypatch):
     }
     monkeypatch.setattr("gac.config.load_config", lambda: mocked_config)
 
+    from gac.git import GitCommandResult
+
     def mock_run_git_command(args, **kwargs):
         if args == ["rev-parse", "--show-toplevel"]:
-            return "/mock/repo/path"
+            return GitCommandResult.ok("/mock/repo/path")
         if args == ["status"]:
-            return "On branch main"
+            return GitCommandResult.ok("On branch main")
         if args == ["diff", "--staged"]:
-            return "diff --git a/file.py b/file.py\n+New line"
+            return GitCommandResult.ok("diff --git a/file.py b/file.py\n+New line")
         if len(args) >= 3 and args[0] == "commit" and args[1] == "-m":
-            return "mock commit"
-        return "mock git output"
+            return GitCommandResult.ok("mock commit")
+        return GitCommandResult.ok("mock git output")
 
     monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
 
@@ -201,30 +204,30 @@ class TestGroupedWorkflowRecordsTokens:
         """execute_grouped_commits should forward model= to record_gac on success."""
         gac_calls: list = []
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.record_gac",
+            "gac.grouped_commit_executor.record_gac",
             lambda *a, **kw: gac_calls.append((a, kw)),
         )
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.record_commit",
+            "gac.grouped_commit_executor.record_commit",
             lambda *a, **kw: None,
         )
 
         # Stub git commands - all interactions return bland values.
-        monkeypatch.setattr("gac.grouped_commit_workflow.run_git_command", lambda *a, **kw: "")
+        monkeypatch.setattr("gac.grouped_commit_executor.run_git_command", lambda *a, **kw: GitCommandResult.ok(""))
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.get_staged_files",
+            "gac.grouped_commit_executor.get_staged_files",
             lambda existing_only=False: ["a.py", "b.py"],
         )
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.detect_rename_mappings",
+            "gac.grouped_commit_executor.detect_rename_mappings",
             lambda diff: {},
         )
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.execute_commit",
+            "gac.grouped_commit_executor.execute_commit",
             lambda *a, **kw: None,
         )
         monkeypatch.setattr(
-            "gac.grouped_commit_workflow.clean_commit_message",
+            "gac.grouped_commit_executor.clean_commit_message",
             lambda msg, **kwargs: msg,
         )
 

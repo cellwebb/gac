@@ -37,24 +37,26 @@ class TestTokenUsageDisplay:
         }
         monkeypatch.setattr("gac.config.load_config", lambda: mocked_config)
 
+        from gac.git import GitCommandResult
+
         # Mock git commands
         def mock_run_git_command(args, **kwargs):
             if args == ["rev-parse", "--show-toplevel"]:
-                return "/mock/repo/path"
+                return GitCommandResult.ok("/mock/repo/path")
             if args == ["status"]:
-                return "On branch main"
+                return GitCommandResult.ok("On branch main")
             if args == ["diff", "--staged"]:
-                return "diff --git a/file.py b/file.py\n+New line"
+                return GitCommandResult.ok("diff --git a/file.py b/file.py\n+New line")
             if args == ["commit", "-m", mock_run_git_command.last_commit_message]:
-                return "mock commit"
+                return GitCommandResult.ok("mock commit")
             elif len(args) >= 3 and args[0] == "commit" and args[1] == "-m":
                 mock_run_git_command.last_commit_message = args[2]
-                return "mock commit"
-            return "mock git output"
+                return GitCommandResult.ok("mock commit")
+            return GitCommandResult.ok("mock git output")
 
         mock_run_git_command.last_commit_message = None
         monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command)
 
         # Mock staged files
         def mock_get_staged_files(existing_only=False):

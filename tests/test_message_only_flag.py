@@ -37,23 +37,25 @@ class TestMessageOnlyFlag:
             lambda: mocked_config,
         )
 
-        def mock_run_git_command(args, **kwargs):
-            if args == ["rev-parse", "--show-toplevel"]:
-                return "/mock/repo/path"
-            if args == ["add", "--all"]:
-                return ""
-            if args == ["diff", "--cached"]:
-                return "diff --git a/test.py b/test.py\n@@ -1 +1 @@\n-old\n+new"
-            if args == ["diff", "--stat", "--cached"]:
-                return "test.py | 1 +"
-            if args == ["commit", "-m", "test"]:
-                return ""
-            if args == ["status"]:
-                return "On branch main\nChanges to be committed:\n  modified:   test.py"
-            return "mock git output"
+        from gac.git import GitCommandResult
 
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
-        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command)
+        def mock_run_git_command_result(args, **kwargs):
+            if args == ["rev-parse", "--show-toplevel"]:
+                return GitCommandResult.ok("/mock/repo/path")
+            if args == ["add", "--all"]:
+                return GitCommandResult.ok("")
+            if args == ["diff", "--cached"]:
+                return GitCommandResult.ok("diff --git a/test.py b/test.py\n@@ -1 +1 @@\n-old\n+new")
+            if args == ["diff", "--stat", "--cached"]:
+                return GitCommandResult.ok("test.py | 1 +")
+            if args == ["commit", "-m", "test"]:
+                return GitCommandResult.ok("")
+            if args == ["status"]:
+                return GitCommandResult.ok("On branch main\nChanges to be committed:\n  modified:   test.py")
+            return GitCommandResult.ok("mock git output")
+
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_result)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command_result)
         monkeypatch.setattr(
             "gac.git.get_staged_status", lambda: "On branch main\nChanges to be committed:\n  modified:   test.py"
         )
@@ -160,17 +162,19 @@ class TestMessageOnlyFlag:
     def test_message_only_without_staged_files(self, runner, monkeypatch):
         """Test --message-only behavior when no files are staged."""
 
-        def mock_run_git_command_empty(args, **kwargs):
-            if args == ["rev-parse", "--show-toplevel"]:
-                return "/mock/repo/path"
-            if args == ["add", "--all"]:
-                return ""
-            if args == ["diff", "--cached"]:
-                return ""
-            return ""
+        from gac.git import GitCommandResult
 
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_empty)
-        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command_empty)
+        def mock_run_git_command_empty_result(args, **kwargs):
+            if args == ["rev-parse", "--show-toplevel"]:
+                return GitCommandResult.ok("/mock/repo/path")
+            if args == ["add", "--all"]:
+                return GitCommandResult.ok("")
+            if args == ["diff", "--cached"]:
+                return GitCommandResult.ok("")
+            return GitCommandResult.ok("")
+
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_empty_result)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command_empty_result)
 
         def mock_get_staged_files(**kwargs):
             return []

@@ -41,18 +41,21 @@ class TestScopeFlag:
             lambda: mocked_config,
         )
 
-        def mock_run_git_command(args, **kwargs):
-            if args == ["rev-parse", "--show-toplevel"]:
-                return "/mock/repo/path"
-            if args == ["status"]:
-                return "mocked git status"
-            if args == ["diff", "--staged"]:
-                return "diff --git a/file.py b/file.py\n--- a/file.py\n+++ b/file.py\n@@ -1 +1 @@\n-old line\n+new line"
-            # Add other specific commands if main uses them before prompt
-            return "mock git output"
+        from gac.git import GitCommandResult
 
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
-        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command)
+        def mock_run_git_command_result(args, **kwargs):
+            if args == ["rev-parse", "--show-toplevel"]:
+                return GitCommandResult.ok("/mock/repo/path")
+            if args == ["status"]:
+                return GitCommandResult.ok("mocked git status")
+            if args == ["diff", "--staged"]:
+                return GitCommandResult.ok(
+                    "diff --git a/file.py b/file.py\n--- a/file.py\n+++ b/file.py\n@@ -1 +1 @@\n-old line\n+new line"
+                )
+            return GitCommandResult.ok("mock git output")
+
+        monkeypatch.setattr("gac.git.run_git_command", mock_run_git_command_result)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", mock_run_git_command_result)
 
         # Mock both generate_commit_message and clean_commit_message to handle the new flow
         monkeypatch.setattr(
@@ -227,8 +230,14 @@ class TestScopeIntegration:
         git_spy = GitCommandSpy()
 
         # Mock run_git_command in all modules that import it
-        monkeypatch.setattr("gac.git.run_git_command", git_spy.run_git_command)
-        monkeypatch.setattr("gac.git_state_validator.run_git_command", git_spy.run_git_command)
+        from gac.git import GitCommandResult
+
+        def spy_run_git_command(args, **kwargs):
+            output = git_spy.run_git_command(args, **kwargs)
+            return GitCommandResult.ok(output)
+
+        monkeypatch.setattr("gac.git.run_git_command", spy_run_git_command)
+        monkeypatch.setattr("gac.git_state_validator.run_git_command", spy_run_git_command)
 
         # Mock AI to return message with scope
         call_count = 0
