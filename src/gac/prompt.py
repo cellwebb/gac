@@ -200,6 +200,27 @@ Body lines must be wrapped to 72 characters maximum.
     return template
 
 
+_EXAMPLES_CONFIG: dict[tuple[bool, bool], tuple[str, list[str]]] = {
+    # (verbose, infer_scope) -> (keep_section, remove_sections)
+    (True, True): (
+        "examples_verbose_with_scope",
+        ["examples_no_scope", "examples_with_scope", "examples_verbose_no_scope"],
+    ),
+    (True, False): (
+        "examples_verbose_no_scope",
+        ["examples_no_scope", "examples_with_scope", "examples_verbose_with_scope"],
+    ),
+    (False, True): (
+        "examples_with_scope",
+        ["examples_no_scope", "examples_verbose_no_scope", "examples_verbose_with_scope"],
+    ),
+    (False, False): (
+        "examples_no_scope",
+        ["examples_with_scope", "examples_verbose_no_scope", "examples_verbose_with_scope"],
+    ),
+}
+
+
 def _select_examples_section(template: str, verbose: bool, infer_scope: bool) -> str:
     """Select the appropriate examples section based on verbosity and scope settings.
 
@@ -211,30 +232,11 @@ def _select_examples_section(template: str, verbose: bool, infer_scope: bool) ->
     Returns:
         Template with the appropriate examples section selected
     """
-    if verbose and infer_scope:
-        template = _remove_template_section(template, "examples_no_scope")
-        template = _remove_template_section(template, "examples_with_scope")
-        template = _remove_template_section(template, "examples_verbose_no_scope")
-        template = template.replace("<examples_verbose_with_scope>", "<examples>")
-        template = template.replace("</examples_verbose_with_scope>", "</examples>")
-    elif verbose:
-        template = _remove_template_section(template, "examples_no_scope")
-        template = _remove_template_section(template, "examples_with_scope")
-        template = _remove_template_section(template, "examples_verbose_with_scope")
-        template = template.replace("<examples_verbose_no_scope>", "<examples>")
-        template = template.replace("</examples_verbose_no_scope>", "</examples>")
-    elif infer_scope:
-        template = _remove_template_section(template, "examples_no_scope")
-        template = _remove_template_section(template, "examples_verbose_no_scope")
-        template = _remove_template_section(template, "examples_verbose_with_scope")
-        template = template.replace("<examples_with_scope>", "<examples>")
-        template = template.replace("</examples_with_scope>", "</examples>")
-    else:
-        template = _remove_template_section(template, "examples_with_scope")
-        template = _remove_template_section(template, "examples_verbose_no_scope")
-        template = _remove_template_section(template, "examples_verbose_with_scope")
-        template = template.replace("<examples_no_scope>", "<examples>")
-        template = template.replace("</examples_no_scope>", "</examples>")
+    keep, removes = _EXAMPLES_CONFIG[(verbose, infer_scope)]
+    for section in removes:
+        template = _remove_template_section(template, section)
+    template = template.replace(f"<{keep}>", "<examples>")
+    template = template.replace(f"</{keep}>", "</examples>")
     return template
 
 
