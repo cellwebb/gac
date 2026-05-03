@@ -211,57 +211,57 @@ class TestGetFileStatus:
     def test_staged_files(self, mock_git):
         mock_git.return_value = GitCommandResult.ok("M  src/app.py\nA  src/new.py\nD  src/old.py\nR  src/renamed.py")
         result = _get_file_status()
-        assert "src/app.py" in result["staged"]
-        assert "src/new.py" in result["staged"]
-        assert "src/old.py" in result["staged"]
-        assert "src/renamed.py" in result["staged"]
-        assert len(result["staged"]) == 4
+        assert "src/app.py" in result.staged
+        assert "src/new.py" in result.staged
+        assert "src/old.py" in result.staged
+        assert "src/renamed.py" in result.staged
+        assert len(result.staged) == 4
 
     @patch("gac.git.run_git_command")
     def test_unstaged_files(self, mock_git):
         mock_git.return_value = GitCommandResult.ok(" M src/app.py\n A src/new.py\n D src/old.py")
         result = _get_file_status()
-        assert "src/app.py" in result["unstaged"]
-        assert "src/new.py" in result["unstaged"]
-        assert "src/old.py" in result["unstaged"]
+        assert "src/app.py" in result.unstaged
+        assert "src/new.py" in result.unstaged
+        assert "src/old.py" in result.unstaged
 
     @patch("gac.git.run_git_command")
     def test_untracked_files(self, mock_git):
         mock_git.return_value = GitCommandResult.ok("?? new_file.py\n?? another.txt")
         result = _get_file_status()
-        assert "new_file.py" in result["untracked"]
-        assert "another.txt" in result["untracked"]
+        assert "new_file.py" in result.untracked
+        assert "another.txt" in result.untracked
 
     @patch("gac.git.run_git_command")
     def test_merge_conflicts(self, mock_git):
         mock_git.return_value = GitCommandResult.ok("UU conflict.py\nAA both_added.py\nDD both_deleted.py")
         result = _get_file_status()
-        assert "conflict.py" in result["conflicts"]
-        assert "both_added.py" in result["conflicts"]
-        assert "both_deleted.py" in result["conflicts"]
+        assert "conflict.py" in result.conflicts
+        assert "both_added.py" in result.conflicts
+        assert "both_deleted.py" in result.conflicts
 
     @patch("gac.git.run_git_command")
     def test_mixed_status(self, mock_git):
         mock_git.return_value = GitCommandResult.ok("M  staged.py\n M unstaged.py\n?? untracked.py\nUU conflict.py")
         result = _get_file_status()
-        assert result["staged"] == ["staged.py"]
-        assert result["unstaged"] == ["unstaged.py"]
-        assert result["untracked"] == ["untracked.py"]
-        assert result["conflicts"] == ["conflict.py"]
+        assert result.staged == ["staged.py"]
+        assert result.unstaged == ["unstaged.py"]
+        assert result.untracked == ["untracked.py"]
+        assert result.conflicts == ["conflict.py"]
 
     @patch("gac.git.run_git_command")
     def test_exception_returns_empty_with_error(self, mock_git):
         mock_git.side_effect = RuntimeError("git failed")
         result = _get_file_status()
-        assert result["staged"] == []
-        assert result["error"] == "git failed"
+        assert result.staged == []
+        assert result.error == "git failed"
 
     @patch("gac.git.run_git_command")
     def test_empty_output(self, mock_git):
         mock_git.return_value = GitCommandResult.ok("")
         result = _get_file_status()
-        assert result["staged"] == []
-        assert result["error"] == ""
+        assert result.staged == []
+        assert result.error == ""
 
 
 # =============================================================================

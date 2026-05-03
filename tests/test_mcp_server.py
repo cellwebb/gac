@@ -13,7 +13,7 @@ from gac.mcp.models import (
     StatusResult,
 )
 from gac.mcp.server import gac_commit, gac_status
-from gac.mcp.server_utils import CommitListResult
+from gac.mcp.server_utils import CommitListResult, FileStatus
 
 
 class TestGacStatus:
@@ -43,13 +43,12 @@ class TestGacStatus:
         mock_stats,
         mock_commits,
     ):
-        mock_file_status.return_value = {
-            "staged": ["src/a.py"],
-            "unstaged": ["src/b.py"],
-            "untracked": ["new.py"],
-            "conflicts": [],
-            "error": "",
-        }
+        mock_file_status.return_value = FileStatus(
+            staged=["src/a.py"],
+            unstaged=["src/b.py"],
+            untracked=["new.py"],
+            conflicts=[],
+        )
         mock_git_cmd.return_value = GitCommandResult.ok("+added\n-removed")
         mock_truncate.return_value = ("+added\n-removed", False)
         mock_stats.return_value = DiffStats(files_changed=1, insertions=1, deletions=1, file_stats=[])
@@ -74,7 +73,7 @@ class TestGacStatus:
     @patch("gac.git.run_git_command", return_value=GitCommandResult.ok("line1\nline2\nline3\nline4\nline5"))
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="dev")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -96,7 +95,7 @@ class TestGacStatus:
     @patch("gac.mcp.server._get_recent_commits")
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": [], "error": ""},
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -113,13 +112,7 @@ class TestGacStatus:
     @patch("gac.mcp.server._get_recent_commits")
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={
-            "staged": ["a.py"],
-            "unstaged": [],
-            "untracked": [],
-            "conflicts": [],
-            "error": "file status degraded",
-        },
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[], error="file status degraded"),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -136,7 +129,7 @@ class TestGacStatus:
     @patch("gac.git.run_git_command")
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -150,7 +143,7 @@ class TestGacStatus:
     @patch("gac.git.run_git_command")
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -162,7 +155,7 @@ class TestGacStatus:
 
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": [], "unstaged": [], "untracked": ["extra.py"], "conflicts": []},
+        return_value=FileStatus(staged=[], unstaged=[], untracked=["extra.py"], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -173,7 +166,8 @@ class TestGacStatus:
         assert result.is_clean is True
 
     @patch(
-        "gac.mcp.server._get_file_status", return_value={"staged": [], "unstaged": [], "untracked": [], "conflicts": []}
+        "gac.mcp.server._get_file_status",
+        return_value=FileStatus(staged=[], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
@@ -186,7 +180,7 @@ class TestGacStatus:
 
     @patch(
         "gac.mcp.server._get_file_status",
-        return_value={"staged": ["a.py"], "unstaged": [], "untracked": [], "conflicts": []},
+        return_value=FileStatus(staged=["a.py"], unstaged=[], untracked=[], conflicts=[]),
     )
     @patch("gac.git.get_current_branch", return_value="main")
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
