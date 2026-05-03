@@ -5,6 +5,7 @@ import pytest
 
 from gac.errors import GitError
 from gac.git import (
+    GitCommandResult,
     detect_rename_mappings,
     get_commit_hash,
     get_current_branch,
@@ -19,33 +20,33 @@ from gac.git import (
 
 
 def test_get_repo_root_success(monkeypatch):
-    def mock_run_command(*args, **kwargs):
-        return "/repo/path"
+    def mock_run_command_ex(*args, **kwargs):
+        return GitCommandResult.ok("/repo/path")
 
-    monkeypatch.setattr("gac.git.run_git_command", mock_run_command)
+    monkeypatch.setattr("gac.git.run_git_command", mock_run_command_ex)
     assert get_repo_root() == "/repo/path"
 
 
 def test_get_current_branch_success(monkeypatch):
-    def mock_run_command(*args, **kwargs):
-        return "main"
+    def mock_run_command_ex(*args, **kwargs):
+        return GitCommandResult.ok("main")
 
-    monkeypatch.setattr("gac.git.run_git_command", mock_run_command)
+    monkeypatch.setattr("gac.git.run_git_command", mock_run_command_ex)
     assert get_current_branch() == "main"
 
 
 def test_get_commit_hash_success(monkeypatch):
-    def mock_run_command(*args, **kwargs):
-        return "abc123"
+    def mock_run_command_ex(*args, **kwargs):
+        return GitCommandResult.ok("abc123")
 
-    monkeypatch.setattr("gac.git.run_git_command", mock_run_command)
+    monkeypatch.setattr("gac.git.run_git_command", mock_run_command_ex)
     assert get_commit_hash() == "abc123"
 
 
 def test_get_staged_files_all():
     """Test get_staged_files with no filtering."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = "file1.py\nfile2.md\nfile3.txt"
+        mock_run.return_value = GitCommandResult.ok("file1.py\nfile2.md\nfile3.txt")
         result = get_staged_files()
         assert result == ["file1.py", "file2.md", "file3.txt"]
 
@@ -53,21 +54,21 @@ def test_get_staged_files_all():
 def test_get_staged_files_empty():
     """Test get_staged_files when no files are staged."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = ""
+        mock_run.return_value = GitCommandResult.ok("")
         result = get_staged_files()
         assert result == []
 
-    # Also test when run_git_command raises GitError
+    # A failed git command now raises GitError (not silent [])
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.side_effect = GitError("git error")
-        result = get_staged_files()
-        assert result == []
+        mock_run.return_value = GitCommandResult.fail(returncode=128, stderr="not a git repository")
+        with pytest.raises(GitError, match="Failed to list staged files"):
+            get_staged_files()
 
 
 def test_get_staged_files_filter_by_type():
     """Test get_staged_files with file type filtering."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = "file1.py\nfile2.md\nfile3.txt\nfile4.py"
+        mock_run.return_value = GitCommandResult.ok("file1.py\nfile2.md\nfile3.txt\nfile4.py")
         result = get_staged_files(file_type=".py")
         assert result == ["file1.py", "file4.py"]
 
@@ -75,7 +76,7 @@ def test_get_staged_files_filter_by_type():
 def test_get_staged_files_existing_only():
     """Test get_staged_files with existing_only flag."""
     with patch("gac.git.run_git_command") as mock_run, patch("os.path.isfile") as mock_isfile:
-        mock_run.return_value = "file1.py\nfile2.md\nfile3.txt"
+        mock_run.return_value = GitCommandResult.ok("file1.py\nfile2.md\nfile3.txt")
         mock_isfile.side_effect = [True, False, True]  # file2.md doesn't exist
         result = get_staged_files(existing_only=True)
         assert result == ["file1.py", "file3.txt"]
@@ -106,7 +107,7 @@ def test_get_staged_files_existing_only():
 def test_get_staged_status_formats(git_output, expected_content):
     """Test get_staged_status with various file statuses."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = git_output
+        mock_run.return_value = GitCommandResult.ok(git_output)
         result = get_staged_status()
         assert "Changes to be committed:" in result
         for expected in expected_content:
@@ -116,23 +117,23 @@ def test_get_staged_status_formats(git_output, expected_content):
 def test_get_staged_status_empty():
     """Test get_staged_status when no files are staged."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = ""
+        mock_run.return_value = GitCommandResult.ok("")
         result = get_staged_status()
         assert result == "No changes staged for commit."
 
 
 def test_get_staged_status_git_error():
-    """Test get_staged_status when git command fails."""
+    """Test get_staged_status when git command fails — now raises GitError."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.side_effect = GitError("git error")
-        result = get_staged_status()
-        assert result == "No changes staged for commit."
+        mock_run.return_value = GitCommandResult.fail(returncode=128, stderr="not a git repository")
+        with pytest.raises(GitError, match="Failed to get staged status"):
+            get_staged_status()
 
 
 def test_get_diff_unstaged():
     """Test get_diff with staged=False."""
     with patch("gac.git.run_git_command") as mock_run:
-        mock_run.return_value = "diff output"
+        mock_run.return_value = GitCommandResult.ok("diff output")
         result = get_diff(staged=False)
         mock_run.assert_called_once_with(["diff", "--color"])
         assert result == "diff output"
@@ -151,18 +152,27 @@ def test_get_diff_exception():
 
 
 def test_push_changes_no_remote():
-    """Test push_changes when no remote is configured."""
+    """Test push_changes when no remote is configured (empty output)."""
     with patch("gac.git.run_git_command") as mock_run, patch("gac.git.logger") as mock_logger:
-        mock_run.return_value = ""  # No remote configured
+        mock_run.return_value = GitCommandResult.ok("")  # Success but no remotes
         result = push_changes()
         assert result is False
         mock_logger.error.assert_called_once_with("No configured remote repository.")
 
 
+def test_push_changes_remote_check_fails():
+    """Test push_changes when git remote command fails."""
+    with patch("gac.git.run_git_command") as mock_run, patch("gac.git.logger") as mock_logger:
+        mock_run.return_value = GitCommandResult.fail(returncode=128, stderr="dubious ownership")
+        result = push_changes()
+        assert result is False
+        assert "dubious ownership" in mock_logger.error.call_args[0][0]
+
+
 def test_push_changes_success():
     """Test push_changes when push is successful."""
     with patch("gac.git.run_git_command") as mock_run_git, patch("gac.git.run_subprocess") as mock_run_sub:
-        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_git.return_value = GitCommandResult.ok("origin\n")  # For 'git remote'
         mock_run_sub.return_value = ""  # For 'git push'
         result = push_changes()
         assert result is True
@@ -178,7 +188,7 @@ def test_push_changes_git_error():
         patch("gac.git.run_subprocess") as mock_run_sub,
         patch("gac.git.logger") as mock_logger,
     ):
-        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_git.return_value = GitCommandResult.ok("origin\n")  # For 'git remote'
         error = subprocess.CalledProcessError(1, ["git", "push"], "", "Failed to push")
         mock_run_sub.side_effect = error
         result = push_changes()
@@ -194,7 +204,7 @@ def test_push_changes_fatal_error():
         patch("gac.git.run_subprocess") as mock_run_sub,
         patch("gac.git.logger") as mock_logger,
     ):
-        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_git.return_value = GitCommandResult.ok("origin\n")  # For 'git remote'
         error = subprocess.CalledProcessError(1, ["git", "push"], "", "fatal: No configured push destination")
         mock_run_sub.side_effect = error
         result = push_changes()
@@ -209,7 +219,7 @@ def test_push_changes_generic_exception():
         patch("gac.git.run_subprocess") as mock_run_sub,
         patch("gac.git.logger") as mock_logger,
     ):
-        mock_run_git.return_value = "origin\n"  # For 'git remote'
+        mock_run_git.return_value = GitCommandResult.ok("origin\n")  # For 'git remote'
         mock_run_sub.side_effect = ConnectionError("Unexpected error")
         result = push_changes()
         assert result is False

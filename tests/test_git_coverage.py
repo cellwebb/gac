@@ -14,6 +14,7 @@ import pytest
 
 from gac.errors import GitError
 from gac.git import (
+    GitCommandResult,
     detect_rename_mappings,
     get_diff,
     get_staged_status,
@@ -135,7 +136,7 @@ class TestGetStagedStatusMalformedLine:
     def test_malformed_line_skipped(self):
         """Lines with fewer than 2 tab-separated parts should be skipped."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "M\tfile1.py\nmalformed_line\nA\tfile2.py"
+            mock_run.return_value = GitCommandResult.ok("M\tfile1.py\nmalformed_line\nA\tfile2.py")
             result = get_staged_status()
             assert "file1.py" in result
             assert "file2.py" in result
@@ -144,7 +145,7 @@ class TestGetStagedStatusMalformedLine:
     def test_empty_lines_skipped(self):
         """Empty lines should be skipped."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "M\tfile1.py\n\nA\tfile2.py"
+            mock_run.return_value = GitCommandResult.ok("M\tfile1.py\n\nA\tfile2.py")
             result = get_staged_status()
             assert "file1.py" in result
             assert "file2.py" in result
@@ -152,7 +153,7 @@ class TestGetStagedStatusMalformedLine:
     def test_unknown_change_type_uses_modified(self):
         """Unknown change type characters should default to 'modified'."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "X\tunknown_file.py"
+            mock_run.return_value = GitCommandResult.ok("X\tunknown_file.py")
             result = get_staged_status()
             assert "modified:   unknown_file.py" in result
 
@@ -189,7 +190,7 @@ class TestGetDiffExceptionPath:
     def test_successful_diff_with_commits(self):
         """get_diff with commit1 and commit2 should pass them correctly."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "diff content"
+            mock_run.return_value = GitCommandResult.ok("diff content")
             get_diff(commit1="abc123", commit2="def456")
             mock_run.assert_called_once()
             args = mock_run.call_args[0][0]
@@ -199,7 +200,7 @@ class TestGetDiffExceptionPath:
     def test_successful_diff_with_single_commit(self):
         """get_diff with only commit1 should compare working tree to that commit."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "diff content"
+            mock_run.return_value = GitCommandResult.ok("diff content")
             get_diff(commit1="abc123")
             mock_run.assert_called_once()
             args = mock_run.call_args[0][0]
@@ -208,7 +209,7 @@ class TestGetDiffExceptionPath:
     def test_diff_no_color(self):
         """get_diff with color=False should not include --color."""
         with patch("gac.git.run_git_command") as mock_run:
-            mock_run.return_value = "diff content"
+            mock_run.return_value = GitCommandResult.ok("diff content")
             get_diff(staged=True, color=False)
             args = mock_run.call_args[0][0]
             assert "--color" not in args

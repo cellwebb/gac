@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Tests for GitStateValidator class."""
 
-import subprocess
 from unittest.mock import patch
 
 import pytest
 
+from gac.errors import GitError
+from gac.git import GitCommandResult
 from gac.git_state_validator import GitStateValidator
 
 
@@ -32,24 +33,37 @@ class TestGitStateValidator:
         assert validator.config == mock_config
 
     @patch("gac.git_state_validator.run_git_command")
-    def test_validate_repository_success(self, mock_run_command, validator):
+    def test_validate_repository_success(self, mock_run_command_ex, validator):
         """Test successful repository validation."""
-        mock_run_command.return_value = "/path/to/repo"
+        mock_run_command_ex.return_value = GitCommandResult.ok("/path/to/repo")
 
         result = validator.validate_repository()
 
         assert result == "/path/to/repo"
-        mock_run_command.assert_called_once_with(["rev-parse", "--show-toplevel"])
+        mock_run_command_ex.assert_called_once_with(["rev-parse", "--show-toplevel"])
 
     @patch("gac.git_state_validator.run_git_command")
     @patch("gac.git_state_validator.handle_error")
-    def test_validate_repository_failure(self, mock_handle_error, mock_run_command, validator):
+    def test_validate_repository_failure(self, mock_handle_error, mock_run_command_ex, validator):
         """Test repository validation failure."""
-        mock_run_command.side_effect = subprocess.SubprocessError("Not a git repository")
+        mock_run_command_ex.return_value = GitCommandResult.fail(returncode=128)
 
         validator.validate_repository()
 
         mock_handle_error.assert_called_once()
+
+    @patch("gac.git_state_validator.run_git_command")
+    @patch("gac.git_state_validator.handle_error")
+    def test_validate_repository_failure_preserves_stderr(self, mock_handle_error, mock_run_command_ex, validator):
+        """Test that validate_repository preserves stderr in the GitError."""
+        mock_run_command_ex.return_value = GitCommandResult.fail(returncode=128, stderr="dubious ownership of repo")
+
+        validator.validate_repository()
+
+        mock_handle_error.assert_called_once()
+        error_arg = mock_handle_error.call_args[0][0]
+        assert isinstance(error_arg, GitError)
+        assert "dubious ownership" in str(error_arg)
 
     @patch("gac.git_state_validator.run_git_command")
     def test_stage_all_if_requested(self, mock_run_command, validator):
@@ -85,9 +99,10 @@ class TestGitStateValidator:
             patch.object(validator, "stage_all_if_requested"),
             patch("gac.git_state_validator.get_staged_files", return_value=["file.py"]),
             patch("gac.git_state_validator.get_staged_status", return_value="M file.py"),
-            patch("gac.git_state_validator.run_git_command"),
+            patch("gac.git_state_validator.run_git_command") as mock_ex,
             patch("gac.git_state_validator.preprocess_diff", return_value="processed"),
         ):
+            mock_ex.return_value = GitCommandResult.ok("diff content")
             git_state = validator.get_git_state(model="openai:gpt-4o-mini")
 
             assert git_state.has_secrets is True

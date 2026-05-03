@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from gac.constants import EnvDefaults
+from gac.git import GitCommandResult
 from gac.workflow_utils import (
     check_token_warning,
     collect_interactive_answers,
@@ -42,7 +43,7 @@ def test_confirmation_reroll():
 
 def test_execute_commit_uses_hook_timeout():
     with (
-        patch("gac.git.run_git_command") as mock_git,
+        patch("gac.git.run_git_command", return_value=GitCommandResult.ok("")) as mock_git,
         patch("gac.workflow_utils.logger.info"),
         patch("gac.workflow_utils.console.print"),
     ):
@@ -53,7 +54,7 @@ def test_execute_commit_uses_hook_timeout():
 
 def test_execute_commit_falls_back_to_default_timeout():
     with (
-        patch("gac.git.run_git_command") as mock_git,
+        patch("gac.git.run_git_command", return_value=GitCommandResult.ok("")) as mock_git,
         patch("gac.workflow_utils.logger.info"),
         patch("gac.workflow_utils.console.print"),
     ):
@@ -73,7 +74,7 @@ def test_restore_staging():
     """Test that restore_staging resets and re-adds files."""
     files = ["file1.py", "file2.py", "file3.py"]
 
-    with patch("gac.git.run_git_command") as mock_git:
+    with patch("gac.git.run_git_command", return_value=GitCommandResult.ok("")) as mock_git:
         restore_staging(files)
 
         assert mock_git.call_count == 4
@@ -89,7 +90,7 @@ def test_restore_staging_reapplies_diff(tmp_path):
 
     def fake_run_git(cmd):
         calls.append(cmd)
-        return ""
+        return GitCommandResult.ok("")
 
     with patch("gac.git.run_git_command", side_effect=fake_run_git):
         restore_staging(["file1.py"], "dummy diff")
@@ -106,6 +107,7 @@ def test_restore_staging_handles_errors():
     def git_side_effect(cmd):
         if cmd == ["add", "file1.py"]:
             raise Exception("File not found")
+        return GitCommandResult.ok("")
 
     with (
         patch("gac.git.run_git_command", side_effect=git_side_effect) as mock_git,
@@ -123,6 +125,7 @@ def test_restore_staging_diff_failure_falls_back():
     def git_side_effect(cmd):
         if cmd[:2] == ["apply", "--cached"]:
             raise Exception("apply failed")
+        return GitCommandResult.ok("")
 
     with (
         patch("gac.git.run_git_command", side_effect=git_side_effect) as mock_git,

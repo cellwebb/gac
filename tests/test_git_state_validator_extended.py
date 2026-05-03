@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from gac.errors import ConfigError, GitError
+from gac.git import GitCommandResult
 from gac.git_state_validator import GitStateValidator
 
 
@@ -28,9 +29,9 @@ class TestGitStateValidatorMissingCoverage:
 
     @patch("gac.git_state_validator.run_git_command")
     @patch("gac.git_state_validator.handle_error")
-    def test_validate_repository_oserror(self, mock_handle_error, mock_run_command, validator):
+    def test_validate_repository_oserror(self, mock_handle_error, mock_run_command_ex, validator):
         """Test repository validation with OSError (line 44)."""
-        mock_run_command.side_effect = OSError("Permission denied")
+        mock_run_command_ex.side_effect = OSError("Permission denied")
 
         validator.validate_repository()
 
@@ -38,9 +39,9 @@ class TestGitStateValidatorMissingCoverage:
 
     @patch("gac.git_state_validator.run_git_command")
     @patch("gac.git_state_validator.handle_error")
-    def test_validate_repository_git_error(self, mock_handle_error, mock_run_command, validator):
+    def test_validate_repository_git_error(self, mock_handle_error, mock_run_command_ex, validator):
         """Test repository validation with GitError."""
-        mock_run_command.side_effect = GitError("Not a git repository")
+        mock_run_command_ex.side_effect = GitError("Not a git repository")
 
         validator.validate_repository()
 
@@ -48,9 +49,9 @@ class TestGitStateValidatorMissingCoverage:
 
     @patch("gac.git_state_validator.run_git_command")
     @patch("gac.git_state_validator.handle_error")
-    def test_validate_repository_empty_result(self, mock_handle_error, mock_run_command, validator):
-        """Test repository validation with empty result."""
-        mock_run_command.return_value = ""  # Empty result
+    def test_validate_repository_empty_result(self, mock_handle_error, mock_run_command_ex, validator):
+        """Test repository validation with failed result."""
+        mock_run_command_ex.return_value = GitCommandResult.fail(returncode=128)
 
         validator.validate_repository()
 
@@ -76,7 +77,7 @@ class TestGitStateValidatorMissingCoverage:
         mock_get_staged.return_value = []  # All files removed
 
         with patch("gac.git_state_validator.get_affected_files", return_value=["file.py"]):
-            with patch("gac.git_state_validator.run_git_command"):
+            with patch("gac.git_state_validator.run_git_command", return_value=GitCommandResult.ok("")):
                 result = validator.handle_secret_detection([mock_secret])
 
                 assert result is None  # Should return None when no files remain
@@ -99,7 +100,7 @@ class TestGitStateValidatorMissingCoverage:
         mock_get_staged.return_value = ["other_file.py"]  # Some files remain
 
         with patch("gac.git_state_validator.get_affected_files", return_value=["file.py"]):
-            with patch("gac.git_state_validator.run_git_command"):
+            with patch("gac.git_state_validator.run_git_command", return_value=GitCommandResult.ok("")):
                 result = validator.handle_secret_detection([mock_secret])
 
                 assert result is False  # Should return False to re-get git state
@@ -226,7 +227,9 @@ class TestGitStateValidatorMissingCoverage:
             with patch.object(validator, "stage_all_if_requested"):
                 with patch("gac.git_state_validator.get_staged_files", return_value=["file.py"]):
                     with patch("gac.git_state_validator.get_staged_status", return_value="M file.py"):
-                        with patch("gac.git_state_validator.run_git_command", return_value="mock diff"):
+                        with patch(
+                            "gac.git_state_validator.run_git_command", return_value=GitCommandResult.ok("mock diff")
+                        ):
                             # Should raise ConfigError when model is None
                             with pytest.raises(ConfigError, match="Model must be specified"):
                                 validator.get_git_state(model=None)
@@ -241,7 +244,7 @@ class TestGitStateValidatorMissingCoverage:
         with patch.object(validator, "validate_repository", return_value="/repo"):
             with patch.object(validator, "stage_all_if_requested"):
                 with patch("gac.git_state_validator.get_staged_status", return_value="M file.py"):
-                    with patch("gac.git_state_validator.run_git_command"):
+                    with patch("gac.git_state_validator.run_git_command", return_value=GitCommandResult.ok("diff")):
                         with patch("gac.git_state_validator.preprocess_diff", return_value="processed"):
                             git_state = validator.get_git_state(model="openai:gpt-4o-mini", skip_secret_scan=True)
 
