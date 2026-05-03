@@ -103,7 +103,6 @@ def _execute_single_commit_workflow(ctx: WorkflowContext, config: GACConfig) -> 
                 commit_message,
                 prov_prompt_tokens,
                 ctx.model,
-                ctx.quiet,
                 completion_tokens=prov_completion_tokens,
                 reasoning_tokens=reasoning_tokens,
             )
@@ -210,11 +209,6 @@ def main(opts: CLIOptions, config: GACConfig | None = None) -> int:
         skip_secret_scan=opts.skip_secret_scan,
         quiet=opts.quiet,
         model=model,
-        hint=opts.hint,
-        one_liner=opts.one_liner,
-        infer_scope=opts.infer_scope,
-        verbose=opts.verbose,
-        language=opts.language,
     )
 
     # No staged changes found
@@ -244,14 +238,9 @@ def main(opts: CLIOptions, config: GACConfig | None = None) -> int:
             git_state = git_validator.get_git_state(
                 stage_all=False,
                 dry_run=opts.dry_run,
-                skip_secret_scan=True,  # Skip secret scan this time
+                skip_secret_scan=True,
                 quiet=opts.quiet,
                 model=model,
-                hint=opts.hint,
-                one_liner=opts.one_liner,
-                infer_scope=opts.infer_scope,
-                verbose=opts.verbose,
-                language=opts.language,
             )
             # After removing secret files, no staged changes may remain
             if git_state is None:

@@ -60,11 +60,6 @@ class GitStateValidator:
         skip_secret_scan: bool = False,
         quiet: bool = False,
         model: str | None = None,
-        hint: str = "",
-        one_liner: bool = False,
-        infer_scope: bool = False,
-        verbose: bool = False,
-        language: str | None = None,
     ) -> GitState | None:
         """Get complete git state including validation and processing.
 

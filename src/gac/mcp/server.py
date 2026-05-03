@@ -305,16 +305,11 @@ def gac_commit(request: CommitRequest) -> CommitResult:
         # Get git state for prompt building
         validator = GitStateValidator(config)
         git_state = validator.get_git_state(
-            stage_all=False,  # Already staged above
-            dry_run=True,  # Always dry run for state collection
+            stage_all=False,
+            dry_run=True,
             skip_secret_scan=request.skip_secret_scan,
             quiet=True,
             model=model,
-            hint=request.hint,
-            one_liner=request.one_liner,
-            infer_scope=request.scope is None,
-            verbose=False,
-            language=request.language,
         )
 
         if not git_state:
