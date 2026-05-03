@@ -205,51 +205,72 @@ def get_commit_hash() -> str:
     return result
 
 
+def _run_hook_runner(
+    *,
+    name: str,
+    display_name: str,
+    config_files: list[str],
+    run_args: list[str],
+    hook_timeout: int = 120,
+) -> bool:
+    """Run a hook runner (pre-commit or lefthook) if configured.
+
+    Args:
+        name: Binary name (e.g. "pre-commit", "lefthook")
+        display_name: Human-readable name for log messages (e.g. "Pre-commit", "Lefthook")
+        config_files: List of possible config filenames to check for
+        run_args: Full command to run the hooks
+        hook_timeout: Timeout in seconds
+
+    Returns:
+        True if hooks passed or don't exist, False if they failed.
+    """
+    # Check if any config file exists
+    if not any(os.path.exists(f) for f in config_files):
+        logger.debug(f"No {display_name} configuration found, skipping {display_name} hooks")
+        return True
+
+    # Check if the binary is installed
+    try:
+        version_check = run_subprocess([name, "--version"], silent=True, raise_on_error=False)
+        if not version_check:
+            logger.debug(f"{display_name} not installed, skipping hooks")
+            return True
+
+        # Run the hooks
+        logger.info(f"Running {display_name} hooks with {hook_timeout}s timeout...")
+        result = run_subprocess_with_encoding_fallback(run_args, timeout=hook_timeout)
+
+        if result.returncode == 0:
+            return True
+        else:
+            output = result.stdout or ""
+            error = result.stderr or ""
+            full_output = output + ("\n" + error if error else "")
+
+            if full_output.strip():
+                logger.error(f"{display_name} hooks failed:\n{full_output}")
+            else:
+                logger.error(f"{display_name} hooks failed with exit code {result.returncode}")
+            return False
+    except (subprocess.SubprocessError, OSError, FileNotFoundError, PermissionError) as e:
+        logger.debug(f"Error running {display_name}: {e}")
+        return True
+
+
 def run_pre_commit_hooks(hook_timeout: int = 120) -> bool:
     """Run pre-commit hooks if they exist.
 
     Returns:
         True if pre-commit hooks passed or don't exist, False if they failed.
     """
-    # Check if .pre-commit-config.yaml exists
-    if not os.path.exists(".pre-commit-config.yaml"):
-        logger.debug("No .pre-commit-config.yaml found, skipping pre-commit hooks")
-        return True
-
-    # Check if pre-commit is installed and configured
-    try:
-        # First check if pre-commit is installed
-        version_check = run_subprocess(["pre-commit", "--version"], silent=True, raise_on_error=False)
-        if not version_check:
-            logger.debug("pre-commit not installed, skipping hooks")
-            return True
-
-        # Run pre-commit hooks on staged files
-        logger.info(f"Running pre-commit hooks with {hook_timeout}s timeout...")
-        # Run pre-commit and capture both stdout and stderr
-        result = run_subprocess_with_encoding_fallback(["pre-commit", "run"], timeout=hook_timeout)
-
-        if result.returncode == 0:
-            # All hooks passed
-            return True
-        else:
-            # Pre-commit hooks failed - show the output
-            output = result.stdout if result.stdout else ""
-            error = result.stderr if result.stderr else ""
-
-            # Combine outputs (pre-commit usually outputs to stdout)
-            full_output = output + ("\n" + error if error else "")
-
-            if full_output.strip():
-                # Show which hooks failed and why
-                logger.error(f"Pre-commit hooks failed:\n{full_output}")
-            else:
-                logger.error(f"Pre-commit hooks failed with exit code {result.returncode}")
-            return False
-    except (subprocess.SubprocessError, OSError, FileNotFoundError, PermissionError) as e:
-        logger.debug(f"Error running pre-commit: {e}")
-        # If pre-commit isn't available, don't block the commit
-        return True
+    return _run_hook_runner(
+        name="pre-commit",
+        display_name="Pre-commit",
+        config_files=[".pre-commit-config.yaml"],
+        run_args=["pre-commit", "run"],
+        hook_timeout=hook_timeout,
+    )
 
 
 def run_lefthook_hooks(hook_timeout: int = 120) -> bool:
@@ -258,48 +279,13 @@ def run_lefthook_hooks(hook_timeout: int = 120) -> bool:
     Returns:
         True if Lefthook hooks passed or don't exist, False if they failed.
     """
-    # Check for common Lefthook configuration files
-    lefthook_configs = [".lefthook.yml", "lefthook.yml", ".lefthook.yaml", "lefthook.yaml"]
-    config_exists = any(os.path.exists(config) for config in lefthook_configs)
-
-    if not config_exists:
-        logger.debug("No Lefthook configuration found, skipping Lefthook hooks")
-        return True
-
-    # Check if lefthook is installed and configured
-    try:
-        # First check if lefthook is installed
-        version_check = run_subprocess(["lefthook", "--version"], silent=True, raise_on_error=False)
-        if not version_check:
-            logger.debug("Lefthook not installed, skipping hooks")
-            return True
-
-        # Run lefthook hooks on staged files
-        logger.info(f"Running Lefthook hooks with {hook_timeout}s timeout...")
-        # Run lefthook and capture both stdout and stderr
-        result = run_subprocess_with_encoding_fallback(["lefthook", "run", "pre-commit"], timeout=hook_timeout)
-
-        if result.returncode == 0:
-            # All hooks passed
-            return True
-        else:
-            # Lefthook hooks failed - show the output
-            output = result.stdout if result.stdout else ""
-            error = result.stderr if result.stderr else ""
-
-            # Combine outputs (lefthook usually outputs to stdout)
-            full_output = output + ("\n" + error if error else "")
-
-            if full_output.strip():
-                # Show which hooks failed and why
-                logger.error(f"Lefthook hooks failed:\n{full_output}")
-            else:
-                logger.error(f"Lefthook hooks failed with exit code {result.returncode}")
-            return False
-    except (subprocess.SubprocessError, OSError, FileNotFoundError, PermissionError) as e:
-        logger.debug(f"Error running Lefthook: {e}")
-        # If lefthook isn't available, don't block the commit
-        return True
+    return _run_hook_runner(
+        name="lefthook",
+        display_name="Lefthook",
+        config_files=[".lefthook.yml", "lefthook.yml", ".lefthook.yaml", "lefthook.yaml"],
+        run_args=["lefthook", "run", "pre-commit"],
+        hook_timeout=hook_timeout,
+    )
 
 
 def push_changes() -> bool:
