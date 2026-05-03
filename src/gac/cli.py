@@ -229,8 +229,8 @@ cli.add_command(init_cli)
 cli.add_command(language_cli)
 cli.add_command(model_cli)
 cli.add_command(prompt_cli)
-cli.add_command(stats_cli)
 cli.add_command(report_cli)
+cli.add_command(stats_cli)
 
 
 @click.command(context_settings=language_cli.context_settings)
