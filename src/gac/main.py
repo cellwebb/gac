@@ -312,28 +312,8 @@ def main(opts: CLIOptions, config: GACConfig | None = None) -> int:
 
     try:
         if opts.group:
-            # Execute grouped workflow
-            return grouped_workflow.execute_workflow(
-                system_prompt=prompts.system_prompt,
-                user_prompt=prompts.user_prompt,
-                model=model,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                max_retries=max_retries,
-                require_confirmation=opts.require_confirmation,
-                quiet=opts.quiet,
-                no_verify=opts.no_verify,
-                dry_run=opts.dry_run,
-                push=opts.push,
-                show_prompt=opts.show_prompt,
-                interactive=opts.interactive,
-                message_only=opts.message_only,
-                hook_timeout=opts.hook_timeout,
-                git_state=git_state,
-                hint=opts.hint,
-                fifty_seventy_two=opts.fifty_seventy_two,
-                signoff=opts.signoff,
-            )
+            # Execute grouped workflow using the same WorkflowContext
+            return grouped_workflow.execute_workflow(_build_context(), config)
         else:
             # Execute single commit workflow
             return _execute_single_commit_workflow(_build_context(), config)

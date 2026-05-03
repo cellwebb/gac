@@ -188,7 +188,7 @@ class TestGroupedWorkflowRecordsTokens:
         )
 
         # Generation succeeded
-        assert not isinstance(result, int)
+        assert result.success
 
         # Tokens were recorded with prompt=500, completion=80, model=openai:gpt-test
         assert len(calls) == 1

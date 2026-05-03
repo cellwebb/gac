@@ -326,7 +326,7 @@ class TestHandleSingleCommitConfirmation:
 
         # Verify quiet flag was passed through
         mock_handle_confirmation.assert_called_once_with(
-            "Initial commit message", [], True, "anthropic:claude-3-sonnet-20240229"
+            "Initial commit message", [], True, "anthropic:claude-3-sonnet-20240229", prompt_fn=None
         )
         assert final_message == "final message"
         assert decision == "yes"
@@ -353,7 +353,7 @@ class TestHandleSingleCommitConfirmation:
 
         # Verify conversation was passed through
         mock_handle_confirmation.assert_called_once_with(
-            "Initial commit message", conversation_messages, False, "anthropic:claude-3-sonnet-20240229"
+            "Initial commit message", conversation_messages, False, "anthropic:claude-3-sonnet-20240229", prompt_fn=None
         )
         assert final_message == "final message"
         assert decision == "yes"

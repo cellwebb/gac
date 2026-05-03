@@ -16,12 +16,12 @@ from gac.ai_utils import count_tokens
 from gac.config import GACConfig
 from gac.errors import AIError, ConfigError, GitError
 from gac.git import detect_rename_mappings, get_staged_files, run_git_command
-from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
 from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
 from gac.utils import console
-from gac.workflow_utils import check_token_warning, execute_commit, format_token_usage, restore_staging
+from gac.workflow_context import WorkflowContext
+from gac.workflow_utils import PromptFn, check_token_warning, execute_commit, format_token_usage, restore_staging
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,14 @@ class GroupedCommitResult(NamedTuple):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     reasoning_tokens: int = 0
+
+
+class WorkflowResult(NamedTuple):
+    """Tagged result from generate_grouped_commits_with_retry."""
+
+    success: bool
+    result: GroupedCommitResult | None = None
+    exit_code: int = 0
 
 
 class GroupedCommitWorkflow:
@@ -159,11 +167,11 @@ class GroupedCommitWorkflow:
         quiet: bool,
         staged_files_set: set[str],
         require_confirmation: bool = True,
-    ) -> GroupedCommitResult | int:
+    ) -> WorkflowResult:
         """Generate grouped commits with validation and retry logic.
 
         Returns:
-            GroupedCommitResult on success, or int exit code on early exit/failure.
+            WorkflowResult: success=True with result, or success=False with exit_code.
         """
         first_iteration = True
         content_retry_budget = max(3, int(max_retries))
@@ -183,7 +191,7 @@ class GroupedCommitWorkflow:
 
             if first_iteration:
                 if not check_token_warning(prompt_tokens, warning_limit, require_confirmation):
-                    return 0  # User declined due to token warning
+                    return WorkflowResult(success=True, exit_code=0)  # User declined due to token warning
             first_iteration = False
 
             raw_response, prov_prompt_tokens, prov_completion_tokens, duration_ms, reasoning_tokens = (
@@ -222,7 +230,7 @@ class GroupedCommitWorkflow:
                     quiet,
                     "Structure validation failed, asking model to fix...",
                 ):
-                    return 1  # Validation failed after retries
+                    return WorkflowResult(success=False, exit_code=1)  # Validation failed after retries
                 continue
 
             # Assert parsed is not None for mypy - ValueError would have been raised earlier
@@ -241,18 +249,21 @@ class GroupedCommitWorkflow:
                     quiet,
                     "File coverage mismatch, asking model to fix...",
                 ):
-                    return 1  # File validation failed after retries
+                    return WorkflowResult(success=False, exit_code=1)  # File validation failed after retries
                 continue
 
             conversation_messages.append({"role": "assistant", "content": raw_response})
             # Assert parsed is not None for mypy - ValueError would have been raised earlier
             assert parsed is not None
-            return GroupedCommitResult(
-                commits=parsed["commits"],
-                raw_response=raw_response,
-                prompt_tokens=prov_prompt_tokens,
-                completion_tokens=prov_completion_tokens,
-                reasoning_tokens=reasoning_tokens,
+            return WorkflowResult(
+                success=True,
+                result=GroupedCommitResult(
+                    commits=parsed["commits"],
+                    raw_response=raw_response,
+                    prompt_tokens=prov_prompt_tokens,
+                    completion_tokens=prov_completion_tokens,
+                    reasoning_tokens=reasoning_tokens,
+                ),
             )
 
     def display_grouped_commits(
@@ -286,7 +297,10 @@ class GroupedCommitWorkflow:
             )
 
     def handle_grouped_commit_confirmation(
-        self, result: GroupedCommitResult, conversation_messages: list[dict[str, str]]
+        self,
+        result: GroupedCommitResult,
+        conversation_messages: list[dict[str, str]],
+        prompt_fn: PromptFn | None = None,
     ) -> str:
         """Handle user confirmation for grouped commits.
 
@@ -299,8 +313,9 @@ class GroupedCommitWorkflow:
             "regenerate": User wants to regenerate (with optional feedback)
         """
         num_commits = len(result.commits)
+        _prompt = prompt_fn or (lambda msg, **kw: click.prompt(msg, **kw))
         while True:
-            response = click.prompt(
+            response = _prompt(
                 f"Proceed with {num_commits} commits above? [y/n/r/<feedback>]",
                 type=str,
                 show_default=False,
@@ -439,101 +454,89 @@ class GroupedCommitWorkflow:
 
     def execute_workflow(
         self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        temperature: float,
-        max_output_tokens: int,
-        max_retries: int,
-        require_confirmation: bool,
-        quiet: bool,
-        no_verify: bool,
-        dry_run: bool,
-        push: bool,
-        show_prompt: bool,
-        interactive: bool,
-        message_only: bool,
-        git_state: GitState,
-        hint: str,
-        hook_timeout: int = 120,
-        fifty_seventy_two: bool = False,
-        signoff: bool = False,
+        ctx: WorkflowContext,
+        config: GACConfig,
     ) -> int:
         """Execute the complete grouped commit workflow.
+
+        Args:
+            ctx: WorkflowContext containing all configuration, flags, and state.
+            config: Application configuration (GACConfig).
 
         Returns:
             Exit code: 0 for success, non-zero for failure.
         """
-        if show_prompt:
-            full_prompt = f"SYSTEM PROMPT:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}"
+        if ctx.flags.show_prompt:
+            full_prompt = f"SYSTEM PROMPT:\n{ctx.system_prompt}\n\nUSER PROMPT:\n{ctx.user_prompt}"
             console.print(Panel(full_prompt, title="Prompt for LLM", border_style="bright_blue"))
 
         conversation_messages: list[dict[str, str]] = []
-        if system_prompt:
-            conversation_messages.append({"role": "system", "content": system_prompt})
-        conversation_messages.append({"role": "user", "content": user_prompt})
+        if ctx.system_prompt:
+            conversation_messages.append({"role": "system", "content": ctx.system_prompt})
+        conversation_messages.append({"role": "user", "content": ctx.user_prompt})
 
         # Get staged files for validation
         staged_files_set = set(get_staged_files(existing_only=False))
 
         # Handle interactive questions if enabled
-        if interactive and not message_only:
-            from gac.interactive_mode import InteractiveMode
-
-            interactive_mode = InteractiveMode(self.config)
-            interactive_mode.handle_interactive_flow(
-                model=model,
-                user_prompt=user_prompt,
-                git_state=git_state,
-                hint=hint,
+        if ctx.interactive and not ctx.message_only:
+            ctx.state.interactive_mode.handle_interactive_flow(
+                model=ctx.model,
+                user_prompt=ctx.user_prompt,
+                git_state=ctx.git_state,
+                hint=ctx.hint,
                 conversation_messages=conversation_messages,
-                temperature=temperature,
-                max_tokens=max_output_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
+                temperature=ctx.temperature,
+                max_tokens=ctx.max_output_tokens,
+                max_retries=ctx.max_retries,
+                quiet=ctx.quiet,
             )
 
         while True:
             # Generate grouped commits
             result = self.generate_grouped_commits_with_retry(
-                model=model,
+                model=ctx.model,
                 conversation_messages=conversation_messages,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                max_retries=max_retries,
-                quiet=quiet,
+                temperature=ctx.temperature,
+                max_output_tokens=ctx.max_output_tokens,
+                max_retries=ctx.max_retries,
+                quiet=ctx.quiet,
                 staged_files_set=staged_files_set,
-                require_confirmation=require_confirmation,
+                require_confirmation=ctx.flags.require_confirmation,
             )
 
-            # Check if generation returned an exit code
-            if isinstance(result, int):
-                return result
+            # Check if generation failed or returned no result (e.g. user declined token warning)
+            if not result.success:
+                return result.exit_code
+            if result.result is None:
+                return result.exit_code
+
+            commit_result = result.result
 
             # Display results
             self.display_grouped_commits(
-                result,
-                model,
-                result.prompt_tokens,
-                quiet,
-                completion_tokens=result.completion_tokens,
-                reasoning_tokens=result.reasoning_tokens,
+                commit_result,
+                ctx.model,
+                commit_result.prompt_tokens,
+                ctx.quiet,
+                completion_tokens=commit_result.completion_tokens,
+                reasoning_tokens=commit_result.reasoning_tokens,
             )
 
             # Handle confirmation
-            if require_confirmation:
-                decision = self.handle_grouped_commit_confirmation(result, conversation_messages)
+            if ctx.flags.require_confirmation:
+                decision = self.handle_grouped_commit_confirmation(commit_result, conversation_messages)
                 if decision == "accept":
                     # User accepted, execute commits
                     return self.execute_grouped_commits(
-                        result=result,
-                        dry_run=dry_run,
-                        push=push,
-                        no_verify=no_verify,
-                        hook_timeout=hook_timeout,
-                        fifty_seventy_two=fifty_seventy_two,
-                        signoff=signoff,
-                        model=model,
+                        result=commit_result,
+                        dry_run=ctx.dry_run,
+                        push=ctx.flags.push,
+                        no_verify=ctx.flags.no_verify,
+                        hook_timeout=ctx.flags.hook_timeout,
+                        fifty_seventy_two=ctx.flags.fifty_seventy_two,
+                        signoff=ctx.flags.signoff,
+                        model=ctx.model,
                     )
                 elif decision == "reject":
                     return 0  # User rejected, clean exit
@@ -543,12 +546,12 @@ class GroupedCommitWorkflow:
             else:
                 # No confirmation required, execute directly
                 return self.execute_grouped_commits(
-                    result=result,
-                    dry_run=dry_run,
-                    push=push,
-                    no_verify=no_verify,
-                    hook_timeout=hook_timeout,
-                    fifty_seventy_two=fifty_seventy_two,
-                    signoff=signoff,
-                    model=model,
+                    result=commit_result,
+                    dry_run=ctx.dry_run,
+                    push=ctx.flags.push,
+                    no_verify=ctx.flags.no_verify,
+                    hook_timeout=ctx.flags.hook_timeout,
+                    fifty_seventy_two=ctx.flags.fifty_seventy_two,
+                    signoff=ctx.flags.signoff,
+                    model=ctx.model,
                 )

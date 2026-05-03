@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from gac.config import GACConfig
 from gac.errors import GitError
-from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow
+from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow, WorkflowResult
 
 
 class TestLargeFileHandling:
@@ -55,7 +55,7 @@ class TestLargeFileHandling:
             require_confirmation=True,
         )
 
-        assert result == 0  # User declined, early exit
+        assert result == WorkflowResult(success=True, exit_code=0)  # User declined, early exit
         mock_warning.assert_called_once_with(5000, 4096, True)
         mock_generate.assert_not_called()  # Should not proceed to generation
 
@@ -89,8 +89,10 @@ class TestLargeFileHandling:
             require_confirmation=True,
         )
 
-        assert isinstance(result, GroupedCommitResult)
-        assert len(result.commits) == 1
+        assert isinstance(result, WorkflowResult)
+        assert result.success
+        assert result.result is not None
+        assert len(result.result.commits) == 1
         mock_warning.assert_called_once_with(5000, 4096, True)
         mock_generate.assert_called_once()
 
@@ -138,7 +140,7 @@ class TestRetryLogicAndErrorRecovery:
             require_confirmation=True,
         )
 
-        assert result == 1  # Failure exit code
+        assert result == WorkflowResult(success=False, exit_code=1)  # Failure exit code
         # Should have been called 3 times (initial + 2 retries)
         assert mock_generate.call_count == 3
         # Should show error panel after final failure
@@ -170,9 +172,11 @@ class TestRetryLogicAndErrorRecovery:
             require_confirmation=True,
         )
 
-        assert isinstance(result, GroupedCommitResult)
-        assert len(result.commits) == 1
-        assert set(result.commits[0]["files"]) == staged_files_set
+        assert isinstance(result, WorkflowResult)
+        assert result.success
+        assert result.result is not None
+        assert len(result.result.commits) == 1
+        assert set(result.result.commits[0]["files"]) == staged_files_set
         assert mock_generate.call_count == 2
 
     @patch("gac.grouped_commit_workflow.generate_grouped_commits")
@@ -195,7 +199,7 @@ class TestRetryLogicAndErrorRecovery:
                 require_confirmation=True,
             )
 
-        assert result == 1
+        assert result == WorkflowResult(success=False, exit_code=1)
         # Should not log retry messages in quiet mode
         mock_logger.assert_not_called()
 

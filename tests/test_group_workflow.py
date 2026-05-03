@@ -208,7 +208,7 @@ def test_group_token_scaling(num_files, expected_multiplier):
 
         # Check that the workflow was called with the correct max_output_tokens
         call_args = mock_exec.call_args
-        actual_max_tokens = call_args.kwargs["max_output_tokens"]
+        actual_max_tokens = call_args.args[0].config.max_output_tokens
         expected_tokens = base_tokens * expected_multiplier
         assert actual_max_tokens == expected_tokens, (
             f"For {num_files} files, expected {expected_multiplier}x scaling "

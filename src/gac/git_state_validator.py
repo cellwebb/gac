@@ -11,6 +11,7 @@ from gac.git import get_staged_files, get_staged_status, run_git_command
 from gac.preprocess import preprocess_diff
 from gac.security import get_affected_files, scan_staged_diff
 from gac.utils import console
+from gac.workflow_utils import PromptFn
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,12 @@ class GitStateValidator:
             secrets=secrets,
         )
 
-    def handle_secret_detection(self, secrets: list[Any], quiet: bool = False) -> bool | None:
+    def handle_secret_detection(
+        self,
+        secrets: list[Any],
+        quiet: bool = False,
+        prompt_fn: PromptFn | None = None,
+    ) -> bool | None:
         """Handle secret detection and user interaction.
 
         Returns:
@@ -148,8 +154,9 @@ class GitStateValidator:
         try:
             import click
 
+            _prompt = prompt_fn or (lambda msg, **kw: click.prompt(msg, **kw))
             choice = (
-                click.prompt(
+                _prompt(
                     "\nChoose an option",
                     type=click.Choice(["a", "c", "r"], case_sensitive=False),
                     default="a",

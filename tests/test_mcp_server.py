@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
+from gac.grouped_commit_workflow import WorkflowResult
 from gac.mcp.models import (
     CommitInfo,
     CommitRequest,
@@ -172,13 +173,13 @@ def _make_prompt_bundle(system: str = "sys", user: str = "usr") -> MagicMock:
     return bundle
 
 
-def _make_grouped_result(commits: list[dict[str, object]] | None = None) -> MagicMock:
+def _make_grouped_result(commits: list[dict[str, object]] | None = None) -> WorkflowResult:
     gr = MagicMock()
     gr.commits = commits or [
         {"message": "feat(auth): add login", "files": ["src/auth.py"]},
         {"message": "fix(api): handle timeout", "files": ["src/api.py"]},
     ]
-    return gr
+    return WorkflowResult(success=True, result=gr)
 
 
 class TestGacCommit:
@@ -434,12 +435,14 @@ class TestGacCommit:
     @patch("gac.git.run_git_command")
     @patch("gac.config.load_config", return_value={"model": "openai:gpt-4"})
     @patch("gac.mcp.server._check_git_repo", return_value=(True, ""))
-    def test_grouped_generation_failure_returns_int(
+    def test_grouped_generation_failure_returns_workflow_result(
         self, mock_check, mock_config, mock_git, mock_staged, mock_validator_cls, mock_pb_cls, mock_workflow_cls
     ):
         mock_validator_cls.return_value.get_git_state.return_value = _make_git_state()
         mock_pb_cls.return_value.build_prompts.return_value = _make_prompt_bundle()
-        mock_workflow_cls.return_value.generate_grouped_commits_with_retry.return_value = 1
+        mock_workflow_cls.return_value.generate_grouped_commits_with_retry.return_value = WorkflowResult(
+            success=False, exit_code=1
+        )
 
         result = gac_commit(CommitRequest(group=True))
 

@@ -7,7 +7,7 @@ from unittest import mock
 
 from gac.config import GACConfig
 from gac.errors import GitError
-from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow
+from gac.grouped_commit_workflow import GroupedCommitResult, GroupedCommitWorkflow, WorkflowResult
 
 
 def test_display_quiet_mode():
@@ -169,7 +169,9 @@ def test_conversation_state_preservation():
                     require_confirmation=True,
                 )
 
-    assert isinstance(result, GroupedCommitResult)
+    assert isinstance(result, WorkflowResult)
+    assert result.success
+    assert result.result is not None
     # Should preserve original system message
     assert conversation_messages[0]["content"] == "Custom system prompt"
 
@@ -325,4 +327,4 @@ def test_file_validation_failed_after_retries():
                     require_confirmation=True,
                 )
 
-    assert result == 1
+    assert result == WorkflowResult(success=False, exit_code=1)

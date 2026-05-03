@@ -1,6 +1,7 @@
 import logging
 import tempfile
 from pathlib import Path
+from typing import Any, Protocol
 
 import click
 from prompt_toolkit import prompt
@@ -10,6 +11,12 @@ from gac.constants import EnvDefaults
 from gac.utils import console
 
 logger = logging.getLogger(__name__)
+
+
+class PromptFn(Protocol):
+    """Protocol for prompt functions that accept keyword arguments."""
+
+    def __call__(self, __msg: str, **kwargs: Any) -> str: ...
 
 
 def format_token_usage(prompt_tokens: int, completion_tokens: int, reasoning_tokens: int = 0) -> str:
@@ -25,11 +32,14 @@ def handle_confirmation_loop(
     conversation_messages: list[dict[str, str]],
     quiet: bool,
     model: str,
+    prompt_fn: PromptFn | None = None,
 ) -> tuple[str, str, list[dict[str, str]]]:
     from gac.editor import edit_commit_message_inplace
 
+    _prompt = prompt_fn or click.prompt
+
     while True:
-        response = click.prompt(
+        response = _prompt(
             "Proceed with commit above? [y/n/r/e/<feedback>]",
             type=str,
             show_default=False,

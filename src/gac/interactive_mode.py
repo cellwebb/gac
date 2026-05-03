@@ -9,6 +9,7 @@ from gac.config import GACConfig
 from gac.git_state_validator import GitState
 from gac.utils import console
 from gac.workflow_utils import (
+    PromptFn,
     collect_interactive_answers,
     format_answers_for_prompt,
     handle_confirmation_loop,
@@ -167,11 +168,14 @@ class InteractiveMode:
         commit_message: str,
         conversation_messages: list[dict[str, str]],
         quiet: bool = False,
+        prompt_fn: PromptFn | None = None,
     ) -> tuple[str, str]:
         """Handle confirmation loop for single commit. Returns (final_message, decision).
 
         Decision is one of: "yes", "no", "regenerate"
         """
-        decision, final_message, _ = handle_confirmation_loop(commit_message, conversation_messages, quiet, model)
+        decision, final_message, _ = handle_confirmation_loop(
+            commit_message, conversation_messages, quiet, model, prompt_fn=prompt_fn
+        )
 
         return final_message, decision

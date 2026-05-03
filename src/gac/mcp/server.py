@@ -377,7 +377,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                 require_confirmation=False,
             )
 
-            if isinstance(group_result, int):
+            if not group_result.success:
                 reset_gac_token_accumulator()  # Don't leak tokens into next request
                 return CommitResult(
                     success=False,
@@ -387,13 +387,16 @@ def gac_commit(request: CommitRequest) -> CommitResult:
                     warnings=warnings,
                 )
 
+            commit_data = group_result.result
+            assert commit_data is not None
+
             grouped_commits = [
                 GroupedCommit(
                     scope=_extract_scope(commit["message"]),
                     files=commit["files"],
                     suggested_message=commit["message"].strip(),
                 )
-                for commit in group_result.commits
+                for commit in commit_data.commits
             ]
 
             num_groups = len(grouped_commits)
@@ -423,7 +426,7 @@ def gac_commit(request: CommitRequest) -> CommitResult:
             # ── execute all grouped commits ──────────────────────────────────
             with _stderr_console_redirect():
                 exit_code = workflow.execute_grouped_commits(
-                    result=group_result,
+                    result=commit_data,
                     dry_run=False,
                     push=request.push,
                     no_verify=request.no_verify,
