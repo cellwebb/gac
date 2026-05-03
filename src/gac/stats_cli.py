@@ -260,7 +260,7 @@ def show() -> None:
             console.print("[bold yellow]🏆 New biggest gac record![/bold yellow]")
         if new_streak_record:
             console.print("[bold yellow]🏆 New longest streak record![/bold yellow]")
-        elif tied_streak_record:
+        elif tied_streak_record:  # pragma: no cover — mathematically unreachable with current prev_longest logic
             console.print("[yellow]🥈 Tied your longest streak record![/yellow]")
         if new_peak_gacs:
             console.print("[bold yellow]🏆 New daily high score for gacs![/bold yellow]")

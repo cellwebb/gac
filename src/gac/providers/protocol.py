@@ -32,7 +32,7 @@ class ProviderProtocol(Protocol):
         Raises:
             AIError: For any generation-related errors
         """
-        ...
+        ...  # pragma: no cover
 
     @property
     def name(self) -> str:
@@ -41,7 +41,7 @@ class ProviderProtocol(Protocol):
         Returns:
             Provider name identifier
         """
-        ...
+        ...  # pragma: no cover
 
     @property
     def api_key_env(self) -> str:
@@ -50,7 +50,7 @@ class ProviderProtocol(Protocol):
         Returns:
             Environment variable name
         """
-        ...
+        ...  # pragma: no cover
 
     @property
     def base_url(self) -> str:
@@ -59,7 +59,7 @@ class ProviderProtocol(Protocol):
         Returns:
             Base API URL
         """
-        ...
+        ...  # pragma: no cover
 
     @property
     def timeout(self) -> int:
@@ -68,4 +68,4 @@ class ProviderProtocol(Protocol):
         Returns:
             Timeout in seconds
         """
-        ...
+        ...  # pragma: no cover
