@@ -51,7 +51,7 @@ class TestLoadStats:
 
     def test_load_stats_empty(self, tmp_path):
         """Test loading stats when file doesn't exist."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "nonexistent.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "nonexistent.json"):
             stats = load_stats()
             assert stats["total_commits"] == 0
             assert stats["first_used"] is None
@@ -74,7 +74,7 @@ class TestLoadStats:
         }
         stats_file.write_text(json.dumps(test_data))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             stats = load_stats()
             assert stats["total_commits"] == 42
             assert stats["first_used"] == "2024-01-01T00:00:00"
@@ -86,7 +86,7 @@ class TestLoadStats:
         stats_file = tmp_path / "stats.json"
         stats_file.write_text("not valid json")
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             stats = load_stats()
             assert stats["total_commits"] == 0
             assert stats["first_used"] is None
@@ -111,7 +111,7 @@ class TestSaveStats:
             "projects": {},
         }
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             save_stats(stats)
 
         loaded = json.loads(stats_file.read_text())
@@ -132,7 +132,7 @@ class TestSaveStats:
             "projects": {},
         }
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             with patch.object(Path, "write_text", side_effect=OSError("Permission denied")):
                 with caplog.at_level("WARNING"):
                     save_stats(stats)
@@ -146,7 +146,7 @@ class TestRecordCommit:
         """Test recording first commit."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             # Now record_gac and record_commit are called together after successful commit
             record_commit()
             record_gac()
@@ -161,7 +161,7 @@ class TestRecordCommit:
         """Test recording multiple commits."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_commit()
             record_commit()
             record_commit()
@@ -174,7 +174,7 @@ class TestRecordCommit:
         stats_file = tmp_path / "stats.json"
         today = datetime.now().strftime("%Y-%m-%d")
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_commit()
             record_commit()
 
@@ -187,7 +187,7 @@ class TestRecordCommit:
         iso_week = datetime.now().isocalendar()
         week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_commit()
             record_commit()
             record_gac()
@@ -202,7 +202,7 @@ class TestGetStatsSummary:
 
     def test_summary_no_commits(self):
         """Test summary when no commits made."""
-        with patch("gac.stats.load_stats") as mock_load:
+        with patch("gac.stats.store.load_stats") as mock_load:
             mock_load.return_value: GACStats = {
                 "total_gacs": 0,
                 "total_commits": 0,
@@ -238,7 +238,7 @@ class TestGetStatsSummary:
         }
         stats_file.write_text(json.dumps(stats))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             assert summary["total_commits"] == 10
             assert summary["today_commits"] == 3
@@ -265,7 +265,7 @@ class TestResetStats:
         }
         stats_file.write_text(json.dumps(stats))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             reset_stats()
 
             new_stats = load_stats()
@@ -284,7 +284,7 @@ class TestAtomicSave:
         stats: GACStats = _empty_stats()
         stats["total_gacs"] = 7
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             save_stats(stats)
 
         assert stats_file.exists()
@@ -300,7 +300,7 @@ class TestAtomicSave:
         good_stats: GACStats = _empty_stats()
         good_stats["total_gacs"] = 99
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             save_stats(good_stats)
             # Sanity: existing file is the good one.
             assert json.loads(stats_file.read_text())["total_gacs"] == 99
@@ -325,7 +325,7 @@ class TestRecordTokens:
         """Test recording prompt and completion tokens updates totals."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(100, 50, model="anthropic:test-model")
 
             stats = load_stats()
@@ -336,7 +336,7 @@ class TestRecordTokens:
         """Test that token counts accumulate across calls."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(100, 50, model="anthropic:test-model")
             record_tokens(200, 75, model="anthropic:test-model")
 
@@ -351,7 +351,7 @@ class TestRecordTokens:
         iso_week = datetime.now().isocalendar()
         week_key = f"{iso_week[0]}-W{iso_week[1]:02d}"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(100, 50)
 
             stats = load_stats()
@@ -364,7 +364,7 @@ class TestRecordTokens:
         """Test tokens are tracked per model."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(100, 50, model="anthropic:claude-haiku-4-5")
             record_tokens(200, 75, model="openai:gpt-5")
             record_tokens(50, 25, model="anthropic:claude-haiku-4-5")
@@ -379,7 +379,7 @@ class TestRecordTokens:
         """Test tokens are attributed to a project bucket."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(100, 50, model="anthropic:test", project_name="proj-a")
             record_tokens(200, 75, model="anthropic:test", project_name="proj-b")
             record_tokens(50, 25, model="anthropic:test", project_name="proj-a")
@@ -394,7 +394,7 @@ class TestRecordTokens:
         """Test record_tokens does nothing when GAC_DISABLE_STATS is set."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+        with patch("gac.stats.store.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
             record_tokens(100, 50, model="anthropic:test")
 
             stats = load_stats()
@@ -405,7 +405,7 @@ class TestRecordTokens:
         """Test record_tokens skips when both counts are zero."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_tokens(0, 0, model="anthropic:test")
 
             assert not stats_file.exists() or load_stats()["total_prompt_tokens"] == 0
@@ -418,7 +418,7 @@ class TestRecordGacWithModel:
         """Test record_gac increments model.gacs counter."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_gac(model="anthropic:claude-haiku-4-5")
             record_gac(model="anthropic:claude-haiku-4-5")
             record_gac(model="openai:gpt-5")
@@ -431,7 +431,7 @@ class TestRecordGacWithModel:
         """Test record_gac without a model leaves models dict empty."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             record_gac()
 
             stats = load_stats()
@@ -457,7 +457,7 @@ class TestSummaryWithTokens:
         stats["weekly_completion_tokens"] = {week_key: 100}
         stats_file.write_text(json.dumps(stats))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             assert summary["total_prompt_tokens"] == 1000
             assert summary["total_completion_tokens"] == 500
@@ -477,7 +477,7 @@ class TestSummaryWithTokens:
         }
         stats_file.write_text(json.dumps(stats))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             top = summary["top_models"]
             assert top[0][0] == "model-b"
@@ -495,7 +495,7 @@ class TestSummaryWithTokens:
         }
         stats_file.write_text(json.dumps(stats))
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             top = summary["top_models"]
             # All have 5 gacs; sort by total tokens (prompt+completion+reasoning): b=1300, a=650, c=250
@@ -511,7 +511,7 @@ class TestDisableStats:
         """Test that record_gac does nothing when GAC_DISABLE_STATS is set."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+        with patch("gac.stats.store.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
             record_gac()
 
             stats = load_stats()
@@ -521,7 +521,7 @@ class TestDisableStats:
         """Test that record_commit does nothing when GAC_DISABLE_STATS is set."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
+        with patch("gac.stats.store.STATS_FILE", stats_file), patch.dict("os.environ", {"GAC_DISABLE_STATS": "1"}):
             record_commit()
 
             stats = load_stats()
@@ -531,7 +531,7 @@ class TestDisableStats:
         """Test that record_gac works when GAC_DISABLE_STATS is not set."""
         stats_file = tmp_path / "stats.json"
 
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             # Ensure env var is not set
             import os
 
@@ -579,7 +579,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_with_duration_updates_speed_fields(self, tmp_path):
         """record_tokens with duration_ms > 0 updates timing fields."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=1000)
             stats = load_stats()
             m = stats["models"]["openai:gpt-4"]
@@ -591,7 +591,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_duration_accumulates(self, tmp_path):
         """Multiple calls with duration_ms accumulate correctly."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=500)
             record_tokens(100, 100, model="openai:gpt-4", duration_ms=1000)
             stats = load_stats()
@@ -604,7 +604,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_non_extreme_duration_preserves_bounds(self, tmp_path):
         """A non-extreme duration leaves prior min/max unchanged."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=200)
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=800)
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=400)
@@ -616,7 +616,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_without_duration_leaves_fields_untouched(self, tmp_path):
         """record_tokens without duration_ms leaves timing fields at zero."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4")
             stats = load_stats()
             m = stats["models"]["openai:gpt-4"]
@@ -628,7 +628,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_zero_duration_leaves_fields_untouched(self, tmp_path):
         """record_tokens with duration_ms=0 leaves timing fields at zero."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4", duration_ms=0)
             stats = load_stats()
             m = stats["models"]["openai:gpt-4"]
@@ -657,7 +657,7 @@ class TestModelSpeedTracking:
             "models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}},
         }
         stats_file.write_text(json.dumps(old_data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             stats = load_stats()
             m = stats["models"]["openai:gpt-4"]
             assert m["total_duration_ms"] == 0
@@ -688,7 +688,7 @@ class TestModelSpeedTracking:
             "models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}},
         }
         stats_file.write_text(json.dumps(old_data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             load_stats()
             record_tokens(200, 80, model="openai:gpt-4", duration_ms=500)
             stats = load_stats()
@@ -701,7 +701,7 @@ class TestModelSpeedTracking:
 
     def test_get_stats_summary_avg_tps(self, tmp_path):
         """get_stats_summary computes avg_tps when timing data is available."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 100, model="openai:gpt-4", duration_ms=1000)
             summary = get_stats_summary()
             top_models = summary["top_models"]
@@ -710,7 +710,7 @@ class TestModelSpeedTracking:
 
     def test_get_stats_summary_avg_tps_none_when_no_timing(self, tmp_path):
         """get_stats_summary sets avg_tps to None when no timing data."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4")
             summary = get_stats_summary()
             top_models = summary["top_models"]
@@ -719,7 +719,7 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_reasoning_accumulates(self, tmp_path):
         """reasoning_tokens accumulates per model."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 80, model="openai:o3", reasoning_tokens=30)
             record_tokens(100, 60, model="openai:o3", reasoning_tokens=20)
             stats = load_stats()
@@ -728,14 +728,14 @@ class TestModelSpeedTracking:
 
     def test_record_tokens_reasoning_defaults_zero(self, tmp_path):
         """reasoning_tokens defaults to 0 when not provided."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 50, model="openai:gpt-4")
             stats = load_stats()
             assert stats["models"]["openai:gpt-4"]["reasoning_tokens"] == 0
 
     def test_get_stats_summary_reasoning_in_top_models(self, tmp_path):
         """reasoning_tokens appears in top_models from get_stats_summary."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(100, 80, model="openai:o3", reasoning_tokens=30)
             summary = get_stats_summary()
             top_models = summary["top_models"]
@@ -744,7 +744,7 @@ class TestModelSpeedTracking:
 
     def test_normalize_models_backfills_reasoning_tokens(self, tmp_path):
         """Old stats files without reasoning_tokens get it defaulted to 0."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             raw_stats = {"models": {"openai:gpt-4": {"gacs": 1, "prompt_tokens": 100, "completion_tokens": 50}}}
             (tmp_path / "stats.json").write_text(json.dumps(raw_stats))
             stats = load_stats()
@@ -758,8 +758,8 @@ class TestBiggestGac:
         """First gac with tokens becomes the biggest gac."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0  # Reset accumulator
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0  # Reset accumulator
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
 
@@ -773,13 +773,13 @@ class TestBiggestGac:
         """A bigger gac overwrites the previous record."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First gac: small
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 
-            gac.stats._current_gac_tokens = 0
+            gac.stats.recorder._current_gac_tokens = 0
             # Second gac: much bigger
             record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
             record_gac(model="openai:gpt-4")
@@ -791,13 +791,13 @@ class TestBiggestGac:
         """A smaller gac doesn't overwrite the record."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Big gac first
             record_tokens(5000, 500, model="openai:gpt-4", reasoning_tokens=200)
             record_gac(model="openai:gpt-4")
 
-            gac.stats._current_gac_tokens = 0
+            gac.stats.recorder._current_gac_tokens = 0
             # Smaller gac
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
@@ -809,8 +809,8 @@ class TestBiggestGac:
         """Tokens from multiple record_tokens calls in one gac accumulate."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Simulate grouped workflow with multiple AI calls
             record_tokens(1000, 200, model="openai:gpt-4", reasoning_tokens=50)
             record_tokens(2000, 400, model="openai:gpt-4", reasoning_tokens=100)
@@ -824,8 +824,8 @@ class TestBiggestGac:
         """get_stats_summary includes biggest_gac_tokens and biggest_gac_date."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
 
@@ -835,7 +835,7 @@ class TestBiggestGac:
 
     def test_biggest_gac_defaults_zero(self, tmp_path):
         """biggest_gac_tokens defaults to 0 on fresh stats."""
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             stats = load_stats()
             assert stats["biggest_gac_tokens"] == 0
             assert stats["biggest_gac_date"] is None
@@ -860,7 +860,7 @@ class TestBiggestGac:
             "models": {},
         }
         stats_file.write_text(json.dumps(old_data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             stats = load_stats()
             assert stats["biggest_gac_tokens"] == 0
             assert stats["biggest_gac_date"] is None
@@ -869,8 +869,8 @@ class TestBiggestGac:
         """reset_stats clears biggest_gac fields."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             record_gac(model="openai:gpt-4")
 
@@ -886,8 +886,8 @@ class TestBiggestGac:
         """A gac with no tokens doesn't set biggest_gac."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             record_gac(model="openai:gpt-4")
 
             stats = load_stats()
@@ -903,14 +903,14 @@ class TestBiggestGac:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First request (e.g. dry_run): tokens recorded but no gac
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             reset_gac_token_accumulator()
 
             # Second request: a smaller successful gac
-            gac.stats._current_gac_tokens = 0
+            gac.stats.recorder._current_gac_tokens = 0
             record_tokens(50, 10, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 
@@ -922,8 +922,8 @@ class TestBiggestGac:
         """Without reset, tokens DO leak into the next gac (the bug we fixed)."""
         import gac.stats
 
-        gac.stats._current_gac_tokens = 0
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # First request (e.g. dry_run): tokens recorded but no gac
             record_tokens(500, 100, model="openai:gpt-4", reasoning_tokens=50)
             # Intentionally NOT calling reset_gac_token_accumulator()
@@ -963,7 +963,7 @@ class TestMalformedStats:
             "models": {},
         }
         stats_file.write_text(json.dumps(data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             # Should not crash; date falls back to "?"
             assert summary["biggest_gac_tokens"] == 500
@@ -991,7 +991,7 @@ class TestMalformedStats:
             "models": {},
         }
         stats_file.write_text(json.dumps(data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             # Should not crash; tokens coerce to 0
             assert summary["biggest_gac_tokens"] == 0
@@ -1016,7 +1016,7 @@ class TestMalformedStats:
             "models": {},
         }
         stats_file.write_text(json.dumps(data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             # Should fall back to "?" instead of crashing
             assert summary["first_used"] == "<invalid>"
@@ -1042,7 +1042,7 @@ class TestMalformedStats:
             "models": {},
         }
         stats_file.write_text(json.dumps(data))
-        with patch("gac.stats.STATS_FILE", stats_file):
+        with patch("gac.stats.store.STATS_FILE", stats_file):
             summary = get_stats_summary()
             # Should fall back to "<invalid>" instead of passing through the int
             assert summary["first_used"] == "<invalid>"
@@ -1057,15 +1057,15 @@ class TestMalformedStats:
         import gac.stats
         from gac.stats import reset_gac_token_accumulator
 
-        with patch("gac.stats.STATS_FILE", tmp_path / "stats.json"):
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
             # Simulate leftover stale tokens from a failed previous request
-            gac.stats._current_gac_tokens = 9999
+            gac.stats.recorder._current_gac_tokens = 9999
 
             # MCP server resets at the start of each request
             reset_gac_token_accumulator()
 
             # Now a normal request
-            gac.stats._current_gac_tokens = 0
+            gac.stats.recorder._current_gac_tokens = 0
             record_tokens(100, 50, model="openai:gpt-4")
             record_gac(model="openai:gpt-4")
 

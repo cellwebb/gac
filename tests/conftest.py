@@ -180,21 +180,28 @@ def base_mocks(
 
 @pytest.fixture(autouse=True, scope="session")
 def isolate_stats_file():
-    """Redirect STATS_FILE to a temp directory so tests never write to ~/.gac_stats.json."""
+    """Redirect STATS_FILE to a temp directory so tests never write to ~/.gac_stats.json.
+
+    Patches ``gac.stats.store.STATS_FILE`` directly — that is the symbol that
+    load_stats() and save_stats() close over.  The package-level
+    ``gac.stats.STATS_FILE`` proxies through to ``store`` via __getattr__,
+    but monkeypatches must target the canonical ``gac.stats.store.STATS_FILE``
+    because module-level __setattr__ is not supported (PEP 562).
+    """
     import tempfile
     from pathlib import Path
+
+    import gac.stats.store as _store
 
     temp_dir = Path(tempfile.mkdtemp(prefix="gac_test_stats_"))
     temp_stats = temp_dir / ".gac_stats.json"
 
-    import gac.stats
-
-    original_stats_file = gac.stats.STATS_FILE
-    gac.stats.STATS_FILE = temp_stats
+    original_stats_file = _store.STATS_FILE
+    _store.STATS_FILE = temp_stats
 
     yield temp_stats
 
-    gac.stats.STATS_FILE = original_stats_file
+    _store.STATS_FILE = original_stats_file
 
     import shutil
 

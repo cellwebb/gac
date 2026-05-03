@@ -261,7 +261,7 @@ def test_configure_stats_disable_from_default():
         stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
                 mconfirm.return_value.ask.side_effect = [False]
@@ -330,7 +330,7 @@ def test_configure_stats_disable_when_explicitly_enabled():
         stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.confirm") as mconfirm,
             ):
@@ -384,7 +384,7 @@ def test_configure_stats_disable_offers_to_delete_existing_history():
 
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
                 mconfirm.return_value.ask.side_effect = [False, True]  # decline stats, confirm delete
@@ -404,7 +404,7 @@ def test_configure_stats_disable_keeps_existing_history_when_user_declines():
 
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
                 mconfirm.return_value.ask.side_effect = [False, False]  # decline stats, keep file
@@ -424,7 +424,7 @@ def test_configure_stats_disable_no_prompt_when_no_history():
 
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.confirm") as mconfirm,
             ):
                 mconfirm.return_value.ask.side_effect = [False]  # only the enable prompt
@@ -443,7 +443,7 @@ def test_init_cli_language_action_cancelled(monkeypatch):
         stats_file = Path(tmpdir) / ".gac_stats.json"  # non-existent
         with _patch_env_paths(env_path):
             with (
-                mock.patch("gac.stats.STATS_FILE", stats_file),
+                mock.patch("gac.stats.store.STATS_FILE", stats_file),
                 mock.patch("questionary.select") as mselect,
                 mock.patch("questionary.text") as mtext,
                 mock.patch("questionary.password") as mpass,
