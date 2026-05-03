@@ -469,3 +469,101 @@ diff --git a/style.css b/style.css
         # All sections should be processed, order may vary due to parallel execution
         for i in range(6):
             assert any(f"file{i}.py" in section for section in result)
+
+
+class TestFilteredFileSummaryAutoDetection:
+    """Test extract_filtered_file_summary with change_type=None auto-detection."""
+
+    def test_lockfile_change_type_auto(self):
+        """Lockfile should be auto-detected as [Lockfile/generated file change]."""
+        section = "diff --git a/package-lock.json b/package-lock.json\nindex abc..def 100644\n+some changes"
+        result = extract_filtered_file_summary(section, change_type=None)
+        assert "[Lockfile/generated file change]" in result
+
+    def test_minified_extension_change_type_auto(self):
+        """Minified extension file should be auto-detected as [Minified file change]."""
+        section = "diff --git a/app.min.js b/app.min.js\nindex abc..def 100644\n+some changes"
+        result = extract_filtered_file_summary(section, change_type=None)
+        assert "[Minified file change]" in result
+
+    def test_filtered_file_change_type_fallback(self):
+        """Non-binary, non-lockfile, non-minified should be [Filtered file change]."""
+        section = "diff --git a/unknown.dat b/unknown.dat\nindex abc..def 100644\n+some changes"
+        result = extract_filtered_file_summary(section, change_type=None)
+        assert "[Filtered file change]" in result
+
+
+class TestFilterBinaryAndMinifiedRealPaths:
+    """Test filter_binary_and_minified with real (non-mocked) filter functions."""
+
+    def test_lockfile_gets_summary(self):
+        """Lockfile changes should produce a summary instead of being dropped."""
+        diff = "diff --git a/package-lock.json b/package-lock.json\nindex abc..def 100644\n+huge lockfile change"
+        result = filter_binary_and_minified(diff)
+        assert "diff --git" in result
+        assert "[Lockfile/generated file change]" in result
+
+    def test_binary_file_gets_summary(self):
+        """Binary file changes should produce a summary."""
+        diff = "diff --git a/image.png b/image.png\nBinary files /dev/null and b/image.png differ"
+        result = filter_binary_and_minified(diff)
+        assert "diff --git" in result
+        assert "[Binary file change]" in result
+
+    def test_minified_extension_gets_summary(self):
+        """Minified extension files should produce a summary."""
+        diff = "diff --git a/app.min.js b/app.min.js\nindex abc..def 100644\n+minified code"
+        result = filter_binary_and_minified(diff)
+        assert "diff --git" in result
+        assert "[Minified file change]" in result
+
+    def test_mixed_diff_filters_and_keeps(self):
+        """A diff with both normal and filtered files should keep normal and summarize filtered."""
+        diff = (
+            "diff --git a/src/main.py b/src/main.py\nindex abc..def 100644\n+print('hello')\n"
+            "diff --git a/package-lock.json b/package-lock.json\nindex abc..def 100644\n+huge lockfile"
+        )
+        result = filter_binary_and_minified(diff)
+        assert "src/main.py" in result
+        assert "[Lockfile/generated file change]" in result
+
+
+class TestSmartTruncateDiffSkippedSummaries:
+    """Test smart_truncate_diff skipped-section summary paths (token_limit < 1000)."""
+
+    @patch("gac.preprocess.count_tokens")
+    def test_skipped_files_summary_shown(self, mock_count):
+        """When sections are skipped and room permits, a skipped summary should appear."""
+        scored_sections = [
+            ("diff --git a/file1.py b/file1.py\n+important change", 5.0),
+            ("diff --git a/file2.py b/file2.py\n+another change", 4.0),
+            ("diff --git a/large.py b/large.py\n" + "+x" * 200, 3.0),
+        ]
+        # token_limit must be < 1000 (avoid shortcut) and >= current_tokens + 200
+        # file1=5 tokens (fits), file2=900 (skipped), large=900 (skipped)
+        # current_tokens=5, need 5+200=205 <= token_limit
+        mock_count.side_effect = [5, 900, 900]
+        result = smart_truncate_diff(scored_sections, token_limit=500, model="test:model")
+        assert "file1.py" in result
+        assert "Skipped files" in result
+
+    @patch("gac.preprocess.count_tokens")
+    def test_skipped_files_more_than_five(self, mock_count):
+        """When >5 files are skipped, 'and N more' should appear."""
+        sections = [(f"diff --git a/file{i}.py b/file{i}.py\n+change{i}", float(i)) for i in range(8)]
+        mock_count.side_effect = [5] + [900] * 7
+        result = smart_truncate_diff(sections, token_limit=500, model="test:model")
+        assert "Skipped files" in result
+        assert "more" in result
+
+    @patch("gac.preprocess.count_tokens")
+    def test_overall_summary_when_room(self, mock_count):
+        """Overall 'Showing N of M' summary should appear when room permits."""
+        scored_sections = [
+            ("diff --git a/file1.py b/file1.py\n+important change", 5.0),
+            ("diff --git a/large.py b/large.py\n" + "+x" * 200, 3.0),
+        ]
+        mock_count.side_effect = [5, 500]
+        result = smart_truncate_diff(scored_sections, token_limit=300, model="test:model")
+        assert "Summary:" in result
+        assert "Showing" in result
