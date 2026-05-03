@@ -13,7 +13,8 @@ from gac.mcp.models import (
     StatusRequest,
     StatusResult,
 )
-from gac.mcp.server import (
+from gac.mcp.server import gac_commit, gac_status
+from gac.mcp.server_utils import (
     _check_git_repo,
     _extract_scope,
     _format_status_summary,
@@ -22,8 +23,6 @@ from gac.mcp.server import (
     _get_recent_commits,
     _stderr_console_redirect,
     _truncate_diff,
-    gac_commit,
-    gac_status,
 )
 
 
