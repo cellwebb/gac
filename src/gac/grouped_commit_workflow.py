@@ -20,7 +20,7 @@ from gac.git import detect_rename_mappings, get_staged_files, run_git_command
 from gac.git_state_validator import GitState
 from gac.model_identifier import ModelIdentifier
 from gac.postprocess import clean_commit_message
-from gac.stats import record_commit, record_gac, record_tokens
+from gac.stats import record_commit, record_gac, record_tokens, reset_gac_token_accumulator
 from gac.workflow_utils import check_token_warning, execute_commit, restore_staging
 
 logger = logging.getLogger(__name__)
@@ -173,6 +173,13 @@ class GroupedCommitWorkflow:
         warning_limit = self.config["warning_limit_tokens"]
 
         while True:
+            # Reset the per-gac token accumulator so that content-level retries
+            # don't inflate biggest_gac_tokens.  Only the final successful
+            # call's tokens should count toward the "biggest gac" record.
+            # (Daily/weekly/total stats are unaffected — record_tokens writes
+            # those to disk immediately.)
+            reset_gac_token_accumulator()
+
             prompt_tokens = count_tokens(conversation_messages, model)
 
             if first_iteration:

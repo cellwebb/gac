@@ -60,6 +60,12 @@ def _execute_single_commit_workflow(ctx: WorkflowContext) -> int:
     # Generate commit message
     first_iteration = True
     while True:
+        # Reset the per-gac token accumulator so that user-initiated
+        # regenerations don't inflate biggest_gac_tokens.  Only the
+        # final successful call's tokens should count toward the
+        # "biggest gac" record.
+        reset_gac_token_accumulator()
+
         prompt_tokens = count_tokens(conversation_messages, ctx.model)
         if first_iteration:
             warning_limit = config["warning_limit_tokens"]

@@ -1273,5 +1273,88 @@ class TestMalformedStats:
         assert enriched[0][1]["avg_tps"] == 200
 
 
+class TestRetryTokenInflation:
+    """Tests that content-level retries don't inflate biggest_gac_tokens.
+
+    Before the fix, record_tokens() accumulated tokens from EVERY API call
+    (including failed validation retries) into _current_gac_tokens.
+    When record_gac() ran, it compared this inflated total against
+    biggest_gac_tokens — so a 170k-token prompt with 1 retry would show
+    as a 340k "biggest gac".
+
+    The fix: reset_gac_token_accumulator() is called at the start of each
+    retry iteration, so only the final successful call's tokens count.
+    """
+
+    def test_retry_tokens_not_in_biggest_gac(self, tmp_path):
+        """Tokens from a failed retry should not inflate biggest_gac_tokens."""
+        import gac.stats
+        from gac.stats import reset_gac_token_accumulator
+
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
+            # Simulate: first AI call fails validation (100k tokens)
+            record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
+
+            # Retry loop resets accumulator before next call
+            reset_gac_token_accumulator()
+
+            # Second AI call succeeds (100k tokens — same size prompt + feedback)
+            record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
+            record_gac(model="wafer:glm-5.1")
+
+            stats = load_stats()
+            # Should be ~100,700 (last call only), NOT ~201,400 (both calls)
+            assert stats["biggest_gac_tokens"] == 100700
+
+    def test_retry_tokens_still_in_daily_totals(self, tmp_path):
+        """Retry tokens should still count in daily/weekly/total stats (real cost)."""
+        import gac.stats
+        from gac.stats import reset_gac_token_accumulator
+
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
+            # First call (will be retried)
+            record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
+
+            # Reset accumulator for retry
+            reset_gac_token_accumulator()
+
+            # Second call
+            record_tokens(100000, 500, model="wafer:glm-5.1", reasoning_tokens=200)
+            record_gac(model="wafer:glm-5.1")
+
+            stats = load_stats()
+            # Daily/weekly/total stats include ALL tokens (both calls)
+            assert stats["total_prompt_tokens"] == 200000  # Both calls
+            assert stats["total_completion_tokens"] == 1000
+            assert stats["total_reasoning_tokens"] == 400
+
+    def test_multiple_retries_only_last_counts(self, tmp_path):
+        """Multiple retries: only the last successful call counts for biggest_gac."""
+        import gac.stats
+        from gac.stats import reset_gac_token_accumulator
+
+        gac.stats.recorder._current_gac_tokens = 0
+        with patch("gac.stats.store.STATS_FILE", tmp_path / "stats.json"):
+            # First call fails
+            record_tokens(50000, 100, model="openai:gpt-4")
+            reset_gac_token_accumulator()
+
+            # Second call fails
+            record_tokens(60000, 100, model="openai:gpt-4")
+            reset_gac_token_accumulator()
+
+            # Third call succeeds
+            record_tokens(70000, 100, model="openai:gpt-4")
+            record_gac(model="openai:gpt-4")
+
+            stats = load_stats()
+            # Only the third call counts: 70000 + 100 = 70100
+            assert stats["biggest_gac_tokens"] == 70100
+            # But total tokens include all three calls
+            assert stats["total_prompt_tokens"] == 180000
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
