@@ -38,20 +38,26 @@ class GitStateValidator:
     def validate_repository(self) -> str:
         """Validate that we're in a git repository and return the repo root."""
         try:
-            git_dir = run_git_command(["rev-parse", "--show-toplevel"])
-            if not git_dir:
+            result = run_git_command(["rev-parse", "--show-toplevel"])
+            if not result.success:
+                raise GitError(result.fail_message("Not in a git repository"))
+            if not result.output:
                 raise GitError("Not in a git repository")
-            return git_dir
+            return result.output
         except (subprocess.SubprocessError, GitError, OSError) as e:
             logger.error(f"Error checking git repository: {e}")
-            handle_error(GitError("Not in a git repository"), exit_program=True)
+            # Preserve the real diagnostic instead of replacing it
+            if isinstance(e, GitError):
+                handle_error(e, exit_program=True)
+            else:
+                handle_error(GitError(f"Not in a git repository: {e}"), exit_program=True)
             return ""  # Never reached, but required for type safety
 
     def stage_all_if_requested(self, stage_all: bool, dry_run: bool) -> None:
         """Stage all changes if requested and not in dry run mode."""
         if stage_all and (not dry_run):
             logger.info("Staging all changes")
-            run_git_command(["add", "--all"])
+            run_git_command(["add", "--all"]).require_success()
 
     def get_git_state(
         self,
@@ -85,8 +91,12 @@ class GitStateValidator:
 
         # Get git status and diffs
         status = get_staged_status()
-        diff = run_git_command(["diff", "--staged"])
-        diff_stat = " " + run_git_command(["diff", "--stat", "--cached"])
+        diff_result = run_git_command(["diff", "--staged"])
+        if not diff_result.success:
+            raise GitError(diff_result.fail_message("Failed to get staged diff"))
+        diff = diff_result.output
+        stat_result = run_git_command(["diff", "--stat", "--cached"])
+        diff_stat = " " + (stat_result.output if stat_result.success else "")
 
         # Scan for secrets
         has_secrets = False
@@ -176,8 +186,13 @@ class GitStateValidator:
             affected_files = get_affected_files(secrets)
             for file_path in affected_files:
                 try:
-                    run_git_command(["reset", "HEAD", file_path])
-                    console.print(f"[green]Unstaged: {file_path}[/green]")
+                    result = run_git_command(["reset", "HEAD", file_path])
+                    if result.success:
+                        console.print(f"[green]Unstaged: {file_path}[/green]")
+                    else:
+                        console.print(
+                            f"[red]Failed to unstage {file_path}: git exited with code {result.returncode}[/red]"
+                        )
                 except GitError as e:
                     console.print(f"[red]Failed to unstage {file_path}: {e}[/red]")
 

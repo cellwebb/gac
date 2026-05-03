@@ -87,7 +87,7 @@ def execute_commit(
     if signoff:
         commit_args.append("--signoff")
     effective_timeout = hook_timeout if hook_timeout and hook_timeout > 0 else EnvDefaults.HOOK_TIMEOUT
-    run_git_command(commit_args, timeout=effective_timeout)
+    run_git_command(commit_args, timeout=effective_timeout).require_success()
     logger.info("Commit created successfully")
     console.print("[green]Commit created successfully[/green]")
 
@@ -135,7 +135,7 @@ def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> 
     """
     from gac.git import run_git_command
 
-    run_git_command(["reset", "HEAD"])
+    run_git_command(["reset", "HEAD"]).require_success()
 
     if staged_diff:
         temp_path: Path | None = None
@@ -143,7 +143,7 @@ def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> 
             with tempfile.NamedTemporaryFile("w", delete=False) as tmp:
                 tmp.write(staged_diff)
                 temp_path = Path(tmp.name)
-            run_git_command(["apply", "--cached", str(temp_path)])
+            run_git_command(["apply", "--cached", str(temp_path)]).require_success()
             return
         except Exception as e:
             logger.warning(f"Failed to reapply staged diff, falling back to file list: {e}")
@@ -153,7 +153,7 @@ def restore_staging(staged_files: list[str], staged_diff: str | None = None) -> 
 
     for file_path in staged_files:
         try:
-            run_git_command(["add", file_path])
+            run_git_command(["add", file_path]).require_success()
         except Exception as e:
             logger.warning(f"Failed to restore staging for {file_path}: {e}")
 
