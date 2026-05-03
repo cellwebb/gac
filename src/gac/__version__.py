@@ -1,3 +1,3 @@
 """Version information for gac package."""
 
-__version__ = "3.19.5"
+__version__ = "3.20.0"
