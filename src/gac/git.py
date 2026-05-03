@@ -71,10 +71,134 @@ def run_subprocess_with_encoding_fallback(
         raise subprocess.CalledProcessError(1, command, "", "All encoding attempts failed")
 
 
-def run_git_command(args: list[str], silent: bool = False, timeout: int = 30) -> str:
-    """Run a git command and return the output."""
+class GitCommandResult:
+    """Explicit result from a git command, distinguishing failure from empty output.
+
+    Attributes:
+        output: The command's stdout (stripped). Empty string on failure or when the
+            command genuinely produced no output.  Accessing ``.output`` on a failed
+            result emits a warning — prefer ``.require_success()`` or check
+            ``.success`` first.
+        returncode: The process exit code. 0 means success, non-zero means failure.
+        success: True when returncode == 0.
+        stderr: The command's stderr (stripped). Populated on failure so that
+            callers and error messages can surface the real diagnostic text.
+    """
+
+    __slots__ = ("_output", "returncode", "success", "stderr", "_output_accessed")
+
+    def __init__(
+        self,
+        output: str,
+        returncode: int,
+        success: bool,
+        stderr: str = "",
+    ) -> None:
+        self._output = output
+        self.returncode = returncode
+        self.success = success
+        self.stderr = stderr
+        self._output_accessed = False
+
+    @property
+    def output(self) -> str:
+        """The command's stdout. Emits a warning when accessed on a failed result."""
+        if not self.success and not self._output_accessed:
+            self._output_accessed = True
+            logger.warning(
+                "GitCommandResult.output accessed on failed result "
+                "(exit code %d). Use .require_success() or check .success first.",
+                self.returncode,
+            )
+        return self._output
+
+    @output.setter
+    def output(self, value: str) -> None:
+        self._output = value
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, GitCommandResult):
+            return NotImplemented
+        return (
+            self._output == other._output
+            and self.returncode == other.returncode
+            and self.success == other.success
+            and self.stderr == other.stderr
+        )
+
+    def __repr__(self) -> str:
+        if self.success:
+            return f"GitCommandResult.ok({self._output!r})"
+        return f"GitCommandResult.fail(returncode={self.returncode}, stderr={self.stderr!r})"
+
+    def __hash__(self) -> int:
+        return hash((self._output, self.returncode, self.success, self.stderr))
+
+    @classmethod
+    def ok(cls, output: str) -> "GitCommandResult":
+        """Construct a successful result."""
+        return cls(output=output, returncode=0, success=True, stderr="")
+
+    @classmethod
+    def fail(cls, returncode: int, output: str = "", stderr: str = "") -> "GitCommandResult":
+        """Construct a failed result."""
+        return cls(output=output, returncode=returncode, success=False, stderr=stderr)
+
+    def fail_message(self, context: str = "") -> str:
+        """Build a consistent error message from this failed result.
+
+        All callers that need to raise :class:`GitError` from a failed result
+        should use this to ensure uniform phrasing: ``<context> (exit code N): <stderr>``.
+        The *context* is a short description of what was attempted
+        (e.g. "list staged files").
+
+        Must only be called on failed results (``self.success is False``).
+        """
+        if context:
+            msg = f"{context} (exit code {self.returncode})"
+        else:
+            msg = f"Git command failed (exit code {self.returncode})"
+        if self.stderr:
+            msg += f": {self.stderr}"
+        return msg
+
+    def require_success(self) -> str:
+        """Return the output if the command succeeded, or raise :class:`GitError`.
+
+        The error message includes stderr when available, so callers get
+        the actual git diagnostic instead of a bare return code.
+        """
+        if self.success:
+            return self._output
+        raise GitError(self.fail_message())
+
+
+def run_git_command(args: list[str], silent: bool = False, timeout: int = 30) -> GitCommandResult:
+    """Run a git command and return an explicit result.
+
+    Returns a :class:`GitCommandResult` whose ``success`` field tells the caller
+    whether the command succeeded, and whose ``output`` field contains stdout
+    (empty on failure, or genuinely empty on success).
+
+    Callers that just need the output string and want an exception on failure
+    can use ``run_git_command(args).require_success()``.
+
+    Raises:
+        GacError: On timeout.
+        subprocess.CalledProcessError: On encoding fallback failure.
+    """
     command = ["git"] + args
-    return run_subprocess(command, silent=silent, timeout=timeout, raise_on_error=False, strip_output=True)
+    try:
+        output = run_subprocess(command, silent=silent, timeout=timeout, raise_on_error=True, strip_output=True)
+        return GitCommandResult.ok(output)
+    except subprocess.CalledProcessError as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        return GitCommandResult.fail(
+            returncode=exc.returncode if isinstance(exc.returncode, int) else 1,
+            output=stdout,
+            stderr=stderr,
+        )
 
 
 def get_staged_files(file_type: str | None = None, existing_only: bool = False) -> list[str]:
@@ -85,68 +209,74 @@ def get_staged_files(file_type: str | None = None, existing_only: bool = False) 
         existing_only: If True, only include files that exist on disk
 
     Returns:
-        List of staged file paths
+        List of staged file paths.  Returns an empty list when no files are
+        staged.
+
+    Raises:
+        GitError: If the underlying git command fails (e.g. not inside a
+            repository, corrupted index, etc.).
     """
-    try:
-        output = run_git_command(["diff", "--name-only", "--cached"])
-        if not output:
-            return []
-
-        # Parse and filter the file list
-        files = [line.strip() for line in output.splitlines() if line.strip()]
-
-        if file_type:
-            files = [f for f in files if f.endswith(file_type)]
-
-        if existing_only:
-            files = [f for f in files if os.path.isfile(f)]
-
-        return files
-    except GitError:
-        # If git command fails, return empty list as a fallback
+    result = run_git_command(["diff", "--name-only", "--cached"])
+    if not result.success:
+        raise GitError(result.fail_message("Failed to list staged files"))
+    if not result.output:
         return []
+
+    # Parse and filter the file list
+    files = [line.strip() for line in result.output.splitlines() if line.strip()]
+
+    if file_type:
+        files = [f for f in files if f.endswith(file_type)]
+
+    if existing_only:
+        files = [f for f in files if os.path.isfile(f)]
+
+    return files
 
 
 def get_staged_status() -> str:
     """Get formatted status of staged files only, excluding unstaged/untracked files.
 
     Returns:
-        Formatted status string with M/A/D/R indicators
+        Formatted status string with M/A/D/R indicators.  Returns a
+        fallback message when no files are staged.
+
+    Raises:
+        GitError: If the underlying git command fails.
     """
-    try:
-        output = run_git_command(["diff", "--name-status", "--staged"])
-        if not output:
-            return "No changes staged for commit."
-
-        status_map = {
-            "M": "modified",
-            "A": "new file",
-            "D": "deleted",
-            "R": "renamed",
-            "C": "copied",
-            "T": "typechange",
-        }
-
-        status_lines = ["Changes to be committed:"]
-        for line in output.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-
-            # Parse status line (e.g., "M\tfile.py" or "R100\told.py\tnew.py")
-            parts = line.split("\t")
-            if len(parts) < 2:
-                continue
-
-            change_type = parts[0][0]  # First char is the status (M, A, D, R, etc.)
-            file_path = parts[-1]  # Last part is the new/current file path
-
-            status_label = status_map.get(change_type, "modified")
-            status_lines.append(f"\t{status_label}:   {file_path}")
-
-        return "\n".join(status_lines)
-    except GitError:
+    result = run_git_command(["diff", "--name-status", "--staged"])
+    if not result.success:
+        raise GitError(result.fail_message("Failed to get staged status"))
+    if not result.output:
         return "No changes staged for commit."
+
+    status_map = {
+        "M": "modified",
+        "A": "new file",
+        "D": "deleted",
+        "R": "renamed",
+        "C": "copied",
+        "T": "typechange",
+    }
+
+    status_lines = ["Changes to be committed:"]
+    for line in result.output.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        # Parse status line (e.g., "M\tfile.py" or "R100\told.py\tnew.py")
+        parts = line.split("\t")
+        if len(parts) < 2:
+            continue
+
+        change_type = parts[0][0]  # First char is the status (M, A, D, R, etc.)
+        file_path = parts[-1]  # Last part is the new/current file path
+
+        status_label = status_map.get(change_type, "modified")
+        status_lines.append(f"\t{status_label}:   {file_path}")
+
+    return "\n".join(status_lines)
 
 
 def get_diff(staged: bool = True, color: bool = True, commit1: str | None = None, commit2: str | None = None) -> str:
@@ -180,29 +310,46 @@ def get_diff(staged: bool = True, color: bool = True, commit1: str | None = None
         elif staged:
             args.append("--cached")
 
-        output = run_git_command(args)
-        return output
+        return run_git_command(args).require_success()
     except (subprocess.SubprocessError, OSError, FileNotFoundError) as e:
         logger.error(f"Failed to get diff: {str(e)}")
         raise GitError(f"Failed to get diff: {str(e)}") from e
 
 
 def get_repo_root() -> str:
-    """Get absolute path of repository root."""
+    """Get absolute path of repository root.
+
+    Raises:
+        GitError: If the git command fails.
+    """
     result = run_git_command(["rev-parse", "--show-toplevel"])
-    return result
+    if not result.success:
+        raise GitError(result.fail_message("Failed to get repo root"))
+    return result.output
 
 
 def get_current_branch() -> str:
-    """Get name of current git branch."""
+    """Get name of current git branch.
+
+    Raises:
+        GitError: If the git command fails.
+    """
     result = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"])
-    return result
+    if not result.success:
+        raise GitError(result.fail_message("Failed to get current branch"))
+    return result.output
 
 
 def get_commit_hash() -> str:
-    """Get SHA-1 hash of current commit."""
+    """Get SHA-1 hash of current commit.
+
+    Raises:
+        GitError: If the git command fails.
+    """
     result = run_git_command(["rev-parse", "HEAD"])
-    return result
+    if not result.success:
+        raise GitError(result.fail_message("Failed to get commit hash"))
+    return result.output
 
 
 def _run_hook_runner(
@@ -290,8 +437,11 @@ def run_lefthook_hooks(hook_timeout: int = 120) -> bool:
 
 def push_changes() -> bool:
     """Push committed changes to the remote repository."""
-    remote_exists = run_git_command(["remote"])
-    if not remote_exists:
+    remote_result = run_git_command(["remote"])
+    if not remote_result.success:
+        logger.error(remote_result.fail_message("Failed to check remote"))
+        return False
+    if not remote_result.output:
         logger.error("No configured remote repository.")
         return False
 
