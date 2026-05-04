@@ -5,11 +5,16 @@ import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import Any, TypedDict, cast
 
 
 class OAuthToken(TypedDict, total=False):
-    """OAuth token structure."""
+    """OAuth token structure.
+
+    The `extra` field stores provider-specific metadata (e.g. account_id,
+    org_id, id_token) that doesn't fit the standard fields.  This avoids
+    needing sidecar files or separate storage mechanisms.
+    """
 
     access_token: str
     refresh_token: str | None
@@ -17,6 +22,7 @@ class OAuthToken(TypedDict, total=False):
     token_type: str
     scope: str | None
     resource_url: str | None
+    extra: dict[str, Any]  # Provider-specific metadata
 
 
 @dataclass

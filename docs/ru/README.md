@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **25+ Поддерживаемые провайдеры**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **Полная документация**: [USAGE.md](docs/ru/USAGE.md) - Полное справочное руководство по CLI
 - **MCP-сервер**: [docs/MCP.md](MCP.md) - Использование GAC в качестве MCP-сервера для ИИ-агентов
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ru/CLAUDE_CODE.md) - Настройка и аутентификация Claude Code
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/ru/CHATGPT_OAUTH.md) - Настройка и аутентификация ChatGPT OAuth
 - **Пользовательские промпты**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ru/CUSTOM_SYSTEM_PROMPTS.md) - Настройка стиля сообщений коммитов
 - **Статистика использования**: См. `gac stats --help` или [полную документацию](docs/ru/USAGE.md#статистика-использования)
 - **Устранение неполадок**: [TROUBLESHOOTING.md](docs/ru/TROUBLESHOOTING.md) - Распространённые проблемы и решения

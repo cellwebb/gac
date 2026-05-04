@@ -86,6 +86,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Azure OpenAI", "gpt-5.4-mini"),
         ("Cerebras", "zai-glm-4.7"),
         ("Chutes", "zai-org/GLM-5-TEE"),
+        ("ChatGPT (OAuth)", "gpt-5.4"),
         ("Claude Code (OAuth)", "claude-sonnet-4-6"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
@@ -128,6 +129,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     provider_key = provider.lower().replace(".", "").replace(" ", "-").replace("(", "").replace(")", "")
 
     is_azure_openai = provider_key == "azure-openai"
+    is_chatgpt_oauth = provider_key == "chatgpt-oauth"
     is_claude_code = provider_key == "claude-code-oauth"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
@@ -137,7 +139,10 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_streamlake = provider_key == "streamlake"
     is_zai = provider_key in ("zai", "zai-coding")
 
-    if provider_key == "claude-code-oauth":
+    if provider_key == "chatgpt-oauth":
+        # Keep as-is, provider_key is already "chatgpt-oauth"
+        pass
+    elif provider_key == "claude-code-oauth":
         provider_key = "claude-code"
     elif provider_key == "kimi-for-coding":
         provider_key = "kimi-coding"
@@ -287,6 +292,46 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         url_to_save = url.strip() if url.strip() else url_default
         set_key(str(GAC_ENV_PATH), "LMSTUDIO_API_URL", url_to_save)
         click.echo(f"Set LMSTUDIO_API_URL={url_to_save}")
+
+    # Handle ChatGPT OAuth separately
+    if is_chatgpt_oauth:
+        from gac.oauth.chatgpt import authenticate_and_save as chatgpt_authenticate
+        from gac.oauth.token_store import TokenStore
+
+        token_store = TokenStore()
+        existing_chatgpt_token = token_store.get_token("chatgpt-oauth")
+        if existing_chatgpt_token:
+            click.echo("\n✓ ChatGPT access token already configured.")
+            action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing token",
+                    "Re-authenticate (get new token)",
+                ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
+            ).ask()
+
+            if action is None or action.startswith("Keep existing"):
+                if action is None:
+                    click.echo("ChatGPT configuration cancelled. Keeping existing token.")
+                else:
+                    click.echo("Keeping existing ChatGPT token")
+                return True
+            else:
+                click.echo("\n🔐 Starting ChatGPT OAuth authentication...")
+                if not chatgpt_authenticate(quiet=False):
+                    click.echo("❌ ChatGPT authentication failed. Keeping existing token.")
+                    return False
+                return True
+        else:
+            click.echo("\n🔐 Starting ChatGPT OAuth authentication...")
+            click.echo("   (Your browser will open automatically)\n")
+            if not chatgpt_authenticate(quiet=False):
+                click.echo("\n❌ ChatGPT authentication failed. Exiting.")
+                return False
+            return True
 
     # Handle Claude Code OAuth separately
     if is_claude_code:

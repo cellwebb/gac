@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **25+ Ondersteunde Providers**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ Zie `.gac.env.example` voor alle beschikbare opties.
 - **Volledige documentatie**: [docs/USAGE.md](docs/nl/USAGE.md) - Volledige CLI-referentie
 - **MCP-server**: [docs/MCP.md](MCP.md) - Gebruik GAC als MCP-server voor AI-agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/nl/CLAUDE_CODE.md) - Claude Code installatie en authenticatie
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/nl/CHATGPT_OAUTH.md) - ChatGPT OAuth installatie en authenticatie
 - **Aangepaste prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/nl/CUSTOM_SYSTEM_PROMPTS.md) - Pas stijl van commitberichten aan
 - **Gebruiksstatistieken**: Zie `gac stats --help` of de [volledige docs](docs/nl/USAGE.md#gebruiksstatistieken)
 - **Probleemoplossing**: [docs/TROUBLESHOOTING.md](docs/nl/TROUBLESHOOTING.md) - Veelvoorkomende problemen en oplossingen

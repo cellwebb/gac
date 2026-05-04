@@ -15,6 +15,7 @@ Usage:
 from .anthropic import AnthropicProvider
 from .azure_openai import AzureOpenAIProvider
 from .cerebras import CerebrasProvider
+from .chatgpt_oauth import ChatGPTOAuthProvider
 from .chutes import ChutesProvider
 from .claude_code import ClaudeCodeProvider
 from .custom_anthropic import CustomAnthropicProvider
@@ -47,6 +48,7 @@ from .zai import ZAICodingProvider, ZAIProvider
 register_provider("anthropic", AnthropicProvider)
 register_provider("azure-openai", AzureOpenAIProvider)
 register_provider("cerebras", CerebrasProvider)
+register_provider("chatgpt-oauth", ChatGPTOAuthProvider)
 register_provider("chutes", ChutesProvider)
 register_provider("claude-code", ClaudeCodeProvider)
 register_provider("custom-anthropic", CustomAnthropicProvider)

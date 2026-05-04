@@ -364,6 +364,7 @@ git config --global user.email "tu.email@ejemplo.com"
 - La forma recomendada de configurar gac es ejecutar `gac init` y seguir las instrucciones interactivas.
 - ¿Ya tienes el idioma configurado y solo necesitas cambiar proveedores o modelos? Ejecuta `gac model` para repetir la configuración sin preguntas de idioma.
 - **¿Usas Claude Code?** Consulta la [guía de configuración de Claude Code](CLAUDE_CODE.md) para instrucciones de autenticación OAuth.
+- **¿Usas ChatGPT OAuth?** Consulta la [guía de configuración de ChatGPT OAuth](CHATGPT_OAUTH.md) para instrucciones de autenticación basada en navegador.
 - gac carga configuración en el siguiente orden de precedencia:
   1. Banderas CLI
   2. Variables de entorno
@@ -403,6 +404,9 @@ Los siguientes subcomandos están disponibles:
 - `gac auth claude-code login` — Iniciar sesión en Claude Code usando OAuth (abre navegador)
 - `gac auth claude-code logout` — Cerrar sesión en Claude Code y eliminar token almacenado
 - `gac auth claude-code status` — Comprobar estado de autenticación de Claude Code
+- `gac auth chatgpt login` — Iniciar sesión en ChatGPT usando OAuth (abre navegador)
+- `gac auth chatgpt logout` — Cerrar sesión en ChatGPT y eliminar token almacenado
+- `gac auth chatgpt status` — Comprobar estado de autenticación de ChatGPT
 - `gac config show` — Mostrar configuración actual
 - `gac config set KEY VALUE` — Establecer clave de configuración en `$HOME/.gac.env`
 - `gac config get KEY` — Obtener valor de configuración
@@ -594,6 +598,8 @@ Cuando está desactivado, gac omite todo el registro de estadísticas — no se 
 
 - Para configuración del servidor MCP (integración con agentes de IA), consulta [docs/MCP.md](MCP.md)
 - Para prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
+- Para configuración OAuth de Claude Code, consulta [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- Para configuración OAuth de ChatGPT, consulta [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - Para solución de problemas y consejos avanzados, consulta [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
 - Para instalación y configuración, consulta [README.md#configuración](README.md#configuración)
 - Para contribuir, consulta [docs/CONTRIBUTING.md](../CONTRIBUTING.md)

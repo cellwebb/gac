@@ -315,6 +315,7 @@ git config --global user.email "your.email@example.com"
 - Det rekommenderade sättet att konfigurera gac är att köra `gac init` och följa de interaktiva prompterna.
 - Redan konfigurerat språk och bara behöver byta leverantör eller modell? Kör `gac model` för att upprepa installationen utan språkfrågor.
 - **Använder Claude Code?** Se [Claude Code installationsguide](CLAUDE_CODE.md) för OAuth-autentiseringsinstruktioner.
+- **Använder ChatGPT OAuth?** Se [ChatGPT OAuth installationsguide](CHATGPT_OAUTH.md) för webbläsarbaserade autentiseringsinstruktioner.
 - gac laddar konfigurationen i följande prioritetsordning:
   1. CLI-flaggor
   2. Miljövariabler
@@ -354,6 +355,9 @@ Följande underkommandon är tillgängliga:
 - `gac auth claude-code login` — Logga in på Claude Code med OAuth (öppnar webbläsare)
 - `gac auth claude-code logout` — Logga ut från Claude Code och ta bort sparat token
 - `gac auth claude-code status` — Kontrollera Claude Code-autentiseringsstatus
+- `gac auth chatgpt login` — Logga in på ChatGPT med OAuth (öppnar webbläsare)
+- `gac auth chatgpt logout` — Logga ut från ChatGPT och ta bort sparat token
+- `gac auth chatgpt status` — Kontrollera ChatGPT-autentiseringsstatus
 - `gac config show` — Visa nuvarande konfiguration
 - `gac config set KEY VALUE` — Ställ in konfigurationsnyckel i `$HOME/.gac.env`
 - `gac config get KEY` — Hämta konfigurationsvärde
@@ -545,6 +549,8 @@ När inaktiverat hoppar gac över all statistikinspelning — ingen filläsning 
 
 - För MCP-server setup (AI-agent integration), se [docs/MCP.md](MCP.md)
 - För anpassade systemprompter, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- För Claude Code OAuth-installation, se [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- För ChatGPT OAuth-installation, se [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - För felsökning och avancerade tips, se [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - För installation och konfiguration, se [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - För att bidra, se [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

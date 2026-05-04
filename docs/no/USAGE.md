@@ -315,6 +315,7 @@ git config --global user.email "your.email@example.com"
 - Den anbefalte måten å sette opp gac er å kjøre `gac init` og følge de interaktive promptene.
 - Allerede konfigurert språk og trenger bare å bytte provider eller modeller? Kjør `gac model` for å gjenta oppsettet uten språkspørsmål.
 - **Bruker Claude Code?** Se [Claude Code oppsettguide](CLAUDE_CODE.md) for OAuth-autentiseringsinstruksjoner.
+- **Bruker ChatGPT OAuth?** Se [ChatGPT OAuth oppsettguide](CHATGPT_OAUTH.md) for nettleserbaserte autentiseringsinstruksjoner.
 - gac laster konfigurasjon i følgende prioriteringsrekkefølge:
   1. CLI-flagg
   2. Miljøvariabler
@@ -354,6 +355,9 @@ Følgende underkommandoer er tilgjengelige:
 - `gac auth claude-code login` — Logg inn på Claude Code med OAuth (åpner nettleser)
 - `gac auth claude-code logout` — Logg ut av Claude Code og fjern lagret token
 - `gac auth claude-code status` — Sjekk Claude Code-autentiseringsstatus
+- `gac auth chatgpt login` — Logg inn på ChatGPT med OAuth (åpner nettleser)
+- `gac auth chatgpt logout` — Logg ut av ChatGPT og fjern lagret token
+- `gac auth chatgpt status` — Sjekk ChatGPT-autentiseringsstatus
 - `gac config show` — Vis nåværende konfigurasjon
 - `gac config set KEY VALUE` — Sett en konfigurasjonsnøkkel i `$HOME/.gac.env`
 - `gac config get KEY` — Hent en konfigurasjonsverdi
@@ -545,6 +549,8 @@ Når deaktivert, hopper gac over all statistikkregistrering — ingen fillesing 
 
 - For MCP-server oppsett (AI-agent integrasjon), se [docs/MCP.md](MCP.md)
 - For egendefinerte systemprompts, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- For Claude Code OAuth-oppsett, se [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- For ChatGPT OAuth-oppsett, se [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - For feilsøking og avanserte tips, se [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - For installasjon og konfigurasjon, se [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - For å bidra, se [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

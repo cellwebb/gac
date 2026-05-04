@@ -314,7 +314,8 @@ git config --global user.email "your.email@example.com"
 
 - De aanbevolen manier om gac in te stellen is `gac init` uit te voeren en de interactieve prompts te volgen.
 - Al geconfigureerde taal en alleen providers of modellen moeten wisselen? Voer `gac model` uit om de setup te herhalen zonder taalvragen.
-- **Claude Code gebruiken?** Zie de [Claude Code installatiehandleiding](CLAUDE_CODE.md) voor OAuth-authenticatie-instructies.
+- **Gebruikt u Claude Code?** Zie de [Claude Code installatiehandleiding](CLAUDE_CODE.md) voor OAuth-authenticatie-instructies.
+- **Gebruikt u ChatGPT OAuth?** Zie de [ChatGPT OAuth installatiehandleiding](CHATGPT_OAUTH.md) voor browsergebaseerde authenticatie-instructies.
 - gac laadt configuratie in de volgende volgorde van prioriteit:
   1. CLI vlaggen
   2. Omgevingsvariabelen
@@ -354,6 +355,9 @@ De volgende subcommando's zijn beschikbaar:
 - `gac auth claude-code login` — Inloggen op Claude Code met OAuth (opent browser)
 - `gac auth claude-code logout` — Uitloggen uit Claude Code en opgeslagen token verwijderen
 - `gac auth claude-code status` — Claude Code-authenticatiestatus controleren
+- `gac auth chatgpt login` — Inloggen op ChatGPT met OAuth (opent browser)
+- `gac auth chatgpt logout` — Uitloggen uit ChatGPT en opgeslagen token verwijderen
+- `gac auth chatgpt status` — ChatGPT-authenticatiestatus controleren
 - `gac config show` — Huidige configuratie tonen
 - `gac config set KEY VALUE` — Configuratiesleutel instellen in `$HOME/.gac.env`
 - `gac config get KEY` — Configuratiewaarde krijgen
@@ -545,6 +549,8 @@ Bij uitschakeling slaat gac alle statistiekregistratie over — er vinden geen b
 
 - Voor MCP-server setup (AI-agent integratie), zie [docs/MCP.md](MCP.md)
 - Voor custom system prompts, zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- Voor Claude Code OAuth-installatie, zie [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- Voor ChatGPT OAuth-installatie, zie [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - Voor probleemoplossing en geavanceerde tips, zie [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Voor installatie en configuratie, zie [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - Om bij te dragen, zie [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

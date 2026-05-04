@@ -364,6 +364,7 @@ git config --global user.email "your.email@example.com"
 - La méthode recommandée pour configurer gac est d'exécuter `gac init` et de suivre les invites interactives.
 - Vous avez déjà configuré la langue et devez juste changer de fournisseurs ou de modèles ? Exécutez `gac model` pour répéter la configuration sans questions de langue.
 - **Vous utilisez Claude Code ?** Consultez le [guide de configuration Claude Code](CLAUDE_CODE.md) pour les instructions d'authentification OAuth.
+- **Vous utilisez ChatGPT OAuth ?** Consultez le [guide de configuration ChatGPT OAuth](CHATGPT_OAUTH.md) pour les instructions d'authentification basées sur le navigateur.
 - gac charge la configuration dans l'ordre de priorité suivant :
   1. Drapeaux CLI
   2. Variables d'environnement
@@ -403,6 +404,9 @@ Les sous-commandes suivantes sont disponibles :
 - `gac auth claude-code login` — Se connecter à Claude Code en utilisant OAuth (ouvre le navigateur)
 - `gac auth claude-code logout` — Se déconnecter de Claude Code et supprimer le token stocké
 - `gac auth claude-code status` — Vérifier le statut d'authentification de Claude Code
+- `gac auth chatgpt login` — Se connecter à ChatGPT en utilisant OAuth (ouvre le navigateur)
+- `gac auth chatgpt logout` — Se déconnecter de ChatGPT et supprimer le token stocké
+- `gac auth chatgpt status` — Vérifier le statut d'authentification de ChatGPT
 - `gac config show` — Afficher la configuration actuelle
 - `gac config set KEY VALUE` — Définir une clé de configuration dans `$HOME/.gac.env`
 - `gac config get KEY` — Obtenir une valeur de configuration
@@ -594,6 +598,8 @@ Quand désactivé, gac ignore tout enregistrement de statistiques — aucune lec
 
 - Pour la configuration du serveur MCP (intégration d'agents IA), voir [docs/MCP.md](MCP.md)
 - Pour les prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](../CUSTOM_SYSTEM_PROMPTS.fr.md)
+- Pour la configuration OAuth de Claude Code, voir [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- Pour la configuration OAuth de ChatGPT, voir [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - Pour le dépannage et conseils avancés, voir [docs/TROUBLESHOOTING.fr.md](../TROUBLESHOOTING.fr.md)
 - Pour l'installation et la configuration, voir [README.md#installation-and-configuration](../README.md#installation-and-configuration)
 - Pour contribuer, voir [docs/CONTRIBUTING.fr.md](../CONTRIBUTING.fr.md)

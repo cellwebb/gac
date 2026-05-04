@@ -73,7 +73,9 @@
 - APIキーとプロバイダーアカウントステータスを再確認
 - OllamaとLM Studioの場合、API URLがローカルインスタンスと一致することを確認。APIキーは認証を有効にした場合にのみ必要です。
 - **Claude Codeのトークン有効期限の場合**：`gac auth`を実行して素早く再認証してトークンを更新します。ブラウザが自動的にOAuthのために開きます。
+- **ChatGPT OAuth トークン有効期限の場合**：`gac auth chatgpt login`を実行して再認証します。ブラウザが自動的に OAuth のために開きます。
 - **その他のClaude Code OAuthの問題については**、包括的なトラブルシューティングについて[Claude Code設定ガイド](CLAUDE_CODE.md)を参照してください。
+- **その他の ChatGPT OAuth の問題については**、包括的なトラブルシューティングについて [ChatGPT OAuth 設定ガイド](CHATGPT_OAUTH.md) を参照してください。
 
 **問題:** モデルが利用できないまたはサポートされていない
 

@@ -73,7 +73,9 @@
 - API 키와 프로바이더 계정 상태를 다시 확인
 - Ollama와 LM Studio의 경우, API URL이 로컬 인스턴스와 일치하는지 확인. 인증을 활성화한 경우에만 API 키가 필요합니다.
 - **Claude Code 토큰 만료의 경우**: `gac auth`를 실행하여 빠르게 재인증하고 토큰을 새로고침합니다. 브라우저가 자동으로 OAuth를 위해 열립니다.
+- **ChatGPT OAuth 토큰 만료의 경우**: `gac auth chatgpt login` 을 실행하여 재인증합니다. 브라우저가 자동으로 OAuth 를 위해 열립니다.
 - **다른 Claude Code OAuth 문제의 경우**, [Claude Code 설정 가이드](CLAUDE_CODE.md)를 참조하여 포괄적인 문제 해결을 수행하세요.
+- **다른 ChatGPT OAuth 문제의 경우**, [ChatGPT OAuth 설정 가이드](CHATGPT_OAUTH.md) 를 참조하여 포괄적인 문제 해결을 수행하세요.
 
 **문제:** 모델을 사용할 수 없거나 지원되지 않음
 

@@ -12,6 +12,18 @@ from gac.oauth import (
     authenticate_and_save,
     remove_token,
 )
+from gac.oauth.chatgpt import (
+    DEFAULT_CODEX_MODELS,
+)
+from gac.oauth.chatgpt import (
+    authenticate_and_save as chatgpt_authenticate_and_save,
+)
+from gac.oauth.chatgpt import (
+    is_token_expired as chatgpt_is_token_expired,
+)
+from gac.oauth.chatgpt import (
+    remove_token as chatgpt_remove_token,
+)
 from gac.utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -24,12 +36,16 @@ def auth(ctx: click.Context) -> None:
 
     Supports authentication for:
     - claude-code: Claude Code subscription OAuth
+    - chatgpt: ChatGPT Codex API OAuth
 
     Examples:
         gac auth                        # Show authentication status
         gac auth claude-code login      # Login to Claude Code
         gac auth claude-code logout     # Logout from Claude Code
         gac auth claude-code status     # Check Claude Code auth status
+        gac auth chatgpt login          # Login to ChatGPT
+        gac auth chatgpt logout         # Logout from ChatGPT
+        gac auth chatgpt status         # Check ChatGPT auth status
     """
     if ctx.invoked_subcommand is None:
         _show_auth_status()
@@ -48,6 +64,13 @@ def _show_auth_status() -> None:
     else:
         click.echo("Claude Code: ✗ Not authenticated")
         click.echo("             Run 'gac auth claude-code login' to login")
+
+    chatgpt_token = token_store.get_token("chatgpt-oauth")
+    if chatgpt_token:
+        click.echo("ChatGPT:      ✓ Authenticated")
+    else:
+        click.echo("ChatGPT:      ✗ Not authenticated")
+        click.echo("             Run 'gac auth chatgpt login' to login")
 
 
 # Claude Code commands
@@ -136,3 +159,100 @@ def claude_code_status() -> None:
     else:
         click.echo("Claude Code Authentication Status: ✗ Not authenticated")
         click.echo("Run 'gac auth claude-code login' to authenticate.")
+
+
+# ---------------------------------------------------------------------------
+# ChatGPT OAuth commands
+# ---------------------------------------------------------------------------
+
+
+@auth.group("chatgpt")
+def chatgpt() -> None:
+    """Manage ChatGPT OAuth authentication.
+
+    Use browser-based authentication to log in to ChatGPT and access
+    the Codex API with your ChatGPT subscription.
+    """
+    pass
+
+
+@chatgpt.command("login")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
+def chatgpt_login(quiet: bool = False) -> None:
+    """Login to ChatGPT using OAuth.
+
+    Opens a browser to authenticate with ChatGPT. The token is stored
+    securely in ~/.gac/oauth/chatgpt-oauth.json.
+
+    After authentication, you can use ChatGPT Codex models like:
+        gac -m chatgpt-oauth:gpt-5.4
+    """
+    if not quiet:
+        setup_logging("INFO")
+
+    token_store = TokenStore()
+    existing_token = token_store.get_token("chatgpt-oauth")
+    if existing_token:
+        if not quiet:
+            click.echo("✓ Already authenticated with ChatGPT.")
+            if not click.confirm("Re-authenticate?"):
+                return
+
+    if not quiet:
+        click.echo()
+        click.echo("🔐 Starting ChatGPT OAuth authentication...")
+        click.echo("   Your browser will open automatically")
+        click.echo("   (Waiting up to 2 minutes for callback)")
+        click.echo()
+
+    success = chatgpt_authenticate_and_save(quiet=quiet)
+
+    if success:
+        if not quiet:
+            click.echo()
+            click.echo("✅ ChatGPT authentication completed successfully!")
+            click.echo(f"   Available models: {', '.join(DEFAULT_CODEX_MODELS[:4])}")
+            click.echo("   Use: gac -m chatgpt-oauth:gpt-5.4")
+    else:
+        click.echo("❌ ChatGPT authentication failed.")
+        click.echo("   Please try again or check your network connection.")
+        raise click.ClickException("ChatGPT authentication failed")
+
+
+@chatgpt.command("logout")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
+def chatgpt_logout(quiet: bool = False) -> None:
+    """Logout from ChatGPT and remove stored tokens."""
+    token_store = TokenStore()
+    existing_token = token_store.get_token("chatgpt-oauth")
+
+    if not existing_token:
+        if not quiet:
+            click.echo("Not currently authenticated with ChatGPT.")
+        return
+
+    try:
+        chatgpt_remove_token()
+        if not quiet:
+            click.echo("✅ Successfully logged out from ChatGPT.")
+    except Exception as e:
+        click.echo("❌ Failed to remove ChatGPT token.")
+        raise click.ClickException("ChatGPT logout failed") from e
+
+
+@chatgpt.command("status")
+def chatgpt_status() -> None:
+    """Check ChatGPT authentication status."""
+    token_store = TokenStore()
+    token = token_store.get_token("chatgpt-oauth")
+
+    if token:
+        expired = chatgpt_is_token_expired()
+        if expired:
+            click.echo("ChatGPT Authentication Status: ⚠️ Token expired")
+            click.echo("Run 'gac auth chatgpt login' to re-authenticate.")
+        else:
+            click.echo("ChatGPT Authentication Status: ✓ Authenticated")
+    else:
+        click.echo("ChatGPT Authentication Status: ✗ Not authenticated")
+        click.echo("Run 'gac auth chatgpt login' to authenticate.")

@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **支持的 25+ 提供商**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **完整文档**：[USAGE.md](docs/zh-CN/USAGE.md) - 完整的 CLI 参考
 - **MCP 服务器**：[MCP.md](MCP.md) - 将 GAC 用作 AI 代理的 MCP 服务器
 - **Claude Code OAuth**：[docs/CLAUDE_CODE.md](docs/zh-CN/CLAUDE_CODE.md) - Claude Code 设置与认证
+- **ChatGPT OAuth**：[docs/CHATGPT_OAUTH.md](docs/zh-CN/CHATGPT_OAUTH.md) - ChatGPT OAuth 设置与认证
 - **自定义提示**：[CUSTOM_SYSTEM_PROMPTS.md](docs/zh-CN/CUSTOM_SYSTEM_PROMPTS.md) - 自定义提交信息风格
 - **使用统计**：参见 `gac stats --help` 或[完整文档](docs/zh-CN/USAGE.md#使用统计)
 - **故障排除**：[TROUBLESHOOTING.md](docs/zh-CN/TROUBLESHOOTING.md) - 常见问题和解决方案

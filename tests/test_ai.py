@@ -506,6 +506,7 @@ class TestProviderRegistry:
             "anthropic",
             "azure-openai",
             "cerebras",
+            "chatgpt-oauth",
             "claude-code",
             "chutes",
             "custom-anthropic",

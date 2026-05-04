@@ -73,7 +73,9 @@
 - 仔細檢查你的 API 密鑰和提供者帳戶狀態
 - 對於 Ollama 和 LM Studio，確認 API URL 與你的本地實例匹配。僅在啟用身份驗證時才需要 API 密鑰。
 - **對於Claude Code令牌過期**：執行 `gac auth` 快速重新驗證並重新整理令牌。瀏覽器將自動打開進行OAuth。
+- **對於 ChatGPT OAuth 令牌過期**：執行 `gac auth chatgpt login` 重新驗證。瀏覽器將自動打開進行 OAuth。
 - **對於其他Claude Code OAuth問題**，請參閱[Claude Code設定指南](CLAUDE_CODE.md)取得完整的故障排除。
+- **對於其他 ChatGPT OAuth 問題**，請參閱 [ChatGPT OAuth 設定指南](CHATGPT_OAUTH.md) 取得完整的故障排除。
 
 **問題：** 模型不可用或不受支援
 

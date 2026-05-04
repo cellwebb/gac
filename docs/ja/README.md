@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **25+ 対応プロバイダー**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **完全なドキュメント**: [USAGE.md](docs/ja/USAGE.md) - 完全な CLI リファレンス
 - **MCP サーバー**: [MCP.md](MCP.md) - GAC を AI エージェント用の MCP サーバーとして使用
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/ja/CLAUDE_CODE.md) - Claude Code のセットアップと認証
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/ja/CHATGPT_OAUTH.md) - ChatGPT OAuth のセットアップと認証
 - **カスタムプロンプト**: [CUSTOM_SYSTEM_PROMPTS.md](docs/ja/CUSTOM_SYSTEM_PROMPTS.md) - コミットメッセージスタイルのカスタマイズ
 - **使用統計**: `gac stats --help` または[完全なドキュメント](docs/ja/USAGE.md#使用統計)を参照
 - **トラブルシューティング**: [TROUBLESHOOTING.md](docs/ja/TROUBLESHOOTING.md) - 一般的な問題と解決策

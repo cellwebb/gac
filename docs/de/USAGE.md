@@ -364,6 +364,7 @@ git config --global user.email "ihre.email@beispiel.com"
 - Die empfohlene Methode zur Einrichtung von gac ist, `gac init` auszuführen und den interaktiven Aufforderungen zu folgen.
 - Bereits konfigurierte Sprache und nur Anbieter oder Modelle wechseln müssen? Führen Sie `gac model` aus, um die Einrichtung ohne Sprachfragen zu wiederholen.
 - **Claude Code verwenden?** Siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für OAuth-Authentifizierungsanweisungen.
+- **ChatGPT OAuth verwenden?** Siehe die [ChatGPT OAuth-Einrichtungsanleitung](CHATGPT_OAUTH.md) für browserbasierte Authentifizierungsanweisungen.
 - gac lädt Konfiguration in der folgenden Rangfolge:
   1. CLI-Flags
   2. Umgebungsvariablen
@@ -403,6 +404,9 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac auth claude-code login` — Anmelden zu Claude Code mit OAuth (öffnet Browser)
 - `gac auth claude-code logout` — Abmelden von Claude Code und gespeichertes Token entfernen
 - `gac auth claude-code status` — Claude Code-Authentifizierungsstatus prüfen
+- `gac auth chatgpt login` — Anmelden zu ChatGPT mit OAuth (öffnet Browser)
+- `gac auth chatgpt logout` — Abmelden von ChatGPT und gespeichertes Token entfernen
+- `gac auth chatgpt status` — ChatGPT-Authentifizierungsstatus prüfen
 - `gac config show` — Aktuelle Konfiguration anzeigen
 - `gac config set KEY VALUE` — Konfigurationsschlüssel in `$HOME/.gac.env` setzen
 - `gac config get KEY` — Konfigurationswert abrufen
@@ -594,6 +598,8 @@ Wenn deaktiviert, überspringt gac die gesamte Statistikerfassung — es finden 
 
 - Für MCP-Server-Setup (KI-Agenten-Integration) siehe [docs/MCP.md](MCP.md)
 - Für benutzerdefinierte System-Prompts siehe [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- Für Claude Code OAuth-Einrichtung siehe [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- Für ChatGPT OAuth-Einrichtung siehe [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - Zur Fehlerbehebung und erweiterten Tipps siehe [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Für Installation und Konfiguration siehe [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - Zum Mitwirken siehe [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

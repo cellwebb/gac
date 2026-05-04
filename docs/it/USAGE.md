@@ -360,6 +360,7 @@ git config --global user.email "your.email@example.com"
 - Il modo raccomandato per configurare gac è eseguire `gac init` e seguire i prompt interattivi.
 - Già configurata la lingua e devi solo cambiare provider o modelli? Esegui `gac model` per ripetere la configurazione senza domande sulla lingua.
 - **Usi Claude Code?** Vedi la [guida setup Claude Code](CLAUDE_CODE.md) per istruzioni autenticazione OAuth.
+- **Usi ChatGPT OAuth?** Vedi la [guida setup ChatGPT OAuth](CHATGPT_OAUTH.md) per istruzioni autenticazione basata su browser.
 - gac carica la configurazione nel seguente ordine di precedenza:
   1. Flag CLI
   2. Variabili ambiente
@@ -399,6 +400,9 @@ I seguenti sottocomandi sono disponibili:
 - `gac auth claude-code login` — Accedi a Claude Code usando OAuth (apre browser)
 - `gac auth claude-code logout` — Esci da Claude Code e rimuovi token memorizzato
 - `gac auth claude-code status` — Controlla stato autenticazione Claude Code
+- `gac auth chatgpt login` — Accedi a ChatGPT usando OAuth (apre browser)
+- `gac auth chatgpt logout` — Esci da ChatGPT e rimuovi token memorizzati
+- `gac auth chatgpt status` — Controlla stato autenticazione ChatGPT
 - `gac config show` — Mostra configurazione corrente
 - `gac config set KEY VALUE` — Imposta una chiave di configurazione in `$HOME/.gac.env`
 - `gac config get KEY` — Ottieni un valore di configurazione
@@ -590,6 +594,8 @@ Quando disabilitato, gac salta tutta la registrazione delle statistiche — ness
 
 - Per la configurazione del server MCP (integrazione agenti AI), vedi [docs/MCP.md](MCP.md)
 - Per prompt di sistema personalizzati, vedi [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- Per configurazione OAuth di Claude Code, vedi [CLAUDE_CODE.md](CLAUDE_CODE.md)
+- Per configurazione OAuth di ChatGPT, vedi [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - Per troubleshooting e suggerimenti avanzati, vedi [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Per installazione e configurazione, vedi [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - Per contribuire, vedi [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

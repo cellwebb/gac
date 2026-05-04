@@ -73,7 +73,9 @@ Ce guide couvre les problèmes courants et solutions pour installer, configurer 
 - Vérifiez deux fois votre clé API et le statut du compte de votre fournisseur
 - Pour Ollama et LM Studio, confirmez que l'URL API correspond à votre instance locale. Les clés API ne sont nécessaires que si vous avez activé l'authentification.
 - **Pour l'expiration du jeton Claude Code** : Exécutez `gac auth` pour vous réauthentifier rapidement et actualiser votre jeton. Votre navigateur s'ouvrira automatiquement pour OAuth.
+- **Pour l'expiration du jeton ChatGPT OAuth** : Exécutez `gac auth chatgpt login` pour vous réauthentifier. Votre navigateur s'ouvrira automatiquement pour OAuth.
 - **Pour les autres problèmes OAuth de Claude Code**, consultez le [guide de configuration Claude Code](CLAUDE_CODE.md) pour un dépannage complet.
+- **Pour les autres problèmes OAuth de ChatGPT**, consultez le [guide de configuration ChatGPT OAuth](CHATGPT_OAUTH.md) pour un dépannage complet.
 
 **Problème :** Modèle non disponible ou non supporté
 

@@ -362,6 +362,7 @@ git config --global user.email "your.email@example.com"
 - The recommended way to set up gac is to run `gac init` and follow the interactive prompts.
 - Already configured language and just need to switch providers or models? Run `gac model` to repeat the setup without language questions.
 - **Using Claude Code?** See the [Claude Code setup guide](CLAUDE_CODE.md) for OAuth authentication instructions.
+- **Using ChatGPT OAuth?** See the [ChatGPT OAuth setup guide](CHATGPT_OAUTH.md) for browser-based authentication instructions.
 - gac loads configuration in the following order of precedence:
   1. CLI flags
   2. Environment variables
@@ -401,6 +402,9 @@ The following subcommands are available:
 - `gac auth claude-code login` — Login to Claude Code using OAuth (opens browser)
 - `gac auth claude-code logout` — Logout from Claude Code and remove stored token
 - `gac auth claude-code status` — Check Claude Code authentication status
+- `gac auth chatgpt login` — Login to ChatGPT using OAuth (opens browser)
+- `gac auth chatgpt logout` — Logout from ChatGPT and remove stored tokens
+- `gac auth chatgpt status` — Check ChatGPT authentication status
 - `gac config show` — Show current configuration
 - `gac config set KEY VALUE` — Set a config key in `$HOME/.gac.env`
 - `gac config get KEY` — Get a config value
@@ -592,6 +596,8 @@ When disabled, gac skips all stats recording — no file reads or writes occur. 
 
 - For MCP server setup (AI agent integration), see [docs/MCP.md](MCP.md)
 - For custom system prompts, see [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
+- For Claude Code OAuth setup, see [docs/CLAUDE_CODE.md](CLAUDE_CODE.md)
+- For ChatGPT OAuth setup, see [docs/CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
 - For troubleshooting and advanced tips, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - For installation and configuration, see [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - To contribute, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

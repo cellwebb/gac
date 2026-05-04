@@ -73,7 +73,9 @@ Hướng dẫn này bao gồm các vấn đề phổ biến và giải pháp cho
 - Kiểm tra lại khóa API và trạng thái tài khoản nhà cung cấp của bạn
 - Đối với Ollama và LM Studio, xác nhận URL API khớp với phiên bản địa phương của bạn. Chỉ cần khóa API nếu bạn đã bật xác thực.
 - **Đối với hết hạn token Claude Code**: Chạy `gac auth` để xác thực lại nhanh chóng và làm mới token của bạn. Trình duyệt sẽ tự động mở cho OAuth.
+- **Đối với hết hạn token ChatGPT OAuth**: Chạy `gac auth chatgpt login` để xác thực lại. Trình duyệt sẽ tự động mở cho OAuth.
 - **Đối với các vấn đề OAuth khác của Claude Code**, xem [hướng dẫn thiết lập Claude Code](CLAUDE_CODE.md) để được trợ giúp về khắc phục sự cố toàn diện.
+- **Đối với các vấn đề OAuth khác của ChatGPT**, xem [hướng dẫn thiết lập ChatGPT OAuth](CHATGPT_OAUTH.md) để được trợ giúp về khắc phục sự cố toàn diện.
 
 **Vấn đề:** Mô hình không có sẵn hoặc không được hỗ trợ
 

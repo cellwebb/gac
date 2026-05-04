@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **25+ समर्थित प्रदाता**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ ANTHROPIC_API_KEY=your_key_here
 - **पूर्ण दस्तावेज़**: [USAGE.md](docs/hi/USAGE.md) - पूर्ण CLI रेफरेंस
 - **MCP सर्वर**: [docs/MCP.md](MCP.md) - AI एजेंटों के लिए GAC को MCP सर्वर के रूप में उपयोग करें
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/hi/CLAUDE_CODE.md) - Claude Code सेटअप और प्रमाणीकरण
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/hi/CHATGPT_OAUTH.md) - ChatGPT OAuth सेटअप और प्रमाणीकरण
 - **कस्टम प्रॉम्प्ट्स**: [CUSTOM_SYSTEM_PROMPTS.md](docs/hi/CUSTOM_SYSTEM_PROMPTS.md) - कमिट मैसेज स्टाइल को कस्टमाइज़ करें
 - **उपयोग सांख्यिकी**: `gac stats --help` देखें या [पूरे डॉक्स](docs/hi/USAGE.md#उपयोग-सांख्यिकी)
 - **समस्या निवारण**: [TROUBLESHOOTING.md](docs/hi/TROUBLESHOOTING.md) - सामान्य समस्याएं और समाधान

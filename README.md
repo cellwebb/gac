@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **25+ Supported Providers**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ See `.gac.env.example` for all available options.
 - **Full documentation**: [docs/USAGE.md](docs/en/USAGE.md) - Complete CLI reference
 - **MCP server**: [docs/MCP.md](docs/en/MCP.md) - Use GAC as an MCP server for AI agents
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/en/CLAUDE_CODE.md) - Claude Code setup and authentication
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/en/CHATGPT_OAUTH.md) - ChatGPT OAuth setup and authentication
 - **Custom prompts**: [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/en/CUSTOM_SYSTEM_PROMPTS.md) - Customize commit message style
 - **Usage statistics**: See `gac stats --help` or the [full docs](docs/en/USAGE.md#usage-statistics)
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) - Common issues and solutions

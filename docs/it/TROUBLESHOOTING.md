@@ -135,8 +135,9 @@ sudo apt install python3.11
    ```
 
 5. **Per scadenza token di Claude Code**: Esegui `gac auth` per autenticarti di nuovo rapidamente e aggiornare il tuo token. Il tuo browser si aprirà automaticamente per OAuth.
-
-6. **Per altri problemi OAuth di Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per la risoluzione completa dei problemi.
+6. **Per scadenza token di ChatGPT OAuth**: Esegui `gac auth chatgpt login` per autenticarti di nuovo. Il tuo browser si aprirà automaticamente per OAuth.
+7. **Per altri problemi OAuth di Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per la risoluzione completa dei problemi.
+8. **Per altri problemi OAuth di ChatGPT**, consulta la [guida alla configurazione di ChatGPT OAuth](CHATGPT_OAUTH.md) per la risoluzione completa dei problemi.
 
 ### Provider non riconosciuto
 

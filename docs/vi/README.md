@@ -65,7 +65,7 @@ uv tool upgrade gac
 
 ### 🌐 **Hơn 25 Nhà Cung Cấp Hỗ Trợ**
 
-- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)**
+- **Anthropic** • **Azure OpenAI** • **Cerebras** • **Chutes.ai** • **Claude Code (OAuth)** • **ChatGPT (OAuth)**
 - **DeepSeek** • **Fireworks** • **Gemini** • **Groq** • **Kimi for Coding** • **LM Studio**
 - **MiniMax.io** • **Mistral AI** • **Moonshot AI** • **Ollama** • **OpenAI** • **OpenRouter**
 - **Qwen Cloud (CN & INTL)** • **Replicate** • **Streamlake** • **Synthetic.new** • **Together AI**
@@ -245,6 +245,7 @@ Xem `.gac.env.example` cho tất cả các tùy chọn có sẵn.
 - **Tài liệu đầy đủ**: [USAGE.md](USAGE.md) - Tham chiếu CLI hoàn chỉnh
 - **MCP server**: [docs/MCP.md](MCP.md) - Sử dụng GAC làm MCP server cho AI agent
 - **Claude Code OAuth**: [docs/CLAUDE_CODE.md](docs/vi/CLAUDE_CODE.md) - Cài đặt và xác thực Claude Code
+- **ChatGPT OAuth**: [docs/CHATGPT_OAUTH.md](docs/vi/CHATGPT_OAUTH.md) - Cài đặt và xác thực ChatGPT OAuth
 - **Gợi ý tùy chỉnh**: [CUSTOM_SYSTEM_PROMPTS.md](CUSTOM_SYSTEM_PROMPTS.md) - Tùy chỉnh kiểu thông điệp commit
 - **Thống kê sử dụng**: Xem `gac stats --help` hoặc [tài liệu đầy đủ](docs/vi/USAGE.md#thống-kê-sử-dụng)
 - **Xử lý sự cố**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Các vấn đề phổ biến và giải pháp

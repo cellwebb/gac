@@ -45,6 +45,61 @@ def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: st
     return result if result > 0 else 1
 
 
+def _ensure_oauth_token(provider: str) -> None:
+    """Ensure OAuth token is fresh for the given provider.
+
+    Checks token expiry, attempts refresh if needed, and injects the
+    access token into the environment so the provider can pick it up.
+    Raises AIError if the token cannot be obtained.
+    """
+    oauth_providers: dict[str, dict[str, str]] = {
+        "claude-code": {
+            "provider_key": "claude-code",
+            "env_var": "CLAUDE_CODE_ACCESS_TOKEN",
+            "login_cmd": "gac auth claude-code login",
+        },
+        "chatgpt-oauth": {
+            "provider_key": "chatgpt-oauth",
+            "env_var": "CHATGPT_OAUTH_API_KEY",
+            "login_cmd": "gac auth chatgpt login",
+        },
+    }
+
+    if provider not in oauth_providers:
+        return
+
+    info = oauth_providers[provider]
+    provider_key = info["provider_key"]
+    env_var = info["env_var"]
+    login_cmd = info["login_cmd"]
+
+    # Provider-specific expiry check and refresh
+    token_valid = False
+    if provider == "claude-code":
+        token_valid = refresh_token_if_expired(quiet=True)
+    elif provider == "chatgpt-oauth":
+        from gac.oauth.chatgpt import is_token_expired as chatgpt_is_expired
+        from gac.oauth.chatgpt import refresh_access_token as chatgpt_refresh
+
+        if chatgpt_is_expired():
+            token_valid = chatgpt_refresh() is not None
+        else:
+            token_valid = True
+
+    if not token_valid:
+        raise AIError.authentication_error(
+            f"{provider} token not found or expired. Please authenticate with '{login_cmd}'."
+        )
+
+    # Load the (possibly refreshed) token and set env var
+    token_store = TokenStore()
+    token_data = token_store.get_token(provider_key)
+    if token_data and "access_token" in token_data:
+        os.environ[env_var] = token_data["access_token"]
+    else:
+        raise AIError.authentication_error(f"{provider} token not found. Please authenticate with '{login_cmd}'.")
+
+
 def generate_with_retries(
     provider_funcs: dict[str, Callable[..., tuple[str, int, int, int, int]]],
     model: str,
@@ -73,23 +128,8 @@ def generate_with_retries(
     if not messages:
         raise AIError.model_error("No messages provided for AI generation")
 
-    # Load Claude Code token from TokenStore if needed
-    if provider == "claude-code":
-        # Check token expiry and refresh if needed
-        if not refresh_token_if_expired(quiet=True):
-            raise AIError.authentication_error(
-                "Claude Code token not found or expired. Please authenticate with 'gac auth claude-code login'."
-            )
-
-        # Load the (possibly refreshed) token
-        token_store = TokenStore()
-        token_data = token_store.get_token("claude-code")
-        if token_data and "access_token" in token_data:
-            os.environ["CLAUDE_CODE_ACCESS_TOKEN"] = token_data["access_token"]
-        else:
-            raise AIError.authentication_error(
-                "Claude Code token not found. Please authenticate with 'gac auth claude-code login'."
-            )
+    # Ensure OAuth tokens are fresh for OAuth-based providers
+    _ensure_oauth_token(provider)
 
     # Set up spinner
     if is_group:

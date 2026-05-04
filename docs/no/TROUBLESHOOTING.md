@@ -73,7 +73,9 @@ Denne guiden dekker vanlige problemer og løsninger for installasjon, konfiguras
 - Double-check your API key and provider account status
 - For Ollama and LM Studio, confirm the API URL matches your local instance. API keys are only needed if you enabled authentication.
 - **For Claude Code token-utløp**: Kjør `gac auth` for raskt å autentisere på nytt og oppdatere tokenet ditt. Nettleseren åpnes automatisk for OAuth.
+- **For ChatGPT OAuth token-utløp**: Kjør `gac auth chatgpt login` for å autentisere på nytt. Nettleseren åpnes automatisk for OAuth.
 - **For andre Claude Code OAuth-problemer**, se [Claude Code oppsettguide](CLAUDE_CODE.md) for omfattende feilsøking.
+- **For andre ChatGPT OAuth-problemer**, se [ChatGPT OAuth oppsettguide](CHATGPT_OAUTH.md) for omfattende feilsøking.
 
 **Problem:** Model not available or unsupported
 
