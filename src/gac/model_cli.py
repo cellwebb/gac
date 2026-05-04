@@ -101,8 +101,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Ollama", "gemma3"),
         ("OpenAI", "gpt-5.4-mini"),
         ("OpenRouter", "openrouter/auto"),
-        ("Qwen Cloud (API CN)", "qwen3.5-flash"),
-        ("Qwen Cloud (API INTL)", "qwen3.5-flash"),
+        ("Qwen Cloud (CN API)", "qwen3.5-flash"),
+        ("Qwen Cloud (INTL API)", "qwen3.5-flash"),
         ("Replicate", "openai/gpt-oss-120b"),
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7-Flash"),
@@ -145,9 +145,9 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         provider_key = "minimax"
     elif provider_key == "moonshot-ai":
         provider_key = "moonshot"
-    elif provider_key == "qwen-cloud-api-intl":
+    elif provider_key == "qwen-cloud-intl-api":
         provider_key = "qwen-api"
-    elif provider_key == "qwen-cloud-api-cn":
+    elif provider_key == "qwen-cloud-cn-api":
         provider_key = "qwen-api-cn"
     elif provider_key == "syntheticnew":
         provider_key = "synthetic"
