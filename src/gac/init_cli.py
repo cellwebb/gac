@@ -7,6 +7,7 @@ import click
 import questionary
 from dotenv import dotenv_values, set_key, unset_key
 
+from gac.editor_cli import configure_editor_init_workflow
 from gac.language_cli import configure_language_init_workflow
 from gac.model_cli import _configure_model
 
@@ -48,6 +49,24 @@ def _configure_language(existing_env: dict[str, str]) -> None:
         click.echo("Language configuration cancelled or failed.")
     else:
         click.echo("Language configuration completed.")
+
+
+def _configure_editor(existing_env: dict[str, str]) -> None:
+    """Run the editor configuration flow using consolidated logic."""
+    click.echo("\n📝 Commit Message Editor")
+    click.echo(
+        "When you press 'e' at the confirmation prompt, gac opens an editor\n"
+        "so you can revise the commit message before committing."
+    )
+    click.echo("By default, this is an in-place TUI with vi/emacs keybindings.")
+    click.echo("You can switch to an external editor like VS Code, Vim, or Nano.")
+
+    success = configure_editor_init_workflow(GAC_ENV_PATH)
+
+    if not success:
+        click.echo("Editor configuration cancelled or failed.")
+    else:
+        click.echo("Editor configuration completed.")
 
 
 _STATS_FALSY_VALUES = {"", "0", "false", "no", "off", "n"}
@@ -153,6 +172,8 @@ def init() -> None:
         return
 
     _configure_language(existing_env)
+
+    _configure_editor(existing_env)
 
     _configure_stats(existing_env)
 

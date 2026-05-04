@@ -4,6 +4,24 @@ from click.testing import CliRunner
 from gac.cli import cli
 
 
+class TestSubcommandRegistration:
+    """Test that editor and edit subcommands are registered."""
+
+    def test_editor_subcommand_registered(self):
+        """Test 'gac editor' is available as a subcommand."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["editor", "--help"])
+        assert result.exit_code == 0
+        assert "editor" in result.output.lower()
+
+    def test_edit_alias_registered(self):
+        """Test 'gac edit' is available as an alias for 'editor'."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["edit", "--help"])
+        assert result.exit_code == 0
+        assert "editor" in result.output.lower() or "edit" in result.output.lower()
+
+
 class TestMainCommand:
     @pytest.fixture
     def mock_init_commands(self, monkeypatch):

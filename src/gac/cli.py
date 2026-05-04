@@ -17,6 +17,7 @@ from gac.auth_cli import auth as auth_cli
 from gac.config_cli import config as config_cli
 from gac.constants import Languages, Logging
 from gac.diff_cli import diff as diff_cli
+from gac.editor_cli import editor as editor_cli
 from gac.errors import handle_error
 from gac.init_cli import init as init_cli
 from gac.language_cli import language as language_cli
@@ -226,6 +227,7 @@ cli.add_command(auth_cli)
 cli.add_command(config_cli)
 cli.add_command(diff_cli)
 cli.add_command(init_cli)
+cli.add_command(editor_cli)
 cli.add_command(language_cli)
 cli.add_command(model_cli)
 cli.add_command(prompt_cli)
@@ -241,6 +243,16 @@ def lang(ctx: Any) -> None:
 
 
 cli.add_command(lang)  # Add the lang alias
+
+
+@click.command(context_settings=editor_cli.context_settings)
+@click.pass_context
+def edit(ctx: Any) -> None:
+    """Set the editor for commit messages interactively. (Alias for 'editor')"""
+    ctx.forward(editor_cli)
+
+
+cli.add_command(edit)  # Add the edit alias
 
 
 @click.command()
