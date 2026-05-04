@@ -107,7 +107,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Streamlake", ""),
         ("Synthetic.new", "hf:zai-org/GLM-4.7-Flash"),
         ("Together AI", "openai/gpt-oss-120B"),
-        ("Wafer.ai", "glm-5.1"),
+        ("Wafer.ai", "Qwen3.5-397B-A17B"),
         ("Z.AI", "glm-5.1"),
         ("Z.AI Coding", "glm-5.1"),
     ]
