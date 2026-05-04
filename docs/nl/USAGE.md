@@ -359,6 +359,7 @@ De volgende subcommando's zijn beschikbaar:
 - `gac config get KEY` — Configuratiewaarde krijgen
 - `gac config unset KEY` — Configuratiesleutel verwijderen uit `$HOME/.gac.env`
 - `gac language` (of `gac lang`) — Interactieve taalselector voor commitberichten (stelt GAC_LANGUAGE in)
+- `gac editor` (of `gac edit`) — Interactieve editor-selector voor de `e`-knop bij de bevestigingsprompt (zet GAC_EDITOR)
 - `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
 - `gac serve` — Start GAC als [MCP-server](MCP.md) voor AI-agent integratie (stdio transport)
 - `gac stats show` — Bekijk uw gac-gebruiksstatistieken (totalen, streaks, dagelijkse & wekelijkse activiteit, tokengebruik, topprojecten, topmodellen)

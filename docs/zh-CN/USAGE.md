@@ -410,6 +410,7 @@ git config --global user.email "your.email@example.com"
 - `gac config get KEY` — 获取配置值
 - `gac config unset KEY` — 从 `$HOME/.gac.env` 中删除配置键
 - `gac language`（或 `gac lang`）— 提交消息的交互式语言选择器（设置 GAC_LANGUAGE）
+- `gac editor`（或 `gac edit`）— 确认提示符中 `e` 键的交互式编辑器选择器（设置 GAC_EDITOR）
 - `gac diff` — 显示过滤的 git diff，具有暂存/未暂存更改、颜色和截断选项
 - `gac serve` — 将 GAC 作为 [MCP 服务器](MCP.md) 启动，用于 AI 代理集成（stdio 传输）
 - `gac stats show` — 查看你的 gac 使用统计（总计、连续使用、每日和每周活动、令牌使用量、热门项目、热门模型）

@@ -406,6 +406,7 @@ The following subcommands are available:
 - `gac config get KEY` — Get a config value
 - `gac config unset KEY` — Remove a config key from `$HOME/.gac.env`
 - `gac language` (or `gac lang`) — Interactive language selector for commit messages (sets GAC_LANGUAGE)
+- `gac editor` (or `gac edit`) — Interactive editor selector for the `e` key at the confirmation prompt (sets GAC_EDITOR)
 - `gac diff` — Show filtered git diff with options for staged/unstaged changes, color, and truncation
 - `gac serve` — Start GAC as an [MCP server](MCP.md) for AI agent integration (stdio transport)
 - `gac stats show` — View your gac usage statistics (totals, streaks, daily & weekly activity, token usage, top projects, top models)

@@ -408,6 +408,7 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac config get KEY` — Konfigurationswert abrufen
 - `gac config unset KEY` — Konfigurationsschlüssel aus `$HOME/.gac.env` entfernen
 - `gac language` (oder `gac lang`) — Interaktiver Sprachselektor für Commit-Nachrichten (setzt GAC_LANGUAGE)
+- `gac editor` (oder `gac edit`) — Interaktiver Editor-Selektor für die `e`-Taste am Bestätigungsprompt (setzt GAC_EDITOR)
 - `gac diff` — Gefiltertes git diff mit Optionen für gestufte/ungestufte Änderungen, Farbe und Kürzung anzeigen
 - `gac serve` — GAC als [MCP-Server](MCP.md) für KI-Agenten-Integration starten (stdio-Transport)
 - `gac stats show` — Ihre gac-Nutzungsstatistiken anzeigen (Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle)

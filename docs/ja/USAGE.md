@@ -409,6 +409,7 @@ git config --global user.email "your.email@example.com"
 - `gac config get KEY` — 設定値を取得
 - `gac config unset KEY` — `$HOME/.gac.env` から設定キーを削除
 - `gac language` (または `gac lang`) — コミットメッセージの対話的言語セレクター（GAC_LANGUAGE を設定）
+- `gac editor` (または `gac edit`) — 確認プロンプトの `e` キーの対話的エディターセレクター（GAC_EDITOR を設定）
 - `gac diff` — ステージ/未ステージ変更、色、トランケーションのオプション付きでフィルタリングされた git diff を表示
 - `gac serve` — AI エージェント統合用の [MCP サーバー](MCP.md)として GAC を起動（stdio トランスポート）
 - `gac stats show` — gac の使用統計を表示（合計、ストリーク、日次・週次アクティビティ、トークン使用量、トッププロジェクト、トップモデル）

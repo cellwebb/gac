@@ -408,6 +408,7 @@ Les sous-commandes suivantes sont disponibles :
 - `gac config get KEY` — Obtenir une valeur de configuration
 - `gac config unset KEY` — Supprimer une clé de configuration de `$HOME/.gac.env`
 - `gac language` (ou `gac lang`) — Sélecteur de langue interactif pour les messages de commit (définit GAC_LANGUAGE)
+- `gac editor` (ou `gac edit`) — Sélecteur interactif d'éditeur pour la touche `e` au prompt de confirmation (définit GAC_EDITOR)
 - `gac diff` — Afficher le git diff filtré avec des options pour les changements indexés/non indexés, la couleur et la troncature
 - `gac serve` — Démarrer GAC en tant que [serveur MCP](MCP.md) pour l'intégration d'agents IA (transport stdio)
 - `gac stats show` — Voir vos statistiques d'utilisation de gac (totaux, séries, activité quotidienne et hebdomadaire, utilisation des tokens, projets principaux, modèles principaux)

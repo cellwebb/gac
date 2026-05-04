@@ -404,6 +404,7 @@ git config --global user.email "your.email@example.com"
 - `gac config get KEY` — 구성 값 가져오기
 - `gac config unset KEY` — `$HOME/.gac.env`에서 구성 키 제거
 - `gac language` (또는 `gac lang`) — 커밋 메시지를 위한 대화형 언어 선택기 (GAC_LANGUAGE 설정)
+- `gac editor` (또는 `gac edit`) — 확인 프롬프트에서 `e` 키를 위한 대화형 에디터 선택기 (GAC_EDITOR 설정)
 - `gac diff` — 스테이징된/스테이징되지 않은 변경, 색상, 자르기 옵션으로 필터링된 git diff 표시
 - `gac serve` — AI 에이전트 통합을 위한 [MCP 서버](MCP.md)로 GAC 시작 (stdio 전송)
 - `gac stats show` — gac 사용 통계 보기 (총계, 연속 사용, 일일 및 주간 활동, 토큰 사용량, 상위 프로젝트, 상위 모델)

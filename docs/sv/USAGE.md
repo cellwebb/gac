@@ -359,6 +359,7 @@ Följande underkommandon är tillgängliga:
 - `gac config get KEY` — Hämta konfigurationsvärde
 - `gac config unset KEY` — Ta bort konfigurationsnyckel från `$HOME/.gac.env`
 - `gac language` (eller `gac lang`) — Interaktiv språkväljare för commit-meddelanden (ställer in GAC_LANGUAGE)
+- `gac editor` (eller `gac edit`) — Interaktiv editorväljare för `e`-knappen vid bekäftelsesprompten (ställer in GAC_EDITOR)
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
 - `gac serve` — Starta GAC som [MCP-server](MCP.md) för AI-agent integration (stdio transport)
 - `gac stats show` — Visa din gac-användningsstatistik (totaler, streaks, daglig & veckovis aktivitet, tokenanvändning, topprojekt, toppmodeller)

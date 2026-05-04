@@ -359,6 +359,7 @@ Các lệnh con sau đây có sẵn:
 - `gac config get KEY` — Lấy giá trị cấu hình
 - `gac config unset KEY` — Xóa khóa cấu hình khỏi `$HOME/.gac.env`
 - `gac language` (hoặc `gac lang`) — Trình chọn ngôn ngữ tương tác cho các thông điệp commit (đặt GAC_LANGUAGE)
+- `gac editor` (hoặc `gac edit`) — Bộ chọn editor tương tác cho phím `e` tại prompt xác nhận (đặt GAC_EDITOR)
 - `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
 - `gac serve` — Khởi động GAC như một [MCP server](MCP.md) để tích hợp AI agent (truyền tải stdio)
 - `gac stats show` — Xem thống kê sử dụng gac của bạn (tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, sử dụng token, dự án hàng đầu, mô hình hàng đầu)
