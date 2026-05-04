@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Expérience développeur**
 
-- **Feedback interactif** : Tapez `r` pour relancer, `e` pour éditer sur place avec les bindings vi/emacs, ou tapez directement votre feedback comme "rends-le plus court" ou "concentre-toi sur la correction du bug"
+- **Feedback interactif** : Tapez `r` pour relancer, `e` pour éditer (TUI intégrée par défaut, ou `$GAC_EDITOR` si défini), ou tapez directement votre feedback comme "rends-le plus court" ou "concentre-toi sur la correction du bug"
 - **Interrogation interactive** : Utilisez `--interactive` (`-i`) pour répondre à des questions ciblées sur vos changements pour des messages de commit plus contextuels
 - **Workflows en une commande** : Workflows complets avec des drapeaux comme `gac -ayp` (indexer tout, confirmer automatiquement, pousser)
 - **Intégration Git** : Respecte les hooks pre-commit et lefthook, en les exécutant avant les opérations coûteuses de l'IA
@@ -192,10 +192,15 @@ Pas satisfait du résultat ? Vous avez plusieurs options :
 # Relancer simple (pas de feedback)
 r
 
-# Éditer sur place avec édition de terminal riche
+# Éditer le message de commit
 e
-# Utilise prompt_toolkit pour l'édition multi-lignes avec les bindings vi/emacs
+# Par défaut : TUI intégrée avec bindings vi/emacs
 # Appuyez sur Esc+Entrée ou Ctrl+S pour soumettre, Ctrl+C pour annuler
+
+# Définissez GAC_EDITOR pour ouvrir votre éditeur préféré à la place :
+# GAC_EDITOR=code gac → ouvre VS Code (--wait appliqué automatiquement)
+# GAC_EDITOR=vim gac → ouvre vim
+# GAC_EDITOR=nano gac → ouvre nano
 
 # Ou tapez simplement votre feedback directement !
 rends-le plus court et concentre-toi sur l'amélioration des performances
@@ -205,12 +210,12 @@ explique les implications de sécurité
 # Appuyez sur Entrée sur une entrée vide pour voir l'invite à nouveau
 ```
 
-La fonction d'édition (`e`) fournit une édition riche sur place dans le terminal, vous permettant de :
+La fonction d'édition (`e`) vous permet d'affiner le message de commit :
 
-- **Éditer naturellement** : Édition multi-lignes avec les bindings vi/emacs familiers
-- **Apporter des corrections rapides** : Corriger les fautes de frappe, ajuster le wording ou affiner le formatage
-- **Ajouter des détails** : Inclure des informations que l'IA aurait pu manquer
-- **Restructurer** : Réorganiser les points ou changer la structure du message
+- **Par défaut (TUI intégrée)** : Édition multi-lignes avec bindings vi/emacs — corriger les fautes de frappe, ajuster la formulation, restructurer
+- **Avec `GAC_EDITOR`** : Ouvre votre éditeur préféré (`code`, `vim`, `nano`, etc.) — toute la puissance de l'éditeur, y compris rechercher/remplacer, macros, etc.
+
+Les éditeurs GUI comme VS Code sont gérés automatiquement : gac insère `--wait` pour que le processus se bloque jusqu'à la fermeture de l'onglet de l'éditeur. Aucune configuration supplémentaire nécessaire.
 
 ---
 

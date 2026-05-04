@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Experiencia del desarrollador**
 
-- **Retroalimentación interactiva**: Escribe `r` para volver a generar, `e` para editar en el lugar con atajos de teclado vi/emacs, o escribe directamente tu retroalimentación como "hazlo más corto" o "enfócate en la corrección del error"
+- **Retroalimentación interactiva**: Escribe `r` para volver a generar, `e` para editar (TUI in-place por defecto, o tu `$GAC_EDITOR` si está configurado), o escribe directamente tu retroalimentación como "hazlo más corto" o "enfócate en la corrección del error"
 - **Interrogación interactiva**: Usa `--interactive` (`-i`) para responder preguntas específicas sobre tus cambios para mensajes de commit más contextuales
 - **Flujos de trabajo de un comando**: Flujos de trabajo completos con banderas como `gac -ayp` (stage todo, auto-confirmar, push)
 - **Integración con Git**: Respeta los hooks de pre-commit y lefthook, ejecutándolos antes de operaciones costosas de LLM
@@ -192,10 +192,15 @@ gac --signoff
 # Volver a generar simple (sin retroalimentación)
 r
 
-# Editar en el lugar con edición de terminal rica
+# Editar el mensaje de commit
 e
-# Usa prompt_toolkit para edición multilínea con atajos de teclado vi/emacs
+# Por defecto: TUI in-place con keybindings vi/emacs
 # Presiona Esc+Enter o Ctrl+S para enviar, Ctrl+C para cancelar
+
+# Establece GAC_EDITOR para abrir tu editor preferido en su lugar:
+# GAC_EDITOR=code gac → abre VS Code (--wait se aplica automáticamente)
+# GAC_EDITOR=vim gac → abre vim
+# GAC_EDITOR=nano gac → abre nano
 
 # ¡O simplemente escribe tu retroalimentación directamente!
 hazlo más corto y enfócate en la mejora de rendimiento
@@ -205,12 +210,12 @@ explica las implicaciones de seguridad
 # Presiona Enter en entrada vacía para ver el prompt nuevamente
 ```
 
-La función de edición (`e`) proporciona edición de terminal rica en el lugar, permitiéndote:
+La función de edición (`e`) te permite refinar el mensaje de commit:
 
-- **Editar naturalmente**: Edición multilínea con atajos de teclado vi/emacs familiares
-- **Hacer correcciones rápidas**: Corregir errores tipográficos, ajustar el wording o refinar el formato
-- **Añadir detalles**: Incluir información que el LLM podría haber pasado por alto
-- **Reestructurar**: Reorganizar viñetas o cambiar la estructura del mensaje
+- **Por defecto (TUI in-place)**: Edición multilínea con keybindings vi/emacs — corregir errores tipográficos, ajustar redacción, reestructurar
+- **Con `GAC_EDITOR`**: Abre tu editor preferido (`code`, `vim`, `nano`, etc.) — toda la potencia del editor incluyendo buscar/reemplazar, macros, etc.
+
+Los editores GUI como VS Code se manejan automáticamente: gac inserta `--wait` para que el proceso se bloquee hasta que cierres la pestaña del editor. No se necesita configuración adicional.
 
 ---
 

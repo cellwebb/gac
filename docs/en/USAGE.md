@@ -45,7 +45,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 - `y` or `yes` - Proceed with the commit
 - `n` or `no` - Cancel the commit
 - `r` or `reroll` - Regenerate the commit message with the same context
-- `e` or `edit` - Edit the commit message in-place with rich terminal editing (vi/emacs keybindings)
+- `e` or `edit` - Edit the commit message. By default, opens an in-place TUI with vi/emacs keybindings. Set `GAC_EDITOR` to open your preferred editor instead (e.g., `GAC_EDITOR=code gac` for VS Code, `GAC_EDITOR=vim gac` for vim)
 - Any other text - Regenerate with that text as feedback (e.g., `make it shorter`, `focus on performance`)
 - Empty input (just Enter) - Show the prompt again
 
@@ -95,7 +95,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 
 You can also set `GAC_USE_50_72_RULE=true` in your `.gac.env` file to always apply this rule.
 
-**Note:** You can provide feedback interactively by simply typing it at the confirmation prompt - no need to prefix with 'r'. Type `r` for a simple reroll, `e` to edit in-place with vi/emacs keybindings, or type your feedback directly like `make it shorter`.
+**Note:** You can provide feedback interactively by simply typing it at the confirmation prompt - no need to prefix with 'r'. Type `r` for a simple reroll, `e` to edit the message (in-place TUI by default, or your `$GAC_EDITOR` if set), or type your feedback directly like `make it shorter`.
 
 ## Output and Verbosity
 
@@ -372,6 +372,7 @@ git config --global user.email "your.email@example.com"
 
 You can customize gac's behavior with these optional environment variables:
 
+- `GAC_EDITOR=code --wait` - Override the editor used when you press `e` at the confirmation prompt. By default, `e` opens an in-place TUI; setting `GAC_EDITOR` switches to an external editor. Supports any editor command with arguments. Wait flags (`--wait`/`-w`) are auto-inserted for known GUI editors (VS Code, Cursor, Zed, Sublime Text) so the process blocks until you close the file
 - `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatically infer and include scope in commit messages (e.g., `feat(auth):` vs `feat:`)
 - `GAC_VERBOSE=true` - Generate detailed commit messages with motivation, architecture, and impact sections
 - `GAC_USE_50_72_RULE=true` - Always enforce the 50/72 rule for commit messages (subject ≤50 chars, body lines ≤72 chars)

@@ -146,7 +146,7 @@
 
 **Problem:** Commit message not what I expected
 
-- इंटरैक्टिव feedback system का उपयोग करें: reroll के लिए `r` टाइप करें, edit के लिए `e`, या natural language feedback प्रदान करें
+- इंटरैक्टिव feedback system का उपयोग करें: reroll के लिए `r` टाइप करें, edit के लिए `e` (इन-प्लेस TUI, या `GAC_EDITOR` के माध्यम से बाहरी एडिटर), या natural language feedback प्रदान करें
 - LLM को मार्गदर्शन देने के लिए `-h "your hint"` के साथ context जोड़ें
 - सरल one-line messages के लिए `-o` या अधिक detailed messages के लिए `-v` का उपयोग करें
 - LLM को क्या जानकारी मिल रही है यह देखने के लिए `--show-prompt` का उपयोग करें
@@ -160,7 +160,7 @@
 
 **Problem:** Can't edit or provide feedback after message generation
 
-- Prompt पर, edit mode में प्रवेश करने के लिए `e` टाइप करें (vi/emacs keybindings समर्थित)
+- Prompt पर, edit mode में प्रवेश करने के लिए `e` टाइप करें (vi/emacs keybindings के साथ इन-प्लेस TUI; अपना पसंदीदा एडिटर उपयोग करने के लिए `GAC_EDITOR` सेट करें)
 - Feedback के बिना regenerate करने के लिए `r` टाइप करें
 - या बस अपनी feedback सीधे टाइप करें (जैसे "make it shorter", "focus on the bug fix")
 - प्रॉम्प्ट को फिर से देखने के लिए खाली input पर Enter दबाएं

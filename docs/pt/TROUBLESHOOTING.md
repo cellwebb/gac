@@ -146,7 +146,7 @@ Este guia cobre problemas comuns e soluções para instalar, configurar e execut
 
 **Problema:** Mensagem de commit não é o que eu esperava
 
-- Use o sistema de feedback interativo: digite `r` para reroll, `e` para editar, ou forneça feedback em linguagem natural
+- Use o sistema de feedback interativo: digite `r` para reroll, `e` para editar (TUI in-place, ou editor externo via `GAC_EDITOR`), ou forneça feedback em linguagem natural
 - Adicione contexto com `-h "sua dica"` para guiar o LLM
 - Use `-o` para mensagens mais simples de uma linha ou `-v` para mensagens mais detalhadas
 - Use `--show-prompt` para ver quais informações o LLM está recebendo
@@ -160,7 +160,7 @@ Este guia cobre problemas comuns e soluções para instalar, configurar e execut
 
 **Problema:** Não consigo editar ou fornecer feedback após a geração da mensagem
 
-- No prompt, digite `e` para entrar no modo de edição (suporta keybindings vi/emacs)
+- No prompt, digite `e` para entrar no modo de edição (TUI in-place com keybindings vi/emacs; defina `GAC_EDITOR` para usar o seu editor preferido)
 - Digite `r` para regenerar sem feedback
 - Ou simplesmente digite seu feedback diretamente (ex: "torne mais curto", "foco na correção do bug")
 - Pressione Enter na entrada vazia para ver o prompt novamente

@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Developer Experience**
 
-- **Interactive feedback**: Type `r` to reroll, `e` to edit in-place with vi/emacs keybindings, or directly type your feedback like `make it shorter` or `focus on the bug fix`
+- **Interactive feedback**: Type `r` to reroll, `e` to edit (in-place TUI by default, or your `$GAC_EDITOR` if set), or directly type your feedback like `make it shorter` or `focus on the bug fix`
 - **Interactive questioning**: Use `--interactive` (`-i`) to answer targeted questions about your changes for more contextual commit messages
 - **One-command workflows**: Complete workflows with flags like `gac -ayp` (stage all, auto-confirm, push)
 - **Git integration**: Respects pre-commit and lefthook hooks, running them before expensive LLM operations
@@ -192,10 +192,15 @@ Not happy with the result? You have several options:
 # Simple reroll (no feedback)
 r
 
-# Edit in-place with rich terminal editing
+# Edit the commit message
 e
-# Uses prompt_toolkit for multi-line editing with vi/emacs keybindings
+# By default: in-place TUI with vi/emacs keybindings
 # Press Esc+Enter or Ctrl+S to submit, Ctrl+C to cancel
+
+# Set GAC_EDITOR to open your preferred editor instead:
+# GAC_EDITOR=code gac    → opens VS Code (--wait auto-applied)
+# GAC_EDITOR=vim gac     → opens vim
+# GAC_EDITOR=nano gac    → opens nano
 
 # Or just type your feedback directly!
 make it shorter and focus on the performance improvement
@@ -205,12 +210,12 @@ explain the security implications
 # Press Enter on empty input to see the prompt again
 ```
 
-The edit feature (`e`) provides rich in-place terminal editing, allowing you to:
+The edit feature (`e`) lets you refine the commit message:
 
-- **Edit naturally**: Multi-line editing with familiar vi/emacs key bindings
-- **Make quick fixes**: Correct typos, adjust wording, or refine formatting
-- **Add details**: Include information the LLM might have missed
-- **Restructure**: Reorganize bullet points or change the message structure
+- **Default (in-place TUI)**: Multi-line editing with vi/emacs key bindings — correct typos, adjust wording, restructure
+- **With `GAC_EDITOR`**: Opens your preferred editor (`code`, `vim`, `nano`, etc.) — full editor power including find/replace, macros, etc.
+
+GUI editors like VS Code are automatically handled: gac inserts `--wait` so the process blocks until you close the editor tab. No extra configuration needed.
 
 ---
 

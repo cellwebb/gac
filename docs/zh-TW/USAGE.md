@@ -44,7 +44,7 @@ gac
 - `y` 或 `yes` - 繼續提交
 - `n` 或 `no` - 取消提交
 - `r` 或 `reroll` - 使用相同的上下文重新生成提交訊息
-- `e` 或 `edit` - 使用豐富的終端機編輯就地編輯提交訊息（vi/emacs 鍵繫結）
+- `e` 或 `edit` - 編輯提交訊息。預設情況下，開啟帶 vi/emacs 鍵繫結的就地 TUI。設定 `GAC_EDITOR` 以開啟您偏好的編輯器（例如，`GAC_EDITOR=code gac` 用於 VS Code，`GAC_EDITOR=vim gac` 用於 vim）
 - 任何其他文字 - 使用該文字作為回饋重新生成（例如，`讓它更短`，`專注於效能`）
 - 空輸入（只按 Enter）- 再次顯示提示
 
@@ -94,7 +94,7 @@ gac
 
 你還可以在 `.gac.env` 文件中設置 `GAC_USE_50_72_RULE=true` 以始終應用此規則。
 
-**注意：**你可以透過在確認提示符處簡單地輸入來互動式提供回饋 - 無需前綴 'r'。輸入 `r` 進行簡單的重新生成，`e` 使用 vi/emacs 鍵繫結就地編輯，或直接輸入你的回饋，如 `讓它更短`。
+**注意：**你可以透過在確認提示符處簡單地輸入來互動式提供回饋 - 無需前綴 'r'。輸入 `r` 進行簡單的重新生成，`e` 編輯訊息（預設就地 TUI，或設定了 `$GAC_EDITOR` 時使用該編輯器），或直接輸入你的回饋，如 `讓它更短`。
 
 ## 輸出和詳細程度
 
@@ -325,7 +325,8 @@ git config --global user.email "your.email@example.com"
 
 你可以使用這些可選的環境變數自訂 gac 的行為：
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自動推斷並在提交訊息中包含範圍（例如，`feat(auth):` vs `feat:`）
+- `GAC_EDITOR=code --wait` - 覆寫在確認提示符處按 `e` 時使用的編輯器。預設情況下，`e` 開啟就地 TUI；設定 `GAC_EDITOR` 將切換到外部編輯器。支援任何帶參數的編輯器命令。對於已知的 GUI 編輯器（VS Code、Cursor、Zed、Sublime Text），等待標誌（`--wait`/`-w`）會自動插入，以便程序在關閉檔案前一直阻塞
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自動推斷並在提交訊息中包含範圍（例如，`feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - 生成包含動機、架構和影響部分的詳細提交訊息
 - `GAC_USE_50_72_RULE=true` - 始終對提交訊息應用 50/72 規則（主題 ≤50 字符，正文行 ≤72 字符）
 - `GAC_SIGNOFF=true` - 始終在提交中新增 Signed-off-by 行（用於 DCO 合規）

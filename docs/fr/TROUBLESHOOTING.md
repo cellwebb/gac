@@ -146,7 +146,7 @@ Ce guide couvre les problèmes courants et solutions pour installer, configurer 
 
 **Problème :** Le message de commit n'est pas ce que j'attendais
 
-- Utilisez le système de feedback interactif : tapez `r` pour relancer, `e` pour éditer, ou fournissez un feedback en langage naturel
+- Utilisez le système de feedback interactif : tapez `r` pour relancer, `e` pour éditer (TUI intégrée, ou éditeur externe via `GAC_EDITOR`), ou fournissez un feedback en langage naturel
 - Ajoutez du contexte avec `-h "votre indice"` pour guider l'IA
 - Utilisez `-o` pour des messages plus simples sur une ligne ou `-v` pour des messages plus détaillés
 - Utilisez `--show-prompt` pour voir quelles informations l'IA reçoit
@@ -160,7 +160,7 @@ Ce guide couvre les problèmes courants et solutions pour installer, configurer 
 
 **Problème :** Impossible d'éditer ou de fournir un feedback après la génération du message
 
-- À l'invite, tapez `e` pour entrer en mode édition (supporte les bindings vi/emacs)
+- À l'invite, tapez `e` pour entrer en mode édition (TUI intégrée avec bindings vi/emacs ; définissez `GAC_EDITOR` pour utiliser votre éditeur préféré à la place)
 - Tapez `r` pour régénérer sans feedback
 - Ou tapez simplement votre feedback directement (ex: "rends-le plus court", "concentre-toi sur la correction du bug")
 - Appuyez sur Entrée sur une entrée vide pour voir l'invite à nouveau

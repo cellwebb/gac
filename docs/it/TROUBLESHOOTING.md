@@ -18,6 +18,9 @@ Questa guida ti aiuterà a risolvere problemi comuni con `gac`.
     - [Modello non valido](#modello-non-valido)
   - [Problemi di Esecuzione](#problemi-di-esecuzione)
     - [Nessuna modifica staged](#nessuna-modifica-staged)
+    - [Messaggio di commit non come previsto](#messaggio-di-commit-non-come-previsto)
+    - [gac è troppo lento](#gac-è-troppo-lento)
+    - [Impossibile modificare o fornire feedback](#impossibile-modificare-o-fornire-feedback-dopo-la-generazione-del-messaggio)
     - [Errore di rete](#errore-di-rete)
     - [Timeout dell'API](#timeout-dellapi)
     - [Messaggio di commit vuoto](#messaggio-di-commit-vuoto)
@@ -218,6 +221,39 @@ git add file1.py file2.js
 # Verifica le modifiche staged
 git status --staged
 ```
+
+### Messaggio di commit non come previsto
+
+**Problema**: Il messaggio di commit generato non riflette accuratamente le tue modifiche
+
+**Soluzione**:
+
+- Usa il sistema di feedback interattivo: digita `r` per rigenerare, `e` per modificare (TUI in-place, o editor esterno tramite `GAC_EDITOR`), o fornisci feedback in linguaggio naturale
+- Aggiungi contesto con `-h "il tuo suggerimento"` per guidare l'LLM
+- Usa `-o` per messaggi più semplici su una riga o `-v` per messaggi più dettagliati
+- Usa `--show-prompt` per vedere quali informazioni sta ricevendo l'LLM
+
+### gac è troppo lento
+
+**Problema**: `gac` impiega troppo tempo per generare il messaggio
+
+**Soluzione**:
+
+- Usa `gac -y` per saltare il prompt di conferma
+- Usa `gac -q` per la modalità silenziosa con meno output
+- Considera l'uso di modelli più veloci/economici per commit di routine
+- Usa `gac --no-verify` per saltare gli hook se ti stanno rallentando
+
+### Impossibile modificare o fornire feedback dopo la generazione del messaggio
+
+**Problema**: Vuoi modificare il messaggio di commit o fornire feedback dopo che è stato generato
+
+**Soluzione**:
+
+- Al prompt, digita `e` per entrare in modalità modifica (TUI in-place con keybindings vi/emacs; imposta `GAC_EDITOR` per usare il tuo editor preferito invece)
+- Digita `r` per rigenerare senza feedback
+- O semplicemente digita il tuo feedback direttamente (es. "rendilo più corto", "concentrati sulla correzione del bug")
+- Premi Invio su input vuoto per vedere nuovamente il prompt
 
 ### Errore di rete
 

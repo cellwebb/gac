@@ -146,7 +146,7 @@ Deze gids behandelt veelvoorkomende problemen en oplossingen voor het installere
 
 **Probleem:** Commitbericht niet wat ik verwachtte
 
-- Gebruik het interactieve feedbacksysteem: typ `r` om opnieuw te rollen, `e` om te bewerken, of geef natuurlijke taal feedback
+- Gebruik het interactieve feedbacksysteem: typ `r` om opnieuw te rollen, `e` om te bewerken (in-place TUI, of externe editor via `GAC_EDITOR`), of geef natuurlijke taal feedback
 - Voeg context toe met `-h "uw hint"` om de LLM te begeleiden
 - Gebruik `-o` voor simpelere eenregelige berichten of `-v` voor meer gedetailleerde berichten
 - Gebruik `--show-prompt` om te zien welke informatie de LLM ontvangt
@@ -160,7 +160,7 @@ Deze gids behandelt veelvoorkomende problemen en oplossingen voor het installere
 
 **Probleem:** Kan niet bewerken of feedback geven na berichtgeneratie
 
-- Bij de prompt, typ `e` om bewerkmodus te betreden (ondersteunt vi/emacs keybindings)
+- Bij de prompt, typ `e` om bewerkmodus te betreden (in-place TUI met vi/emacs-keybindings; stel `GAC_EDITOR` in om uw voorkeurseditor te gebruiken)
 - Typ `r` om opnieuw te genereren zonder feedback
 - Of typ gewoon uw feedback direct (bv., "maak het korter", "focus op de bug fix")
 - Druk op Enter op lege input om de prompt opnieuw te zien

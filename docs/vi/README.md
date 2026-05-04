@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Trải Nghiệm Nhà Phát Triển**
 
-- **Phản hồi tương tác**: Gõ `r` để reroll, `e` để chỉnh sửa tại chỗ với phím tắt vi/emacs, hoặc gõ trực tiếp phản hồi của bạn như `làm nó ngắn hơn` hoặc `tập trung vào sửa lỗi`
+- **Phản hồi tương tác**: Gõ `r` để reroll, `e` để chỉnh sửa (TUI tại chỗ mặc định, hoặc `$GAC_EDITOR` nếu đã đặt), hoặc gõ trực tiếp phản hồi của bạn như `làm nó ngắn hơn` hoặc `tập trung vào sửa lỗi`
 - **Hỏi đáp tương tác**: Sử dụng `--interactive` (`-i`) để trả lời các câu hỏi nhắm mục tiêu về các thay đổi của bạn để có thông điệp commit có nhiều ngữ cảnh hơn
 - **Quy trình làm việc một lệnh**: Quy trình làm việc hoàn chỉnh với các flag như `gac -ayp` (stage tất cả, tự động xác nhận, push)
 - **Tích hợp Git**: Tôn các hook pre-commit và lefthook, chạy chúng trước các thao tác LLM tốn kém
@@ -192,10 +192,15 @@ Không hài lòng với kết quả? Bạn có một số tùy chọn:
 # Reroll đơn giản (không có phản hồi)
 r
 
-# Chỉnh sửa tại chỗ với chỉnh sửa terminal phong phú
+# Chỉnh sửa thông điệp commit
 e
-# Sử dụng prompt_toolkit để chỉnh sửa đa dòng với phím tắt vi/emacs
+# Mặc định: TUI tại chỗ với phím tắt vi/emacs
 # Nhấn Esc+Enter hoặc Ctrl+S để gửi, Ctrl+C để hủy
+
+# Đặt GAC_EDITOR để mở trình soạn thảo ưa thích:
+# GAC_EDITOR=code gac → mở VS Code (--wait tự động áp dụng)
+# GAC_EDITOR=vim gac → mở vim
+# GAC_EDITOR=nano gac → mở nano
 
 # Hoặc chỉ gõ phản hồi của bạn trực tiếp!
 làm nó ngắn hơn và tập trung vào cải thiện hiệu suất
@@ -205,12 +210,12 @@ giải thích các tác động bảo mật
 # Nhấn Enter trên input trống để xem gợi ý lại
 ```
 
-Tính năng chỉnh sửa (`e`) cung cấp chỉnh sửa terminal tại chỗ phong phú, cho phép bạn:
+Tính năng chỉnh sửa (`e`) cho phép bạn tinh chỉnh thông điệp commit:
 
-- **Chỉnh sửa tự nhiên**: Chỉnh sửa đa dòng với các phím tắt vi/emacs quen thuộc
-- **Sửa lỗi nhanh**: Chỉnh sửa lỗi chính tả, điều chỉnh từ ngữ, hoặc tinh chỉnh định dạng
-- **Thêm chi tiết**: Bao gồm thông tin mà LLM có thể đã bỏ lỡ
-- **Cấu trúc lại**: Tổ chức lại các gạch đầu dòng hoặc thay đổi cấu trúc thông điệp
+- **Mặc định (TUI tại chỗ)**: Chỉnh sửa đa dòng với phím tắt vi/emacs — sửa lỗi chính tả, điều chỉnh từ ngữ, tái cấu trúc
+- **Với `GAC_EDITOR`**: Mở trình soạn thảo ưa thích (`code`, `vim`, `nano`, v.v.) — toàn bộ sức mạnh trình soạn thảo bao gồm tìm/thay thế, macro, v.v.
+
+Trình soạn thảo GUI như VS Code được xử lý tự động: gac chèn `--wait` để quy trình chặn cho đến khi bạn đóng tab trình soạn thảo. Không cần cấu hình thêm.
 
 ---
 

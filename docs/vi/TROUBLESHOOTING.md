@@ -146,7 +146,7 @@ Hướng dẫn này bao gồm các vấn đề phổ biến và giải pháp cho
 
 **Vấn đề:** Thông điệp commit không như tôi mong đợi
 
-- Sử dụng hệ thống phản hồi tương tác: gõ `r` để reroll, `e` để chỉnh sửa, hoặc cung cấp phản hồi ngôn ngữ tự nhiên
+- Sử dụng hệ thống phản hồi tương tác: gõ `r` để reroll, `e` để chỉnh sửa (TUI tại chỗ, hoặc trình soạn thảo ngoài qua `GAC_EDITOR`), hoặc cung cấp phản hồi ngôn ngữ tự nhiên
 - Thêm ngữ cảnh với `-h "gợi ý của bạn"` để hướng dẫn LLM
 - Sử dụng `-o` cho các thông điệp đơn giản hơn một dòng hoặc `-v` để có thêm thông điệp chi tiết
 - Sử dụng `--show-prompt` để xem thông tin nào LLM đang nhận
@@ -160,7 +160,7 @@ Hướng dẫn này bao gồm các vấn đề phổ biến và giải pháp cho
 
 **Vấn đề:** Không thể chỉnh sửa hoặc cung cấp phản hồi sau khi tạo thông điệp
 
-- Tại gợi ý, gõ `e` để vào chế độ chỉnh sửa (hỗ trợ phím tắt vi/emacs)
+- Tại gợi ý, gõ `e` để vào chế độ chỉnh sửa (TUI tại chỗ với phím tắt vi/emacs; đặt `GAC_EDITOR` để sử dụng trình soạn thảo ưa thích)
 - Gõ `r` để tạo lại mà không có phản hồi
 - Hoặc chỉ cần gõ phản hồi của bạn trực tiếp (ví dụ, "làm nó ngắn hơn", "tập trung vào sửa lỗi")
 - Nhấn Enter trên input trống để xem gợi ý lại

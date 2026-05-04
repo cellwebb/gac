@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Esperienza Sviluppatore**
 
-- **Feedback interattivo**: Digita `r` per rilanciare, `e` per modificare sul posto con binding vi/emacs, o digita direttamente il tuo feedback come "rendilo più breve" o "concentrati sulla correzione del bug"
+- **Feedback interattivo**: Digita `r` per rilanciare, `e` per modificare (TUI in-place per impostazione predefinita, o il tuo `$GAC_EDITOR` se impostato), o digita direttamente il tuo feedback come "rendilo più breve" o "concentrati sulla correzione del bug"
 - **Interrogazione interattiva**: Usa `--interactive` (`-i`) per rispondere a domande mirate sulle tue modifiche per messaggi di commit più contestuali
 - **Workflow a comando singolo**: Workflow completi con flag come `gac -ayp` (staging tutto, auto-conferma, push)
 - **Integrazione Git**: Rispetta gli hook pre-commit e lefthook, eseguendoli prima delle operazioni costose del LLM
@@ -192,10 +192,15 @@ Non soddisfatto del risultato? Hai diverse opzioni:
 # Rilancio semplice (nessun feedback)
 r
 
-# Modifica sul posto con editing ricco del terminale
+# Modifica il messaggio di commit
 e
-# Usa prompt_toolkit per editing multi-riga con binding vi/emacs
+# Per impostazione predefinita: TUI in-place con binding vi/emacs
 # Premi Esc+Invio o Ctrl+S per inviare, Ctrl+C per annullare
+
+# Imposta GAC_EDITOR per aprire il tuo editor preferito:
+# GAC_EDITOR=code gac → apre VS Code (--wait applicato automaticamente)
+# GAC_EDITOR=vim gac → apre vim
+# GAC_EDITOR=nano gac → apre nano
 
 # O digita semplicemente il tuo feedback direttamente!
 rendilo più breve e concentrati sul miglioramento delle prestazioni
@@ -205,12 +210,12 @@ spiega le implicazioni di sicurezza
 # Premi Invio su input vuoto per vedere di nuovo il prompt
 ```
 
-La funzione di modifica (`e`) fornisce editing ricco sul posto nel terminale, permettendoti di:
+La funzione di modifica (`e`) ti permette di perfezionare il messaggio di commit:
 
-- **Modificare naturalmente**: Editing multi-riga con binding vi/emacs familiari
-- **Fare correzioni rapide**: Correggi errori di battitura, aggiusta il wording o rifina la formattazione
-- **Aggiungere dettagli**: Includi informazioni che il LLM potrebbe aver perso
-- **Ristrutturare**: Riorganizza i punti elenco o cambia la struttura del messaggio
+- **Per impostazione predefinita (TUI in-place)**: Editing multi-riga con binding vi/emacs — correggi errori di battitura, aggiusta formulazioni, ristruttura
+- **Con `GAC_EDITOR`**: Apre il tuo editor preferito (`code`, `vim`, `nano`, ecc.) — tutta la potenza dell'editor inclusi cerca/sostituisci, macro, ecc.
+
+Gli editor GUI come VS Code sono gestiti automaticamente: gac inserisce `--wait` in modo che il processo si blocchi fino alla chiusura della scheda dell'editor. Nessuna configurazione aggiuntiva necessaria.
 
 ---
 

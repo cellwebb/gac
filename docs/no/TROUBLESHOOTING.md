@@ -146,7 +146,7 @@ Denne guiden dekker vanlige problemer og løsninger for installasjon, konfiguras
 
 **Problem:** Commit message not what I expected
 
-- Use the interactive feedback system: type `r` to reroll, `e` to edit, or provide natural language feedback
+- Bruk det interaktive feedbacksystemet: skriv `r` for reroll, `e` for å redigere (innebygd TUI, eller ekstern editor via `GAC_EDITOR`), eller gi feedback på naturlig språk
 - Add context with `-h "your hint"` to guide the LLM
 - Use `-o` for simpler one-line messages or `-v` for more detailed messages
 - Use `--show-prompt` to see what information the LLM is receiving
@@ -160,7 +160,7 @@ Denne guiden dekker vanlige problemer og løsninger for installasjon, konfiguras
 
 **Problem:** Can't edit or provide feedback after message generation
 
-- At the prompt, type `e` to enter edit mode (supports vi/emacs keybindings)
+- Ved prompten, skriv `e` for å gå inn i redigeringsmodus (innebygd TUI med vi/emacs-tastebindinger; sett `GAC_EDITOR` for å bruke din foretrukne editor i stedet)
 - Type `r` to regenerate without feedback
 - Or simply type your feedback directly (e.g., "make it shorter", "focus on the bug fix")
 - Press Enter on empty input to see the prompt again

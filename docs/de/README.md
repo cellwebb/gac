@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Developer Experience**
 
-- **Interaktives Feedback**: Geben Sie `r` ein zum erneuten Generieren, `e` zum direkten Bearbeiten mit vi/emacs Tastaturbelegungen oder geben Sie direkt Ihr Feedback ein wie `mache es kürzer` oder `konzentriere dich auf den Bug-Fix`
+- **Interaktives Feedback**: Geben Sie `r` ein zum erneuten Generieren, `e` zum Bearbeiten (standardmäßig In-Place-TUI, oder `$GAC_EDITOR` falls gesetzt) oder geben Sie direkt Ihr Feedback ein wie `mache es kürzer` oder `konzentriere dich auf den Bug-Fix`
 - **Interaktive Befragung**: Verwenden Sie `--interactive` (`-i`) um gezielte Fragen zu Ihren Änderungen zu beantworten für mehr kontextbezogene Commit-Nachrichten
 - **Ein-Befehl-Workflows**: Vollständige Workflows mit Flags wie `gac -ayp` (alles hinzufügen, automatisch Bestätigen, pushen)
 - **Git-Integration**: Respektiert pre-commit und leftthook Hooks, führt sie vor teuren KI-Operationen aus
@@ -192,10 +192,15 @@ Nicht zufrieden mit dem Ergebnis? Sie haben mehrere Optionen:
 # Einfaches erneutes Generieren (kein Feedback)
 r
 
-# Direkt bearbeiten mit erweitertem Terminal-Editing
+# Die Commit-Nachricht bearbeiten
 e
-# Verwendet prompt_toolkit für mehrzeiliges Editing mit vi/emacs Tastaturbelegungen
+# Standardmäßig: In-Place-TUI mit vi/emacs-Keybindings
 # Esc+Enter oder Ctrl+S zum Absenden, Ctrl+C zum Abbrechen
+
+# Setzen Sie GAC_EDITOR, um stattdessen Ihren bevorzugten Editor zu öffnen:
+# GAC_EDITOR=code gac → öffnet VS Code (--wait automatisch angewendet)
+# GAC_EDITOR=vim gac → öffnet vim
+# GAC_EDITOR=nano gac → öffnet nano
 # Oder geben Sie Ihr Feedback direkt ein!
 mache es kürzer und konzentriere dich auf die Performance-Verbesserung
 verwende conventional commit Format mit Scope
@@ -204,12 +209,12 @@ erkläre die Sicherheitsimplikationen
 # Enter bei leerer Eingabe drücken, um die Eingabeaufforderung erneut zu sehen
 ```
 
-Die Bearbeitungsfunktion (`e`) bietet erweitertes direktes Terminal-Editing, das es Ihnen ermöglicht:
+Die Bearbeitungsfunktion (`e`) lässt Sie die Commit-Nachricht verfeinern:
 
-- **Natürlich bearbeiten**: Mehrzeiliges Editing mit bekannten vi/emacs Tastaturbelegungen
-- **Schnelle Korrekturen**: Tippfehler korrigieren, Wortlaut anpassen oder Formatierung verfeinern
-- **Details hinzufügen**: Informationen einfügen, die die KI möglicherweise übersehen hat
-- **Umstrukturieren**: Stichpunkte neu anordnen oder Nachrichtenstruktur ändern
+- **Standardmäßig (In-Place-TUI)**: Mehrzeiliges Editing mit vi/emacs-Keybindings — Tippfehler korrigieren, Formulierungen anpassen, umstrukturieren
+- **Mit `GAC_EDITOR`**: Öffnet Ihren bevorzugten Editor (`code`, `vim`, `nano` usw.) — volle Editor-Funktionalität einschließlich Suchen/Ersetzen, Makros usw.
+
+GUI-Editoren wie VS Code werden automatisch behandelt: gac fügt `--wait` ein, sodass der Prozess blockiert, bis Sie den Editor-Tab schließen. Keine zusätzliche Konfiguration nötig.
 
 ---
 

@@ -44,7 +44,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 - `y` eller `yes` - Fortsett med commit
 - `n` eller `no` - Avbryt commit
 - `r` eller `reroll` - Regenerer commit-meldingen med samme kontekst
-- `e` eller `edit` - Rediger commit-meldingen på stedet med rik terminal-redigering (vi/emacs keybindings)
+- `e` eller `edit` - Rediger commit-meldingen. Som standard åpnes en innebygd TUI med vi/emacs-tastebindinger. Sett `GAC_EDITOR` for å åpne din foretrukne editor i stedet (f.eks. `GAC_EDITOR=code gac` for VS Code, `GAC_EDITOR=vim gac` for vim)
 - Alt annen tekst - Regenerer med den teksten som feedback (f.eks. `gjør det kortere`, `fokuser på ytelse`)
 - Tom input (bare Enter) - Vis prompten igjen
 
@@ -94,7 +94,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 
 Du kan også sette `GAC_USE_50_72_RULE=true` i `.gac.env` filen din for å alltid anvende denne regelen.
 
-**Merknad:** Du kan gi feedback interaktivt ved å skrive det direkte i bekreftelsesprompten - ingen 'r'-prefiks nødvendig. Skriv `r` for en enkel reroll, `e` for å redigere på stedet med vi/emacs-tastebindinger, eller skriv feedbacken din direkte som `gjør det kortere`.
+**Merknad:** Du kan gi feedback interaktivt ved å skrive det direkte i bekreftelsesprompten - ingen 'r'-prefiks nødvendig. Skriv `r` for en enkel reroll, `e` for å redigere meldingen (innebygd TUI som standard, eller din `$GAC_EDITOR` hvis satt), eller skriv feedbacken din direkte som `gjør det kortere`.
 
 ## Output og detaljnivå
 
@@ -325,7 +325,8 @@ git config --global user.email "your.email@example.com"
 
 Du kan tilpasse gac sitt oppførsel med disse valgfrie miljøvariablene:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Utled automatisk og inkluder scope i commit-meldinger (f.eks. `feat(auth):` vs `feat:`)
+- `GAC_EDITOR=code --wait` - Overstyr editoren som brukes når du trykker `e` i bekreftelsesprompten. Som standard åpner `e` en innebygd TUI; ved å sette `GAC_EDITOR` bytter du til en ekstern editor. Støtter enhver editorkommando med argumenter. Venteflagg (`--wait`/`-w`) settes automatisk inn for kjente GUI-editorer (VS Code, Cursor, Zed, Sublime Text) slik at prosessen blokkeres til du lukker filen
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Utled automatisk og inkluder scope i commit-meldinger (f.eks. `feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - Generer detaljerte commit-meldinger med motivasjon, arkitektur og påvirkningseksjoner
 - `GAC_USE_50_72_RULE=true` - Alltid anvende 50/72-regelen for commit-meldinger (emne ≤50 tegn, brødtekstlinjer ≤72 tegn)
 - `GAC_SIGNOFF=true` - Alltid legg til Signed-off-by-linje i commits (for DCO-samsvar)

@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Utvecklarupplevelse**
 
-- **Interaktiv feedback**: Skriv `r` för att köra om, `e` för att redigera på plats med vi/emacs-tangentbindningar, eller skriv din feedback direkt som `gör den kortare` eller `fokusera på bug-fixen`
+- **Interaktiv feedback**: Skriv `r` för att köra om, `e` för att redigera (inbyggd TUI som standard, eller `$GAC_EDITOR` om angiven), eller skriv din feedback direkt som `gör den kortare` eller `fokusera på bug-fixen`
 - **Interaktiv frågning**: Använd `--interactive` (`-i`) för att svara på riktade frågor om dina ändringar för mer kontextuella commit-meddelanden
 - **Ett-kommandos arbetsflöden**: Kompletta arbetsflöden med flaggor som `gac -ayp` (stage alla, auto-bekräfta, push)
 - **Git-integration**: Respekterar pre-commit och lefthook hooks, kör dem innan dyra LLM-operationer
@@ -192,10 +192,15 @@ Inte nöjd med resultatet? Du har flera alternativ:
 # Enkel omspelning (ingen feedback)
 r
 
-# Redigera på plats med rik terminalredigering
+# Redigera commit-meddelandet
 e
-# Använder prompt_toolkit för flerradersredigering med vi/emacs-tangentbindningar
+# Som standard: inbyggd TUI med vi/emacs-tangentbindningar
 # Tryck Esc+Enter eller Ctrl+S för att skicka, Ctrl+C för att avbryta
+
+# Ställ in GAC_EDITOR för att öppna din föredragna editor istället:
+# GAC_EDITOR=code gac → öppnar VS Code (--wait tillämpas automatiskt)
+# GAC_EDITOR=vim gac → öppnar vim
+# GAC_EDITOR=nano gac → öppnar nano
 
 # Eller skriv bara din feedback direkt!
 gör den kortare och fokusera på prestandaförbättringen
@@ -205,12 +210,12 @@ förklara säkerhetsimplicationerna
 # Tryck Enter på tom input för att se prompten igen
 ```
 
-Redigeringsfunktionen (`e`) ger rik på-plats-terminalredigering som låter dig:
+Redigeringsfunktionen (`e`) låter dig förfina commit-meddelandet:
 
-- **Redigera naturligt**: Flerradersredigering med bekanta vi/emacs-tangentbindningar
-- **Göra snabba fixar**: Korrigera stavfel, justera formuleringar eller finslipa formatering
-- **Lägga till detaljer**: Inkludera information LLM kan ha missat
-- **Omstrukturera**: Omorganisera punktlister eller ändra meddelandestrukturen
+- **Som standard (inbyggd TUI)**: Flerradersredigering med vi/emacs-tangentbindningar — korrigera stavfel, justera formuleringar, omstrukturera
+- **Med `GAC_EDITOR`**: Öppnar din föredragna editor (`code`, `vim`, `nano` osv.) — full editor-kraft inklusive sök/ersätt, makron osv.
+
+GUI-editorer som VS Code hanteras automatiskt: gac infogar `--wait` så att processen blockeras tills du stänger editor-fliken. Ingen extra konfiguration behövs.
 
 ---
 

@@ -45,7 +45,7 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 - `y` o `yes` - Proceder con el commit
 - `n` o `no` - Cancelar el commit
 - `r` o `reroll` - Regenerar el mensaje de commit con el mismo contexto
-- `e` o `edit` - Editar el mensaje de commit en el lugar con edición de terminal rica (vi/emacs keybindings)
+- `e` o `edit` - Editar el mensaje de commit. Por defecto, abre una TUI in-place con keybindings vi/emacs. Establece `GAC_EDITOR` para abrir tu editor preferido en su lugar (ej., `GAC_EDITOR=code gac` para VS Code, `GAC_EDITOR=vim gac` para vim)
 - Cualquier otro texto - Regenerar con ese texto como retroalimentación (ej., `make it shorter`, `focus on performance`)
 - Entrada vacía (solo Enter) - Mostrar el prompt nuevamente
 
@@ -95,7 +95,7 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 
 También puedes establecer `GAC_USE_50_72_RULE=true` en tu archivo `.gac.env` para aplicar esta regla siempre.
 
-**Nota:** Puedes proporcionar retroalimentación interactivamente simplemente escribiéndola en el prompt de confirmación - no necesitas prefijar con 'r'. Escribe `r` para un reroll simple, `e` para editar en el lugar con vi/emacs keybindings, o escribe tu retroalimentación directamente como `hazlo más corto`.
+**Nota:** Puedes proporcionar retroalimentación interactivamente simplemente escribiéndola en el prompt de confirmación - no necesitas prefijar con 'r'. Escribe `r` para un reroll simple, `e` para editar el mensaje (TUI in-place por defecto, o tu `$GAC_EDITOR` si está configurado), o escribe tu retroalimentación directamente como `hazlo más corto`.
 
 ## Salida y Verbosidad
 
@@ -374,7 +374,8 @@ git config --global user.email "tu.email@ejemplo.com"
 
 Puedes personalizar el comportamiento de gac con estas variables de entorno opcionales:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inferir automáticamente e incluir scope en mensajes de commit (ej., `feat(auth):` vs `feat:`)
+- `GAC_EDITOR=code --wait` - Sobrescribe el editor usado cuando presionas `e` en el prompt de confirmación. Por defecto, `e` abre una TUI in-place; establecer `GAC_EDITOR` cambia a un editor externo. Soporta cualquier comando de editor con argumentos. Los flags de espera (`--wait`/`-w`) se insertan automáticamente para editores GUI conocidos (VS Code, Cursor, Zed, Sublime Text) para que el proceso se bloquee hasta que cierres el archivo
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inferir automáticamente e incluir scope en mensajes de commit (ej., `feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - Generar mensajes de commit detallados con secciones de motivación, arquitectura e impacto
 - `GAC_USE_50_72_RULE=true` - Aplicar siempre la regla 50/72 para los mensajes de commit (asunto ≤50 caracteres, líneas del cuerpo ≤72 caracteres)
 - `GAC_SIGNOFF=true` - Agregar siempre línea Signed-off-by a los commits (para cumplimiento DCO)

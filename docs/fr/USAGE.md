@@ -45,7 +45,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 - `y` ou `yes` - Procéder au commit
 - `n` ou `no` - Annuler le commit
 - `r` ou `reroll` - Régénérer le message de commit avec le même contexte
-- `e` ou `edit` - Éditer le message de commit sur place avec édition de terminal riche (bindings vi/emacs)
+- `e` ou `edit` - Éditer le message de commit. Par défaut, ouvre une TUI intégrée avec les bindings vi/emacs. Définissez `GAC_EDITOR` pour ouvrir votre éditeur préféré à la place (ex., `GAC_EDITOR=code gac` pour VS Code, `GAC_EDITOR=vim gac` pour vim)
 - Tout autre texte - Régénérer avec ce texte comme feedback (ex: "rends-le plus court", "concentre-toi sur les performances")
 - Entrée vide (juste Entrée) - Afficher l'invite à nouveau
 
@@ -95,7 +95,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 
 Vous pouvez aussi définir `GAC_USE_50_72_RULE=true` dans votre fichier `.gac.env` pour toujours appliquer cette règle.
 
-**Note :** Vous pouvez fournir un feedback de manière interactive en le tapant simplement à l'invite de confirmation - pas besoin de préfixer avec 'r'. Tapez `r` pour une relance simple, `e` pour éditer sur place avec les bindings vi/emacs, ou tapez votre feedback directement comme "rends-le plus court".
+**Note :** Vous pouvez fournir un feedback de manière interactive en le tapant simplement à l'invite de confirmation - pas besoin de préfixer avec 'r'. Tapez `r` pour une relance simple, `e` pour éditer le message (TUI intégrée par défaut, ou `$GAC_EDITOR` si défini), ou tapez votre feedback directement comme "rends-le plus court".
 
 ## Sortie et verbosité
 
@@ -374,7 +374,8 @@ git config --global user.email "your.email@example.com"
 
 Vous pouvez personnaliser le comportement de gac avec ces variables d'environnement optionnelles :
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inférer et inclure automatiquement la portée dans les messages de commit (ex: `feat(auth):` vs `feat:`)
+- `GAC_EDITOR=code --wait` - Remplace l'éditeur utilisé lorsque vous appuyez sur `e` à l'invite de confirmation. Par défaut, `e` ouvre une TUI intégrée ; définir `GAC_EDITOR` passe à un éditeur externe. Prend en charge toute commande d'éditeur avec arguments. Les drapeaux d'attente (`--wait`/`-w`) sont automatiquement insérés pour les éditeurs GUI connus (VS Code, Cursor, Zed, Sublime Text) afin que le processus se bloque jusqu'à la fermeture du fichier
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Inférer et inclure automatiquement la portée dans les messages de commit (ex: `feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - Générer des messages de commit détaillés avec sections motivation, architecture et impact
 - `GAC_USE_50_72_RULE=true` - Toujours appliquer la règle 50/72 pour les messages de commit (sujet ≤50 caractères, lignes du corps ≤72 caractères)
 - `GAC_SIGNOFF=true` - Toujours ajouter la ligne Signed-off-by aux commits (pour la conformité DCO)

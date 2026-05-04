@@ -45,7 +45,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 - `y` oder `yes` - Mit dem Commit fortfahren
 - `n` oder `no` - Den Commit abbrechen
 - `r` oder `reroll` - Die Commit-Nachricht mit demselben Kontext neu generieren
-- `e` oder `edit` - Die Commit-Nachricht direkt bearbeiten mit rich Terminal-Bearbeitung (vi/emacs Keybindings)
+- `e` oder `edit` - Die Commit-Nachricht bearbeiten. Standardmäßig wird eine In-Place-TUI mit vi/emacs-Keybindings geöffnet. Setzen Sie `GAC_EDITOR`, um stattdessen Ihren bevorzugten Editor zu öffnen (z.B. `GAC_EDITOR=code gac` für VS Code, `GAC_EDITOR=vim gac` für vim)
 - Jeder andere Text - Neu generieren mit diesem Text als Feedback (z.B. `make it shorter`, `focus on performance`)
 - Leere Eingabe (nur Enter) - Den Prompt erneut anzeigen
 
@@ -95,7 +95,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 
 Sie können auch `GAC_USE_50_72_RULE=true` in Ihrer `.gac.env` Datei setzen, um diese Regel immer anzuwenden.
 
-**Hinweis:** Sie können Feedback interaktiv geben, indem Sie es einfach am Bestätigungs-Prompt eingeben - kein Präfix mit 'r' erforderlich. Geben Sie `r` für ein einfaches Reroll, `e` zum direkten Bearbeiten mit vi/emacs Keybindings, oder geben Sie Ihr Feedback direkt ein wie `make it shorter`.
+**Hinweis:** Sie können Feedback interaktiv geben, indem Sie es einfach am Bestätigungs-Prompt eingeben - kein Präfix mit 'r' erforderlich. Geben Sie `r` für ein einfaches Reroll, `e` zum Bearbeiten der Nachricht (standardmäßig In-Place-TUI, oder `$GAC_EDITOR` falls gesetzt), oder geben Sie Ihr Feedback direkt ein wie `make it shorter`.
 
 ## Ausgabe und Ausführlichkeit
 
@@ -374,7 +374,8 @@ git config --global user.email "ihre.email@beispiel.com"
 
 Sie können das Verhalten von gac mit diesen optionalen Umgebungsvariablen anpassen:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatisch Scope herleiten und in Commit-Nachrichten einbeziehen (z.B. `feat(auth):` vs `feat:`)
+- `GAC_EDITOR=code --wait` - Überschreibt den Editor, der beim Drücken von `e` am Bestätigungs-Prompt verwendet wird. Standardmäßig öffnet `e` eine In-Place-TUI; durch Setzen von `GAC_EDITOR` wird auf einen externen Editor umgeschaltet. Unterstützt jeden Editorbefehl mit Argumenten. Wait-Flags (`--wait`/`-w`) werden für bekannte GUI-Editoren (VS Code, Cursor, Zed, Sublime Text) automatisch eingefügt, sodass der Prozess blockiert, bis Sie die Datei schließen
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Automatisch Scope herleiten und in Commit-Nachrichten einbeziehen (z.B. `feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - Detaillierte Commit-Nachrichten mit Motivation, Architektur und Auswirkungs-Abschnitten generieren
 - `GAC_USE_50_72_RULE=true` - Die 50/72-Regel für Commit-Nachrichten immer erzwingen (Betreff ≤50 Zeichen, Body-Zeilen ≤72 Zeichen)
 - `GAC_SIGNOFF=true` - Immer Signed-off-by Zeile zu Commits hinzufügen (für DCO-Konformität)

@@ -45,7 +45,7 @@ gac
 - `y` 或 `yes` - 继续提交
 - `n` 或 `no` - 取消提交
 - `r` 或 `reroll` - 使用相同的上下文重新生成提交信息
-- `e` 或 `edit` - 使用丰富的终端编辑就地编辑提交信息（vi/emacs 键绑定）
+- `e` 或 `edit` - 编辑提交信息。默认情况下，打开带 vi/emacs 键绑定的就地 TUI。设置 `GAC_EDITOR` 以打开您偏好的编辑器（例如，`GAC_EDITOR=code gac` 用于 VS Code，`GAC_EDITOR=vim gac` 用于 vim）
 - 任何其他文本 - 使用该文本作为反馈重新生成（例如，`让它更短`，`专注于性能`）
 - 空输入（只按 Enter）- 再次显示提示
 
@@ -95,7 +95,7 @@ gac
 
 你还可以在 `.gac.env` 文件中设置 `GAC_USE_50_72_RULE=true` 以始终应用此规则。
 
-**注意：**你可以通过在确认提示符处简单地输入来交互式提供反馈 - 无需前缀 'r'。输入 `r` 进行简单的重新生成，`e` 使用 vi/emacs 键绑定就地编辑，或直接输入你的反馈，如 `让它更短`。
+**注意：**你可以通过在确认提示符处简单地输入来交互式提供反馈 - 无需前缀 'r'。输入 `r` 进行简单的重新生成，`e` 编辑信息（默认就地 TUI，或设置了 `$GAC_EDITOR` 时使用该编辑器），或直接输入你的反馈，如 `让它更短`。
 
 ## 输出和详细程度
 
@@ -376,7 +376,8 @@ git config --global user.email "your.email@example.com"
 
 你可以使用这些可选的环境变量自定义 gac 的行为：
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自动推断并在提交信息中包含范围（例如，`feat(auth):` vs `feat:`）
+- `GAC_EDITOR=code --wait` - 覆盖在确认提示符处按 `e` 时使用的编辑器。默认情况下，`e` 打开就地 TUI；设置 `GAC_EDITOR` 将切换到外部编辑器。支持任何带参数的编辑器命令。对于已知的 GUI 编辑器（VS Code、Cursor、Zed、Sublime Text），等待标志（`--wait`/`-w`）会自动插入，以便进程在关闭文件前一直阻塞
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - 自动推断并在提交信息中包含范围（例如，`feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - 生成包含动机、架构和影响部分的详细提交信息
 - `GAC_USE_50_72_RULE=true` - 始终对提交信息应用 50/72 规则（主题 ≤50 字符，正文行 ≤72 字符）
 - `GAC_SIGNOFF=true` - 始终在提交中添加 Signed-off-by 行（用于 DCO 合规）

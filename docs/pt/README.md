@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Experiência do Desenvolvedor**
 
-- **Feedback interativo**: Digite `r` para rerolar, `e` para editar no local com keybindings vi/emacs, ou digite diretamente seu feedback como `make it shorter` ou `focus on the bug fix`
+- **Feedback interativo**: Digite `r` para rerolar, `e` para editar (TUI in-place por padrão, ou `$GAC_EDITOR` se definido), ou digite diretamente seu feedback como `make it shorter` ou `focus on the bug fix`
 - **Questionamento interativo**: Use `--interactive` (`-i`) para responder a perguntas direcionadas sobre suas alterações para mensagens de commit mais contextuais
 - **Workflows de um comando**: Workflows completos com flags como `gac -ayp` (adicionar tudo, auto-confirmar, push)
 - **Integração Git**: Respeita hooks pre-commit e lefthook, executando-os antes de operações LLM caras
@@ -192,10 +192,15 @@ Não satisfeito com o resultado? Você tem várias opções:
 # Reroll simples (sem feedback)
 r
 
-# Edite no local com edição rica de terminal
+# Edite a mensagem de commit
 e
-# Usa prompt_toolkit para edição multi-linha com keybindings vi/emacs
+# Por padrão: TUI in-place com keybindings vi/emacs
 # Pressione Esc+Enter ou Ctrl+S para enviar, Ctrl+C para cancelar
+
+# Defina GAC_EDITOR para abrir o seu editor preferido:
+# GAC_EDITOR=code gac → abre VS Code (--wait aplicado automaticamente)
+# GAC_EDITOR=vim gac → abre vim
+# GAC_EDITOR=nano gac → abre nano
 
 # Ou simplesmente digite seu feedback diretamente!
 make it shorter and focus on the performance improvement
@@ -205,12 +210,12 @@ explain the security implications
 # Pressione Enter em entrada vazia para ver o prompt novamente
 ```
 
-O recurso de edição (`e`) fornece edição rica no local no terminal, permitindo que você:
+O recurso de edição (`e`) permite refinar a mensagem de commit:
 
-- **Edite naturalmente**: Edição multi-linha com keybindings familiares vi/emacs
-- **Faça correções rápidas**: Corrija erros de digitação, ajuste wording ou refine formatação
-- **Adicione detalhes**: Inclua informações que o LLM pode ter perdido
-- **Reestruture**: Reorganize pontos de bullet ou mude a estrutura da mensagem
+- **Por padrão (TUI in-place)**: Edição multi-linha com keybindings vi/emacs — corrigir erros de digitação, ajustar redação, reestruturar
+- **Com `GAC_EDITOR`**: Abre o seu editor preferido (`code`, `vim`, `nano`, etc.) — poder total do editor incluindo localizar/substituir, macros, etc.
+
+Editores GUI como VS Code são tratados automaticamente: gac insere `--wait` para que o processo bloqueie até você fechar a aba do editor. Nenhuma configuração extra necessária.
 
 ---
 

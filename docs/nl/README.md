@@ -95,7 +95,7 @@ uv tool upgrade gac
 
 ### 💻 **Ontwikkelervaring**
 
-- **Interactieve feedback**: Typ `r` om opnieuw te rollen, `e` om ter plaat te bewerken met vi/emacs-keybindings, of typ direct uw feedback zoals `maak het korter` of `focus op de bugfix`
+- **Interactieve feedback**: Typ `r` om opnieuw te rollen, `e` om te bewerken (standaard in-place TUI, of `$GAC_EDITOR` indien ingesteld), of typ direct uw feedback zoals `maak het korter` of `focus op de bugfix`
 - **Interactieve ondervraging**: Gebruik `--interactive` (`-i`) om gerichte vragen over uw wijzigingen te beantwoorden voor meer contextuele commitberichten
 - **Één-commando workflows**: Volledige workflows met vlaggen zoals `gac -ayp` (stage alles, auto-bevestig, push)
 - **Git-integratie**: Respecteert pre-commit en lefthook hooks en voert ze uit vóór dure LLM-operaties
@@ -192,10 +192,15 @@ Niet tevreden met het resultaat? U heeft mehrere opties:
 # Eenvoudige reroll (geen feedback)
 r
 
-# Bewerk ter plaatse met rijke terminalbewerking
+# Bewerk het commitbericht
 e
-# Gebruikt prompt_toolkit voor meerregelige bewerking met vi/emacs keybindings
+# Standaard: in-place TUI met vi/emacs-keybindings
 # Druk op Esc+Enter of Ctrl+S om in te dienen, Ctrl+C om te annuleren
+
+# Stel GAC_EDITOR in om uw voorkeurseditor te openen:
+# GAC_EDITOR=code gac → opent VS Code (--wait automatisch toegepast)
+# GAC_EDITOR=vim gac → opent vim
+# GAC_EDITOR=nano gac → opent nano
 
 # Of typ gewoon uw feedback direct!
 maak het korter en focus op de prestatieverbetering
@@ -205,12 +210,12 @@ leg de security-implicaties uit
 # Druk op Enter op lege invoer om de prompt opnieuw te zien
 ```
 
-De bewerkfunctie (`e`) biedt rijke inplace terminalbewerking, waarmee u kunt:
+De bewerkfunctie (`e`) laat u het commitbericht verfijnen:
 
-- **Natuurlijk bewerken**: Meerregelige bewerking met vertrouwde vi/emacs key bindings
-- **Snelle fixes**: Typfouten corrigeren, woordkeuze aanpassen, of formattering verfijnen
-- **Details toevoegen**: Informatie toevoegen die de LLM mogelijk heeft gemist
-- **Herrstructureren**: Bullet points herorganiseren of de berichtstructuur wijzigen
+- **Standaard (in-place TUI)**: Meerregelige bewerking met vi/emacs-keybindings — typefouten corrigeren, formulering aanpassen, herstructureren
+- **Met `GAC_EDITOR`**: Opent uw voorkeurseditor (`code`, `vim`, `nano`, enz.) — volledige editorfuncties inclusief zoeken/vervangen, macro's, enz.
+
+GUI-editors zoals VS Code worden automatisch afgehandeld: gac voegt `--wait` in zodat het proces blokkeert tot u het editortabblad sluit. Geen extra configuratie nodig.
 
 ---
 

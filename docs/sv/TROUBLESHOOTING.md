@@ -146,7 +146,7 @@ Denna guide täcker vanliga problem och lösningar för installation, konfigurat
 
 **Problem:** Commit-meddelandet är inte som jag förväntade mig
 
-- Använd det interaktiva feedbacksystemet: skriv `r` för att regenerera, `e` för att redigera, eller ge feedback i naturligt språk
+- Använd det interaktiva feedbacksystemet: skriv `r` för att regenerera, `e` för att redigera (inbyggd TUI, eller extern editor via `GAC_EDITOR`), eller ge feedback i naturligt språk
 - Lägg till kontext med `-h "din ledtråd"` för att guida LLM:n
 - Använd `-o` för enklare enradsmeddelanden eller `-v` för mer detaljerade meddelanden
 - Använd `--show-prompt` för att se vilken information LLM:n får
@@ -160,7 +160,7 @@ Denna guide täcker vanliga problem och lösningar för installation, konfigurat
 
 **Problem:** Kan inte redigera eller ge feedback efter meddelandegenerering
 
-- Vid prompten, skriv `e` för att gå in i redigeringsläge (stöder vi/emacs tangentbindningar)
+- Vid prompten, skriv `e` för att gå in i redigeringsläge (inbyggd TUI med vi/emacs-tangentbindningar; ställ in `GAC_EDITOR` för att använda din föredragna editor istället)
 - Skriv `r` för att regenerera utan feedback
 - Eller skriv helt enkelt din feedback direkt (t.ex. "gör det kortare", "fokusera på buggfixen")
 - Tryck Enter vid tom input för att se prompten igen

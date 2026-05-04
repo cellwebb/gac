@@ -44,7 +44,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 - `y` of `yes` - Ga door met de commit
 - `n` of `no` - Annuleer de commit
 - `r` of `reroll` - Genereer het commitbericht opnieuw met dezelfde context
-- `e` of `edit` - Bewerk het commitbericht ter plaatse met rijke terminalbewerking (vi/emacs keybindings)
+- `e` of `edit` - Bewerk het commitbericht. Standaard wordt een in-place TUI geopend met vi/emacs-keybindings. Stel `GAC_EDITOR` in om in plaats daarvan uw voorkeurseditor te openen (bijv. `GAC_EDITOR=code gac` voor VS Code, `GAC_EDITOR=vim gac` voor vim)
 - Alle andere tekst - Genereer opnieuw met die tekst als feedback (bv., `maak het korter`, `focus op prestaties`)
 - Lege input (alleen Enter) - Toon de prompt opnieuw
 
@@ -94,7 +94,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 
 U kunt ook `GAC_USE_50_72_RULE=true` instellen in uw `.gac.env` bestand om deze regel altijd toe te passen.
 
-**Let op:** U kunt interactief feedback geven door het gewoon op de bevestigingsprompt te typen - geen prefix met 'r' nodig. Typ `r` voor een eenvoudige reroll, `e` om ter plaatse te bewerken met vi/emacs keybindings, of typ uw feedback direct zoals `maak het korter`.
+**Let op:** U kunt interactief feedback geven door het gewoon op de bevestigingsprompt te typen - geen prefix met 'r' nodig. Typ `r` voor een eenvoudige reroll, `e` om het bericht te bewerken (standaard in-place TUI, of uw `$GAC_EDITOR` indien ingesteld), of typ uw feedback direct zoals `maak het korter`.
 
 ## Output en Verbose
 
@@ -325,7 +325,8 @@ git config --global user.email "your.email@example.com"
 
 U kunt het gedrag van gac aanpassen met deze optionele omgevingsvariabelen:
 
-- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Stel automatisch een scope en voeg deze toe aan commitberichten (bv., `feat(auth):` vs `feat:`)
+- `GAC_EDITOR=code --wait` - Overschrijf de editor die wordt gebruikt wanneer u `e` indrukt bij de bevestigingsprompt. Standaard opent `e` een in-place TUI; door `GAC_EDITOR` in te stellen schakelt u over naar een externe editor. Ondersteunt elke editoropdracht met argumenten. Wait-flags (`--wait`/`-w`) worden automatisch ingevoegd voor bekende GUI-editors (VS Code, Cursor, Zed, Sublime Text) zodat het proces blokkeert tot u het bestand sluit
+- `GAC_ALWAYS_INCLUDE_SCOPE=true` - Stel automatisch een scope en voeg deze toe aan commitberichten (bv., `feat(auth):` vs `feat:)
 - `GAC_VERBOSE=true` - Genereer gedetailleerde commitberichten met motivatie, architectuur en impact secties
 - `GAC_USE_50_72_RULE=true` - De 50/72-regel altijd toepassen voor commitberichten (onderwerp ≤50 tekens, body-regels ≤72 tekens)
 - `GAC_SIGNOFF=true` - Altijd Signed-off-by regel toevoegen aan commits (voor DCO-naleving)

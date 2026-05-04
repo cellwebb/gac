@@ -146,7 +146,7 @@ Dieser Leitfaden behandelt häufige Probleme und Lösungen für die Installation
 
 **Problem:** Commit-Nachricht nicht wie erwartet
 
-- Verwenden Sie das interaktive Feedback-System: Geben Sie `r` für Reroll, `e` zum Bearbeiten oder geben Sie natürlich sprachliches Feedback
+- Verwenden Sie das interaktive Feedback-System: Geben Sie `r` für Reroll, `e` zum Bearbeiten (In-Place-TUI oder externer Editor über `GAC_EDITOR`) oder geben Sie natürlich sprachliches Feedback
 - Fügen Sie Kontext mit `-h "Ihr Hinweis"` hinzu, um die KI zu leiten
 - Verwenden Sie `-o` für einfachere einzeilige Nachrichten oder `-v` für detailliertere Nachrichten
 - Verwenden Sie `--show-prompt`, um zu sehen, welche Informationen die KI erhält
@@ -160,7 +160,7 @@ Dieser Leitfaden behandelt häufige Probleme und Lösungen für die Installation
 
 **Problem:** Kann nicht bearbeiten oder Feedback nach Nachrichtengenerierung geben
 
-- Am Prompt geben Sie `e` ein, um in den Bearbeitungsmodus zu gelangen (unterstützt vi/emacs Keybindings)
+- Am Prompt geben Sie `e` ein, um in den Bearbeitungsmodus zu gelangen (In-Place-TUI mit vi/emacs-Keybindings; setzen Sie `GAC_EDITOR`, um stattdessen Ihren bevorzugten Editor zu verwenden)
 - Geben Sie `r` ein, um ohne Feedback neu zu generieren
 - Oder geben Sie einfach Ihr Feedback direkt ein (z.B. "make it shorter", "focus on the bug fix")
 - Drücken Sie Enter bei leerer Eingabe, um den Prompt erneut zu sehen

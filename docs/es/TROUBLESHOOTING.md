@@ -146,7 +146,7 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 
 **Problema:** El mensaje de commit no es el que esperaba
 
-- Usa el sistema de retroalimentación interactivo: escribe `r` para volver a generar, `e` para editar, o proporciona retroalimentación en lenguaje natural
+- Usa el sistema de retroalimentación interactivo: escribe `r` para volver a generar, `e` para editar (TUI in-place, o editor externo vía `GAC_EDITOR`), o proporciona retroalimentación en lenguaje natural
 - Agrega contexto con `-h "tu pista"` para guiar al LLM
 - Usa `-o` para mensajes más simples de una línea o `-v` para mensajes más detallados
 - Usa `--show-prompt` para ver qué información está recibiendo el LLM
@@ -160,7 +160,7 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 
 **Problema:** No se puede editar o proporcionar retroalimentación después de la generación del mensaje
 
-- En el prompt, escribe `e` para entrar en modo edición (soporta atajos de teclado vi/emacs)
+- En el prompt, escribe `e` para entrar en modo edición (TUI in-place con keybindings vi/emacs; establece `GAC_EDITOR` para usar tu editor preferido en su lugar)
 - Escribe `r` para regenerar sin retroalimentación
 - O simplemente escribe tu retroalimentación directamente (ej. "hazlo más corto", "enfócate en la corrección del error")
 - Presiona Enter en entrada vacía para ver el prompt nuevamente
