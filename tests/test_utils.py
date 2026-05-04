@@ -5,9 +5,9 @@ from unittest import mock
 
 import pytest
 
+from gac.editor import edit_commit_message_inplace
 from gac.errors import GacError
 from gac.utils import (
-    edit_commit_message_inplace,
     get_safe_encodings,
     print_message,
     run_subprocess,
@@ -271,7 +271,7 @@ class TestEditCommitMessageInplace:
                         app_mock.return_value = app_instance
 
                         # Mock the internal state to simulate cancellation
-                        with mock.patch("gac.utils.edit_commit_message_inplace") as edit_func:
+                        with mock.patch("gac.editor.edit_commit_message_inplace") as edit_func:
                             edit_func.return_value = None
                             result = edit_func("feat: test")
                             assert result is None

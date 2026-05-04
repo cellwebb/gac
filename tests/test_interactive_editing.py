@@ -3,7 +3,7 @@
 import inspect
 from unittest import mock
 
-from gac.utils import edit_commit_message_inplace
+from gac.editor import edit_commit_message_inplace
 
 
 class TestEditCommitMessageInplace:

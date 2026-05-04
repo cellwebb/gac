@@ -34,9 +34,12 @@ def handle_confirmation_loop(
     model: str,
     prompt_fn: PromptFn | None = None,
 ) -> tuple[str, str, list[dict[str, str]]]:
-    from gac.editor import edit_commit_message_inplace
+    import os as _os
+
+    from gac.editor import edit_commit_message_in_editor, edit_commit_message_inplace
 
     _prompt = prompt_fn or click.prompt
+    _gac_editor_set = bool(_os.environ.get("GAC_EDITOR"))
 
     while True:
         response = _prompt(
@@ -53,7 +56,10 @@ def handle_confirmation_loop(
         if response == "":
             continue
         if response_lower in ["e", "edit"]:
-            edited_message = edit_commit_message_inplace(commit_message)
+            if _gac_editor_set:
+                edited_message = edit_commit_message_in_editor(commit_message)
+            else:
+                edited_message = edit_commit_message_inplace(commit_message)
             if edited_message:
                 commit_message = edited_message
                 conversation_messages[-1] = {"role": "assistant", "content": commit_message}

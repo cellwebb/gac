@@ -23,6 +23,10 @@ def __getattr__(name: str) -> Any:
         from gac.editor import edit_commit_message_inplace
 
         return edit_commit_message_inplace
+    if name == "edit_commit_message_in_editor":
+        from gac.editor import edit_commit_message_in_editor
+
+        return edit_commit_message_in_editor
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

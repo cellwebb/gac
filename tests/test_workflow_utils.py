@@ -34,6 +34,62 @@ def test_confirmation_regenerate():
         assert msgs[-1]["content"] == "Please provide an alternative commit message using the same repository context."
 
 
+def test_confirmation_e_opens_inplace_by_default():
+    """Test that 'e' opens the in-place TUI editor when GAC_EDITOR is not set."""
+    with (
+        patch.dict("os.environ", {}, clear=True),
+        patch("click.prompt", side_effect=["e", "y"]),
+        patch("gac.editor.edit_commit_message_inplace", return_value="feat: edited inplace") as mock_inplace,
+        patch("gac.workflow_utils.console.print"),
+    ):
+        result, message, _ = handle_confirmation_loop("msg", [{"role": "assistant", "content": "msg"}], False, "m")
+        assert result == "yes"
+        assert message == "feat: edited inplace"
+        mock_inplace.assert_called_once_with("msg")
+
+
+def test_confirmation_e_opens_external_when_gac_editor_set():
+    """Test that 'e' opens the external editor when GAC_EDITOR is set."""
+    with (
+        patch.dict("os.environ", {"GAC_EDITOR": "vim"}, clear=True),
+        patch("click.prompt", side_effect=["e", "y"]),
+        patch("gac.editor.edit_commit_message_in_editor", return_value="feat: edited in vim") as mock_editor,
+        patch("gac.workflow_utils.console.print"),
+    ):
+        result, message, _ = handle_confirmation_loop("msg", [{"role": "assistant", "content": "msg"}], False, "m")
+        assert result == "yes"
+        assert message == "feat: edited in vim"
+        mock_editor.assert_called_once_with("msg")
+
+
+def test_confirmation_e_empty_gac_editor_uses_inplace():
+    """Empty GAC_EDITOR should behave like unset (use in-place editor)."""
+    with (
+        patch.dict("os.environ", {"GAC_EDITOR": ""}, clear=True),
+        patch("click.prompt", side_effect=["e", "y"]),
+        patch("gac.editor.edit_commit_message_inplace", return_value="feat: edited inplace") as mock_inplace,
+        patch("gac.workflow_utils.console.print"),
+    ):
+        result, message, _ = handle_confirmation_loop("msg", [{"role": "assistant", "content": "msg"}], False, "m")
+        assert result == "yes"
+        assert message == "feat: edited inplace"
+        mock_inplace.assert_called_once_with("msg")
+
+
+def test_confirmation_editor_cancelled():
+    """Test that 'e' with cancelled editor preserves original message."""
+    with (
+        patch.dict("os.environ", {}, clear=True),
+        patch("click.prompt", side_effect=["e", "y"]),
+        patch("gac.editor.edit_commit_message_inplace", return_value=None) as mock_inplace,
+        patch("gac.workflow_utils.console.print"),
+    ):
+        result, message, _ = handle_confirmation_loop("msg", [{"role": "assistant", "content": "msg"}], False, "m")
+        assert result == "yes"
+        assert message == "msg"
+        mock_inplace.assert_called_once_with("msg")
+
+
 def test_confirmation_reroll():
     with patch("click.prompt", return_value="reroll"):
         result, message, msgs = handle_confirmation_loop("msg", [], False, "m")
