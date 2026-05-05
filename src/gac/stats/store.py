@@ -75,6 +75,8 @@ def _normalize_models(models: dict[str, Any]) -> dict[str, Any]:
 def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, Any]]:
     enriched: list[tuple[str, Any]] = []
     for name, data in models:
+        avg_tps = None
+        avg_latency_ms = None
         if data.get("duration_count", 0) > 0 and data.get("total_duration_ms", 0) > 0:
             # Speed = all output tokens (completion + reasoning) per second.
             # Reasoning tokens are generated during the same wall-clock
@@ -82,9 +84,9 @@ def _enrich_models_with_speed(models: list[tuple[str, Any]]) -> list[tuple[str, 
             # thinking models like o3, deepseek-r1, etc.
             timed_output = data["timed_completion_tokens"] + data.get("timed_reasoning_tokens", 0)
             avg_tps = round(timed_output * 1000 / data["total_duration_ms"])
-        else:
-            avg_tps = None
-        enriched.append((name, {**data, "avg_tps": avg_tps}))
+            # Average latency = mean wall-clock time per API call (ms)
+            avg_latency_ms = round(data["total_duration_ms"] / data["duration_count"])
+        enriched.append((name, {**data, "avg_tps": avg_tps, "avg_latency_ms": avg_latency_ms}))
     return enriched
 
 
