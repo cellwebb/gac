@@ -25,7 +25,6 @@ from gac.oauth.chatgpt import (
     remove_token as chatgpt_remove_token,
 )
 from gac.oauth.copilot import (
-    DEFAULT_COPILOT_MODELS,
     _normalize_host,
 )
 from gac.oauth.copilot import (
@@ -338,8 +337,7 @@ def copilot_login(quiet: bool = False, host: str = "github.com") -> None:
         if not quiet:
             click.echo()
             click.echo("✅ Copilot authentication completed successfully!")
-            click.echo(f"   Available models: {', '.join(DEFAULT_COPILOT_MODELS[:5])}")
-            click.echo("   Use: gac -m copilot:gpt-4o-mini")
+            click.echo("   Use: gac -m copilot:gpt-5-mini")
     else:
         click.echo("❌ Copilot authentication failed.")
         click.echo("   Ensure your GitHub account has Copilot access.")
