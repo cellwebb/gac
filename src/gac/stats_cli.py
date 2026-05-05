@@ -1,6 +1,8 @@
 """CLI for viewing gac usage statistics."""
 
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 import click
 from rich.panel import Panel
@@ -206,6 +208,7 @@ def show() -> None:
         models_table.add_column("Model", style="bold magenta")
         models_table.add_column("Gacs", style="bold cyan", justify="right")
         models_table.add_column("Speed", style="bold cyan", justify="right")
+        models_table.add_column("Latency", style="bold cyan", justify="right")
         models_table.add_column("Prompt", style="bold cyan", justify="right")
         models_table.add_column("Completion", style="bold cyan", justify="right")
         models_table.add_column("Reasoning", style="bold cyan", justify="right")
@@ -218,12 +221,15 @@ def show() -> None:
             reasoning_t = int(data.get("reasoning_tokens", 0))
             total_t = compute_total_tokens(data)
             avg_tps = data.get("avg_tps")
+            avg_latency_ms = data.get("avg_latency_ms")
             speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
+            latency_str = _format_latency(avg_latency_ms) if avg_latency_ms is not None else "\u2014"
             reasoning_str = format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
             models_table.add_row(
                 model_name,
                 str(gacs),
                 speed_str,
+                latency_str,
                 format_tokens(prompt_t),
                 format_tokens(completion_t),
                 reasoning_str,
@@ -298,6 +304,86 @@ def show() -> None:
     console.print()
 
 
+def _format_latency(ms: int) -> str:
+    """Format a latency in milliseconds as a human-readable string.
+
+    Examples: 420ms, 1.2s, 12.5s
+    """
+    if ms < 1000:
+        return f"{ms}ms"
+    return f"{ms / 1000:.1f}s"
+
+
+def _build_bar_chart(
+    models_data: list[tuple[str, dict[str, Any]]],
+    value_key: str,
+    max_value: float,
+    label_fmt: Callable[[int], str],
+    higher_is_better: bool = True,
+    max_bar_width: int = 30,
+) -> Table:
+    """Build a horizontal bar chart table for model metrics.
+
+    Args:
+        models_data: List of (model_name, data_dict) tuples, pre-sorted.
+        value_key: Key in data_dict for the chart value (e.g. 'avg_tps', 'avg_latency_ms').
+        max_value: Maximum value in the dataset (for ratio calculation).
+        label_fmt: Callable to format the value for the right column label.
+        higher_is_better: If True, high values get bright colors (speed). If False, low values
+            get bright colors (latency — lower is faster).
+        max_bar_width: Maximum bar width in characters.
+
+    Returns:
+        A Rich Table with Model, Bar, and Value columns.
+    """
+    table = Table(show_header=False, box=None, padding=(0, 0))
+    table.add_column("Model", style="bold magenta", min_width=16)
+    table.add_column("Bar", ratio=1)
+    table.add_column("Value", style="bold cyan", justify="right", min_width=8)
+
+    # Unicode sub-block characters: ▏▎▍▌▋▊▉█ (1/8 steps)
+    sub_chars = " ▏▎▍▌▋▊▉█"
+
+    for model_name, data in models_data:
+        value = data[value_key]
+        ratio = value / max_value if max_value > 0 else 0
+
+        # Build the bar with sub-character precision
+        full_width = ratio * max_bar_width
+        full_blocks = int(full_width)
+        frac = full_width - full_blocks
+        sub_idx = min(int(frac * 8) + 1, 7)
+        bar_str = "█" * full_blocks + sub_chars[sub_idx]
+        bar_str = bar_str.ljust(max_bar_width)
+
+        # Color based on percentile — direction depends on higher_is_better
+        if higher_is_better:
+            # Speed: high ratio = fast = bright colors
+            if ratio >= 0.75:
+                color = "bold yellow"
+            elif ratio >= 0.5:
+                color = "green"
+            elif ratio >= 0.25:
+                color = "cyan"
+            else:
+                color = "dim cyan"
+        else:
+            # Latency: low ratio = fast = bright colors (bars are still proportional
+            # to absolute value so longer bars = slower, but the color rewards speed)
+            if ratio <= 0.25:
+                color = "bold yellow"  # blazing fast
+            elif ratio <= 0.5:
+                color = "green"  # fast
+            elif ratio <= 0.75:
+                color = "cyan"  # moderate
+            else:
+                color = "dim red"  # slow
+
+        table.add_row(model_name, f"[{color}]{bar_str}[/]", label_fmt(value))
+
+    return table
+
+
 @stats.command()
 def models() -> None:
     """Show stats for all models (not just top 5)."""
@@ -323,6 +409,7 @@ def models() -> None:
     table.add_column("Model", style="bold magenta")
     table.add_column("Gacs", style="bold cyan", justify="right")
     table.add_column("Speed", style="bold cyan", justify="right")
+    table.add_column("Latency", style="bold cyan", justify="right")
     table.add_column("Prompt", style="bold cyan", justify="right")
     table.add_column("Completion", style="bold cyan", justify="right")
     table.add_column("Reasoning", style="bold cyan", justify="right")
@@ -335,12 +422,15 @@ def models() -> None:
         reasoning_t = int(data.get("reasoning_tokens", 0))
         total_t = compute_total_tokens(data)
         avg_tps = data.get("avg_tps")
+        avg_latency_ms = data.get("avg_latency_ms")
         speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
+        latency_str = _format_latency(avg_latency_ms) if avg_latency_ms is not None else "\u2014"
         reasoning_str = format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
         table.add_row(
             model_name,
             str(gacs),
             speed_str,
+            latency_str,
             format_tokens(prompt_t),
             format_tokens(completion_t),
             reasoning_str,
@@ -354,42 +444,34 @@ def models() -> None:
     if models_with_tps:
         models_with_tps.sort(key=lambda x: x[1]["avg_tps"], reverse=True)
         max_tps = max(d["avg_tps"] for _, d in models_with_tps)
-        max_bar_width = 30  # characters
 
         console.print()
         console.print("[bold]Speed Comparison:[/bold]")
-        speed_table = Table(show_header=False, box=None, padding=(0, 0))
-        speed_table.add_column("Model", style="bold magenta", min_width=16)
-        speed_table.add_column("Bar", ratio=1)
-        speed_table.add_column("TPS", style="bold cyan", justify="right", min_width=8)
-
-        # Gradient: cyan (slow) → green (medium) → yellow (fast) → red (blazing)
-        for model_name, data in models_with_tps:
-            tps = data["avg_tps"]
-            ratio = tps / max_tps if max_tps > 0 else 0
-            # Build the bar with sub-character precision
-            full_width = ratio * max_bar_width
-            full_blocks = int(full_width)
-            frac = full_width - full_blocks
-            # Unicode sub-block characters: ▏▎▍▌▋▊▉█ (1/8 steps)
-            sub_chars = " ▏▎▍▌▋▊▉█"
-            sub_idx = min(int(frac * 8) + 1, 7)
-            bar_str = "█" * full_blocks + sub_chars[sub_idx]
-            bar_str = bar_str.ljust(max_bar_width)
-
-            # Color based on speed percentile
-            if ratio >= 0.75:
-                color = "bold yellow"
-            elif ratio >= 0.5:
-                color = "green"
-            elif ratio >= 0.25:
-                color = "cyan"
-            else:
-                color = "dim cyan"
-
-            speed_table.add_row(model_name, f"[{color}]{bar_str}[/]", f"{tps:.0f} tps")
-
+        speed_table = _build_bar_chart(
+            models_with_tps,
+            value_key="avg_tps",
+            max_value=max_tps,
+            label_fmt=lambda v: f"{v:.0f} tps",
+            higher_is_better=True,
+        )
         console.print(speed_table)
+
+    # Latency bar chart — sorted by latency (fastest first = lowest ms)
+    models_with_latency = [(name, d) for name, d in enriched if d.get("avg_latency_ms") is not None]
+    if models_with_latency:
+        models_with_latency.sort(key=lambda x: x[1]["avg_latency_ms"])
+        max_latency = max(d["avg_latency_ms"] for _, d in models_with_latency)
+
+        console.print()
+        console.print("[bold]Latency Comparison:[/bold]")
+        latency_table = _build_bar_chart(
+            models_with_latency,
+            value_key="avg_latency_ms",
+            max_value=max_latency,
+            label_fmt=_format_latency,
+            higher_is_better=False,
+        )
+        console.print(latency_table)
     console.print()
 
 
