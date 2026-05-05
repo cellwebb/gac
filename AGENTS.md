@@ -166,6 +166,13 @@ docs: update examples
 
 **Use `gac` for commits:** `gac -sy`
 
+**Dogfooding is mandatory**: This repo uses `gac` to commit its own changes. Always use `gac -sy` or equivalent — NEVER use raw `git commit`.
+
+**Managed files — DO NOT manually edit:**
+
+- `CHANGELOG.md` — managed by [KittyLog](https://kittylog.app), auto-generated on release. Manual edits will be overwritten.
+- `src/gac/__version__.py` — version bumps are handled by the release process, not manually.
+
 ## Critical Dependencies
 
 - `httpx>=0.28.0` - HTTP client with async support and proper connection pooling

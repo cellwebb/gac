@@ -84,9 +84,10 @@ class GitStateValidator:
         staged_files = get_staged_files(existing_only=False)
 
         if not staged_files:
-            console.print(
-                "[yellow]No staged changes found. Stage your changes with git add first or use --add-all.[/yellow]"
-            )
+            console.print("[yellow]No staged changes found. Stage your changes with:[/yellow]")
+            console.print("  [cyan]gac --stage[/cyan]       Interactive file selector")
+            console.print("  [cyan]git add <file>[/cyan]    Stage specific files")
+            console.print("  [cyan]gac --add-all[/cyan]     Stage everything automatically")
             return None
 
         # Get git status and diffs
