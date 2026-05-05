@@ -11,7 +11,6 @@ from rich.table import Table
 from gac.stats import (
     compute_total_tokens,
     format_tokens,
-    get_current_project_name,
     get_stats_summary,
     load_stats,
     model_activity,
@@ -491,62 +490,48 @@ def reset() -> None:
 
 
 @stats.command()
-def project() -> None:
-    """Show stats for the current project only."""
-    project_name = get_current_project_name()
-    if not project_name:
-        console.print("[red]Error: Not in a git repository.[/red]")
+def projects() -> None:
+    """Show stats for all projects (not just top 5)."""
+    if not stats_enabled():
+        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set to a truthy value).[/dim]")
         return
 
-    stats = load_stats()
-    projects = stats.get("projects", {})
-
-    project_data = projects.get(project_name, {})
-
-    has_activity = bool(project_data) and any(
-        int(project_data.get(field, 0)) > 0
-        for field in ("gacs", "commits", "prompt_tokens", "completion_tokens", "reasoning_tokens")
-    )
-    if not has_activity:
-        console.print(f"[yellow]No gacs yet for project '{project_name}'![/yellow]")
-        console.print("[dim]Run 'gac' or 'uvx gac' in this repository to start tracking.[/dim]")
+    stats_data = load_stats()
+    projects_data = stats_data.get("projects", {})
+    if not projects_data:
+        console.print("[yellow]No project usage yet! Time to start gaccing! 🚀[/yellow]")
         return
 
-    gacs = project_data.get("gacs", 0)
-    commits = project_data.get("commits", 0)
-    prompt_t = int(project_data.get("prompt_tokens", 0))
-    completion_t = int(project_data.get("completion_tokens", 0))
-    total_t = compute_total_tokens(project_data)
+    sorted_projects = sorted(projects_data.items(), key=project_activity, reverse=True)
 
     console.print()
+    console.print("[bold]All Projects:[/bold]")
+    table = Table(show_header=True, box=None)
+    table.add_column("Project", style="bold magenta")
+    table.add_column("Gacs", style="bold cyan", justify="right")
+    table.add_column("Commits", style="bold cyan", justify="right")
+    table.add_column("Prompt", style="bold cyan", justify="right")
+    table.add_column("Completion", style="bold cyan", justify="right")
+    table.add_column("Reasoning", style="bold cyan", justify="right")
+    table.add_column("Total", style="bold cyan", justify="right")
 
-    # Format message
-    if gacs == 1:
-        gac_msg = "You've gac'd [bold cyan]1[/bold cyan] time"
-    else:
-        gac_msg = f"You've gac'd [bold cyan]{gacs}[/bold cyan] times"
-
-    if commits == 1:
-        commit_msg = "created [bold cyan]1[/bold cyan] commit"
-    else:
-        commit_msg = f"created [bold cyan]{commits}[/bold cyan] commits"
-
-    console.print(
-        Panel.fit(
-            f"{gac_msg} and {commit_msg} in this project!",
-            title=f"🚀 {project_name}",
-            border_style="green",
+    for project_name, data in sorted_projects:
+        gacs = data.get("gacs", 0)
+        commits = data.get("commits", 0)
+        prompt_t = int(data.get("prompt_tokens", 0))
+        completion_t = int(data.get("completion_tokens", 0))
+        reasoning_t = int(data.get("reasoning_tokens", 0))
+        total_t = compute_total_tokens(data)
+        reasoning_str = format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
+        table.add_row(
+            project_name,
+            str(gacs),
+            str(commits),
+            format_tokens(prompt_t),
+            format_tokens(completion_t),
+            reasoning_str,
+            format_tokens(total_t),
         )
-    )
 
-    if total_t > 0:
-        console.print()
-        token_table = Table(show_header=False, box=None)
-        token_table.add_column("Metric", style="bold magenta")
-        token_table.add_column("Value", style="bold cyan", justify="right")
-        token_table.add_row("Prompt tokens", format_tokens(prompt_t))
-        token_table.add_row("Completion tokens", format_tokens(completion_t))
-        token_table.add_row("Total tokens", format_tokens(total_t))
-        console.print(token_table)
-
+    console.print(table)
     console.print()

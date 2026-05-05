@@ -209,13 +209,10 @@ class TestStatsCLI:
             # Should render token activity
             assert "1,200" in result.output
 
-    def test_stats_project_with_token_only_history(self, runner):
-        """Test stats project renders activity for a project that has only token usage
+    def test_stats_projects_with_token_only_history(self, runner):
+        """Test stats projects renders all projects including one that has only token usage
         (no recorded commits or gacs yet)."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="my-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
+        with patch("gac.stats_cli.load_stats") as mock_load:
             mock_load.return_value = {
                 "projects": {
                     "my-proj": {
@@ -223,16 +220,15 @@ class TestStatsCLI:
                         "commits": 0,
                         "prompt_tokens": 800,
                         "completion_tokens": 150,
+                        "reasoning_tokens": 0,
                     }
                 }
             }
-            result = runner.invoke(cli, ["stats", "project"])
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
-            assert "No gacs yet" not in result.output
-            # Token breakdown table should be rendered.
-            assert "950" in result.output  # 800 + 150 total
-            assert "800" in result.output
-            assert "150" in result.output
+            assert "All Projects" in result.output
+            # Total = 800 + 150 + 0 = 950
+            assert "950" in result.output
 
     def test_stats_show_biggest_gac(self, runner):
         """Test stats show displays biggest gac when it exists."""

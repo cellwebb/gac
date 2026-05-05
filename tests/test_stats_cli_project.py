@@ -1,4 +1,4 @@
-"""Tests for stats_cli.py project subcommand and top-models/projects display."""
+"""Tests for stats_cli.py projects subcommand and top-models/projects display."""
 
 from datetime import datetime
 from unittest.mock import patch
@@ -60,56 +60,36 @@ def _base_summary(**overrides):
 
 
 class TestProjectSubcommand:
-    """Tests for the 'gac stats project' subcommand (lines 262-354)."""
+    """Tests for the 'gac stats projects' subcommand (shows all projects, not just top 5)."""
 
     @pytest.fixture
     def runner(self):
         return CliRunner()
 
-    def test_project_not_in_git_repo(self, runner):
-        """Test project subcommand when not in a git repository."""
-        with patch("gac.stats_cli.get_current_project_name", return_value=None):
-            result = runner.invoke(cli, ["stats", "project"])
+    def test_projects_not_in_git_repo(self, runner):
+        """Test projects subcommand when stats are empty."""
+        with patch("gac.stats_cli.load_stats", return_value={"projects": {}}):
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
-            assert "Not in a git repository" in result.output
+            assert "No project usage yet" in result.output
 
-    def test_project_no_activity(self, runner):
-        """Test project subcommand when project has no activity."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="my-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
-            mock_load.return_value = {
-                "projects": {
-                    "my-proj": {
-                        "gacs": 0,
-                        "commits": 0,
-                        "prompt_tokens": 0,
-                        "completion_tokens": 0,
-                    }
-                }
-            }
-            result = runner.invoke(cli, ["stats", "project"])
+    def test_projects_no_activity(self, runner):
+        """Test projects subcommand when no projects exist."""
+        with patch("gac.stats_cli.load_stats", return_value={"projects": {}}):
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
-            assert "No gacs yet" in result.output
+            assert "No project usage yet" in result.output
 
-    def test_project_no_data_at_all(self, runner):
-        """Test project subcommand when project not in stats at all."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="new-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
-            mock_load.return_value = {"projects": {}}
-            result = runner.invoke(cli, ["stats", "project"])
+    def test_projects_no_data_at_all(self, runner):
+        """Test projects subcommand when no projects in stats."""
+        with patch("gac.stats_cli.load_stats", return_value={"projects": {}}):
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
-            assert "No gacs yet" in result.output
+            assert "No project usage yet" in result.output
 
-    def test_project_with_activity_and_tokens(self, runner):
-        """Test project subcommand with full activity including tokens."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="active-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
+    def test_projects_with_multiple_projects(self, runner):
+        """Test projects subcommand with multiple projects."""
+        with patch("gac.stats_cli.load_stats") as mock_load:
             mock_load.return_value = {
                 "projects": {
                     "active-proj": {
@@ -118,23 +98,25 @@ class TestProjectSubcommand:
                         "prompt_tokens": 3000,
                         "completion_tokens": 1500,
                         "reasoning_tokens": 500,
-                    }
+                    },
+                    "other-proj": {
+                        "gacs": 2,
+                        "commits": 3,
+                        "prompt_tokens": 1000,
+                        "completion_tokens": 500,
+                        "reasoning_tokens": 0,
+                    },
                 }
             }
-            result = runner.invoke(cli, ["stats", "project"])
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
+            assert "All Projects" in result.output
             assert "active-proj" in result.output
-            assert "5" in result.output
-            assert "10" in result.output
-            # Total = 3000 + 1500 + 500 = 5000
-            assert "5,000" in result.output
+            assert "other-proj" in result.output
 
-    def test_project_singular_gac(self, runner):
-        """Test project subcommand singular '1 time' message."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="solo-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
+    def test_projects_singular_project(self, runner):
+        """Test projects subcommand with a single project."""
+        with patch("gac.stats_cli.load_stats") as mock_load:
             mock_load.return_value = {
                 "projects": {
                     "solo-proj": {
@@ -146,17 +128,13 @@ class TestProjectSubcommand:
                     }
                 }
             }
-            result = runner.invoke(cli, ["stats", "project"])
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
-            assert "1 time" in result.output
-            assert "1 commit" in result.output
+            assert "solo-proj" in result.output
 
-    def test_project_zero_tokens(self, runner):
-        """Test project subcommand when project has gacs but no tokens."""
-        with (
-            patch("gac.stats_cli.get_current_project_name", return_value="notok-proj"),
-            patch("gac.stats_cli.load_stats") as mock_load,
-        ):
+    def test_projects_zero_tokens(self, runner):
+        """Test projects subcommand when project has gacs but no tokens."""
+        with patch("gac.stats_cli.load_stats") as mock_load:
             mock_load.return_value = {
                 "projects": {
                     "notok-proj": {
@@ -168,11 +146,9 @@ class TestProjectSubcommand:
                     }
                 }
             }
-            result = runner.invoke(cli, ["stats", "project"])
+            result = runner.invoke(cli, ["stats", "projects"])
             assert result.exit_code == 0
             assert "notok-proj" in result.output
-            # Token table should NOT be rendered when total_t is 0
-            assert "Prompt tokens" not in result.output
 
 
 class TestTopModelsAndProjects:
