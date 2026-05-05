@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Tests for the staging TUI module."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
+from gac.errors import GitError
+from gac.git import GitCommandResult
 from gac.staging_tui import (
     FileStatus,
     TreeNode,
@@ -79,6 +81,31 @@ class TestFileStatus:
         assert staged.display_xy == "M·"
         assert unstaged.display_xy == "·M"
 
+    def test_type_change_status(self) -> None:
+        """T = type change (e.g. regular file → symlink)."""
+        fs = FileStatus(path="link", xy="T ")
+        assert fs.is_staged is True
+        assert fs.display_xy == "T·"
+
+    def test_unmerged_status(self) -> None:
+        """U = unmerged (merge conflict)."""
+        fs = FileStatus(path="conflict.py", xy="UU")
+        assert fs.is_staged is True  # U is not space/?/!
+        assert fs.display_xy == "UU"
+
+    def test_ignored_status(self) -> None:
+        """! = ignored file (from git status -u with ignored)."""
+        fs = FileStatus(path="build/", xy="!!")
+        assert fs.is_staged is False  # ! is in the exclusion set
+        assert fs.is_untracked is False
+        assert fs.display_xy == "!!"
+
+    def test_copied_status(self) -> None:
+        """C = copied file."""
+        fs = FileStatus(path="copy.py", xy="C ")
+        assert fs.is_staged is True
+        assert fs.display_xy == "C·"
+
 
 # ── parse_git_status tests ────────────────────────────────────────────────
 
@@ -87,12 +114,9 @@ class TestParseGitStatus:
     """Tests for git status parsing."""
 
     def test_parse_basic_output(self) -> None:
-        output = "M  src/foo.py\n A src/bar.py\n?? src/baz.py\n"
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = output
+        result = GitCommandResult.ok("M  src/foo.py\n A src/bar.py\n?? src/baz.py\n")
 
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
+        with patch("gac.staging_tui.run_git_command", return_value=result):
             entries = parse_git_status()
 
         assert len(entries) == 3
@@ -104,12 +128,9 @@ class TestParseGitStatus:
         assert entries[2].xy == "??"
 
     def test_parse_rename(self) -> None:
-        output = "R  old_path.py -> new_path.py\n"
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = output
+        result = GitCommandResult.ok("R  old_path.py -> new_path.py\n")
 
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
+        with patch("gac.staging_tui.run_git_command", return_value=result):
             entries = parse_git_status()
 
         assert len(entries) == 1
@@ -117,25 +138,41 @@ class TestParseGitStatus:
         assert entries[0].xy == "R "
 
     def test_parse_empty_output(self) -> None:
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = ""
+        result = GitCommandResult.ok("")
 
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
+        with patch("gac.staging_tui.run_git_command", return_value=result):
             entries = parse_git_status()
 
         assert entries == []
 
     def test_parse_git_failure(self) -> None:
-        from gac.errors import GitError
+        result = GitCommandResult.fail(returncode=128, stderr="not a git repository")
 
-        mock_result = MagicMock()
-        mock_result.returncode = 128
-        mock_result.stderr = "not a git repository"
-
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
+        with patch("gac.staging_tui.run_git_command", return_value=result):
             with pytest.raises(GitError):
                 parse_git_status()
+
+    def test_parse_filenames_with_spaces(self) -> None:
+        """Filenames with spaces should be parsed correctly from git output."""
+        result = GitCommandResult.ok("M  path/to/foo bar.py\n?? another file.py\n")
+
+        with patch("gac.staging_tui.run_git_command", return_value=result):
+            entries = parse_git_status()
+
+        assert len(entries) == 2
+        assert entries[0].path == "path/to/foo bar.py"
+        assert entries[1].path == "another file.py"
+
+    def test_parse_filenames_with_quotes(self) -> None:
+        """Filenames with quotes should pass through (git handles quoting)."""
+        result = GitCommandResult.ok("M  path/to/foo\"bar.py\n?? singly'quoted.py\n")
+
+        with patch("gac.staging_tui.run_git_command", return_value=result):
+            entries = parse_git_status()
+
+        assert len(entries) == 2
+        assert entries[0].path == 'path/to/foo"bar.py'
+        assert entries[1].path == "singly'quoted.py"
 
 
 # ── Tree building tests ────────────────────────────────────────────────────
@@ -443,27 +480,56 @@ class TestStagingTUIInteraction:
 
 class TestStageFiles:
     def test_stage_files_success(self) -> None:
-        mock_result = MagicMock()
-        mock_result.returncode = 0
+        result = GitCommandResult.ok("")
 
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result) as mock_run:
-            result = stage_files(["foo.py", "bar.py"])
+        with patch("gac.staging_tui.run_git_command", return_value=result) as mock_run:
+            ok = stage_files(["foo.py", "bar.py"])
 
-        assert result is True
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert call_args == ["git", "add", "foo.py", "bar.py"]
+        assert ok is True
+        mock_run.assert_called_once_with(["add", "foo.py", "bar.py"], timeout=30)
 
     def test_stage_files_empty(self) -> None:
         result = stage_files([])
         assert result is True
 
     def test_stage_files_failure(self) -> None:
-        mock_result = MagicMock()
-        mock_result.returncode = 1
-        mock_result.stderr = "error"
+        result = GitCommandResult.fail(returncode=1, stderr="error")
 
-        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
-            result = stage_files(["foo.py"])
+        with patch("gac.staging_tui.run_git_command", return_value=result):
+            ok = stage_files(["foo.py"])
 
-        assert result is False
+        assert ok is False
+
+    def test_stage_files_with_spaces_in_paths(self) -> None:
+        """Paths with spaces are passed as separate list items — no shell injection."""
+        result = GitCommandResult.ok("")
+
+        with patch("gac.staging_tui.run_git_command", return_value=result) as mock_run:
+            ok = stage_files(["foo bar.py", "baz'qux.py"])
+
+        assert ok is True
+        call_args = mock_run.call_args[0][0]
+        assert call_args == ["add", "foo bar.py", "baz'qux.py"]
+
+    def test_stage_files_integration_pipe(self) -> None:
+        """End-to-end: selected files from TUI → stage_files() → git add called."""
+        entries = [
+            FileStatus(path="a.py", xy="M "),  # Staged, pre-selected
+            FileStatus(path="b.py", xy="??"),  # Untracked, not selected
+        ]
+        tui = StagingTUI(entries)
+        # Select the untracked file too
+        items = tui._flat_items()
+        b_node = next(n for n, _ in items if n.name == "b.py")
+        b_node.selected = True
+
+        selected = tui.get_selected_files()
+        assert set(selected) == {"a.py", "b.py"}
+
+        result = GitCommandResult.ok("")
+        with patch("gac.staging_tui.run_git_command", return_value=result) as mock_run:
+            ok = stage_files(selected)
+
+        assert ok is True
+        call_args = mock_run.call_args[0][0]
+        assert call_args == ["add", "a.py", "b.py"]

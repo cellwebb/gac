@@ -24,11 +24,11 @@ Key bindings (in the TUI):
 from __future__ import annotations
 
 import logging
-import subprocess
 from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 
 from gac.errors import GitError
+from gac.git import run_git_command
 from gac.utils import console
 
 logger = logging.getLogger(__name__)
@@ -66,8 +66,12 @@ class FileStatus:
     def display_xy(self) -> str:
         """Full XY status pair with · replacing spaces for display.
 
+        Handles all standard git XY codes: M (modified), A (added), D (deleted),
+        R (renamed), C (copied), T (type change), U (unmerged), ? (untracked),
+        ! (ignored).  Any non-space character passes through as-is.
+
         Examples: ``M·`` (staged mod), ``·M`` (unstaged mod), ``AM`` (staged + unstaged),
-        ``??`` (untracked), ``A·`` (staged new file).
+        ``??`` (untracked), ``T·`` (staged type change), ``U·`` (unmerged).
         """
         left = self.staged_code if self.staged_code != " " else "·"
         right = self.worktree_code if self.worktree_code != " " else "·"
@@ -96,21 +100,12 @@ def parse_git_status() -> list[FileStatus]:
     Raises:
         GitError: If the git command fails.
     """
-    try:
-        result = subprocess.run(
-            ["git", "status", "--porcelain", "-u"],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=10,
-        )
-        if result.returncode != 0:
-            raise GitError(f"git status failed (exit code {result.returncode}): {result.stderr.strip()}")
-    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-        raise GitError(f"Failed to run git status: {e}") from e
+    result = run_git_command(["status", "--porcelain", "-u"], timeout=10)
+    if not result.success:
+        raise GitError(result.fail_message("git status failed"))
 
     entries: list[FileStatus] = []
-    for line in result.stdout.splitlines():
+    for line in result.output.splitlines():
         line = line.rstrip("\n")
         if not line:
             continue
@@ -157,6 +152,7 @@ def build_file_tree(entries: list[FileStatus]) -> TreeNode:
     root = TreeNode(name="<root>", path="", is_dir=True, expanded=True)
 
     for entry in entries:
+        # PurePosixPath because git always uses forward slashes, even on Windows
         parts = PurePosixPath(entry.path).parts
         current = root
 
@@ -276,23 +272,12 @@ def stage_files(file_paths: list[str]) -> bool:
     if not file_paths:
         return True
 
-    try:
-        result = subprocess.run(
-            ["git", "add", *file_paths],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=30,
-        )
-        if result.returncode != 0:
-            logger.error(f"git add failed: {result.stderr.strip()}")
-            console.print(f"[red]Failed to stage files: {result.stderr.strip()}[/red]")
-            return False
-        return True
-    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-        logger.error(f"Failed to run git add: {e}")
-        console.print(f"[red]Failed to stage files: {e}[/red]")
+    result = run_git_command(["add", *file_paths], timeout=30)
+    if not result.success:
+        logger.error(f"git add failed: {result.stderr}")
+        console.print(f"[red]Failed to stage files: {result.stderr}[/red]")
         return False
+    return True
 
 
 def run_staging_tui() -> list[str] | None:

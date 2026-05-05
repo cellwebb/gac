@@ -20,7 +20,6 @@ Key bindings:
 from __future__ import annotations
 
 import logging
-import subprocess
 from dataclasses import dataclass
 from typing import Any
 
@@ -31,7 +30,15 @@ from prompt_toolkit.layout import HSplit, Layout, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.styles import Style
 
-from gac.staging_tui import FileStatus, TreeNode, _flatten_tree, _propagate_selection_downward, _selection_indicator
+from gac.git import run_git_command
+from gac.staging_tui import (
+    FileStatus,
+    TreeNode,
+    _flatten_tree,
+    _propagate_selection_downward,
+    _selection_indicator,
+    build_file_tree,
+)
 from gac.utils import console
 
 logger = logging.getLogger(__name__)
@@ -107,8 +114,6 @@ class StagingTUI:
     """Interactive file staging TUI built on prompt_toolkit."""
 
     def __init__(self, file_statuses: list[FileStatus]) -> None:
-        from gac.staging_tui import build_file_tree
-
         self.entries = file_statuses
         self.root = build_file_tree(file_statuses)
         self.state = TUIState(root=self.root)
@@ -117,18 +122,9 @@ class StagingTUI:
     @staticmethod
     def _get_current_branch() -> str:
         """Get the current git branch name for display."""
-        try:
-            result = subprocess.run(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=5,
-            )
-            if result.returncode == 0:
-                return result.stdout.strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
+        result = run_git_command(["rev-parse", "--abbrev-ref", "HEAD"], timeout=5)
+        if result.success:
+            return result.output
         return "unknown"
 
     def _flat_items(self) -> list[tuple[TreeNode, int]]:
@@ -243,8 +239,8 @@ class StagingTUI:
             lines.append(("class:status-untracked", "[??]"))
             return
 
-        xy = fs.display_xy
-        left, right = xy[0], xy[1] if len(xy) >= 2 else "·"
+        xy = fs.display_xy  # Always 2 chars
+        left, right = xy[0], xy[1]
 
         lines.append(("class:status-default", "["))
         # Left column: index status
