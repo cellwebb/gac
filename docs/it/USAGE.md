@@ -417,6 +417,7 @@ I seguenti sottocomandi sono disponibili:
 - `gac diff` — Mostra git diff filtrato con opzioni per modifiche staging/non-staging, colore e troncamento
 - `gac serve` — Avvia GAC come [server MCP](MCP.md) per l'integrazione con agenti AI (trasporto stdio)
 - `gac stats show` — Vedi le tue statistiche di utilizzo di gac (totali, serie, attività giornaliera e settimanale, utilizzo dei token, progetti principali, modelli principali)
+- `gac stats models` — Visualizza statistiche dettagliate di tutti i modelli con ripartizione dei token e grafico comparativo della velocità
 - `gac stats project` — Vedi le statistiche solo per il progetto git corrente
 - `gac stats reset` — Ripristina tutte le statistiche a zero (richiede conferma)
 
@@ -549,6 +550,7 @@ Quando rifiuti le statistiche durante `gac init` e viene rilevato un file `~/.ga
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `gac stats`         | Mostra le tue statistiche (come `gac stats show`)                                                                                           |
 | `gac stats show`    | Mostra statistiche complete: totali, serie, attività giornaliera e settimanale, utilizzo dei token, progetti principali, modelli principali |
+| `gac stats models`  | Mostra statistiche dettagliate di **tutti** i modelli utilizzati, con ripartizione dei token e grafico comparativo della velocità           |
 | `gac stats project` | Mostra statistiche solo per il progetto git corrente                                                                                        |
 | `gac stats reset`   | Ripristina tutte le statistiche a zero (richiede conferma)                                                                                  |
 
@@ -557,6 +559,9 @@ Quando rifiuti le statistiche durante `gac init` e viene rilevato un file `~/.ga
 ```sh
 # Visualizza le tue statistiche generali
 gac stats
+
+# Ripartizione dettagliata di tutti i modelli utilizzati
+gac stats models
 
 # Statistiche del progetto corrente solamente
 gac stats project
@@ -574,6 +579,11 @@ Eseguire `gac stats` mostra:
 - **Riepilogo attività** — gac, commit e token di oggi e di questa settimana vs il tuo picco giornaliero e settimanale
 - **Progetti principali** — i tuoi 5 repository più attivi per conteggio gac + commit, con utilizzo dei token per progetto
 - **Modelli principali** — i tuoi 5 modelli più usati con token di prompt, completion e totali consumati
+
+Running `gac stats models` mostra **tutti** i modelli (non solo i primi 5) con:
+
+- **Tabella di tutti i modelli** — ogni modello utilizzato ordinato per attività, con conteggio gac, velocità (token/sec), token di prompt, token di completion, token di ragionamento e token totali
+- **Grafico comparativo della velocità** — un grafico a barre orizzontali di tutti i modelli con velocità note, ordinati dal più veloce al più lento, colorati per percentile di velocità (🟡 fulmineo, 🟢 veloce, 🔵 moderato, 🔘 lento)
 - **Celebrazioni dei record** — 🏆 trofei quando stabilisci nuovi record giornalieri, settimanali, di token o di serie; 🥈 per pareggiarli
 - **Messaggi di incoraggiamento** — suggerimenti contestuali basati sulla tua attività
 

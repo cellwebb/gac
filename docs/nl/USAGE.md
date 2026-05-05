@@ -372,6 +372,7 @@ De volgende subcommando's zijn beschikbaar:
 - `gac diff` — Gefilterde git diff tonen met opties voor gestagede/ongestagede wijzigingen, kleur en truncatie
 - `gac serve` — Start GAC als [MCP-server](MCP.md) voor AI-agent integratie (stdio transport)
 - `gac stats show` — Bekijk uw gac-gebruiksstatistieken (totalen, streaks, dagelijkse & wekelijkse activiteit, tokengebruik, topprojecten, topmodellen)
+- `gac stats models` — Bekijk gedetailleerde statistieken van alle modellen met token-uitsplitsing en snelheidsvergelijkingsgrafiek
 - `gac stats project` — Bekijk statistieken alleen voor het huidige git-project
 - `gac stats reset` — Reset alle statistieken naar nul (vraagt om bevestiging)
 
@@ -504,6 +505,7 @@ Wanneer u statistieken afwijst tijdens `gac init` en een bestaand `~/.gac_stats.
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `gac stats`         | Uw statistieken bekijken (hetzelfde als `gac stats show`)                                                                   |
 | `gac stats show`    | Volledige statistieken tonen: totalen, streaks, dagelijkse & wekelijkse activiteit, tokengebruik, topprojecten, topmodellen |
+| `gac stats models`  | Gedetailleerde statistieken tonen van **alle** gebruikte modellen, met token-uitsplitsing en snelheidsvergelijkingsgrafiek  |
 | `gac stats project` | Statistieken alleen voor het huidige git-project tonen                                                                      |
 | `gac stats reset`   | Alle statistieken naar nul resetten (vraagt om bevestiging)                                                                 |
 
@@ -512,6 +514,9 @@ Wanneer u statistieken afwijst tijdens `gac init` en een bestaand `~/.gac_stats.
 ```sh
 # Uw algemene statistieken bekijken
 gac stats
+
+# Gedetailleerde uitsplitsing van alle gebruikte modellen
+gac stats models
 
 # Statistieken alleen voor het huidige project
 gac stats project
@@ -529,6 +534,11 @@ Het uitvoeren van `gac stats` toont:
 - **Activiteitssamenvatting** — gacs, commits en tokens van vandaag en deze week vergeleken met uw piekdag en piekweek
 - **Topprojecten** — uw 5 meest actieve repos op basis van gac- + commit-aantal, met tokengebruik per project
 - **Topmodellen** — uw 5 meest gebruikte modellen met verbruikte prompt-, completion- en totale tokens
+
+Running `gac stats models` toont **alle** modellen (niet alleen de top 5) met:
+
+- **Alle modellen-tabel** — elk gebruikt model gesorteerd op activiteit, met gac-aantal, snelheid (tokens/sec), prompt-tokens, completion-tokens, reasoning-tokens en totale tokens
+- **Snelheidsvergelijking** — een horizontaal staafdiagram van alle modellen met bekende snelheden, gesorteerd van snelst naar traagst, kleurgecodeerd op snelheidspercentiel (🟡 bliksemsnel, 🟢 snel, 🔵 matig, 🔘 traag)
 - **Highscore-vieringen** — 🏆 trofeeën wanneer u nieuwe dagelijkse, wekelijkse, token- of streak-records vestigt; 🥈 voor het evenaren ervan
 - **Aanmoedigingsberichten** — contextuele aanmoedigingen op basis van uw activiteit
 

@@ -372,6 +372,7 @@ Følgende underkommandoer er tilgjengelige:
 - `gac diff` — Vis filtrert git diff med alternativer for staged/unstaged endringer, farge og trunkering
 - `gac serve` — Start GAC som [MCP-server](MCP.md) for AI-agent integrasjon (stdio transport)
 - `gac stats show` — Vis din gac-bruksstatistikk (totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller)
+- `gac stats models` — Vis detaljert statistikk for alle modeller med token-nedbryting og hastighetssammenligningsdiagram
 - `gac stats project` — Vis statistikk kun for det nåværende git-prosjektet
 - `gac stats reset` — Tilbakestill all statistikk til null (ber om bekreftelse)
 
@@ -504,6 +505,7 @@ Når du avslår statistikk under `gac init` og en eksisterende `~/.gac_stats.jso
 | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `gac stats`         | Vis din statistikk (samme som `gac stats show`)                                                                   |
 | `gac stats show`    | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
+| `gac stats models`  | Vis detaljert statistikk for **alle** brukte modeller, med token-nedbryting og hastighetssammenligningsdiagram    |
 | `gac stats project` | Vis statistikk kun for det nåværende git-prosjektet                                                               |
 | `gac stats reset`   | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
 
@@ -512,6 +514,9 @@ Når du avslår statistikk under `gac init` og en eksisterende `~/.gac_stats.jso
 ```sh
 # Vis din totale statistikk
 gac stats
+
+# Detaljert nedbryting av alle brukte modeller
+gac stats models
 
 # Statistikk kun for nåværende prosjekt
 gac stats project
@@ -529,6 +534,11 @@ gac stats reset
 - **Aktivitetssammendrag** — dagens og denne ukens gacs, committer og tokens sammenlignet med din toppedag og toppeuke
 - **Topprosjekter** — dine 5 mest aktive repos etter gac- + commit-antall, med tokenbruk per prosjekt
 - **Toppmodeller** — dine 5 mest brukte modeller med prompt-, completion- og totale tokens forbruk
+
+Running `gac stats models` viser **alle** modeller (ikke bare de 5 øverste) med:
+
+- **Alle modeller-tabell** — hver brukte modell sortert etter aktivitet, med gac-antall, hastighet (tokens/sek), prompt-tokens, completion-tokens, reasoning-tokens og totale tokens
+- **Hastighetssammenligning** — et horisontalt stolpediagram av alle modeller med kjente hastigheter, sortert fra raskest til tregest, fargekodet etter hastighetspersentil (🟡 lynrask, 🟢 rask, 🔵 moderat, 🔘 treg)
 - **Highscore-feiringer** — 🏆 trofeer når du setter nye daglige, ukentlige, token- eller streak-rekorder; 🥈 for å tangere dem
 - **Oppmuntringsmeldinger** — kontekstuelle oppmuntringer basert på din aktivitet
 

@@ -372,6 +372,7 @@ Các lệnh con sau đây có sẵn:
 - `gac diff` — Hiển thị git diff đã lọc với các tùy chọn cho các thay đổi đã được staged/chưa staged, màu sắc và cắt bớt
 - `gac serve` — Khởi động GAC như một [MCP server](MCP.md) để tích hợp AI agent (truyền tải stdio)
 - `gac stats show` — Xem thống kê sử dụng gac của bạn (tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, sử dụng token, dự án hàng đầu, mô hình hàng đầu)
+- `gac stats models` — Xem thống kê chi tiết cho tất cả mô hình với phân tích token và biểu đồ so sánh tốc độ
 - `gac stats project` — Xem thống kê chỉ cho dự án git hiện tại
 - `gac stats reset` — Đặt lại tất cả thống kê về không (yêu cầu xác nhận)
 
@@ -504,6 +505,7 @@ Khi bạn từ chối thống kê trong `gac init` và phát hiện tệp `~/.ga
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `gac stats`         | Hiển thị thống kê của bạn (giống như `gac stats show`)                                                                     |
 | `gac stats show`    | Hiển thị thống kê đầy đủ: tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, sử dụng token, dự án hàng đầu, mô hình hàng đầu |
+| `gac stats models`  | Hiển thị thống kê chi tiết cho **tất cả** các mô hình đã sử dụng, với phân tích token và biểu đồ so sánh tốc độ            |
 | `gac stats project` | Hiển thị thống kê chỉ cho dự án git hiện tại                                                                               |
 | `gac stats reset`   | Đặt lại tất cả thống kê về không (yêu cầu xác nhận)                                                                        |
 
@@ -512,6 +514,9 @@ Khi bạn từ chối thống kê trong `gac init` và phát hiện tệp `~/.ga
 ```sh
 # Xem thống kê tổng thể của bạn
 gac stats
+
+# Phân tích chi tiết tất cả các mô hình đã sử dụng
+gac stats models
 
 # Thống kê chỉ cho dự án hiện tại
 gac stats project
@@ -529,6 +534,11 @@ Chạy `gac stats` hiển thị:
 - **Tóm tắt hoạt động** — gac, commit và token hôm nay và tuần này so với ngày đỉnh và tuần đỉnh của bạn
 - **Dự án hàng đầu** — 5 repo tích cực nhất của bạn theo số gac + commit, với sử dụng token theo dự án
 - **Mô hình hàng đầu** — 5 mô hình được sử dụng nhiều nhất với token prompt, completion và tổng số đã tiêu thụ
+
+Running `gac stats models` hiển thị **tất cả** các mô hình (không chỉ 5 mô hình hàng đầu) với:
+
+- **Bảng tất cả mô hình** — mỗi mô hình đã sử dụng được sắp xếp theo hoạt động, với số gac, tốc độ (token/giây), token prompt, token completion, token suy luận và tổng token
+- **Biểu đồ so sánh tốc độ** — biểu đồ thanh ngang của tất cả các mô hình có tốc độ đã biết, sắp xếp từ nhanh nhất đến chậm nhất, mã màu theo phần trăm tốc độ (🟡 siêu nhanh, 🟢 nhanh, 🔵 vừa phải, 🔘 chậm)
 - **Ăn mừng điểm cao** — 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, token, hoặc chuỗi mới; 🥈 khi ngang bằng
 - **Tin nhắn khích lệ** — những nhắc nhở theo ngữ cảnh dựa trên hoạt động của bạn
 

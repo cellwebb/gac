@@ -372,6 +372,7 @@ Följande underkommandon är tillgängliga:
 - `gac diff` — Visa filtrerad git diff med alternativ för staged/unstaged ändringar, färg och trunkering
 - `gac serve` — Starta GAC som [MCP-server](MCP.md) för AI-agent integration (stdio transport)
 - `gac stats show` — Visa din gac-användningsstatistik (totaler, streaks, daglig & veckovis aktivitet, tokenanvändning, topprojekt, toppmodeller)
+- `gac stats models` — Visa detaljerad statistik för alla modeller med token-fördelning och hastighetsjämförelsediagram
 - `gac stats project` — Visa statistik endast för det aktuella git-projektet
 - `gac stats reset` — Återställ all statistik till noll (ber om bekräftelse)
 
@@ -504,6 +505,7 @@ När du avböjer statistik under `gac init` och en befintlig `~/.gac_stats.json`
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `gac stats`         | Visa din statistik (samma som `gac stats show`)                                                                      |
 | `gac stats show`    | Visa fullständig statistik: totaler, streaks, daglig & veckovis aktivitet, tokenanvändning, topprojekt, toppmodeller |
+| `gac stats models`  | Visa detaljerad statistik för **alla** använda modeller, med token-fördelning och hastighetsjämförelsediagram        |
 | `gac stats project` | Visa statistik endast för det aktuella git-projektet                                                                 |
 | `gac stats reset`   | Återställ all statistik till noll (ber om bekräftelse)                                                               |
 
@@ -512,6 +514,9 @@ När du avböjer statistik under `gac init` och en befintlig `~/.gac_stats.json`
 ```sh
 # Visa din övergripande statistik
 gac stats
+
+# Detaljerad fördelning av alla använda modeller
+gac stats models
 
 # Statistik endast för aktuellt projekt
 gac stats project
@@ -529,6 +534,11 @@ Att köra `gac stats` visar:
 - **Aktivitetssammanfattning** — dagens och denna veckas gacs, commits och tokens jämfört med din toppdag och toppvecka
 - **Toppprojekt** — dina 5 mest aktiva repos efter gac- + commit-antal, med tokenanvändning per projekt
 - **Toppmodeller** — dina 5 mest använda modeller med förbrukade prompt-, completion- och totala tokens
+
+Running `gac stats models` visar **alla** modeller (inte bara topp 5) med:
+
+- **Alla modeller-tabell** — varje använd modell sorterad efter aktivitet, med gac-antal, hastighet (tokens/sek), prompt-tokens, completion-tokens, reasoning-tokens och totala tokens
+- **Hastighetsjämförelse** — ett horisontellt stapeldiagram av alla modeller med kända hastigheter, sorterade från snabbast till långsammast, färgkodade efter hastighetspercentil (🟡 blixtsnabbt, 🟢 snabbt, 🔵 måttligt, 🔘 långsamt)
 - **Highscore-firanden** — 🏆 troféer när du sätter nya dagliga, veckovisa, token- eller streak-rekord; 🥈 för att matcha dem
 - **Uppmuntransmeddelanden** — kontextuella uppmuntringar baserade på din aktivitet
 
