@@ -18,6 +18,7 @@ from .cerebras import CerebrasProvider
 from .chatgpt_oauth import ChatGPTOAuthProvider
 from .chutes import ChutesProvider
 from .claude_code import ClaudeCodeProvider
+from .copilot import CopilotProvider
 from .custom_anthropic import CustomAnthropicProvider
 from .custom_openai import CustomOpenAIProvider
 from .deepseek import DeepSeekProvider
@@ -49,6 +50,7 @@ register_provider("anthropic", AnthropicProvider)
 register_provider("azure-openai", AzureOpenAIProvider)
 register_provider("cerebras", CerebrasProvider)
 register_provider("chatgpt-oauth", ChatGPTOAuthProvider)
+register_provider("copilot", CopilotProvider)
 register_provider("chutes", ChutesProvider)
 register_provider("claude-code", ClaudeCodeProvider)
 register_provider("custom-anthropic", CustomAnthropicProvider)
