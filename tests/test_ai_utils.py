@@ -286,16 +286,16 @@ class TestEstimateReasoningTokens:
         assert ai_utils.estimate_reasoning_tokens(text) == count_tokens(text, "any-model")
 
     def test_whitespace_only(self):
-        """Whitespace-only text still counts characters."""
-        # 34 spaces → 10 tokens (same ratio)
+        """Whitespace-only text should estimate as 0 tokens."""
+        # Whitespace-only reasoning is not meaningful; return 0
         text = " " * 34
-        assert ai_utils.estimate_reasoning_tokens(text) == 10
+        assert ai_utils.estimate_reasoning_tokens(text) == 0
 
     def test_newline_heavy_text(self):
-        """Newline-heavy reasoning text counts code points."""
-        # Each newline is 1 char, same ratio applies
-        text = "\n" * 34  # 34 newlines → 10 tokens
-        assert ai_utils.estimate_reasoning_tokens(text) == 10
+        """Newline-heavy reasoning text with actual content counts code points."""
+        # Mix of newlines and content: not whitespace-only
+        text = "reasoning" + "\n" * 34
+        assert ai_utils.estimate_reasoning_tokens(text) > 0
 
     def test_cjk_text(self):
         """CJK characters are counted by code point (not bytes)."""
@@ -339,3 +339,10 @@ class TestNormalizeReasoningTokens:
     def test_explicit_zero_ignores_text(self):
         """Explicit 0 ignores even long reasoning text."""
         assert ai_utils.normalize_reasoning_tokens(0, "thinking" * 100) == 0
+
+    def test_estimate_whitespace_only_returns_zero(self):
+        """Whitespace-only reasoning text should estimate as 0 tokens."""
+        from gac.ai_utils import estimate_reasoning_tokens
+
+        assert estimate_reasoning_tokens("   \n\n   \t  ") == 0
+        assert estimate_reasoning_tokens("  ") == 0

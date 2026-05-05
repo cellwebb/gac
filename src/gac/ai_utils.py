@@ -62,7 +62,7 @@ def estimate_reasoning_tokens(reasoning_text: str) -> int:
     BPE vocabulary — but it's far more accurate than reporting 0 when the
     model actually did significant reasoning work.
     """
-    if not reasoning_text:
+    if not reasoning_text or not reasoning_text.strip():
         return 0
     result = round(len(reasoning_text) / 3.4)
     return result if result > 0 else 1
