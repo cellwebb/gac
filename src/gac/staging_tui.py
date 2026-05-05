@@ -160,7 +160,7 @@ class StagingApp(App[list[str] | None]):
         super().__init__()
         self._entries = entries
         self._selected: set[str] = {e.path for e in entries if e.is_staged}
-        self._aborted: bool = False
+        self._file_nodes: dict[str, TreeNode[Any]] = {}
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -178,12 +178,14 @@ class StagingApp(App[list[str] | None]):
             if isinstance(value, dict):
                 counts = self._count_selected(value, path + "/")
                 label = _dir_label(name, counts[0], counts[1])
-                node = parent.add(label, data={"type": "dir", "path": path, "subtree": value})
+                node = parent.add(label, data={"type": "dir", "path": path, "name": name, "subtree": value})
                 node.expand()
+                self._file_nodes[path] = node
                 self._populate_tree(node, value, path)
             else:
                 label = _file_label(name, value, path in self._selected)
-                parent.add_leaf(label, data={"type": "file", "path": path, "status": value})
+                node = parent.add_leaf(label, data={"type": "file", "path": path, "name": name, "status": value})
+                self._file_nodes[path] = node
 
     def _count_selected(self, subtree: FileTree, prefix: str) -> tuple[int, int]:
         sel = total = 0
@@ -209,11 +211,15 @@ class StagingApp(App[list[str] | None]):
                 paths.append(path)
         return paths
 
-    def _refresh_tree(self) -> None:
-        tree = self.query_one("#file-tree", Tree)
-        tree.root.remove_children()
-        tree.root.expand()
-        self._populate_tree(tree.root, build_file_tree(self._entries), "")
+    def _update_labels(self) -> None:
+        for path, node in self._file_nodes.items():
+            data = node.data
+            if data is None:
+                continue
+            if data["type"] == "file":
+                node.set_label(_file_label(data["name"], data["status"], path in self._selected))
+            else:
+                node.set_label(_dir_label(data["name"], *self._count_selected(data["subtree"], path + "/")))
 
     def action_toggle_selection(self) -> None:
         tree = self.query_one("#file-tree", Tree)
@@ -233,26 +239,21 @@ class StagingApp(App[list[str] | None]):
                 self._selected.difference_update(paths)
             else:
                 self._selected.update(paths)
-        self._refresh_tree()
+        self._update_labels()
 
     def action_select_all(self) -> None:
         self._selected = {e.path for e in self._entries}
-        self._refresh_tree()
+        self._update_labels()
 
     def action_deselect_all(self) -> None:
         self._selected.clear()
-        self._refresh_tree()
+        self._update_labels()
 
     def action_confirm(self) -> None:
         self.exit(sorted(self._selected))
 
     def action_abort(self) -> None:
-        self._aborted = True
         self.exit(None)
-
-    def on_unmount(self) -> None:
-        if not self._aborted and self._return_value is None:
-            self._return_value = sorted(self._selected)
 
 
 def run_staging_tui() -> list[str] | None:

@@ -129,6 +129,7 @@ class TestStagingApp:
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.pause()
+            await pilot.press("enter")
         assert "src/gac/cli.py" in (app.return_value or [])
         assert "src/gac/new.py" not in (app.return_value or [])
 
