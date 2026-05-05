@@ -1,555 +1,241 @@
-import string
+"""Tests for Claude Code OAuth — config, code exchange, token CRUD, and wrappers."""
+
+import os
 import time
 from unittest import mock
-from urllib.parse import parse_qs, urlparse
 
-import pytest
+import httpx
 
+import gac.oauth.base as base_module
 from gac.oauth import claude_code
+from gac.oauth.base import OAuthContext
+from gac.oauth.claude_code import CLAUDE_CODE_CONFIG
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+
+class TestConfig:
+    def test_config_values(self):
+        assert CLAUDE_CODE_CONFIG["provider_key"] == "claude-code"
+        assert CLAUDE_CODE_CONFIG["api_key_env_var"] == "CLAUDE_CODE_ACCESS_TOKEN"
+        assert CLAUDE_CODE_CONFIG["callback_port_range"] == (8765, 8795)
+
+
+# ---------------------------------------------------------------------------
+# Code exchange
+# ---------------------------------------------------------------------------
+
+
+class TestExchangeCode:
+    def _make_context(self) -> OAuthContext:
+        return OAuthContext(
+            state="test_state",
+            code_verifier="test_verifier",
+            code_challenge="test_challenge",
+            created_at=time.time(),
+            redirect_uri="http://localhost:8765/callback",
+        )
+
+    def test_success(self):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "access_token": "at_123",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+        }
+
+        with mock.patch.object(httpx, "post", return_value=mock_response):
+            with mock.patch("time.time", return_value=1000.0):
+                result = claude_code._exchange_code("auth_code", self._make_context())
+
+        assert result is not None
+        assert result["access_token"] == "at_123"
+        assert result["expires_at"] == 1000.0 + 3600
+
+    def test_success_with_expires_at(self):
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "access_token": "at_123",
+            "token_type": "Bearer",
+            "expires_at": 9999,
+        }
+
+        with mock.patch.object(httpx, "post", return_value=mock_response):
+            result = claude_code._exchange_code("auth_code", self._make_context())
+
+        assert result is not None
+        assert result["expires_at"] == 9999
+
+    def test_invalid_response(self):
+        mock_response = mock.Mock()
+        mock_response.status_code = 400
+        mock_response.text = "Bad Request"
+
+        with mock.patch.object(httpx, "post", return_value=mock_response):
+            result = claude_code._exchange_code("code", self._make_context())
+        assert result is None
+
+    def test_request_exception(self):
+        with mock.patch.object(httpx, "post", side_effect=httpx.RequestError("Network error")):
+            result = claude_code._exchange_code("code", self._make_context())
+        assert result is None
+
+    def test_no_redirect_uri(self):
+        ctx = OAuthContext(
+            state="s",
+            code_verifier="v",
+            code_challenge="c",
+            created_at=time.time(),
+        )
+        assert claude_code._exchange_code("code", ctx) is None
+
+
+# ---------------------------------------------------------------------------
+# Token loading
+# ---------------------------------------------------------------------------
+
+
+class TestLoadStoredToken:
+    def test_exists(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"access_token": "tok123"}):
+            assert claude_code.load_stored_token() == "tok123"
+
+    def test_not_found(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value=None):
+            assert claude_code.load_stored_token() is None
+
+
+# ---------------------------------------------------------------------------
+# Token expiry
+# ---------------------------------------------------------------------------
 
 
-def test_urlsafe_b64encode_strips_padding() -> None:
-    encoded = claude_code._urlsafe_b64encode(b"\xff\xef")
-    assert "=" not in encoded
-    assert encoded == "_-8"
+class TestIsTokenExpired:
+    def test_expired(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 940}):
+            with mock.patch("time.time", return_value=1000):
+                assert claude_code.is_token_expired() is True
 
+    def test_no_expiry_assumed_valid(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"access_token": "tok"}):
+            assert claude_code.is_token_expired() is False
 
-def test_generate_code_verifier_character_set() -> None:
-    verifier = claude_code._generate_code_verifier()
-    allowed = set(string.ascii_letters + string.digits + "-_")
-    assert 43 <= len(verifier) <= 128
-    assert set(verifier) <= allowed
+    def test_within_5_minutes(self):
+        # Claude uses 300s margin
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 1120}):
+            with mock.patch("time.time", return_value=1000):
+                assert claude_code.is_token_expired() is True  # 120s left < 300s margin
 
+    def test_no_token(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value=None):
+            assert claude_code.is_token_expired() is True
 
-def test_compute_code_challenge_known_value() -> None:
-    challenge = claude_code._compute_code_challenge("abc")
-    assert challenge == "ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0"
-
-
-def test_prepare_oauth_context_generates_valid_pkce_values() -> None:
-    context = claude_code.prepare_oauth_context()
-
-    assert len(context.state) >= 32
-    assert len(context.code_verifier) >= 43
-    assert context.redirect_uri is None
-    expected_challenge = claude_code._compute_code_challenge(context.code_verifier)
-    assert context.code_challenge == expected_challenge
-
-
-def test_get_success_and_failure_html_include_messages() -> None:
-    success_html = claude_code._get_success_html()
-    failure_html = claude_code._get_failure_html()
-
-    assert "Authentication Successful" in success_html
-    assert "Authentication Failed" in failure_html
-
-
-def test_exchange_code_for_tokens_invalid_response() -> None:
-    """Test token exchange with invalid response (line 261->263)."""
-    import httpx
-
-    # Mock a non-200 response
-    mock_response = mock.Mock()
-    mock_response.status_code = 400
-    mock_response.text = "Bad Request"
-
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",  # Add required redirect_uri
-    )
-
-    with mock.patch.object(httpx, "post", return_value=mock_response):
-        result = claude_code.exchange_code_for_tokens("invalid_code", context)
-        assert result is None  # Should return None on failed response
-
-
-def test_exchange_code_for_tokens_request_exception() -> None:
-    """Test token exchange with request exception."""
-    import httpx
-
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",  # Add required redirect_uri
-    )
-
-    # Mock httpx.post to raise an exception
-    with mock.patch.object(httpx, "post", side_effect=httpx.RequestError("Network error")):
-        result = claude_code.exchange_code_for_tokens("test_code", context)
-        assert result is None  # Should return None on exception
-
-
-def test_perform_oauth_flow_server_startup_failure() -> None:
-    """Test OAuth flow failure when server can't start (lines 278, 285-288)."""
-    # Mock _start_callback_server to return None
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=None):
-        with mock.patch("builtins.print") as mock_print:
-            result = claude_code.perform_oauth_flow(quiet=False)
-            assert result is None
-            # Should print error message
-            mock_print.assert_any_call("❌ Could not start OAuth callback server; all ports are in use")
-
-
-def test_perform_oauth_flow_redirect_uri_failure() -> None:
-    """Test OAuth flow failure when redirect URI is None (lines 294-297)."""
-    # Mock server setup but no redirect URI
-    mock_server = mock.Mock()
-    mock_result = mock.Mock()
-    mock_event = mock.Mock()
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch("builtins.print") as mock_print:
-            result = claude_code.perform_oauth_flow(quiet=False)
-            assert result is None
-            mock_server.shutdown.assert_called_once()
-            mock_print.assert_any_call("❌ Failed to assign redirect URI for OAuth flow")
-
-
-def test_perform_oauth_flow_timeout_failure() -> None:
-    """Test OAuth flow timeout scenario (lines 301-305, 311)."""
-    # Setup mock server with timeout
-    mock_server = mock.Mock()
-    mock_result = mock.Mock()
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = False  # Timeout
-
-    # Create a context that will have redirect_uri
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("builtins.print"):
-                    with mock.patch("webbrowser.open") as mock_open:
-                        result = claude_code.perform_oauth_flow(quiet=False)
-                        assert result is None
-                        mock_server.shutdown.assert_called_once()
-                        mock_open.assert_called_once_with("http://test.auth.url")
-
-
-def test_perform_oauth_flow_auth_error() -> None:
-    """Test OAuth flow with authorization error from callback."""
-    # Setup mock server with auth error in result
-    mock_server = mock.Mock()
-    mock_result = mock.Mock()
-    mock_result.error = "access_denied"
-    mock_result.code = None
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = True
-
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("builtins.print") as mock_print:
-                    with mock.patch("webbrowser.open"):
-                        result = claude_code.perform_oauth_flow(quiet=False)
-                        assert result is None
-                        mock_server.shutdown.assert_called_once()
-                        # Should contain the error message somewhere in the calls
-                        print_calls = [str(call) for call in mock_print.call_args_list]
-                        assert any("access_denied" in call for call in print_calls)
-
-
-def test_build_authorization_url_requires_redirect() -> None:
-    context = claude_code.OAuthContext(
-        state="state",
-        code_verifier="verifier",
-        code_challenge="challenge",
-        created_at=time.time(),
-    )
-
-    with pytest.raises(RuntimeError):
-        claude_code.build_authorization_url(context)
-
-
-def test_build_authorization_url_includes_expected_parameters() -> None:
-    context = claude_code.OAuthContext(
-        state="state123",
-        code_verifier="verifier",
-        code_challenge="challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    url = claude_code.build_authorization_url(context)
-    parsed = urlparse(url)
-    query = parse_qs(parsed.query)
-
-    assert parsed.scheme == "https"
-    assert query["state"] == ["state123"]
-    assert query["code_challenge"] == ["challenge"]
-    assert query["redirect_uri"] == ["http://localhost:8765/callback"]
-
-
-def test_start_callback_server_returns_none_when_ports_in_use(monkeypatch: pytest.MonkeyPatch) -> None:
-    attempts: list[int] = []
-
-    def fake_http_server(*args, **kwargs):
-        attempts.append(1)
-        raise OSError("port busy")
-
-    monkeypatch.setattr(claude_code, "HTTPServer", fake_http_server)
-
-    context = claude_code.OAuthContext(
-        state="state",
-        code_verifier="verifier",
-        code_challenge="challenge",
-        created_at=time.time(),
-    )
-
-    result = claude_code._start_callback_server(context)
-
-    expected_attempts = (
-        claude_code.CLAUDE_CODE_CONFIG["callback_port_range"][1]
-        - claude_code.CLAUDE_CODE_CONFIG["callback_port_range"][0]
-        + 1
-    )
-    assert len(attempts) == expected_attempts
-    assert result is None
-    assert context.redirect_uri is None
-
-
-def test_start_callback_server_success_sets_result(monkeypatch: pytest.MonkeyPatch) -> None:
-    class DummyServer:
-        def __init__(self, address, handler):
-            self.address = address
-            self.handler = handler
-            self.serve_called = False
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            return False
-
-        def serve_forever(self):
-            self.serve_called = True
-
-    class FakeThread:
-        def __init__(self, target, daemon=True):
-            self.target = target
-            self.daemon = daemon
-            self.started = False
-
-        def start(self):
-            self.started = True
-            self.target()
-
-    def fake_thread(*, target, daemon=True):
-        return FakeThread(target, daemon=daemon)
-
-    monkeypatch.setattr(claude_code, "HTTPServer", DummyServer)
-    monkeypatch.setattr(claude_code.threading, "Thread", fake_thread)
-
-    context = claude_code.OAuthContext(
-        state="state",
-        code_verifier="verifier",
-        code_challenge="challenge",
-        created_at=time.time(),
-    )
-
-    result = claude_code._start_callback_server(context)
-
-    assert result is not None
-    server, oauth_result, event = result
-
-
-def test_callback_handler_success() -> None:
-    import threading
-    from io import BytesIO
-    from unittest.mock import MagicMock
-
-    result = claude_code._OAuthResult()
-    event = threading.Event()
-    claude_code._CallbackHandler.result = result
-    claude_code._CallbackHandler.received_event = event
-
-    handler = MagicMock(spec=claude_code._CallbackHandler)
-    handler.path = "/callback?code=test_code&state=test_state"
-    handler.result = result
-    handler.received_event = event
-    handler.wfile = BytesIO()
-    handler.send_response = MagicMock()
-    handler.send_header = MagicMock()
-    handler.end_headers = MagicMock()
-
-    handler._write_response = lambda status, body: claude_code._CallbackHandler._write_response(handler, status, body)
-
-    claude_code._CallbackHandler.do_GET(handler)
-
-    assert result.code == "test_code"
-    assert result.state == "test_state"
-    assert event.is_set()
-    handler.send_response.assert_called_with(200)
-
-
-def test_callback_handler_missing_params() -> None:
-    import threading
-    from io import BytesIO
-    from unittest.mock import MagicMock
-
-    result = claude_code._OAuthResult()
-    event = threading.Event()
-    claude_code._CallbackHandler.result = result
-    claude_code._CallbackHandler.received_event = event
-
-    handler = MagicMock(spec=claude_code._CallbackHandler)
-    handler.path = "/callback?foo=bar"
-    handler.result = result
-    handler.received_event = event
-    handler.wfile = BytesIO()
-    handler.send_response = MagicMock()
-    handler.send_header = MagicMock()
-    handler.end_headers = MagicMock()
-
-    handler._write_response = lambda status, body: claude_code._CallbackHandler._write_response(handler, status, body)
-
-    claude_code._CallbackHandler.do_GET(handler)
-
-    assert result.error == "Missing code or state"
-    assert event.is_set()
-    handler.send_response.assert_called_with(400)
-
-
-def test_callback_handler_log_message_suppressed() -> None:
-    from unittest.mock import MagicMock
-
-    handler = MagicMock(spec=claude_code._CallbackHandler)
-    ret = claude_code._CallbackHandler.log_message(handler, "test %s", "arg")
-    assert ret is None
-
-
-def test_write_response() -> None:
-    from io import BytesIO
-    from unittest.mock import MagicMock
-
-    handler = MagicMock(spec=claude_code._CallbackHandler)
-    handler.wfile = BytesIO()
-
-    claude_code._CallbackHandler._write_response(handler, 200, "<html>OK</html>")
-
-    handler.send_response.assert_called_once_with(200)
-    handler.send_header.assert_called_once_with("Content-Type", "text/html; charset=utf-8")
-    handler.end_headers.assert_called_once()
-    assert handler.wfile.getvalue() == b"<html>OK</html>"
-
-
-def test_exchange_code_for_tokens_success() -> None:
-    import httpx
-
-    mock_response = mock.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "access_token": "at_123",
-        "token_type": "Bearer",
-        "expires_in": 3600,
-    }
-
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(httpx, "post", return_value=mock_response):
+
+# ---------------------------------------------------------------------------
+# Token refresh (re-auth)
+# ---------------------------------------------------------------------------
+
+
+class TestRefreshTokenIfExpired:
+    def test_valid_token(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 5000}):
+            with mock.patch("time.time", return_value=1000):
+                with mock.patch.object(claude_code, "authenticate_and_save") as mock_auth:
+                    assert claude_code.refresh_token_if_expired(quiet=True) is True
+                    mock_auth.assert_not_called()
+
+    def test_expired_reauth_succeeds(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 940}):
+            with mock.patch("time.time", return_value=1000):
+                with mock.patch.object(claude_code, "authenticate_and_save", return_value=True) as m:
+                    assert claude_code.refresh_token_if_expired(quiet=True) is True
+                    m.assert_called_once_with(quiet=True)
+
+    def test_expired_reauth_fails(self):
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 940}):
+            with mock.patch("time.time", return_value=1000):
+                with mock.patch.object(claude_code, "authenticate_and_save", return_value=False):
+                    assert claude_code.refresh_token_if_expired(quiet=True) is False
+
+
+# ---------------------------------------------------------------------------
+# save_token / remove_token wrappers
+# ---------------------------------------------------------------------------
+
+
+class TestSaveToken:
+    def test_with_expiry_in_data(self, monkeypatch):
+        mock_store = mock.Mock()
+        monkeypatch.setattr(base_module.TokenStore, "save_token", mock_store)
+        mock_env = {}
+        monkeypatch.setattr(os, "environ", mock_env)
+
         with mock.patch("time.time", return_value=1000.0):
-            result = claude_code.exchange_code_for_tokens("auth_code_123", context)
+            result = claude_code.save_token("tok", {"access_token": "tok", "expires_in": 3600, "token_type": "Bearer"})
 
-    assert result is not None
-    assert result["access_token"] == "at_123"
-    assert result["expires_at"] == 1000.0 + 3600
+        assert result is True
+        saved = mock_store.call_args[0][1]
+        assert saved["expiry"] == 1000.0 + 3600
+        assert mock_env["CLAUDE_CODE_ACCESS_TOKEN"] == "tok"
 
-
-def test_exchange_code_for_tokens_success_with_expires_at() -> None:
-    import httpx
-
-    mock_response = mock.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "access_token": "at_123",
-        "token_type": "Bearer",
-        "expires_at": 9999,
-    }
-
-    context = claude_code.OAuthContext(
-        state="test_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(httpx, "post", return_value=mock_response):
-        result = claude_code.exchange_code_for_tokens("auth_code_123", context)
-
-    assert result is not None
-    assert result["expires_at"] == 9999
-
-
-def test_perform_oauth_flow_state_mismatch() -> None:
-    mock_server = mock.Mock()
-    mock_result = claude_code._OAuthResult()
-    mock_result.code = "auth_code"
-    mock_result.state = "wrong_state"
-    mock_result.error = None
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = True
-
-    context = claude_code.OAuthContext(
-        state="correct_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("webbrowser.open"):
-                    with mock.patch("builtins.print") as mock_print:
-                        result = claude_code.perform_oauth_flow(quiet=False)
-
-    assert result is None
-    print_calls = [str(call) for call in mock_print.call_args_list]
-    assert any("State mismatch" in call for call in print_calls)
-
-
-def test_perform_oauth_flow_token_exchange_failure() -> None:
-    mock_server = mock.Mock()
-    mock_result = claude_code._OAuthResult()
-    mock_result.code = "auth_code"
-    mock_result.state = "correct_state"
-    mock_result.error = None
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = True
-
-    context = claude_code.OAuthContext(
-        state="correct_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("webbrowser.open"):
-                    with mock.patch.object(claude_code, "exchange_code_for_tokens", return_value=None):
-                        with mock.patch("builtins.print") as mock_print:
-                            result = claude_code.perform_oauth_flow(quiet=False)
-
-    assert result is None
-    print_calls = [str(call) for call in mock_print.call_args_list]
-    assert any("Token exchange failed" in call for call in print_calls)
-
-
-def test_perform_oauth_flow_browser_open_failure() -> None:
-    mock_server = mock.Mock()
-    mock_result = claude_code._OAuthResult()
-    mock_result.code = "auth_code"
-    mock_result.state = "correct_state"
-    mock_result.error = None
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = True
-
-    context = claude_code.OAuthContext(
-        state="correct_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    tokens = {"access_token": "at_123", "token_type": "Bearer"}
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("webbrowser.open", side_effect=Exception("no browser")):
-                    with mock.patch.object(claude_code, "exchange_code_for_tokens", return_value=tokens):
-                        with mock.patch("builtins.print") as mock_print:
-                            result = claude_code.perform_oauth_flow(quiet=False)
-
-    assert result is not None
-    assert result["access_token"] == "at_123"
-    print_calls = [str(call) for call in mock_print.call_args_list]
-    assert any("Failed to open browser" in call for call in print_calls)
-
-
-def test_perform_oauth_flow_success() -> None:
-    mock_server = mock.Mock()
-    mock_result = claude_code._OAuthResult()
-    mock_result.code = "auth_code"
-    mock_result.state = "correct_state"
-    mock_result.error = None
-    mock_event = mock.Mock()
-    mock_event.wait.return_value = True
-
-    context = claude_code.OAuthContext(
-        state="correct_state",
-        code_verifier="test_verifier",
-        code_challenge="test_challenge",
-        created_at=time.time(),
-        redirect_uri="http://localhost:8765/callback",
-    )
-
-    tokens = {"access_token": "at_123", "token_type": "Bearer"}
-
-    with mock.patch.object(claude_code, "_start_callback_server", return_value=(mock_server, mock_result, mock_event)):
-        with mock.patch.object(claude_code, "prepare_oauth_context", return_value=context):
-            with mock.patch.object(claude_code, "build_authorization_url", return_value="http://test.auth.url"):
-                with mock.patch("webbrowser.open"):
-                    with mock.patch.object(claude_code, "exchange_code_for_tokens", return_value=tokens):
-                        with mock.patch("builtins.print"):
-                            result = claude_code.perform_oauth_flow(quiet=False)
-
-    assert result is not None
-    assert result["access_token"] == "at_123"
-    mock_server.shutdown.assert_called_once()
-
-
-def test_load_stored_token_exists() -> None:
-    with mock.patch("gac.oauth.claude_code.TokenStore") as mock_store_cls:
+    def test_without_expiry(self, monkeypatch):
         mock_store = mock.Mock()
-        mock_store.get_token.return_value = {"access_token": "stored_token_123"}
-        mock_store_cls.return_value = mock_store
+        monkeypatch.setattr(base_module.TokenStore, "save_token", mock_store)
+        mock_env = {}
+        monkeypatch.setattr(os, "environ", mock_env)
 
-        result = claude_code.load_stored_token()
+        assert claude_code.save_token("tok") is True
+        saved = mock_store.call_args[0][1]
+        assert "expiry" not in saved
 
-    assert result == "stored_token_123"
-    mock_store.get_token.assert_called_once_with("claude-code")
+    def test_failure(self, monkeypatch):
+        def _raise(*a, **kw):
+            raise Exception("fail")
+
+        monkeypatch.setattr(base_module.TokenStore, "save_token", _raise)
+        mock_env = {}
+        monkeypatch.setattr(os, "environ", mock_env)
+        assert claude_code.save_token("tok") is False
 
 
-def test_load_stored_token_none() -> None:
-    with mock.patch("gac.oauth.claude_code.TokenStore") as mock_store_cls:
+class TestRemoveToken:
+    def test_success(self, monkeypatch):
         mock_store = mock.Mock()
-        mock_store.get_token.return_value = None
-        mock_store_cls.return_value = mock_store
+        monkeypatch.setattr(base_module.TokenStore, "remove_token", mock_store)
+        mock_env = {"CLAUDE_CODE_ACCESS_TOKEN": "tok"}
+        monkeypatch.setattr(os, "environ", mock_env)
 
-        result = claude_code.load_stored_token()
+        assert claude_code.remove_token() is True
+        assert "CLAUDE_CODE_ACCESS_TOKEN" not in mock_env
 
-    assert result is None
-    mock_store.get_token.assert_called_once_with("claude-code")
+    def test_failure(self, monkeypatch):
+        def _raise(*a, **kw):
+            raise Exception("fail")
+
+        monkeypatch.setattr(base_module.TokenStore, "remove_token", _raise)
+        mock_env = {"CLAUDE_CODE_ACCESS_TOKEN": "tok"}
+        monkeypatch.setattr(os, "environ", mock_env)
+
+        assert claude_code.remove_token() is False
+        assert "CLAUDE_CODE_ACCESS_TOKEN" in mock_env
+
+
+# ---------------------------------------------------------------------------
+# Wrapper delegation
+# ---------------------------------------------------------------------------
+
+
+class TestWrapperDelegation:
+    def test_perform_oauth_flow(self):
+        with mock.patch.object(claude_code, "_base_flow", return_value={"access_token": "at"}) as m:
+            assert claude_code.perform_oauth_flow(quiet=True) == {"access_token": "at"}
+            m.assert_called_once()
+
+    def test_authenticate_and_save(self):
+        with mock.patch.object(claude_code, "_base_authenticate", return_value=True) as m:
+            assert claude_code.authenticate_and_save(quiet=True) is True
+            m.assert_called_once()

@@ -11,10 +11,10 @@ from typing import Any
 from gac.errors import AIError
 from gac.oauth.chatgpt import (
     CHATGPT_OAUTH_CONFIG,
+    load_stored_token,
     load_stored_tokens,
     refresh_token_if_expired,
 )
-from gac.oauth.chatgpt_tokens import load_stored_token
 from gac.providers.base import OpenAICompatibleProvider, ProviderConfig
 
 logger = logging.getLogger(__name__)
