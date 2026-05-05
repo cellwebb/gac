@@ -74,6 +74,8 @@
 - 对于 Ollama 和 LM Studio，确认 API URL 与你的本地实例匹配。仅在启用身份验证时才需要 API 密钥。
 - **对于Claude Code令牌过期**：运行 `gac auth` 以快速重新身份验证并刷新令牌。浏览器将自动打开进行OAuth。
 - **对于其他Claude Code OAuth问题**，请参阅[Claude Code设置指南](CLAUDE_CODE.md)获取全面的故障排除。
+- **对于 GitHub Copilot 会话令牌过期**：运行 `gac auth copilot login` 通过 Device Flow 重新认证。会话令牌会从缓存的 OAuth 令牌自动刷新。
+- **对于其他 GitHub Copilot 问题**，请参阅 [GitHub Copilot 设置指南](GITHUB_COPILOT.md) 获取全面的故障排除。
 
 **问题：** 模型不可用或不受支持
 

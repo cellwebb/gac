@@ -74,8 +74,10 @@ This guide covers common issues and solutions for installing, configuring, and r
 - For Ollama and LM Studio, confirm the API URL matches your local instance. API keys are only needed if you enabled authentication.
 - **For Claude Code token expiration**: Run `gac auth` to quickly re-authenticate and refresh your token. Your browser will open automatically for OAuth.
 - **For ChatGPT OAuth token expiration**: Run `gac auth chatgpt login` to re-authenticate. Your browser will open automatically for OAuth.
+- **For GitHub Copilot session issues**: Run `gac auth copilot login` to re-authenticate via Device Flow. Session tokens auto-refresh from the cached OAuth token.
 - **For other Claude Code OAuth issues**, see the [Claude Code setup guide](CLAUDE_CODE.md) for comprehensive troubleshooting.
 - **For other ChatGPT OAuth issues**, see the [ChatGPT OAuth setup guide](CHATGPT_OAUTH.md) for comprehensive troubleshooting.
+- **For other Copilot issues**, see the [GitHub Copilot setup guide](GITHUB_COPILOT.md) for comprehensive troubleshooting.
 
 **Problem:** Model not available or unsupported
 

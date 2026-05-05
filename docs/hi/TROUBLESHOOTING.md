@@ -76,6 +76,8 @@
 - **ChatGPT OAuth टोकन समाप्ति के लिए**: पुनः प्रमाणीकरण के लिए `gac auth chatgpt login` चलाएं। आपका ब्राउज़र OAuth के लिए स्वचालित रूप से खुल जाएगा।
 - **Claude Code OAuth की अन्य समस्याओं के लिए**, व्यापक समस्या निवारण के लिए [Claude Code सेटअप गाइड](CLAUDE_CODE.md) देखें।
 - **ChatGPT OAuth की अन्य समस्याओं के लिए**, व्यापक समस्या निवारण के लिए [ChatGPT OAuth सेटअप गाइड](CHATGPT_OAUTH.md) देखें।
+- **GitHub Copilot सेशन टोकन समाप्ति के लिए**: Device Flow के माध्यम से पुनः प्रमाणीकरण करने के लिए `gac auth copilot login` चलाएं। सेशन टोकन स्वचालित रूप से कैश्ड OAuth टोकन से नवीनीकृत होते हैं।
+- **अन्य GitHub Copilot समस्याओं के लिए**, व्यापक समस्या निवारण के लिए [GitHub Copilot सेटअप गाइड](GITHUB_COPILOT.md) देखें।
 
 **Problem:** Model not available or unsupported
 

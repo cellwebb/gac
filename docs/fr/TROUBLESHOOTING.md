@@ -76,6 +76,8 @@ Ce guide couvre les problèmes courants et solutions pour installer, configurer 
 - **Pour l'expiration du jeton ChatGPT OAuth** : Exécutez `gac auth chatgpt login` pour vous réauthentifier. Votre navigateur s'ouvrira automatiquement pour OAuth.
 - **Pour les autres problèmes OAuth de Claude Code**, consultez le [guide de configuration Claude Code](CLAUDE_CODE.md) pour un dépannage complet.
 - **Pour les autres problèmes OAuth de ChatGPT**, consultez le [guide de configuration ChatGPT OAuth](CHATGPT_OAUTH.md) pour un dépannage complet.
+- **Pour l'expiration des jetons de session GitHub Copilot** : Exécutez `gac auth copilot login` pour vous réauthentifier via Device Flow. Les jetons de session sont automatiquement renouvelés à partir du jeton OAuth mis en cache.
+- **Pour d'autres problèmes GitHub Copilot**, consultez le [guide de configuration GitHub Copilot](GITHUB_COPILOT.md) pour un dépannage complet.
 
 **Problème :** Modèle non disponible ou non supporté
 

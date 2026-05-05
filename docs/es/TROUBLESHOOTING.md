@@ -76,6 +76,8 @@ Esta guía cubre problemas comunes y soluciones para instalar, configurar y ejec
 - **Para expiración de tokens de ChatGPT OAuth**: Ejecuta `gac auth chatgpt login` para re-autenticarte. Tu navegador se abrirá automáticamente para OAuth.
 - **Para otros problemas de OAuth con Claude Code**, consulta la [guía de configuración de Claude Code](CLAUDE_CODE.md) para solución de problemas completa.
 - **Para otros problemas de OAuth con ChatGPT**, consulta la [guía de configuración de ChatGPT OAuth](CHATGPT_OAUTH.md) para solución de problemas completa.
+- **Para tokens de sesión de GitHub Copilot expirados**: Ejecuta `gac auth copilot login` para reautenticarte vía Device Flow. Los tokens de sesión se renuevan automáticamente desde el token OAuth almacenado.
+- **Para otros problemas de GitHub Copilot**, consulta la [guía de configuración de GitHub Copilot](GITHUB_COPILOT.md) para solución de problemas completa.
 
 **Problema:** Modelo no disponible o no compatible
 

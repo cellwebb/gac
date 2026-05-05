@@ -138,6 +138,8 @@ sudo apt install python3.11
 6. **Per scadenza token di ChatGPT OAuth**: Esegui `gac auth chatgpt login` per autenticarti di nuovo. Il tuo browser si aprirà automaticamente per OAuth.
 7. **Per altri problemi OAuth di Claude Code**, consulta la [guida alla configurazione di Claude Code](CLAUDE_CODE.md) per la risoluzione completa dei problemi.
 8. **Per altri problemi OAuth di ChatGPT**, consulta la [guida alla configurazione di ChatGPT OAuth](CHATGPT_OAUTH.md) per la risoluzione completa dei problemi.
+9. **Per token di sessione GitHub Copilot scaduti**: Esegui `gac auth copilot login` per ri-autenticarti tramite Device Flow. I token di sessione vengono rinnovati automaticamente dal token OAuth memorizzato nella cache.
+10. **Per altri problemi di GitHub Copilot**, vedi la [guida setup GitHub Copilot](GITHUB_COPILOT.md) per risoluzione problemi completa.
 
 ### Provider non riconosciuto
 

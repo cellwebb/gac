@@ -76,6 +76,8 @@
 - **ChatGPT OAuth 토큰 만료의 경우**: `gac auth chatgpt login` 을 실행하여 재인증합니다. 브라우저가 자동으로 OAuth 를 위해 열립니다.
 - **다른 Claude Code OAuth 문제의 경우**, [Claude Code 설정 가이드](CLAUDE_CODE.md)를 참조하여 포괄적인 문제 해결을 수행하세요.
 - **다른 ChatGPT OAuth 문제의 경우**, [ChatGPT OAuth 설정 가이드](CHATGPT_OAUTH.md) 를 참조하여 포괄적인 문제 해결을 수행하세요.
+- **GitHub Copilot 세션 토큰 만료의 경우**: Device Flow를 통해 재인증하려면 `gac auth copilot login`을 실행합니다. 세션 토큰은 캐시된 OAuth 토큰에서 자동으로 갱신됩니다.
+- **다른 GitHub Copilot 문제의 경우**, [GitHub Copilot 설정 가이드](GITHUB_COPILOT.md)를 참조하여 포괄적인 문제 해결을 수행하세요.
 
 **문제:** 모델을 사용할 수 없거나 지원되지 않음
 

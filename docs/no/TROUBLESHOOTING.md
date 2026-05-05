@@ -76,6 +76,8 @@ Denne guiden dekker vanlige problemer og løsninger for installasjon, konfiguras
 - **For ChatGPT OAuth token-utløp**: Kjør `gac auth chatgpt login` for å autentisere på nytt. Nettleseren åpnes automatisk for OAuth.
 - **For andre Claude Code OAuth-problemer**, se [Claude Code oppsettguide](CLAUDE_CODE.md) for omfattende feilsøking.
 - **For andre ChatGPT OAuth-problemer**, se [ChatGPT OAuth oppsettguide](CHATGPT_OAUTH.md) for omfattende feilsøking.
+- **For utløpte GitHub Copilot-økttokens**: Kjør `gac auth copilot login` for å re-autentisere via Device Flow. Økttokens fornyes automatisk fra den bufrede OAuth-tokenen.
+- **For andre GitHub Copilot-problemer**, se [GitHub Copilot-oppsettsguiden](GITHUB_COPILOT.md) for omfattende feilsøking.
 
 **Problem:** Model not available or unsupported
 

@@ -76,6 +76,8 @@ Deze gids behandelt veelvoorkomende problemen en oplossingen voor het installere
 - **Voor verlopen ChatGPT OAuth token**: Voer `gac auth chatgpt login` uit om opnieuw in te loggen. Uw browser opent automatisch voor OAuth.
 - **Voor andere Claude Code OAuth-problemen**, zie de [Claude Code installatiehandleiding](CLAUDE_CODE.md) voor uitgebreide probleemoplossing.
 - **Voor andere ChatGPT OAuth-problemen**, zie de [ChatGPT OAuth installatiehandleiding](CHATGPT_OAUTH.md) voor uitgebreide probleemoplossing.
+- **Voor verlopen GitHub Copilot-sessietokens**: Voer `gac auth copilot login` uit om opnieuw te authentiseren via Device Flow. Sessietokens worden automatisch vernieuwd vanuit de gecachte OAuth-token.
+- **Voor andere GitHub Copilot-problemen**, zie de [GitHub Copilot-installatiehandleiding](GITHUB_COPILOT.md) voor uitgebreide probleemoplossing.
 
 **Probleem:** Model niet beschikbaar of niet ondersteund
 

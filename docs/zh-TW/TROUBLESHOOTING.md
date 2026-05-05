@@ -76,6 +76,8 @@
 - **對於 ChatGPT OAuth 令牌過期**：執行 `gac auth chatgpt login` 重新驗證。瀏覽器將自動打開進行 OAuth。
 - **對於其他Claude Code OAuth問題**，請參閱[Claude Code設定指南](CLAUDE_CODE.md)取得完整的故障排除。
 - **對於其他 ChatGPT OAuth 問題**，請參閱 [ChatGPT OAuth 設定指南](CHATGPT_OAUTH.md) 取得完整的故障排除。
+- **對於 GitHub Copilot 工作階段令牌過期**：執行 `gac auth copilot login` 透過 Device Flow 重新驗證。工作階段令牌會從快取的 OAuth 令牌自動重新整理。
+- **對於其他 GitHub Copilot 問題**，請參閱 [GitHub Copilot 設定指南](GITHUB_COPILOT.md) 取得全面的疑難排解。
 
 **問題：** 模型不可用或不受支援
 

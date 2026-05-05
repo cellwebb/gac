@@ -76,6 +76,8 @@ Denna guide täcker vanliga problem och lösningar för installation, konfigurat
 - **För ChatGPT OAuth token-utgång**: Kör `gac auth chatgpt login` för att autentisera på nytt. Din webbläsare öppnas automatiskt för OAuth.
 - **För andra Claude Code OAuth-problem**, se [Claude Code installationsguide](CLAUDE_CODE.md) för omfattande felsökning.
 - **För andra ChatGPT OAuth-problem**, se [ChatGPT OAuth installationsguide](CHATGPT_OAUTH.md) för omfattande felsökning.
+- **För utgångna GitHub Copilot-sessionstokens**: Kör `gac auth copilot login` för att återautentisera via Device Flow. Sessionstokens förnyas automatiskt från den cachade OAuth-tokenen.
+- **För andra GitHub Copilot-problem**, se [GitHub Copilot-installationsguiden](GITHUB_COPILOT.md) för omfattande felsökning.
 
 **Problem:** Modellen är inte tillgänglig eller stöds inte
 

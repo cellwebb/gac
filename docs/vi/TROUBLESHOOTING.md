@@ -76,6 +76,8 @@ Hướng dẫn này bao gồm các vấn đề phổ biến và giải pháp cho
 - **Đối với hết hạn token ChatGPT OAuth**: Chạy `gac auth chatgpt login` để xác thực lại. Trình duyệt sẽ tự động mở cho OAuth.
 - **Đối với các vấn đề OAuth khác của Claude Code**, xem [hướng dẫn thiết lập Claude Code](CLAUDE_CODE.md) để được trợ giúp về khắc phục sự cố toàn diện.
 - **Đối với các vấn đề OAuth khác của ChatGPT**, xem [hướng dẫn thiết lập ChatGPT OAuth](CHATGPT_OAUTH.md) để được trợ giúp về khắc phục sự cố toàn diện.
+- **Cho token phiên GitHub Copilot hết hạn**: Chạy `gac auth copilot login` để xác thực lại qua Device Flow. Token phiên được tự động làm mới từ token OAuth đã lưu.
+- **Cho các vấn đề khác về GitHub Copilot**, xem [hướng dẫn thiết lập GitHub Copilot](GITHUB_COPILOT.md) để khắc phục sự cố toàn diện.
 
 **Vấn đề:** Mô hình không có sẵn hoặc không được hỗ trợ
 
