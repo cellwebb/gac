@@ -283,6 +283,102 @@ class TestAnthropicCompatibleProvider:
             # System message should not be in messages list
             assert all(msg["role"] != "system" for msg in body["messages"])
 
+    def test_anthropic_thinking_blocks_estimate_tokens(self):
+        """Thinking blocks in Anthropic response estimate reasoning tokens."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        # Response with a thinking block (like Claude Code extended thinking)
+        response = {
+            "content": [
+                {"type": "thinking", "thinking": "Let me reason about this commit message carefully..." * 10},
+                {"type": "text", "text": "Here is the commit message"},
+            ],
+            "usage": {"input_tokens": 100, "output_tokens": 200},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "Here is the commit message"
+        assert parsed.reasoning_tokens > 0  # Estimated from thinking text
+        assert parsed.prompt_tokens == 100
+        # output_tokens (200) minus reasoning_tokens should be completion_tokens
+        assert parsed.completion_tokens == 200 - parsed.reasoning_tokens
+
+    def test_anthropic_no_thinking_blocks_no_estimate(self):
+        """No thinking blocks → reasoning_tokens stays 0."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        response = {
+            "content": [{"text": "just a normal response"}],
+            "usage": {"input_tokens": 50, "output_tokens": 30},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.reasoning_tokens == 0
+        assert parsed.completion_tokens == 30
+
+    def test_anthropic_empty_thinking_no_estimate(self):
+        """Empty thinking block text → reasoning_tokens stays 0."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        response = {
+            "content": [
+                {"type": "thinking", "thinking": ""},
+                {"type": "text", "text": "actual content"},
+            ],
+            "usage": {"input_tokens": 50, "output_tokens": 30},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.reasoning_tokens == 0
+
+    def test_anthropic_only_thinking_no_text_block_raises(self):
+        """Response with only thinking blocks (no text block) raises AIError."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        response = {
+            "content": [{"type": "thinking", "thinking": "deep thoughts"}],
+            "usage": {"input_tokens": 50, "output_tokens": 30},
+        }
+        with pytest.raises(AIError, match="missing text block"):
+            provider._parse_response(response)
+
+    def test_anthropic_multiple_thinking_blocks(self):
+        """Multiple thinking blocks are joined for token estimation."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        # Two thinking blocks of 17 chars each → 34 total → 10 tokens
+        response = {
+            "content": [
+                {"type": "thinking", "thinking": "A" * 17},
+                {"type": "thinking", "thinking": "B" * 17},
+                {"type": "text", "text": "The answer"},
+            ],
+            "usage": {"input_tokens": 100, "output_tokens": 50},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "The answer"
+        # 17 + 1 (newline) + 17 = 35 chars → round(35/3.4) = 10
+        assert parsed.reasoning_tokens == 10
+        assert parsed.completion_tokens == 40  # 50 - 10
+
+    def test_anthropic_prefers_type_text_block(self):
+        """When multiple blocks have .text, prefer type='text' over others."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        response = {
+            "content": [
+                {"type": "metadata", "text": "meta-value"},
+                {"type": "text", "text": "actual response"},
+            ],
+            "usage": {"input_tokens": 50, "output_tokens": 20},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "actual response"
+
+    def test_anthropic_non_dict_block_in_content(self):
+        """Non-dict items in content array are safely skipped."""
+        provider = SimpleAnthropicProvider(SimpleAnthropicProvider.config)
+        response = {
+            "content": [
+                "unexpected string",
+                {"type": "text", "text": "safe content"},
+            ],
+            "usage": {"input_tokens": 50, "output_tokens": 20},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "safe content"
+
 
 class TestErrorPropagation:
     """Test that exceptions propagate from base providers to decorator.

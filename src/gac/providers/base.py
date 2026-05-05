@@ -327,12 +327,28 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         return body
 
     def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
-        """Parse Anthropic-style response."""
+        """Parse Anthropic-style response with thinking/reasoning support."""
+        from gac.ai_utils import normalize_reasoning_tokens
+
         content = response.get("content")
         if not content or not isinstance(content, list):
             raise AIError.model_error("Invalid response: missing content")
 
-        text_content = content[0].get("text")
+        # Find the text block — prefer type="text", then any non-thinking
+        # block with a .text field.  Thinking blocks may appear first.
+        text_block = next(
+            (b for b in content if isinstance(b, dict) and b.get("type") == "text" and "text" in b),
+            None,
+        )
+        if text_block is None:
+            text_block = next(
+                (b for b in content if isinstance(b, dict) and "text" in b and b.get("type") != "thinking"),
+                None,
+            )
+        if text_block is None:
+            raise AIError.model_error("Invalid response: missing text block")
+
+        text_content = text_block.get("text")
         if text_content is None:
             raise AIError.model_error("Invalid response: null content")
         if text_content == "":
@@ -340,12 +356,29 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         usage = response.get("usage")
         prompt_tokens = -1
         completion_tokens = -1
+        reasoning_tokens: int | None = None  # None = not reported by API
         if isinstance(usage, dict):
             pt = usage.get("input_tokens", -1)
             ct = usage.get("output_tokens", -1)
             prompt_tokens = pt if isinstance(pt, int) else -1
             completion_tokens = ct if isinstance(ct, int) else -1
-        return ParsedResponse(content=text_content, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+
+        # Collect thinking text for reasoning token estimation.
+        thinking_text = "\n".join(
+            b.get("thinking", "") for b in content if isinstance(b, dict) and b.get("type") == "thinking"
+        )
+        reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+
+        return ParsedResponse(
+            content=text_content,
+            prompt_tokens=prompt_tokens,
+            # Normalize: API output_tokens includes reasoning; subtract it
+            # so downstream gets two distinct, non-overlapping numbers.
+            completion_tokens=(
+                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            ),
+            reasoning_tokens=reasoning_tokens,
+        )
 
 
 class GenericHTTPProvider(BaseConfiguredProvider):

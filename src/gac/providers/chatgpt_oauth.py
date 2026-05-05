@@ -30,6 +30,8 @@ logger = logging.getLogger(__name__)
 # SSE event types we care about from the Responses API
 _EVENT_OUTPUT_TEXT_DELTA = "response.output_text.delta"
 _EVENT_OUTPUT_TEXT_DONE = "response.output_text.done"
+_EVENT_REASONING_DELTA = "response.reasoning.delta"
+_EVENT_REASONING_DONE = "response.reasoning.done"
 _EVENT_COMPLETED = "response.completed"
 
 
@@ -131,9 +133,11 @@ class ChatGPTOAuthProvider(BaseConfiguredProvider):
         Yields events like:
           - response.output_text.delta  → partial text chunks
           - response.output_text.done   → final complete text
+          - response.reasoning.delta    → partial reasoning/thinking chunks
+          - response.reasoning.done     → final complete reasoning text
           - response.completed          → usage stats
 
-        We accumulate text deltas and extract usage from the completed event.
+        We accumulate text and reasoning deltas and extract usage from the completed event.
         """
         return ChatGPTOAuthProvider._parse_sse_stream_from_lines(response.iter_lines())
 
@@ -144,10 +148,13 @@ class ChatGPTOAuthProvider(BaseConfiguredProvider):
         Separated from _parse_sse_stream for testability — accepts any
         iterable of strings (httpx iter_lines or test fixture list).
         """
+        from gac.ai_utils import normalize_reasoning_tokens
+
         text_parts: list[str] = []
+        reasoning_parts: list[str] = []
         prompt_tokens = -1
         completion_tokens = -1
-        reasoning_tokens = 0
+        reasoning_tokens: int | None = None  # None = not reported by API
         event_type = ""
 
         for line in lines:
@@ -165,6 +172,10 @@ class ChatGPTOAuthProvider(BaseConfiguredProvider):
                     data = json.loads(data_str)
                 except json.JSONDecodeError:
                     continue
+
+                # Some SSE implementations omit the "event:" line and
+                # encode the type inside the JSON payload instead.
+                event_type = data.get("type") or event_type
             else:
                 continue
 
@@ -177,6 +188,15 @@ class ChatGPTOAuthProvider(BaseConfiguredProvider):
                 final_text = data.get("text", "")
                 if final_text:
                     text_parts = [final_text]
+            elif event_type == _EVENT_REASONING_DELTA:
+                delta = data.get("delta", "")
+                if delta:
+                    reasoning_parts.append(delta)
+            elif event_type == _EVENT_REASONING_DONE:
+                # Final reasoning text — prefer this over accumulated deltas
+                final_reasoning = data.get("text", "")
+                if final_reasoning:
+                    reasoning_parts = [final_reasoning]
             elif event_type == _EVENT_COMPLETED:
                 resp = data.get("response", {})
                 usage = resp.get("usage", {})
@@ -186,18 +206,23 @@ class ChatGPTOAuthProvider(BaseConfiguredProvider):
                     prompt_tokens = pt if isinstance(pt, int) else -1
                     completion_tokens = ct if isinstance(ct, int) else -1
                     details = usage.get("output_tokens_details", {})
-                    if isinstance(details, dict):
-                        rt = details.get("reasoning_tokens", 0)
-                        reasoning_tokens = rt if isinstance(rt, int) else 0
+                    if isinstance(details, dict) and "reasoning_tokens" in details:
+                        rt = details["reasoning_tokens"]
+                        reasoning_tokens = rt if isinstance(rt, int) else None
 
         content = "".join(text_parts).strip()
         if not content:
             raise AIError.model_error("Empty response from ChatGPT OAuth")
 
+        # Estimate reasoning tokens from accumulated reasoning text when
+        # the API doesn't report them explicitly.
+        reasoning_text = "".join(reasoning_parts)
+        reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, reasoning_text)
+
         return ParsedResponse(
             content=content,
             prompt_tokens=prompt_tokens,
-            completion_tokens=max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else -1,
+            completion_tokens=(max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else -1),
             reasoning_tokens=reasoning_tokens,
         )
 

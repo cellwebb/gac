@@ -66,11 +66,13 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
         - Standard Anthropic format: content[0].text
         - Extended format: first item with type="text"
         """
+        from gac.ai_utils import normalize_reasoning_tokens
+
         try:
             usage = response.get("usage")
             prompt_tokens = -1
             completion_tokens = -1
-            reasoning_tokens = 0
+            reasoning_tokens: int | None = None  # None = not reported by API
             if isinstance(usage, dict):
                 pt = usage.get("input_tokens", -1)
                 ct = usage.get("output_tokens", -1)
@@ -81,10 +83,13 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
             if not content_list:
                 raise AIError.model_error("Custom Anthropic API returned empty content array")
 
-            if "text" in content_list[0]:
+            if isinstance(content_list[0], dict) and "text" in content_list[0]:
                 content = content_list[0]["text"]
             else:
-                text_item = next((item for item in content_list if item.get("type") == "text"), None)
+                text_item = next(
+                    (item for item in content_list if isinstance(item, dict) and item.get("type") == "text"),
+                    None,
+                )
                 if text_item and "text" in text_item:
                     content = text_item["text"]
                 else:
@@ -99,10 +104,23 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
                 raise AIError.model_error("Custom Anthropic API returned null content")
             if content == "":
                 raise AIError.model_error("Custom Anthropic API returned empty content")
+
+            # Collect thinking text for reasoning token estimation.
+            thinking_text = "\n".join(
+                block.get("thinking", "")
+                for block in content_list
+                if isinstance(block, dict) and block.get("type") == "thinking"
+            )
+            reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+
             return ParsedResponse(
                 content=content,
                 prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
+                # Normalize: API output_tokens includes reasoning; subtract it
+                # so downstream gets two distinct, non-overlapping numbers.
+                completion_tokens=(
+                    max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+                ),
                 reasoning_tokens=reasoning_tokens,
             )
         except AIError:

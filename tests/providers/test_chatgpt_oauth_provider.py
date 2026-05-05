@@ -238,3 +238,132 @@ class TestChatGPTOAuthProviderSSEParsing:
         ]
         result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
         assert result.content == "valid"
+
+    def test_parse_sse_reasoning_delta_events(self):
+        """Reasoning delta events are captured for token estimation."""
+        lines = [
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":"Let me think about this"}',
+            "",
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":" carefully..."}',
+            "",
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Here is the commit"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":50}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        assert result.content == "Here is the commit"
+        # No explicit reasoning_tokens in usage, but we estimated from text
+        assert result.reasoning_tokens > 0
+        # completion_tokens should be 50 minus the estimated reasoning
+        assert result.completion_tokens < 50
+
+    def test_parse_sse_reasoning_done_overrides_deltas(self):
+        """response.reasoning.done event overrides accumulated reasoning deltas."""
+        long_thinking = "A" * 340  # ~100 tokens at 3.4 chars/token
+        lines = [
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":"partial thinking"}',
+            "",
+            "event: response.reasoning.done",
+            f'data: {{"type":"response.reasoning.done","text":"{long_thinking}"}}',
+            "",
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Final answer"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":200,"output_tokens":150}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        assert result.content == "Final answer"
+        # reasoning.done text (340 chars) should override delta ("partial thinking")
+        assert result.reasoning_tokens == 100  # 340 / 3.4 = 100
+        assert result.completion_tokens == 50  # 150 - 100
+
+    def test_parse_sse_reasoning_delta_but_explicit_tokens_win(self):
+        """When API reports reasoning_tokens explicitly, that wins over estimation."""
+        lines = [
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":"Some thinking"}',
+            "",
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Result"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":50,"output_tokens_details":{"reasoning_tokens":15}}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        # Explicit reasoning_tokens=15 should win over character estimation
+        assert result.reasoning_tokens == 15
+        assert result.completion_tokens == 35  # 50 - 15
+
+    def test_parse_sse_explicit_zero_reasoning_tokens_no_estimate(self):
+        """When API explicitly reports reasoning_tokens=0, don't estimate."""
+        lines = [
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":"Some thinking"}',
+            "",
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Result"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":50,"output_tokens_details":{"reasoning_tokens":0}}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        # Explicit reasoning_tokens=0 means "API says zero" — no estimation
+        assert result.reasoning_tokens == 0
+        assert result.completion_tokens == 50
+
+    def test_parse_sse_no_reasoning_events_no_estimate(self):
+        """No reasoning events → reasoning_tokens stays 0."""
+        lines = [
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Plain response"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":10,"output_tokens":5}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        assert result.reasoning_tokens == 0
+        assert result.completion_tokens == 5
+
+    def test_parse_sse_reasoning_done_empty_text_falls_back_to_deltas(self):
+        """reasoning.done with empty text → fall back to accumulated deltas."""
+        lines = [
+            "event: response.reasoning.delta",
+            'data: {"type":"response.reasoning.delta","delta":"partial thought"}',
+            "",
+            "event: response.reasoning.done",
+            'data: {"type":"response.reasoning.done","text":""}',
+            "",
+            "event: response.output_text.delta",
+            'data: {"type":"response.output_text.delta","delta":"Answer"}',
+            "",
+            "event: response.completed",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":50}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        # reasoning.done had empty text, so deltas are used
+        assert result.reasoning_tokens > 0  # Estimated from "partial thought"
+
+    def test_parse_sse_event_type_from_data_payload(self):
+        """SSE without 'event:' line falls back to data.type field."""
+        lines = [
+            # No 'event:' line — type encoded in JSON payload
+            'data: {"type":"response.output_text.delta","delta":"Hello"}',
+            "",
+            'data: {"type":"response.completed","response":{"usage":{"input_tokens":5,"output_tokens":2}}}',
+            "",
+        ]
+        result = ChatGPTOAuthProvider._parse_sse_stream_from_lines(lines)
+        assert result.content == "Hello"
+        assert result.prompt_tokens == 5

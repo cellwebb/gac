@@ -262,6 +262,71 @@ class TestCustomAnthropicEdgeCases:
 
                 assert "null content" in str(exc_info.value).lower()
 
+    def test_thinking_blocks_estimate_reasoning_tokens(self):
+        """Thinking blocks in Custom Anthropic response estimate reasoning tokens."""
+        thinking_text = "I need to analyze the diff carefully" * 10  # ~350 chars
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "content": [
+                        {"type": "thinking", "thinking": thinking_text},
+                        {"type": "text", "text": "feat: add new feature"},
+                    ],
+                    "usage": {"input_tokens": 100, "output_tokens": 200},
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                content, pt, ct, dur, rt = call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+                assert content == "feat: add new feature"
+                assert rt > 0  # Estimated from thinking text
+                assert ct == 200 - rt  # output_tokens minus reasoning
+
+    def test_no_thinking_blocks_no_reasoning_estimate(self):
+        """No thinking blocks → reasoning_tokens stays 0."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "content": [{"text": "just a response"}],
+                    "usage": {"input_tokens": 50, "output_tokens": 30},
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                content, pt, ct, dur, rt = call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+                assert rt == 0
+                assert ct == 30
+
+    def test_redacted_thinking_block_not_estimated(self):
+        """redacted_thinking blocks should not contribute to token estimation."""
+        with patch.dict(
+            "os.environ",
+            {"CUSTOM_ANTHROPIC_API_KEY": "test-key", "CUSTOM_ANTHROPIC_BASE_URL": "https://api.example.com"},
+        ):
+            with patch("gac.providers.base.httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "content": [
+                        {"type": "redacted_thinking", "data": "..."},
+                        {"type": "text", "text": "clean response"},
+                    ],
+                    "usage": {"input_tokens": 50, "output_tokens": 30},
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                content, pt, ct, dur, rt = call_custom_anthropic_api("claude-haiku-4-5", [], 0.7, 1000)
+                assert rt == 0  # redacted_thinking is not type="thinking"
+                assert ct == 30
+
     def test_base_url_trailing_slash_handling(self):
         """Test that trailing slashes in base URL are handled correctly."""
         with patch.dict(
