@@ -69,20 +69,6 @@ DEVICE_FLOW_CONFIG: dict[str, Any] = {
 
 # Known Copilot models — informational only (shown after login).
 # This list will go stale; new Copilot models appear frequently.
-DEFAULT_COPILOT_MODELS: list[str] = [
-    "claude-haiku-4.5",
-    "claude-sonnet-4.6",
-    "claude-opus-4.7",
-    "gemini-3.1-pro-preview",
-    "gpt-4o-mini",
-    "gpt-4o",
-    "gpt-4.1",
-    "gpt-5-mini",
-    "gpt-5.4",
-    "gpt-5.5",
-    "grok-code-fast-1",
-]
-
 _PROVIDER_KEY = "copilot"
 _ENV_VAR = "COPILOT_OAUTH_TOKEN"
 
@@ -562,8 +548,7 @@ def authenticate_and_save(host: str = "github.com", quiet: bool = False) -> bool
 
     if not quiet:
         print("✅ Copilot session token obtained!")
-        print(f"   Available models: {', '.join(DEFAULT_COPILOT_MODELS[:5])}")
-        print("   Use: gac -m copilot:gpt-4.1")
+        print("   Use: gac -m copilot:gpt-4o-mini")
 
     return True
 
