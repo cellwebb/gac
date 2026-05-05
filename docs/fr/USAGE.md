@@ -365,6 +365,7 @@ git config --global user.email "your.email@example.com"
 - Vous avez déjà configuré la langue et devez juste changer de fournisseurs ou de modèles ? Exécutez `gac model` pour répéter la configuration sans questions de langue.
 - **Vous utilisez Claude Code ?** Consultez le [guide de configuration Claude Code](CLAUDE_CODE.md) pour les instructions d'authentification OAuth.
 - **Vous utilisez ChatGPT OAuth ?** Consultez le [guide de configuration ChatGPT OAuth](CHATGPT_OAUTH.md) pour les instructions d'authentification basées sur le navigateur.
+- **Vous utilisez GitHub Copilot ?** Consultez le [guide de configuration GitHub Copilot](GITHUB_COPILOT.md) pour les instructions d'authentification Device Flow.
 - gac charge la configuration dans l'ordre de priorité suivant :
   1. Drapeaux CLI
   2. Variables d'environnement
@@ -407,6 +408,10 @@ Les sous-commandes suivantes sont disponibles :
 - `gac auth chatgpt login` — Se connecter à ChatGPT en utilisant OAuth (ouvre le navigateur)
 - `gac auth chatgpt logout` — Se déconnecter de ChatGPT et supprimer le token stocké
 - `gac auth chatgpt status` — Vérifier le statut d'authentification de ChatGPT
+- `gac auth copilot login` — Se connecter à GitHub Copilot via Device Flow
+- `gac auth copilot login --host ghe.mycompany.com` — Se connecter à Copilot sur une instance GitHub Enterprise
+- `gac auth copilot logout` — Se déconnecter de Copilot et supprimer les tokens stockés
+- `gac auth copilot status` — Vérifier le statut d'authentification Copilot
 - `gac config show` — Afficher la configuration actuelle
 - `gac config set KEY VALUE` — Définir une clé de configuration dans `$HOME/.gac.env`
 - `gac config get KEY` — Obtenir une valeur de configuration
@@ -600,6 +605,7 @@ Quand désactivé, gac ignore tout enregistrement de statistiques — aucune lec
 - Pour les prompts système personnalisés, voir [docs/CUSTOM_SYSTEM_PROMPTS.fr.md](../CUSTOM_SYSTEM_PROMPTS.fr.md)
 - Pour la configuration OAuth de Claude Code, voir [CLAUDE_CODE.md](CLAUDE_CODE.md)
 - Pour la configuration OAuth de ChatGPT, voir [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
+- Pour la configuration GitHub Copilot, voir [GITHUB_COPILOT.md](GITHUB_COPILOT.md)
 - Pour le dépannage et conseils avancés, voir [docs/TROUBLESHOOTING.fr.md](../TROUBLESHOOTING.fr.md)
 - Pour l'installation et la configuration, voir [README.md#installation-and-configuration](../README.md#installation-and-configuration)
 - Pour contribuer, voir [docs/CONTRIBUTING.fr.md](../CONTRIBUTING.fr.md)

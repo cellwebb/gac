@@ -316,6 +316,7 @@ git config --global user.email "your.email@example.com"
 - Al geconfigureerde taal en alleen providers of modellen moeten wisselen? Voer `gac model` uit om de setup te herhalen zonder taalvragen.
 - **Gebruikt u Claude Code?** Zie de [Claude Code installatiehandleiding](CLAUDE_CODE.md) voor OAuth-authenticatie-instructies.
 - **Gebruikt u ChatGPT OAuth?** Zie de [ChatGPT OAuth installatiehandleiding](CHATGPT_OAUTH.md) voor browsergebaseerde authenticatie-instructies.
+- **GitHub Copilot gebruiken?** Zie de [GitHub Copilot installatiehandleiding](GITHUB_COPILOT.md) voor Device Flow-authenticatie-instructies.
 - gac laadt configuratie in de volgende volgorde van prioriteit:
   1. CLI vlaggen
   2. Omgevingsvariabelen
@@ -358,6 +359,10 @@ De volgende subcommando's zijn beschikbaar:
 - `gac auth chatgpt login` — Inloggen op ChatGPT met OAuth (opent browser)
 - `gac auth chatgpt logout` — Uitloggen uit ChatGPT en opgeslagen token verwijderen
 - `gac auth chatgpt status` — ChatGPT-authenticatiestatus controleren
+- `gac auth copilot login` — Inloggen op GitHub Copilot via Device Flow
+- `gac auth copilot login --host ghe.mycompany.com` — Inloggen op Copilot op een GitHub Enterprise-instantie
+- `gac auth copilot logout` — Uitloggen bij Copilot en opgeslagen tokens verwijderen
+- `gac auth copilot status` — Copilot-authenticatiestatus controleren
 - `gac config show` — Huidige configuratie tonen
 - `gac config set KEY VALUE` — Configuratiesleutel instellen in `$HOME/.gac.env`
 - `gac config get KEY` — Configuratiewaarde krijgen
@@ -551,6 +556,7 @@ Bij uitschakeling slaat gac alle statistiekregistratie over — er vinden geen b
 - Voor custom system prompts, zie [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - Voor Claude Code OAuth-installatie, zie [CLAUDE_CODE.md](CLAUDE_CODE.md)
 - Voor ChatGPT OAuth-installatie, zie [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
+- Voor GitHub Copilot-installatie, zie [GITHUB_COPILOT.md](GITHUB_COPILOT.md)
 - Voor probleemoplossing en geavanceerde tips, zie [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Voor installatie en configuratie, zie [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - Om bij te dragen, zie [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

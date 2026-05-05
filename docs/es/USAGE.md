@@ -365,6 +365,7 @@ git config --global user.email "tu.email@ejemplo.com"
 - ¿Ya tienes el idioma configurado y solo necesitas cambiar proveedores o modelos? Ejecuta `gac model` para repetir la configuración sin preguntas de idioma.
 - **¿Usas Claude Code?** Consulta la [guía de configuración de Claude Code](CLAUDE_CODE.md) para instrucciones de autenticación OAuth.
 - **¿Usas ChatGPT OAuth?** Consulta la [guía de configuración de ChatGPT OAuth](CHATGPT_OAUTH.md) para instrucciones de autenticación basada en navegador.
+- **¿Usas GitHub Copilot?** Consulta la [guía de configuración de GitHub Copilot](GITHUB_COPILOT.md) para instrucciones de autenticación Device Flow.
 - gac carga configuración en el siguiente orden de precedencia:
   1. Banderas CLI
   2. Variables de entorno
@@ -407,6 +408,10 @@ Los siguientes subcomandos están disponibles:
 - `gac auth chatgpt login` — Iniciar sesión en ChatGPT usando OAuth (abre navegador)
 - `gac auth chatgpt logout` — Cerrar sesión en ChatGPT y eliminar token almacenado
 - `gac auth chatgpt status` — Comprobar estado de autenticación de ChatGPT
+- `gac auth copilot login` — Iniciar sesión en GitHub Copilot usando Device Flow
+- `gac auth copilot login --host ghe.mycompany.com` — Iniciar sesión en Copilot en una instancia de GitHub Enterprise
+- `gac auth copilot logout` — Cerrar sesión en Copilot y eliminar tokens almacenados
+- `gac auth copilot status` — Comprobar estado de autenticación de Copilot
 - `gac config show` — Mostrar configuración actual
 - `gac config set KEY VALUE` — Establecer clave de configuración en `$HOME/.gac.env`
 - `gac config get KEY` — Obtener valor de configuración
@@ -600,6 +605,7 @@ Cuando está desactivado, gac omite todo el registro de estadísticas — no se 
 - Para prompts de sistema personalizados, consulta [docs/CUSTOM_SYSTEM_PROMPTS.md](../CUSTOM_SYSTEM_PROMPTS.md)
 - Para configuración OAuth de Claude Code, consulta [CLAUDE_CODE.md](CLAUDE_CODE.md)
 - Para configuración OAuth de ChatGPT, consulta [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
+- Para configuración de GitHub Copilot, consulta [GITHUB_COPILOT.md](GITHUB_COPILOT.md)
 - Para solución de problemas y consejos avanzados, consulta [docs/TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
 - Para instalación y configuración, consulta [README.md#configuración](README.md#configuración)
 - Para contribuir, consulta [docs/CONTRIBUTING.md](../CONTRIBUTING.md)

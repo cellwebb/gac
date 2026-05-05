@@ -365,6 +365,7 @@ git config --global user.email "ihre.email@beispiel.com"
 - Bereits konfigurierte Sprache und nur Anbieter oder Modelle wechseln müssen? Führen Sie `gac model` aus, um die Einrichtung ohne Sprachfragen zu wiederholen.
 - **Claude Code verwenden?** Siehe die [Claude Code-Einrichtungsanleitung](CLAUDE_CODE.md) für OAuth-Authentifizierungsanweisungen.
 - **ChatGPT OAuth verwenden?** Siehe die [ChatGPT OAuth-Einrichtungsanleitung](CHATGPT_OAUTH.md) für browserbasierte Authentifizierungsanweisungen.
+- **GitHub Copilot verwenden?** Siehe die [GitHub Copilot-Einrichtungsanleitung](GITHUB_COPILOT.md) für Device-Flow-Authentifizierungsanweisungen.
 - gac lädt Konfiguration in der folgenden Rangfolge:
   1. CLI-Flags
   2. Umgebungsvariablen
@@ -407,6 +408,10 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac auth chatgpt login` — Anmelden zu ChatGPT mit OAuth (öffnet Browser)
 - `gac auth chatgpt logout` — Abmelden von ChatGPT und gespeichertes Token entfernen
 - `gac auth chatgpt status` — ChatGPT-Authentifizierungsstatus prüfen
+- `gac auth copilot login` — Login zu GitHub Copilot mit Device Flow
+- `gac auth copilot login --host ghe.mycompany.com` — Login zu Copilot auf einer GitHub Enterprise-Instanz
+- `gac auth copilot logout` — Von Copilot abmelden und gespeicherte Tokens entfernen
+- `gac auth copilot status` — Copilot-Authentifizierungsstatus prüfen
 - `gac config show` — Aktuelle Konfiguration anzeigen
 - `gac config set KEY VALUE` — Konfigurationsschlüssel in `$HOME/.gac.env` setzen
 - `gac config get KEY` — Konfigurationswert abrufen
@@ -600,6 +605,7 @@ Wenn deaktiviert, überspringt gac die gesamte Statistikerfassung — es finden 
 - Für benutzerdefinierte System-Prompts siehe [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - Für Claude Code OAuth-Einrichtung siehe [CLAUDE_CODE.md](CLAUDE_CODE.md)
 - Für ChatGPT OAuth-Einrichtung siehe [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
+- Für GitHub Copilot-Einrichtung siehe [GITHUB_COPILOT.md](GITHUB_COPILOT.md)
 - Zur Fehlerbehebung und erweiterten Tipps siehe [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Für Installation und Konfiguration siehe [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - Zum Mitwirken siehe [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)

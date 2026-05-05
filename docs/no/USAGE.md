@@ -316,6 +316,7 @@ git config --global user.email "your.email@example.com"
 - Allerede konfigurert språk og trenger bare å bytte provider eller modeller? Kjør `gac model` for å gjenta oppsettet uten språkspørsmål.
 - **Bruker Claude Code?** Se [Claude Code oppsettguide](CLAUDE_CODE.md) for OAuth-autentiseringsinstruksjoner.
 - **Bruker ChatGPT OAuth?** Se [ChatGPT OAuth oppsettguide](CHATGPT_OAUTH.md) for nettleserbaserte autentiseringsinstruksjoner.
+- **Bruker du GitHub Copilot?** Se [GitHub Copilot-oppsettsguiden](GITHUB_COPILOT.md) for instruksjoner om Device Flow-autentisering.
 - gac laster konfigurasjon i følgende prioriteringsrekkefølge:
   1. CLI-flagg
   2. Miljøvariabler
@@ -358,6 +359,10 @@ Følgende underkommandoer er tilgjengelige:
 - `gac auth chatgpt login` — Logg inn på ChatGPT med OAuth (åpner nettleser)
 - `gac auth chatgpt logout` — Logg ut av ChatGPT og fjern lagret token
 - `gac auth chatgpt status` — Sjekk ChatGPT-autentiseringsstatus
+- `gac auth copilot login` — Logg inn på GitHub Copilot med Device Flow
+- `gac auth copilot login --host ghe.mycompany.com` — Logg inn på Copilot på en GitHub Enterprise-instans
+- `gac auth copilot logout` — Logg ut av Copilot og fjern lagrede tokens
+- `gac auth copilot status` — Sjekk Copilot-autentiseringsstatus
 - `gac config show` — Vis nåværende konfigurasjon
 - `gac config set KEY VALUE` — Sett en konfigurasjonsnøkkel i `$HOME/.gac.env`
 - `gac config get KEY` — Hent en konfigurasjonsverdi
@@ -551,6 +556,7 @@ Når deaktivert, hopper gac over all statistikkregistrering — ingen fillesing 
 - For egendefinerte systemprompts, se [docs/CUSTOM_SYSTEM_PROMPTS.md](docs/CUSTOM_SYSTEM_PROMPTS.md)
 - For Claude Code OAuth-oppsett, se [CLAUDE_CODE.md](CLAUDE_CODE.md)
 - For ChatGPT OAuth-oppsett, se [CHATGPT_OAUTH.md](CHATGPT_OAUTH.md)
+- For GitHub Copilot-oppsett, se [GITHUB_COPILOT.md](GITHUB_COPILOT.md)
 - For feilsøking og avanserte tips, se [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - For installasjon og konfigurasjon, se [README.md#installation-and-configuration](README.md#installation-and-configuration)
 - For å bidra, se [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
