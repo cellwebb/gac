@@ -12,6 +12,7 @@ from gac.stats import (
     get_current_project_name,
     get_stats_summary,
     load_stats,
+    model_activity,
     project_activity,
     reset_stats,
     stats_enabled,
@@ -294,6 +295,101 @@ def show() -> None:
     elif streak > 0:
         console.print("[yellow]💪 Don't break that streak! Time for a gac![/yellow]")
 
+    console.print()
+
+
+@stats.command()
+def models() -> None:
+    """Show stats for all models (not just top 5)."""
+    if not stats_enabled():
+        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set to a truthy value).[/dim]")
+        return
+
+    stats_data = load_stats()
+    models_data = stats_data.get("models", {})
+    if not models_data:
+        console.print("[yellow]No model usage yet! Time to start gaccing! 🚀[/yellow]")
+        return
+
+    sorted_models = sorted(models_data.items(), key=model_activity, reverse=True)
+
+    from gac.stats.store import _enrich_models_with_speed
+
+    enriched = _enrich_models_with_speed(sorted_models)
+
+    console.print()
+    console.print("[bold]All Models:[/bold]")
+    table = Table(show_header=True, box=None)
+    table.add_column("Model", style="bold magenta")
+    table.add_column("Gacs", style="bold cyan", justify="right")
+    table.add_column("Speed", style="bold cyan", justify="right")
+    table.add_column("Prompt", style="bold cyan", justify="right")
+    table.add_column("Completion", style="bold cyan", justify="right")
+    table.add_column("Reasoning", style="bold cyan", justify="right")
+    table.add_column("Total", style="bold cyan", justify="right")
+
+    for model_name, data in enriched:
+        gacs = data.get("gacs", 0)
+        prompt_t = int(data.get("prompt_tokens", 0))
+        completion_t = int(data.get("completion_tokens", 0))
+        reasoning_t = int(data.get("reasoning_tokens", 0))
+        total_t = compute_total_tokens(data)
+        avg_tps = data.get("avg_tps")
+        speed_str = f"{avg_tps} tps" if avg_tps is not None else "\u2014"
+        reasoning_str = format_tokens(reasoning_t) if reasoning_t > 0 else "\u2014"
+        table.add_row(
+            model_name,
+            str(gacs),
+            speed_str,
+            format_tokens(prompt_t),
+            format_tokens(completion_t),
+            reasoning_str,
+            format_tokens(total_t),
+        )
+
+    console.print(table)
+
+    # TPS speed bar chart — sorted by speed, not activity
+    models_with_tps = [(name, d) for name, d in enriched if d.get("avg_tps") is not None]
+    if models_with_tps:
+        models_with_tps.sort(key=lambda x: x[1]["avg_tps"], reverse=True)
+        max_tps = max(d["avg_tps"] for _, d in models_with_tps)
+        max_bar_width = 30  # characters
+
+        console.print()
+        console.print("[bold]Speed Comparison:[/bold]")
+        speed_table = Table(show_header=False, box=None, padding=(0, 0))
+        speed_table.add_column("Model", style="bold magenta", min_width=16)
+        speed_table.add_column("Bar", ratio=1)
+        speed_table.add_column("TPS", style="bold cyan", justify="right", min_width=8)
+
+        # Gradient: cyan (slow) → green (medium) → yellow (fast) → red (blazing)
+        for model_name, data in models_with_tps:
+            tps = data["avg_tps"]
+            ratio = tps / max_tps if max_tps > 0 else 0
+            # Build the bar with sub-character precision
+            full_width = ratio * max_bar_width
+            full_blocks = int(full_width)
+            frac = full_width - full_blocks
+            # Unicode sub-block characters: ▏▎▍▌▋▊▉█ (1/8 steps)
+            sub_chars = " ▏▎▍▌▋▊▉█"
+            sub_idx = min(int(frac * 8) + 1, 7)
+            bar_str = "█" * full_blocks + sub_chars[sub_idx]
+            bar_str = bar_str.ljust(max_bar_width)
+
+            # Color based on speed percentile
+            if ratio >= 0.75:
+                color = "bold yellow"
+            elif ratio >= 0.5:
+                color = "green"
+            elif ratio >= 0.25:
+                color = "cyan"
+            else:
+                color = "dim cyan"
+
+            speed_table.add_row(model_name, f"[{color}]{bar_str}[/]", f"{tps:.0f} tps")
+
+        console.print(speed_table)
     console.print()
 
 
