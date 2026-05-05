@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 @click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
 # Git workflow options
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
+@click.option("--stage", "-S", is_flag=True, help="Interactively select files to stage with a tree-based TUI")
 @click.option("--group", "-g", is_flag=True, help="Group changes into multiple logical commits")
 @click.option(
     "--interactive", "-i", is_flag=True, help="Ask interactive questions to gather more context for the commit message"
@@ -103,6 +104,7 @@ def cli(
     add_all: bool = False,
     fifty_seventy_two: bool = False,
     group: bool = False,
+    stage: bool = False,
     interactive: bool = False,
     log_level: str | None = None,
     one_liner: bool = False,
@@ -166,8 +168,17 @@ def cli(
         resolved_language = Languages.resolve_code(language) if language else None
 
         try:
+            # Validate incompatible flag combinations
+            if stage and add_all:
+                console.print("[red]Error: --stage and --add-all options are mutually exclusive[/red]")
+                console.print(
+                    "[yellow]--stage is for interactive file selection, --add-all stages everything automatically[/yellow]"
+                )
+                sys.exit(1)
+
             opts = CLIOptions(
                 stage_all=add_all,
+                stage=stage,
                 group=group,
                 interactive=interactive,
                 model=model,
@@ -198,6 +209,7 @@ def cli(
 
         ctx.obj = {
             "add_all": add_all,
+            "stage": stage,
             "group": group,
             "interactive": interactive,
             "log_level": log_level,
