@@ -35,6 +35,9 @@ from gac.oauth.base import (
     perform_oauth_flow as _base_flow,
 )
 from gac.oauth.base import (
+    refresh_oauth_token as _base_refresh,
+)
+from gac.oauth.base import (
     remove_token as _base_remove,
 )
 from gac.oauth.base import (
@@ -168,52 +171,20 @@ def refresh_access_token() -> str | None:
         org_id, …) into top-level keys.  ``save_token()`` re-extracts those
         same keys back into ``extra`` via ``_EXTRA_TOKEN_KEYS``.  This
         round-trip works as long as the two stay in sync.
+
+    .. note::
+        ChatGPT refresh responses include ``id_token`` which is NOT preserved
+        by the shared ``refresh_oauth_token`` helper.  If id_token round-trip
+        is needed, override this function with provider-specific logic.
     """
-    tokens = load_stored_tokens()
-    if not tokens:
-        return None
-
-    refresh_token = tokens.get("refresh_token")
-    if not refresh_token:
-        logger.debug("No refresh_token available for ChatGPT OAuth")
-        return None
-
-    payload = {
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "client_id": CHATGPT_OAUTH_CONFIG["client_id"],
-    }
-
-    try:
-        response = httpx.post(
-            CHATGPT_OAUTH_CONFIG["token_url"],
-            data=payload,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=30,
-            verify=get_ssl_verify(),
-        )
-        if response.status_code == 200:
-            new_tokens = response.json()
-            merged = dict(tokens)
-            new_access_token = new_tokens.get("access_token")
-            if not new_access_token:
-                logger.error("No access_token in refresh response")
-                return None
-            merged.update(
-                {
-                    "access_token": new_access_token,
-                    "refresh_token": new_tokens.get("refresh_token", refresh_token),
-                    "id_token": new_tokens.get("id_token", tokens.get("id_token")),
-                }
-            )
-            if save_token(merged["access_token"], token_data=merged):
-                logger.info("Successfully refreshed ChatGPT OAuth token")
-                return str(merged["access_token"])
-        else:
-            logger.error("Token refresh failed: %s - %s", response.status_code, response.text)
-    except Exception as exc:
-        logger.error("Token refresh error: %s", exc)
-    return None
+    return _base_refresh(
+        token_url=CHATGPT_OAUTH_CONFIG["token_url"],
+        client_id=CHATGPT_OAUTH_CONFIG["client_id"],
+        provider_key=_PROVIDER_KEY,
+        env_var=_ENV_VAR,
+        extra_keys=_EXTRA_TOKEN_KEYS,
+        save_fn=save_token,
+    )
 
 
 def refresh_token_if_expired(quiet: bool = True) -> bool:

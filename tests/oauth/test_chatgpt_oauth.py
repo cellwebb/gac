@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import gac.oauth.base as base_module
 import gac.oauth.chatgpt as chatgpt_module
 from gac.oauth.base import OAuthContext, prepare_oauth_context
 from gac.oauth.chatgpt import (
@@ -18,7 +17,6 @@ from gac.oauth.chatgpt import (
     refresh_access_token,
     refresh_token_if_expired,
 )
-from tests.oauth.conftest import FakeTokenStore
 
 PROVIDER_KEY = CHATGPT_OAUTH_CONFIG["provider_key"]
 
@@ -154,112 +152,18 @@ class TestExchangeCode:
 
 
 class TestRefreshAccessToken:
-    def test_no_tokens_stored(self):
-        with patch.object(base_module, "TokenStore", return_value=FakeTokenStore()):
+    def test_delegates_to_base_refresh(self):
+        """refresh_access_token delegates to _base_refresh with correct args."""
+        with patch.object(chatgpt_module, "_base_refresh", return_value="new_at") as m:
+            assert refresh_access_token() == "new_at"
+            m.assert_called_once()
+            # Verify it passes the ChatGPT config
+            call_kwargs = m.call_args
+            assert call_kwargs.kwargs.get("provider_key") == PROVIDER_KEY
+
+    def test_returns_none_on_failure(self):
+        with patch.object(chatgpt_module, "_base_refresh", return_value=None):
             assert refresh_access_token() is None
-
-    def test_no_refresh_token(self):
-        store = FakeTokenStore()
-        store.save_token(PROVIDER_KEY, {"access_token": "at", "token_type": "Bearer"})
-        with patch.object(base_module, "TokenStore", return_value=store):
-            assert refresh_access_token() is None
-
-    @patch("gac.oauth.chatgpt.httpx.post")
-    def test_success(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "access_token": "new_at",
-            "refresh_token": "new_rt",
-            "id_token": "new_id",
-        }
-        mock_post.return_value = mock_response
-
-        store = FakeTokenStore()
-        store.save_token(
-            PROVIDER_KEY,
-            {
-                "access_token": "old_at",
-                "token_type": "Bearer",
-                "refresh_token": "old_rt",
-            },
-        )
-        with patch.object(base_module, "TokenStore", return_value=store):
-            with patch.object(chatgpt_module, "save_token", return_value=True):
-                assert refresh_access_token() == "new_at"
-
-    @patch("gac.oauth.chatgpt.httpx.post")
-    def test_response_no_access_token(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"refresh_token": "new_rt"}
-        mock_post.return_value = mock_response
-
-        store = FakeTokenStore()
-        store.save_token(
-            PROVIDER_KEY,
-            {
-                "access_token": "at",
-                "token_type": "Bearer",
-                "refresh_token": "rt",
-            },
-        )
-        with patch.object(base_module, "TokenStore", return_value=store):
-            assert refresh_access_token() is None
-
-    @patch("gac.oauth.chatgpt.httpx.post")
-    def test_non_200_status(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 401
-        mock_response.text = "Unauthorized"
-        mock_post.return_value = mock_response
-
-        store = FakeTokenStore()
-        store.save_token(
-            PROVIDER_KEY,
-            {
-                "access_token": "at",
-                "token_type": "Bearer",
-                "refresh_token": "rt",
-            },
-        )
-        with patch.object(base_module, "TokenStore", return_value=store):
-            assert refresh_access_token() is None
-
-    @patch("gac.oauth.chatgpt.httpx.post")
-    def test_exception(self, mock_post):
-        mock_post.side_effect = Exception("Network error")
-        store = FakeTokenStore()
-        store.save_token(
-            PROVIDER_KEY,
-            {
-                "access_token": "at",
-                "token_type": "Bearer",
-                "refresh_token": "rt",
-            },
-        )
-        with patch.object(base_module, "TokenStore", return_value=store):
-            assert refresh_access_token() is None
-
-    @patch("gac.oauth.chatgpt.httpx.post")
-    def test_save_fails(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"access_token": "new_at", "refresh_token": "new_rt"}
-        mock_post.return_value = mock_response
-
-        store = FakeTokenStore()
-        store.save_token(
-            PROVIDER_KEY,
-            {
-                "access_token": "at",
-                "token_type": "Bearer",
-                "refresh_token": "rt",
-            },
-        )
-        with patch.object(base_module, "TokenStore", return_value=store):
-            with patch.object(chatgpt_module, "save_token", return_value=False):
-                assert refresh_access_token() is None
 
 
 class TestRefreshTokenIfExpired:

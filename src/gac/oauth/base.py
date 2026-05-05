@@ -22,7 +22,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import httpx
+
 from gac.oauth.token_store import OAuthToken, TokenStore
+from gac.utils import get_ssl_verify
 
 logger = logging.getLogger(__name__)
 
@@ -339,6 +342,100 @@ def is_token_expired(provider_key: str, margin_seconds: int = 30) -> bool:
         return False
 
     return time.time() >= (expiry - margin_seconds)
+
+
+# ---------------------------------------------------------------------------
+# Token refresh — shared helper for providers with HTTP refresh support
+# ---------------------------------------------------------------------------
+
+
+def refresh_oauth_token(
+    token_url: str,
+    client_id: str,
+    provider_key: str,
+    env_var: str,
+    extra_keys: tuple[str, ...] = (),
+    *,
+    client_secret: str = "",
+    save_fn: Callable[[str, dict[str, Any] | None], bool] | None = None,
+) -> str | None:
+    """Refresh an OAuth access token using a stored refresh token.
+
+    Shared between OAuth providers — both use the same pattern:
+    load refresh token → POST to token endpoint → merge new tokens → save.
+
+    Args:
+        token_url: The OAuth token endpoint URL.
+        client_id: The OAuth client ID.
+        provider_key: Key for TokenStore (e.g. ``"chatgpt-oauth"``).
+        env_var: Environment variable name to set with the new access token.
+        extra_keys: Keys to preserve across refresh (e.g. ``"project_id"``).
+        client_secret: Optional client secret (Google requires it; OpenAI doesn't).
+        save_fn: Optional custom save function. If ``None``, uses :func:`save_token`.
+
+    Returns:
+        The new access token on success, ``None`` otherwise.
+    """
+    tokens = load_stored_tokens(provider_key)
+    if not tokens:
+        return None
+
+    refresh_token = tokens.get("refresh_token")
+    if not refresh_token:
+        logger.debug("No refresh_token available for %s OAuth", provider_key)
+        return None
+
+    data: dict[str, str] = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+        "client_id": client_id,
+    }
+    if client_secret:
+        data["client_secret"] = client_secret
+
+    try:
+        response = httpx.post(
+            token_url,
+            data=data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=30,
+            verify=get_ssl_verify(),
+        )
+
+        if response.status_code == 200:
+            new_tokens = response.json()
+            new_access_token = new_tokens.get("access_token")
+            if not new_access_token:
+                logger.error("No access_token in refresh response for %s", provider_key)
+                return None
+
+            # Merge with existing token data, preserving extra fields
+            merged: dict[str, Any] = dict(tokens)
+            merged["access_token"] = new_access_token
+            merged["refresh_token"] = new_tokens.get("refresh_token", refresh_token)
+            if "expires_in" in new_tokens:
+                merged["expires_at"] = time.time() + new_tokens["expires_in"]
+
+            if save_fn:
+                saved = save_fn(merged["access_token"], merged)
+            else:
+                saved = save_token(
+                    provider_key, env_var, merged["access_token"], token_data=merged, extra_keys=extra_keys
+                )
+            if saved:
+                logger.info("Successfully refreshed %s OAuth token", provider_key)
+                return str(merged["access_token"])
+        else:
+            logger.error(
+                "Token refresh failed for %s: %s - %s",
+                provider_key,
+                response.status_code,
+                response.text[:200],
+            )
+
+    except Exception as exc:
+        logger.error("Token refresh error for %s: %s", provider_key, exc)
+    return None
 
 
 # ---------------------------------------------------------------------------
