@@ -88,12 +88,12 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("ChatGPT (OAuth)", "gpt-5.4-mini"),
         ("Chutes", "zai-org/GLM-5-TEE"),
         ("Claude Code (OAuth)", "claude-sonnet-4-6"),
-        ("Copilot (OAuth)", "gpt-5-mini"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
         ("Fireworks", "fireworks/glm-5p1"),
         ("Gemini", "gemini-3.1-flash-lite-preview"),
+        ("GitHub Copilot (OAuth)", "gpt-5-mini"),
         ("Groq", "openai/gpt-oss-120b"),
         ("Kimi for Coding", "kimi-for-coding"),
         ("LM Studio", "gemma3"),
@@ -132,7 +132,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_azure_openai = provider_key == "azure-openai"
     is_chatgpt_oauth = provider_key == "chatgpt-oauth"
     is_claude_code = provider_key == "claude-code-oauth"
-    is_copilot_oauth = provider_key == "copilot-oauth"
+    is_copilot_oauth = provider_key == "github-copilot-oauth"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
     is_lmstudio = provider_key == "lm-studio"
@@ -146,7 +146,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         pass
     elif provider_key == "claude-code-oauth":
         provider_key = "claude-code"
-    elif provider_key == "copilot-oauth":
+    elif provider_key == "github-copilot-oauth":
         provider_key = "copilot"
     elif provider_key == "kimi-for-coding":
         provider_key = "kimi-coding"
