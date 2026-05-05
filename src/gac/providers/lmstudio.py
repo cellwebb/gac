@@ -56,25 +56,23 @@ class LMStudioProvider(OpenAICompatibleProvider):
 
     def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse OpenAI-compatible response with text field fallback."""
+        from gac.ai_utils import normalize_reasoning_tokens
         from gac.errors import AIError
+        from gac.postprocess import extract_think_tag_text
 
         usage = response.get("usage")
         prompt_tokens = -1
         completion_tokens = -1
-        reasoning_tokens = 0
+        reasoning_tokens: int | None = None  # None = not reported by API
         if isinstance(usage, dict):
             pt = usage.get("prompt_tokens", -1)
             ct = usage.get("completion_tokens", -1)
             prompt_tokens = pt if isinstance(pt, int) else -1
             completion_tokens = ct if isinstance(ct, int) else -1
             details = usage.get("completion_tokens_details")
-            if isinstance(details, dict):
-                rt = details.get("reasoning_tokens", 0)
-                reasoning_tokens = rt if isinstance(rt, int) else 0
-
-        # Normalize: API completion_tokens includes reasoning; subtract it
-        # so downstream gets two distinct, non-overlapping numbers.
-        norm_completion = max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            if isinstance(details, dict) and "reasoning_tokens" in details:
+                rt = details["reasoning_tokens"]
+                reasoning_tokens = rt if isinstance(rt, int) else None
 
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
@@ -82,25 +80,24 @@ class LMStudioProvider(OpenAICompatibleProvider):
 
         choice = choices[0]
         content = choice.get("message", {}).get("content")
-        if content is not None:
-            if content == "":
-                raise AIError.model_error("Invalid response: empty content")
-            return ParsedResponse(
-                content=content,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=norm_completion,
-                reasoning_tokens=reasoning_tokens,
-            )
+        if content is None:
+            content = choice.get("text")
 
-        content = choice.get("text")
-        if content is not None:
-            if content == "":
-                raise AIError.model_error("Invalid response: empty content")
-            return ParsedResponse(
-                content=content,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=norm_completion,
-                reasoning_tokens=reasoning_tokens,
-            )
+        if content is None:
+            raise AIError.model_error("Invalid response: missing content")
+        if content == "":
+            raise AIError.model_error("Invalid response: empty content")
 
-        raise AIError.model_error("Invalid response: missing content")
+        # Estimate reasoning tokens from <tool_call>...</think> tags when the API
+        # doesn't report them explicitly (e.g. local thinking models).
+        thinking_text = extract_think_tag_text(content)
+        reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+
+        return ParsedResponse(
+            content=content,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=(
+                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            ),
+            reasoning_tokens=reasoning_tokens,
+        )

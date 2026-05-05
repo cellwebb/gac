@@ -253,6 +253,9 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
 
     def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse OpenAI-style response."""
+        from gac.ai_utils import normalize_reasoning_tokens
+        from gac.postprocess import extract_think_tag_text
+
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
             raise AIError.model_error("Invalid response: missing choices")
@@ -264,24 +267,30 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
         usage = response.get("usage")
         prompt_tokens = -1
         completion_tokens = -1
-        reasoning_tokens = 0
+        reasoning_tokens: int | None = None  # None = not reported by API
         if isinstance(usage, dict):
             pt = usage.get("prompt_tokens", -1)
             ct = usage.get("completion_tokens", -1)
             prompt_tokens = pt if isinstance(pt, int) else -1
             completion_tokens = ct if isinstance(ct, int) else -1
             details = usage.get("completion_tokens_details")
-            if isinstance(details, dict):
-                rt = details.get("reasoning_tokens", 0)
-                reasoning_tokens = rt if isinstance(rt, int) else 0
+            if isinstance(details, dict) and "reasoning_tokens" in details:
+                rt = details["reasoning_tokens"]
+                reasoning_tokens = rt if isinstance(rt, int) else None
+
+        # Estimate reasoning tokens from <arg_key>...</think> tags when the API doesn't
+        # report them explicitly (e.g. some DeepSeek-compatible endpoints).
+        thinking_text = extract_think_tag_text(content)
+        reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+
         return ParsedResponse(
             content=content,
             prompt_tokens=prompt_tokens,
             # Normalize: API completion_tokens includes reasoning; subtract it
             # so downstream gets two distinct, non-overlapping numbers.
-            completion_tokens=max(completion_tokens - reasoning_tokens, 0)
-            if completion_tokens >= 0
-            else completion_tokens,
+            completion_tokens=(
+                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            ),
             reasoning_tokens=reasoning_tokens,
         )
 
@@ -392,57 +401,70 @@ class GenericHTTPProvider(BaseConfiguredProvider):
 
     def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Default implementation - override this in subclasses."""
+        from gac.ai_utils import normalize_reasoning_tokens
+        from gac.postprocess import extract_think_tag_text
+
         usage = response.get("usage")
         prompt_tokens: int = -1
         completion_tokens: int = -1
-        reasoning_tokens: int = 0
+        reasoning_tokens: int | None = None  # None = not reported by API
         if isinstance(usage, dict):
             pt = usage.get("prompt_tokens", usage.get("input_tokens", -1))
             ct = usage.get("completion_tokens", usage.get("output_tokens", -1))
             prompt_tokens = pt if isinstance(pt, int) else -1
             completion_tokens = ct if isinstance(ct, int) else -1
             details = usage.get("completion_tokens_details")
-            if isinstance(details, dict):
-                rt = details.get("reasoning_tokens", 0)
-                reasoning_tokens = rt if isinstance(rt, int) else 0
-
-        # Normalize: API completion_tokens includes reasoning; subtract it
-        # so downstream gets two distinct, non-overlapping numbers.
-        norm_completion = max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            if isinstance(details, dict) and "reasoning_tokens" in details:
+                rt = details["reasoning_tokens"]
+                reasoning_tokens = rt if isinstance(rt, int) else None
 
         choices = response.get("choices")
-        if choices and isinstance(choices, list):
-            content = choices[0].get("message", {}).get("content")
-            if content:
-                return ParsedResponse(
-                    content=content,
-                    prompt_tokens=prompt_tokens,
-                    completion_tokens=norm_completion,
-                    reasoning_tokens=reasoning_tokens,
-                )
+        extracted_content: str | None = None
+        if choices and isinstance(choices, list) and isinstance(choices[0], dict):
+            raw = choices[0].get("message", {}).get("content")
+            if raw:  # truthy: fall through on empty string like old code
+                extracted_content = raw
 
-        content = response.get("content")
-        if content and isinstance(content, list):
+        if not extracted_content:
+            content_list = response.get("content")
+            if content_list and isinstance(content_list, list):
+                for item in content_list:
+                    if isinstance(item, dict) and item.get("text"):
+                        extracted_content = item["text"]
+                        break
+
+        if not extracted_content:
+            message = response.get("message", {})
+            if isinstance(message, dict) and "content" in message:
+                extracted_content = message["content"]
+                # Ollama-style responses use different token count fields.
+                ollama_prompt = response.get("prompt_eval_count", -1)
+                ollama_completion = response.get("eval_count", -1)
+                if isinstance(ollama_prompt, int):
+                    prompt_tokens = ollama_prompt
+                if isinstance(ollama_completion, int):
+                    completion_tokens = ollama_completion
+
+        if extracted_content is None:
+            for value in response.values():
+                if isinstance(value, str) and len(value) > 10:
+                    extracted_content = value
+                    break
+
+        if extracted_content is not None:
+            thinking_text = extract_think_tag_text(extracted_content)
+            reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+            # Normalize: API completion_tokens includes reasoning; subtract it
+            # so downstream gets two distinct, non-overlapping numbers.
+            norm_completion = (
+                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
+            )
             return ParsedResponse(
-                content=content[0].get("text", ""),
+                content=extracted_content,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=norm_completion,
                 reasoning_tokens=reasoning_tokens,
             )
-
-        message = response.get("message", {})
-        if "content" in message:
-            ollama_prompt = response.get("prompt_eval_count", -1)
-            ollama_completion = response.get("eval_count", -1)
-            return ParsedResponse(
-                content=message["content"],
-                prompt_tokens=ollama_prompt if isinstance(ollama_prompt, int) else -1,
-                completion_tokens=ollama_completion if isinstance(ollama_completion, int) else -1,
-            )
-
-        for value in response.values():
-            if isinstance(value, str) and len(value) > 10:
-                return ParsedResponse(content=value, prompt_tokens=-1, completion_tokens=-1)
 
         raise AIError.model_error("Could not extract content from response")
 

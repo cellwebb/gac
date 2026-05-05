@@ -68,6 +68,9 @@ class GeminiProvider(GenericHTTPProvider):
 
     def _parse_response(self, response: dict[str, Any]) -> ParsedResponse:
         """Parse Gemini response format: candidates[0].content.parts[0].text."""
+        from gac.ai_utils import normalize_reasoning_tokens
+        from gac.postprocess import extract_think_tag_text
+
         candidates = response.get("candidates")
         if not candidates:
             raise AIError.model_error("Gemini API response missing candidates")
@@ -90,19 +93,34 @@ class GeminiProvider(GenericHTTPProvider):
         usage_meta = response.get("usageMetadata")
         prompt_tokens = -1
         completion_tokens = -1
-        reasoning_tokens = 0
+        reasoning_tokens: int | None = None  # None = not reported by API
         if isinstance(usage_meta, dict):
             pt = usage_meta.get("promptTokenCount", -1)
             ct = usage_meta.get("candidatesTokenCount", -1)
             prompt_tokens = pt if isinstance(pt, int) else -1
             raw_completion = ct if isinstance(ct, int) else -1
-            rt = usage_meta.get("thoughtsTokenCount", 0)
-            reasoning_tokens = rt if isinstance(rt, int) else 0
+            if "thoughtsTokenCount" in usage_meta:
+                rt = usage_meta["thoughtsTokenCount"]
+                reasoning_tokens = rt if isinstance(rt, int) else None
             # Normalize: candidatesTokenCount includes thoughts; subtract
             # so completion = output tokens only (excludes reasoning).
-            completion_tokens = max(raw_completion - reasoning_tokens, 0) if raw_completion >= 0 else raw_completion
+            if reasoning_tokens is not None:
+                completion_tokens = max(raw_completion - reasoning_tokens, 0) if raw_completion >= 0 else raw_completion
+            else:
+                completion_tokens = raw_completion
         else:
             completion_tokens = -1
+
+        # Estimate reasoning tokens from <think> tags when the API
+        # doesn't report them explicitly.
+        thinking_text = extract_think_tag_text(content_text)
+        reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
+
+        # Recompute completion_tokens with the final reasoning_tokens value.
+        if isinstance(usage_meta, dict):
+            ct = usage_meta.get("candidatesTokenCount", -1)
+            raw_completion = ct if isinstance(ct, int) else -1
+            completion_tokens = max(raw_completion - reasoning_tokens, 0) if raw_completion >= 0 else raw_completion
 
         return ParsedResponse(
             content=content_text,

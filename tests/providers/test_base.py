@@ -379,6 +379,64 @@ class TestAnthropicCompatibleProvider:
         parsed = provider._parse_response(response)
         assert parsed.content == "safe content"
 
+    def test_openai_think_tags_estimate_tokens(self):
+        """OpenAI-compatible response with think tags estimates reasoning tokens."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        thinking = "Let me analyze the diff" * 10  # ~230 chars
+        think_content = "<think>" + thinking + "</think>"
+        response = {
+            "choices": [{"message": {"content": think_content + "\nfeat: add feature"}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 200},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == think_content + "\nfeat: add feature"
+        assert parsed.reasoning_tokens > 0  # Estimated from think tags
+        # completion_tokens should be 200 minus estimated reasoning
+        assert parsed.completion_tokens < 200
+
+    def test_openai_explicit_reasoning_tokens_win_over_think_tags(self):
+        """When API reports reasoning_tokens explicitly, it wins over think-tag estimation."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        thinking = "Let me analyze the diff" * 10  # ~230 chars -> ~68 estimated
+        think_content = "<think>" + thinking + "</think>"
+        response = {
+            "choices": [{"message": {"content": think_content + "\nfeat: add feature"}}],
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 200,
+                "completion_tokens_details": {"reasoning_tokens": 42},
+            },
+        }
+        parsed = provider._parse_response(response)
+        # Explicit 42 wins, not the ~68 estimate from think tags
+        assert parsed.reasoning_tokens == 42
+        # completion_tokens = 200 - 42 = 158
+        assert parsed.completion_tokens == 158
+
+    def test_generic_http_crash_proof_non_dict_choices(self):
+        """GenericHTTPProvider should not crash on non-dict entries in choices."""
+        from gac.providers.base import GenericHTTPProvider, ProviderConfig
+
+        provider = GenericHTTPProvider(ProviderConfig(name="Gen", api_key_env="KEY", base_url="http://test.url"))
+        response = {
+            "choices": ["not a dict"],
+            "content": [{"text": "fallback text"}],
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "fallback text"
+
+    def test_generic_http_crash_proof_non_dict_content(self):
+        """GenericHTTPProvider should not crash on non-dict entries in content."""
+        from gac.providers.base import GenericHTTPProvider, ProviderConfig
+
+        provider = GenericHTTPProvider(ProviderConfig(name="Gen", api_key_env="KEY", base_url="http://test.url"))
+        response = {
+            "choices": [{"message": {"content": ""}}],
+            "content": [42, {"text": "second entry"}],
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "second entry"
+
 
 class TestErrorPropagation:
     """Test that exceptions propagate from base providers to decorator.
