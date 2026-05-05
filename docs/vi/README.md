@@ -107,7 +107,7 @@ uv tool upgrade gac
 - **Theo dõi các gac của bạn**: Xem bạn đã thực hiện bao nhiêu commit với gac, chuỗi hiện tại, hoạt động đỉnh hàng ngày/hàng tuần, và các dự án hàng đầu
 - **Theo dõi token**: Tổng token prompt và completion theo ngày, tuần, dự án và mô hình — với cúp kỷ lục cho việc sử dụng token
 - **Mô hình hàng đầu**: Xem mô hình nào bạn sử dụng nhiều nhất và mỗi mô hình tiêu thụ bao nhiêu token
-- **Thống kê theo dự án**: Xem thống kê cho repo hiện tại với `gac stats project`
+- **Thống kê theo dự án**: Xem thống kê cho tất cả repo với `gac stats projects`
 - **Ăn mừng điểm cao**: 🏆 cúp khi bạn thiết lập kỷ lục hàng ngày, hàng tuần, token, hoặc chuỗi mới; 🥈 khi ngang bằng
 - **Chọn tham gia khi cài đặt**: `gac init` hỏi bạn có muốn bật thống kê và giải thích chính xác những gì được lưu trữ
 - **Từ chối bất cứ lúc nào**: Đặt `GAC_DISABLE_STATS=true` (hoặc `1`/`yes`/`on`) để vô hiệu hóa. Đặt thành `false`/`0`/`no` (hoặc bỏ đặt) giữ thống kê được bật
@@ -158,8 +158,8 @@ gac
 # Xem thống kê commit của bạn
 gac stats
 
-# Thống kê chỉ cho dự án hiện tại
-gac stats project
+# Thống kê tất cả dự án
+gac stats projects
 
 gac -ayp -h "chuẩn bị phát hành"
 

@@ -107,7 +107,7 @@ uv tool upgrade gac
 - **Acompanhe seus gacs**: Veja quantos commits você fez com gac, sua sequência atual, pico de atividade diária/semanal e projetos principais
 - **Rastreamento de tokens**: Tokens de prompt e completion totais por dia, semana, projeto e modelo — com troféus de recorde para uso de tokens também
 - **Modelos principais**: Veja quais modelos você mais usa e quantos tokens cada um consome
-- **Estatísticas por projeto**: Veja as estatísticas do repositório atual com `gac stats project`
+- **Estatísticas por projeto**: Veja as estatísticas de todos os repositórios com `gac stats projects`
 - **Celebrações de recordes**: 🏆 troféus quando você estabelece novos recordes diários, semanais, de tokens ou de sequência; 🥈 por empatá-los
 - **Opt-in durante a configuração**: `gac init` pergunta se você deseja ativar as estatísticas e explica exatamente o que é armazenado
 - **Opt-out a qualquer momento**: Defina `GAC_DISABLE_STATS=true` (ou `1`/`yes`/`on`) para desativar. Definir como `false`/`0`/`no` (ou não definir) mantém as estatísticas ativadas
@@ -158,8 +158,8 @@ gac
 # Veja suas estatísticas de commits
 gac stats
 
-# Estatísticas do projeto atual apenas
-gac stats project
+# Estatísticas de todos os projetos
+gac stats projects
 
 gac -ayp -h "preparação de release"
 

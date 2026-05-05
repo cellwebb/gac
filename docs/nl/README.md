@@ -107,7 +107,7 @@ uv tool upgrade gac
 - **Volg uw gacs**: Zie hoeveel commits u met gac heeft gedaan, uw huidige streak, piekdagelijkse/wekelijkse activiteit en topprojecten
 - **Token-tracking**: Totaal aan prompt- en completion-tokens per dag, week, project en model — met highscore-trofeeën voor tokengebruik
 - **Topmodellen**: Zie welke modellen u het meest gebruikt en hoeveel tokens elk model verbruikt
-- **Projectstatistieken**: Bekijk statistieken voor de huidige repo met `gac stats project`
+- **Projectstatistieken**: Bekijk statistieken voor alle repo's met `gac stats projects`
 - **Highscore-vieringen**: 🏆 trofeeën wanneer u nieuwe dagelijkse, wekelijkse, token- of streak-records vestigt; 🥈 voor het evenaren ervan
 - **Opt-in tijdens setup**: `gac init` vraagt of u statistieken wilt inschakelen en legt uit wat er wordt opgeslagen
 - **Altijd opt-out**: Stel `GAC_DISABLE_STATS=true` (of `1`/`yes`/`on`) in om uit te schakelen. Instellen op `false`/`0`/`no` (of verwijderen) houdt statistieken ingeschakeld
@@ -158,8 +158,8 @@ gac
 # Uw commitstatistieken bekijken
 gac stats
 
-# Statistieken alleen voor het huidige project
-gac stats project
+# Statistieken van alle projecten
+gac stats projects
 
 gac -ayp -h "release preparation"
 
