@@ -420,7 +420,7 @@ The following subcommands are available:
 - `gac serve` — Start GAC as an [MCP server](MCP.md) for AI agent integration (stdio transport)
 - `gac stats show` — View your gac usage statistics (totals, streaks, daily & weekly activity, token usage, top projects, top models)
 - `gac stats models` — View detailed stats for all models with token breakdowns and speed comparison chart
-- `gac stats project` — View stats for the current git project only
+- `gac stats projects` — View stats for all projects with token breakdowns
 - `gac stats reset` — Reset all statistics to zero (prompts for confirmation)
 
 ## Interactive Mode
@@ -548,13 +548,13 @@ When you decline stats during `gac init` and an existing `~/.gac_stats.json` is 
 
 ### Stats Subcommands
 
-| Command             | Description                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Show your stats (same as `gac stats show`)                                                          |
-| `gac stats show`    | Display full stats: totals, streaks, daily & weekly activity, token usage, top projects, top models |
-| `gac stats models`  | Show detailed stats for **all** models used, with token breakdowns and a speed comparison chart     |
-| `gac stats project` | Show stats for the current git project only                                                         |
-| `gac stats reset`   | Reset all statistics to zero (prompts for confirmation)                                             |
+| Command              | Description                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------- |
+| `gac stats`          | Show your stats (same as `gac stats show`)                                                          |
+| `gac stats show`     | Display full stats: totals, streaks, daily & weekly activity, token usage, top projects, top models |
+| `gac stats models`   | Show detailed stats for **all** models used, with token breakdowns and a speed comparison chart     |
+| `gac stats projects` | Show stats for **all** projects with token breakdowns                                               |
+| `gac stats reset`    | Reset all statistics to zero (prompts for confirmation)                                             |
 
 ### Examples
 
@@ -565,8 +565,8 @@ gac stats
 # Detailed breakdown of every model you've used
 gac stats models
 
-# Stats for the current project only
-gac stats project
+# Stats for all projects
+gac stats projects
 
 # Reset all stats (with confirmation prompt)
 gac stats reset
@@ -580,6 +580,10 @@ Running `gac stats` displays:
 - **Current and longest streak** — consecutive days with gac activity (🔥 at 5+ days)
 - **Activity summary** — today's and this week's gacs, commits, and tokens vs your peak day and peak week
 - **Top projects** — your 5 most-active repos by gac + commit count, with token usage per project
+
+Running `gac stats projects` shows **all** projects (not just the top 5) with:
+
+- **All Projects table** — every project sorted by activity, with gac count, commit count, prompt tokens, completion tokens, reasoning tokens, and total tokens
 - **Top models** — your 5 most-used models with prompt, completion, and total tokens consumed
 
 Running `gac stats models` shows **all** models (not just the top 5) with:

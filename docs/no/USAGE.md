@@ -373,7 +373,7 @@ Følgende underkommandoer er tilgjengelige:
 - `gac serve` — Start GAC som [MCP-server](MCP.md) for AI-agent integrasjon (stdio transport)
 - `gac stats show` — Vis din gac-bruksstatistikk (totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller)
 - `gac stats models` — Vis detaljert statistikk for alle modeller med token-nedbryting og hastighetssammenligningsdiagram
-- `gac stats project` — Vis statistikk kun for det nåværende git-prosjektet
+- `gac stats projects` — Vis statistikk for alle prosjekter med token-nedbryting
 - `gac stats reset` — Tilbakestill all statistikk til null (ber om bekreftelse)
 
 ## Interaktiv Modus
@@ -501,13 +501,13 @@ Når du avslår statistikk under `gac init` og en eksisterende `~/.gac_stats.jso
 
 ### Statistikk-underkommandoer
 
-| Kommando            | Beskrivelse                                                                                                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Vis din statistikk (samme som `gac stats show`)                                                                   |
-| `gac stats show`    | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
-| `gac stats models`  | Vis detaljert statistikk for **alle** brukte modeller, med token-nedbryting og hastighetssammenligningsdiagram    |
-| `gac stats project` | Vis statistikk kun for det nåværende git-prosjektet                                                               |
-| `gac stats reset`   | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
+| Kommando             | Beskrivelse                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `gac stats`          | Vis din statistikk (samme som `gac stats show`)                                                                   |
+| `gac stats show`     | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
+| `gac stats models`   | Vis detaljert statistikk for **alle** brukte modeller, med token-nedbryting og hastighetssammenligningsdiagram    |
+| `gac stats projects` | Vis statistikk for **alle** prosjekter med token-nedbryting                                                       |
+| `gac stats reset`    | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
 
 ### Eksempler
 
@@ -518,8 +518,8 @@ gac stats
 # Detaljert nedbryting av alle brukte modeller
 gac stats models
 
-# Statistikk kun for nåværende prosjekt
-gac stats project
+# Statistikk for alle prosjekter
+gac stats projects
 
 # Tilbakestill all statistikk (med bekreftelsesprompt)
 gac stats reset
@@ -533,6 +533,10 @@ gac stats reset
 - **Nåværende og lengste streak** — etterfølgende dager med gac-aktivitet (🔥 ved 5+ dager)
 - **Aktivitetssammendrag** — dagens og denne ukens gacs, committer og tokens sammenlignet med din toppedag og toppeuke
 - **Topprosjekter** — dine 5 mest aktive repos etter gac- + commit-antall, med tokenbruk per prosjekt
+
+Running `gac stats projects` viser **alle** prosjekter (ikke bare de 5 øverste) med:
+
+- **Alle prosjekter-tabell** — hvert prosjekt sortert etter aktivitet, med gac-antall, commit-antall, prompt-tokens, completion-tokens, reasoning-tokens og totale tokens
 - **Toppmodeller** — dine 5 mest brukte modeller med prompt-, completion- og totale tokens forbruk
 
 Running `gac stats models` viser **alle** modeller (ikke bare de 5 øverste) med:

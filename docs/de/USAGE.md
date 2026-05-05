@@ -422,7 +422,7 @@ Die folgenden Unterbefehle sind verfügbar:
 - `gac serve` — GAC als [MCP-Server](MCP.md) für KI-Agenten-Integration starten (stdio-Transport)
 - `gac stats show` — Ihre gac-Nutzungsstatistiken anzeigen (Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle)
 - `gac stats models` — Detaillierte Statistiken für alle Modelle mit Token-Aufschlüsselung und Geschwindigkeitsvergleich
-- `gac stats project` — Statistiken nur für das aktuelle Git-Projekt anzeigen
+- `gac stats projects` — Statistiken für alle Projekte mit Token-Aufschlüsselung anzeigen
 - `gac stats reset` — Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)
 
 ## Interaktiver Modus
@@ -550,13 +550,13 @@ Wenn Sie Statistiken während `gac init` ablehnen und eine vorhandene `~/.gac_st
 
 ### Statistik-Unterbefehle
 
-| Befehl              | Beschreibung                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Ihre Statistiken anzeigen (gleich wie `gac stats show`)                                                                         |
-| `gac stats show`    | Vollständige Statistiken anzeigen: Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle |
-| `gac stats models`  | Detaillierte Statistiken für **alle** verwendeten Modelle mit Token-Aufschlüsselung und Geschwindigkeitsvergleich               |
-| `gac stats project` | Statistiken nur für das aktuelle Git-Projekt anzeigen                                                                           |
-| `gac stats reset`   | Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)                                                           |
+| Befehl               | Beschreibung                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`          | Ihre Statistiken anzeigen (gleich wie `gac stats show`)                                                                         |
+| `gac stats show`     | Vollständige Statistiken anzeigen: Summen, Streaks, tägliche & wöchentliche Aktivität, Token-Nutzung, Top-Projekte, Top-Modelle |
+| `gac stats models`   | Detaillierte Statistiken für **alle** verwendeten Modelle mit Token-Aufschlüsselung und Geschwindigkeitsvergleich               |
+| `gac stats projects` | Statistiken für **alle** Projekte mit Token-Aufschlüsselung anzeigen                                                            |
+| `gac stats reset`    | Alle Statistiken auf Null zurücksetzen (mit Bestätigungsaufforderung)                                                           |
 
 ### Beispiele
 
@@ -567,8 +567,8 @@ gac stats
 # Detaillierte Aufschlüsselung aller verwendeten Modelle
 gac stats models
 
-# Statistiken nur für das aktuelle Projekt
-gac stats project
+# Statistiken für alle Projekte
+gac stats projects
 
 # Alle Statistiken zurücksetzen (mit Bestätigungsaufforderung)
 gac stats reset
@@ -582,6 +582,10 @@ Die Ausführung von `gac stats` zeigt:
 - **Aktuelle und längste Streak** — aufeinanderfolgende Tage mit gac-Aktivität (🔥 ab 5+ Tagen)
 - **Aktivitätszusammenfassung** — heutige und diese Woche gacs, Commits und Tokens im Vergleich zu Ihrem Spitzentag und Ihrer Spitzenwoche
 - **Top-Projekte** — Ihre 5 aktivsten Repos nach gac- + Commit-Anzahl, mit Token-Nutzung pro Projekt
+
+Running `gac stats projects` zeigt **alle** Projekte (nicht nur die Top 5) mit:
+
+- **Alle Projekte-Tabelle** — jedes Projekt sortiert nach Aktivität, mit Gac-Anzahl, Commit-Anzahl, Prompt-Token, Completion-Token, Reasoning-Token und Gesamt-Token
 - **Top-Modelle** — Ihre 5 am häufigsten verwendeten Modelle mit Prompt-, Completion- und insgesamt verbrauchten Tokens
 
 Running `gac stats models` zeigt **alle** Modelle (nicht nur die Top 5) mit:

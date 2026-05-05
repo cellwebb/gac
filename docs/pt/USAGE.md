@@ -422,7 +422,7 @@ Os seguintes subcomandos estão disponíveis:
 - `gac serve` — Iniciar o GAC como [servidor MCP](MCP.md) para integração com agentes de IA (transporte stdio)
 - `gac stats show` — Ver suas estatísticas de uso do gac (totais, sequências, atividade diária e semanal, uso de tokens, projetos principais, modelos principais)
 - `gac stats models` — Ver estatísticas detalhadas de todos os modelos com detalhamento de tokens e gráfico de comparação de velocidade
-- `gac stats project` — Ver estatísticas apenas do projeto git atual
+- `gac stats projects` — Ver estatísticas de todos os projetos com detalhamento de tokens
 - `gac stats reset` — Redefinir todas as estatísticas para zero (solicita confirmação)
 
 ## Modo Interativo
@@ -550,13 +550,13 @@ Quando você recusa as estatísticas durante `gac init` e um `~/.gac_stats.json`
 
 ### Subcomandos de Estatísticas
 
-| Comando             | Descrição                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Mostrar suas estatísticas (o mesmo que `gac stats show`)                                                                              |
-| `gac stats show`    | Exibir estatísticas completas: totais, sequências, atividade diária e semanal, uso de tokens, projetos principais, modelos principais |
-| `gac stats models`  | Exibir estatísticas detalhadas de **todos** os modelos usados, com detalhamento de tokens e gráfico de comparação de velocidade       |
-| `gac stats project` | Mostrar estatísticas apenas do projeto git atual                                                                                      |
-| `gac stats reset`   | Redefinir todas as estatísticas para zero (solicita confirmação)                                                                      |
+| Comando              | Descrição                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`          | Mostrar suas estatísticas (o mesmo que `gac stats show`)                                                                              |
+| `gac stats show`     | Exibir estatísticas completas: totais, sequências, atividade diária e semanal, uso de tokens, projetos principais, modelos principais |
+| `gac stats models`   | Exibir estatísticas detalhadas de **todos** os modelos usados, com detalhamento de tokens e gráfico de comparação de velocidade       |
+| `gac stats projects` | Mostrar estatísticas de **todos** os projetos com detalhamento de tokens                                                              |
+| `gac stats reset`    | Redefinir todas as estatísticas para zero (solicita confirmação)                                                                      |
 
 ### Exemplos
 
@@ -567,8 +567,8 @@ gac stats
 # Detalhamento de todos os modelos usados
 gac stats models
 
-# Estatísticas do projeto atual apenas
-gac stats project
+# Estatísticas de todos os projetos
+gac stats projects
 
 # Redefinir todas as estatísticas (com confirmação)
 gac stats reset
@@ -582,6 +582,10 @@ Executar `gac stats` exibe:
 - **Sequência atual e mais longa** — dias consecutivos com atividade gac (🔥 aos 5+ dias)
 - **Resumo de atividade** — gacs, commits e tokens de hoje e desta semana vs seu pico diário e semanal
 - **Projetos principais** — seus 5 repositórios mais ativos por contagem de gac + commits, com uso de tokens por projeto
+
+Running `gac stats projects` mostra **todos** os projetos (não apenas os 5 principais) com:
+
+- **Tabela de todos os projetos** — cada projeto ordenado por atividade, com contagem de gac, contagem de commits, tokens de prompt, tokens de completion, tokens de raciocínio e tokens totais
 - **Modelos principais** — seus 5 modelos mais usados com tokens de prompt, completion e totais consumidos
 
 Running `gac stats models` mostra **todos** os modelos (não apenas os 5 principais) com:

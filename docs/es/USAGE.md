@@ -420,9 +420,9 @@ Los siguientes subcomandos están disponibles:
 - `gac editor` (o `gac edit`) — Selector de editor interactivo para la tecla `e` en el prompt de confirmación (establece GAC_EDITOR)
 - `gac diff` — Mostrar git diff filtrado con opciones para cambios preparados/no preparados, color y truncamiento
 - `gac serve` — Iniciar GAC como [servidor MCP](MCP.md) para integración con agentes de IA (transporte stdio)
-- `gac stats show` — Ver tus estadísticas de uso de gac (totales, Rachas, actividad diaria y semanal, uso de tokens, proyectos principales, modelos principales)
+- `gac stats show` — Ver tus estadísticas de uso de gac (totales, rachas, actividad diaria y semanal, uso de tokens, proyectos principales, modelos principales)
 - `gac stats models` — Ver estadísticas detalladas de todos los modelos con desglose de tokens y gráfico de comparación de velocidad
-- `gac stats project` — Ver estadísticas solo del proyecto git actual
+- `gac stats projects` — Ver estadísticas de todos los proyectos con desglose de tokens
 - `gac stats reset` — Restablecer todas las estadísticas a cero (solicita confirmación)
 
 ## Modo Interactivo
@@ -533,7 +533,7 @@ gac -i -v
 
 ## Estadísticas de Uso
 
-gac rastrea estadísticas de uso ligeras para que puedas ver tu actividad de commits, Rachas, uso de tokens, y proyectos y modelos más activos. Las estadísticas se almacenan localmente en `~/.gac_stats.json` y nunca se envían a ningún lugar — no hay telemetría.
+gac rastrea estadísticas de uso ligeras para que puedas ver tu actividad de commits, rachas, uso de tokens, y proyectos y modelos más activos. Las estadísticas se almacenan localmente en `~/.gac_stats.json` y nunca se envían a ningún lugar — no hay telemetría.
 
 **Qué se rastrea:** ejecuciones totales de gac, commits totales, tokens de prompt y completion totales, fechas de primer/último uso, conteos diarios y semanales (gacs, commits, tokens), racha actual y más larga, actividad por proyecto (gacs, commits, tokens de prompt + completion) y actividad por modelo (gacs, tokens de prompt + completion).
 
@@ -550,13 +550,13 @@ Cuando rechazas las estadísticas durante `gac init` y se detecta un archivo `~/
 
 ### Subcomandos de Estadísticas
 
-| Comando             | Descripción                                                                                                                            |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`         | Mostrar tus estadísticas (igual que `gac stats show`)                                                                                  |
-| `gac stats show`    | Mostrar estadísticas completas: totales, Rachas, actividad diaria y semanal, uso de tokens, proyectos principales, modelos principales |
-| `gac stats models`  | Mostrar estadísticas detalladas de **todos** los modelos usados, con desglose de tokens y gráfico de comparación de velocidad          |
-| `gac stats project` | Mostrar estadísticas solo del proyecto git actual                                                                                      |
-| `gac stats reset`   | Restablecer todas las estadísticas a cero (solicita confirmación)                                                                      |
+| Comando              | Descripción                                                                                                                            |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`          | Mostrar tus estadísticas (igual que `gac stats show`)                                                                                  |
+| `gac stats show`     | Mostrar estadísticas completas: totales, rachas, actividad diaria y semanal, uso de tokens, proyectos principales, modelos principales |
+| `gac stats models`   | Mostrar estadísticas detalladas de **todos** los modelos usados, con desglose de tokens y gráfico de comparación de velocidad          |
+| `gac stats projects` | Mostrar estadísticas de **todos** los proyectos con desglose de tokens                                                                 |
+| `gac stats reset`    | Restablecer todas las estadísticas a cero (solicita confirmación)                                                                      |
 
 ### Ejemplos
 
@@ -567,8 +567,8 @@ gac stats
 # Desglose detallado de todos los modelos usados
 gac stats models
 
-# Estadísticas del proyecto actual solamente
-gac stats project
+# Estadísticas de todos los proyectos
+gac stats projects
 
 # Restablecer todas las estadísticas (con confirmación)
 gac stats reset
@@ -582,6 +582,10 @@ Ejecutar `gac stats` muestra:
 - **Racha actual y más larga** — días consecutivos con actividad de gac (🔥 a 5+ días)
 - **Resumen de actividad** — gacs, commits y tokens de hoy y esta semana vs tu pico diario y semanal
 - **Proyectos principales** — tus 5 repos más activos por conteo de gac + commits, con uso de tokens por proyecto
+
+Running `gac stats projects` muestra **todos** los proyectos (no solo los 5 principales) con:
+
+- **Tabla de todos los proyectos** — cada proyecto ordenado por actividad, con conteo de gac, conteo de commits, tokens de prompt, tokens de completion, tokens de razonamiento y tokens totales
 - **Modelos principales** — tus 5 modelos más usados con tokens de prompt, completion y totales consumidos
 
 Running `gac stats models` muestra **todos** los modelos (no solo los 5 principales) con:
