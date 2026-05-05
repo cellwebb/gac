@@ -16,7 +16,13 @@ from gac.oauth import refresh_token_if_expired
 from gac.oauth.token_store import TokenStore
 from gac.utils import console
 
-__all__ = ["generate_with_retries", "count_tokens", "extract_text_content"]
+__all__ = [
+    "generate_with_retries",
+    "count_tokens",
+    "estimate_reasoning_tokens",
+    "normalize_reasoning_tokens",
+    "extract_text_content",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +49,45 @@ def count_tokens(content: str | list[dict[str, str]] | dict[str, Any], model: st
         return 0
     result = round(len(text) / 3.4)
     return result if result > 0 else 1
+
+
+def estimate_reasoning_tokens(reasoning_text: str) -> int:
+    """Estimate reasoning tokens from the reasoning/thinking content text.
+
+    Uses the same 3.4 chars/token ratio as ``count_tokens``, but explicitly
+    for reasoning content.  Returns 0 when the text is empty; callers can
+    use it as a fallback when explicit token counts are unavailable.
+
+    The estimate is approximate — real tokenisation depends on the model's
+    BPE vocabulary — but it's far more accurate than reporting 0 when the
+    model actually did significant reasoning work.
+    """
+    if not reasoning_text:
+        return 0
+    result = round(len(reasoning_text) / 3.4)
+    return result if result > 0 else 1
+
+
+def normalize_reasoning_tokens(explicit_tokens: int | None, reasoning_text: str) -> int:
+    """Return reasoning token count, falling back to estimation when unavailable.
+
+    Centralises the policy: if the API reported ``reasoning_tokens`` (even
+    as ``0``), trust it.  Otherwise (``None`` sentinel = not reported),
+    estimate from the reasoning/thinking text content.
+
+    Args:
+        explicit_tokens: The ``reasoning_tokens`` value from the API response,
+            or ``None`` if the API did not report it at all.  ``0`` means
+            "the API explicitly said zero reasoning tokens".
+        reasoning_text: The concatenated reasoning/thinking content text, or
+            an empty string if no reasoning content was received.
+
+    Returns:
+        Either the explicit token count or the estimated count.
+    """
+    if explicit_tokens is not None:
+        return explicit_tokens
+    return estimate_reasoning_tokens(reasoning_text)
 
 
 def _ensure_oauth_token(provider: str) -> None:

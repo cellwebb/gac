@@ -247,3 +247,95 @@ class TestGenerateWithRetries:
             ai_utils.generate_with_retries(funcs, "openai:gpt-4", [{"role": "user", "content": "x"}], 0.7, 100, 2, True)
         assert e.value.error_type == "unknown"
         assert "Failed to generate" in str(e.value) and "after 2 retries" in str(e.value)
+
+
+class TestEstimateReasoningTokens:
+    """Test estimate_reasoning_tokens function."""
+
+    def test_empty_string(self):
+        """Empty string returns 0."""
+        assert ai_utils.estimate_reasoning_tokens("") == 0
+
+    def test_short_text(self):
+        """Short reasoning text produces at least 1 token."""
+        # "think" = 5 chars → 5/3.4 = 1.47 → round = 1
+        assert ai_utils.estimate_reasoning_tokens("think") == 1
+
+    def test_medium_text(self):
+        """Medium reasoning text estimation."""
+        # 34 chars → 34/3.4 = 10 tokens
+        text = "a" * 34
+        assert ai_utils.estimate_reasoning_tokens(text) == 10
+
+    def test_long_text(self):
+        """Long reasoning text (like real model output) estimation."""
+        # Simulating ~1000 chars of thinking → ~294 tokens
+        text = "thinking about this problem " * 37  # ~999 chars
+        result = ai_utils.estimate_reasoning_tokens(text)
+        assert result > 0
+        # Should be roughly len/3.4, within a reasonable range
+        expected = round(len(text) / 3.4)
+        assert result == expected
+
+    def test_consistent_with_count_tokens_ratio(self):
+        """Same char count should give same token count as count_tokens."""
+        text = "some reasoning content here"
+        from gac.ai_utils import count_tokens
+
+        # Both use the same 3.4 ratio
+        assert ai_utils.estimate_reasoning_tokens(text) == count_tokens(text, "any-model")
+
+    def test_whitespace_only(self):
+        """Whitespace-only text still counts characters."""
+        # 34 spaces → 10 tokens (same ratio)
+        text = " " * 34
+        assert ai_utils.estimate_reasoning_tokens(text) == 10
+
+    def test_newline_heavy_text(self):
+        """Newline-heavy reasoning text counts code points."""
+        # Each newline is 1 char, same ratio applies
+        text = "\n" * 34  # 34 newlines → 10 tokens
+        assert ai_utils.estimate_reasoning_tokens(text) == 10
+
+    def test_cjk_text(self):
+        """CJK characters are counted by code point (not bytes)."""
+        # CJK chars are 3 bytes in UTF-8 but 1 code point each.
+        # len() counts code points, so 34 CJK chars → 10 tokens.
+        text = "思" * 34
+        assert ai_utils.estimate_reasoning_tokens(text) == 10
+
+    def test_emoji_text(self):
+        """Emoji are counted by code point."""
+        # Some emoji are multi-code-point but len() counts code points.
+        # Simple emoji: 1 code point each. 34 → 10 tokens.
+        text = "🤔" * 34
+        assert ai_utils.estimate_reasoning_tokens(text) == 10
+
+
+class TestNormalizeReasoningTokens:
+    """Test normalize_reasoning_tokens function."""
+
+    def test_explicit_tokens_win(self):
+        """Explicit token count > 0 is returned as-is."""
+        assert ai_utils.normalize_reasoning_tokens(15, "some thinking text") == 15
+
+    def test_explicit_zero_means_zero(self):
+        """Explicit 0 means the API reported zero reasoning tokens — no estimation."""
+        assert ai_utils.normalize_reasoning_tokens(0, "A" * 340) == 0
+
+    def test_none_sentinel_falls_back_to_estimate(self):
+        """When explicit_tokens is None (not reported), estimate from text."""
+        text = "A" * 34  # 10 tokens
+        assert ai_utils.normalize_reasoning_tokens(None, text) == 10
+
+    def test_none_sentinel_empty_text_returns_zero(self):
+        """When not reported and text is empty, return 0."""
+        assert ai_utils.normalize_reasoning_tokens(None, "") == 0
+
+    def test_large_explicit_ignores_empty_text(self):
+        """Large explicit token count works fine with empty text."""
+        assert ai_utils.normalize_reasoning_tokens(5000, "") == 5000
+
+    def test_explicit_zero_ignores_text(self):
+        """Explicit 0 ignores even long reasoning text."""
+        assert ai_utils.normalize_reasoning_tokens(0, "thinking" * 100) == 0
