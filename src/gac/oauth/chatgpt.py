@@ -65,7 +65,7 @@ CHATGPT_OAUTH_CONFIG: dict[str, Any] = {
     "callback_timeout": 120,
     "provider_key": "chatgpt-oauth",
     "api_key_env_var": "CHATGPT_OAUTH_API_KEY",
-    "client_version": "0.72.0",
+    "client_version": "0.128.0",
     "originator": "codex_cli_rs",
 }
 
