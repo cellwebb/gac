@@ -8,7 +8,6 @@ import pytest
 import gac.oauth.copilot as copilot_module
 from gac.oauth.copilot import (
     COPILOT_OAUTH_CONFIG,
-    DEFAULT_COPILOT_MODELS,
     DEVICE_FLOW_CONFIG,
     _normalize_host,
     _require_valid_host,
@@ -61,11 +60,6 @@ class TestConfig:
     def test_config_values(self):
         assert COPILOT_OAUTH_CONFIG["api_base_url"] == "https://api.githubcopilot.com"
         assert DEVICE_FLOW_CONFIG["client_id"] == "Iv1.b507a08c87ecfe98"
-
-    def test_default_models(self):
-        assert "gpt-4.1" in DEFAULT_COPILOT_MODELS
-        assert "claude-opus-4.7" in DEFAULT_COPILOT_MODELS
-        assert "gpt-4o-mini" in DEFAULT_COPILOT_MODELS
 
 
 # ---------------------------------------------------------------------------
