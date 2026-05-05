@@ -110,6 +110,7 @@ def clean_env_state():
         "GROQ_",  # Groq settings
         "GEMINI_",  # Gemini settings
         "CLAUDE_CODE_",  # Claude Code auth
+        "COPILOT_",  # Copilot auth
     ]
 
     env_keys_to_clear = []
@@ -251,6 +252,7 @@ def isolate_oauth_tokens():
         "gac.oauth.base",
         "gac.oauth.claude_code",
         "gac.oauth.chatgpt",
+        "gac.oauth.copilot",
         "gac.auth_cli",
         "gac.ai_utils",
         "gac.oauth_retry",

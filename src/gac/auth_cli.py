@@ -24,6 +24,19 @@ from gac.oauth.chatgpt import (
 from gac.oauth.chatgpt import (
     remove_token as chatgpt_remove_token,
 )
+from gac.oauth.copilot import (
+    DEFAULT_COPILOT_MODELS,
+    _normalize_host,
+)
+from gac.oauth.copilot import (
+    authenticate_and_save as copilot_authenticate_and_save,
+)
+from gac.oauth.copilot import (
+    refresh_token_if_expired as copilot_refresh_token_if_expired,
+)
+from gac.oauth.copilot import (
+    remove_token as copilot_remove_token,
+)
 from gac.utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -37,6 +50,7 @@ def auth(ctx: click.Context) -> None:
     Supports authentication for:
     - claude-code: Claude Code subscription OAuth
     - chatgpt: ChatGPT Codex API OAuth
+    - copilot: GitHub Copilot Device Flow
 
     Examples:
         gac auth                        # Show authentication status
@@ -46,6 +60,9 @@ def auth(ctx: click.Context) -> None:
         gac auth chatgpt login          # Login to ChatGPT
         gac auth chatgpt logout         # Logout from ChatGPT
         gac auth chatgpt status         # Check ChatGPT auth status
+        gac auth copilot login          # Login to GitHub Copilot
+        gac auth copilot logout         # Logout from GitHub Copilot
+        gac auth copilot status         # Check Copilot auth status
     """
     if ctx.invoked_subcommand is None:
         _show_auth_status()
@@ -71,6 +88,13 @@ def _show_auth_status() -> None:
     else:
         click.echo("ChatGPT:      ✗ Not authenticated")
         click.echo("             Run 'gac auth chatgpt login' to login")
+
+    copilot_token = token_store.get_token("copilot")
+    if copilot_token:
+        click.echo("Copilot:      ✓ Authenticated")
+    else:
+        click.echo("Copilot:      ✗ Not authenticated")
+        click.echo("             Run 'gac auth copilot login' to login")
 
 
 # Claude Code commands
@@ -256,3 +280,108 @@ def chatgpt_status() -> None:
     else:
         click.echo("ChatGPT Authentication Status: ✗ Not authenticated")
         click.echo("Run 'gac auth chatgpt login' to authenticate.")
+
+
+# ---------------------------------------------------------------------------
+# GitHub Copilot commands
+# ---------------------------------------------------------------------------
+
+
+@auth.group("copilot")
+def copilot() -> None:
+    """Manage GitHub Copilot authentication.
+
+    Use the GitHub Device Flow to authenticate with GitHub Copilot.
+    Supports GitHub.com and GitHub Enterprise.
+    """
+    pass
+
+
+@copilot.command("login")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
+@click.option("--host", default="github.com", help="GitHub hostname (default: github.com)")
+def copilot_login(quiet: bool = False, host: str = "github.com") -> None:
+    """Login to GitHub Copilot using Device Flow.
+
+    Opens a browser for you to authorize with GitHub. Supports GitHub Enterprise
+    via the --host flag (e.g. --host ghe.mycompany.com).
+
+    After authentication, you can use Copilot models like:
+        gac -m copilot:gpt-4.1
+    """
+    if not quiet:
+        setup_logging("INFO")
+
+    # Validate hostname before any network calls
+    validated = _normalize_host(host)
+    if validated is None:
+        raise click.ClickException(f"Invalid or unsafe hostname: {host!r}")
+    host = validated
+
+    token_store = TokenStore()
+    existing_token = token_store.get_token("copilot")
+    if existing_token:
+        if not quiet:
+            click.echo("✓ Already authenticated with Copilot.")
+            if not click.confirm("Re-authenticate?"):
+                return
+
+    if not quiet:
+        click.echo()
+        click.echo("🔐 Starting GitHub Copilot Device Flow authentication…")
+        click.echo(f"   Host: {host}")
+        click.echo()
+
+    success = copilot_authenticate_and_save(host=host, quiet=quiet)
+
+    if success:
+        if not quiet:
+            click.echo()
+            click.echo("✅ Copilot authentication completed successfully!")
+            click.echo(f"   Available models: {', '.join(DEFAULT_COPILOT_MODELS[:5])}")
+            click.echo("   Use: gac -m copilot:gpt-4.1")
+    else:
+        click.echo("❌ Copilot authentication failed.")
+        click.echo("   Ensure your GitHub account has Copilot access.")
+        raise click.ClickException("Copilot authentication failed")
+
+
+@copilot.command("logout")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
+def copilot_logout(quiet: bool = False) -> None:
+    """Logout from GitHub Copilot and remove stored tokens."""
+    token_store = TokenStore()
+    existing_token = token_store.get_token("copilot")
+
+    if not existing_token:
+        if not quiet:
+            click.echo("Not currently authenticated with Copilot.")
+        return
+
+    try:
+        copilot_remove_token()
+        if not quiet:
+            click.echo("✅ Successfully logged out from Copilot.")
+    except Exception as e:
+        click.echo("❌ Failed to remove Copilot token.")
+        raise click.ClickException("Copilot logout failed") from e
+
+
+@copilot.command("status")
+def copilot_status() -> None:
+    """Check GitHub Copilot authentication status."""
+    token_store = TokenStore()
+    token = token_store.get_token("copilot")
+
+    if not token:
+        click.echo("Copilot Authentication Status: ✗ Not authenticated")
+        click.echo("Run 'gac auth copilot login' to authenticate.")
+        return
+
+    # Try to verify the session token is still valid
+    valid = copilot_refresh_token_if_expired(quiet=True)
+    if valid:
+        click.echo("Copilot Authentication Status: ✓ Authenticated")
+    else:
+        click.echo("Copilot Authentication Status: ⚠️ Token may be expired or revoked")
+        click.echo("Run 'gac auth copilot login' to re-authenticate.")

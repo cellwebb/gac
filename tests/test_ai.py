@@ -509,6 +509,7 @@ class TestProviderRegistry:
             "chatgpt-oauth",
             "claude-code",
             "chutes",
+            "copilot",
             "custom-anthropic",
             "custom-openai",
             "deepseek",

@@ -63,6 +63,11 @@ def _ensure_oauth_token(provider: str) -> None:
             "env_var": "CHATGPT_OAUTH_API_KEY",
             "login_cmd": "gac auth chatgpt login",
         },
+        "copilot": {
+            "provider_key": "copilot",
+            "env_var": "COPILOT_OAUTH_TOKEN",
+            "login_cmd": "gac auth copilot login",
+        },
     }
 
     if provider not in oauth_providers:
@@ -85,6 +90,10 @@ def _ensure_oauth_token(provider: str) -> None:
             token_valid = chatgpt_refresh() is not None
         else:
             token_valid = True
+    elif provider == "copilot":
+        from gac.oauth.copilot import refresh_token_if_expired as copilot_refresh
+
+        token_valid = copilot_refresh(quiet=True)
 
     if not token_valid:
         raise AIError.authentication_error(
