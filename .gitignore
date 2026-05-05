@@ -211,3 +211,4 @@ scripts/changelog_prompt.md
 .vscode/
 .serena/
 .crush.json
+.worktrees/
