@@ -184,3 +184,128 @@ class TestCleanCommitMessageWithFiftySeventyTwo:
         assert "<think>" not in result
         first_line = result.split("\n")[0]
         assert len(first_line) <= 50
+
+
+class TestExtractThinkTagText:
+    """Test extract_think_tag_text function."""
+
+    def test_single_think_tag(self):
+        """Extract text from a single think tag pair."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<think>Some reasoning here</think>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == "Some reasoning here"
+
+    def test_multiple_think_tags(self):
+        """Extract text from multiple think tag pairs."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<think>First thought</think>\n<think>Second thought</think>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert "First thought" in result
+        assert "Second thought" in result
+
+    def test_no_think_tags(self):
+        """No think tags returns empty string."""
+        from gac.postprocess import extract_think_tag_text
+
+        result = extract_think_tag_text("feat: add feature")
+        assert result == ""
+
+    def test_empty_think_tag(self):
+        """Empty think tag returns empty string."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<think></think>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == ""
+
+    def test_multiline_think_tag(self):
+        """Extract multiline content from think tags."""
+        from gac.postprocess import extract_think_tag_text
+
+        reasoning = "Line 1\nLine 2\nLine 3"
+        content = "<think>" + reasoning + "</think>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == reasoning
+
+    def test_case_insensitive(self):
+        """Think tags are matched case-insensitively."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<THINK>reasoning</THINK>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == "reasoning"
+
+    def test_open_tag_without_close(self):
+        """Open tag without closing tag returns empty string."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<think>reasoning without close\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == ""
+
+    def test_thinking_variant_tag(self):
+        """Extract text from <thinking> variant tags."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<thinking>Some reasoning here</thinking>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == "Some reasoning here"
+
+    def test_mixed_think_and_thinking_tags(self):
+        """Extract text when both <think> and <thinking> tags are present."""
+        from gac.postprocess import extract_think_tag_text
+
+        content = "<think>First</think>\n<thinking>Second</thinking>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert "First" in result
+        assert "Second" in result
+
+    def test_mismatched_tags_not_extracted(self):
+        """Mismatched open/close tags should not be extracted."""
+        from gac.postprocess import extract_think_tag_text
+
+        # Opening <think> with closing </thinking> - mismatched, should NOT extract
+        content = "<think>reasoning here</thinking>\nfeat: add feature"
+        result = extract_think_tag_text(content)
+        assert result == ""
+
+    def test_remove_thinking_variant_tags(self):
+        """_remove_think_tags should remove <thinking> variant tags."""
+        from gac.postprocess import _remove_think_tags
+
+        message = "<thinking>Some reasoning here</thinking>\nfeat: add feature"
+        result = _remove_think_tags(message)
+        assert result.strip() == "feat: add feature"
+        assert "<thinking>" not in result
+        assert "</thinking>" not in result
+
+    def test_remove_mixed_think_and_thinking_tags(self):
+        """_remove_think_tags should remove both <think> and <thinking> variants."""
+        from gac.postprocess import _remove_think_tags
+
+        message = "<think>First\nline</think>\n<thinking>Second\nline</thinking>\nfeat: add feature"
+        result = _remove_think_tags(message)
+        assert "First" not in result
+        assert "Second" not in result
+        assert result.strip() == "feat: add feature"
+
+    def test_clean_commit_message_removes_thinking_tags(self):
+        """clean_commit_message should remove <thinking> variant tags."""
+        from gac.postprocess import clean_commit_message
+
+        message = "<thinking>Let me think about this</thinking>\nfeat: add new feature"
+        result = clean_commit_message(message)
+        assert result.strip() == "feat: add new feature"
+        assert "<thinking>" not in result
+        assert "</thinking>" not in result
+
+    def test_message_starting_with_think_word_preserved(self):
+        """A message that literally starts with 'think' should not be deleted."""
+        from gac.postprocess import _remove_think_tags
+
+        message = "thinking about this more, I decided to refactor\nfeat: add feature"
+        result = _remove_think_tags(message)
+        assert result == message

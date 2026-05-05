@@ -8,32 +8,113 @@ import re
 
 from gac.constants import CommitMessageConstants
 
+# Pattern matching think content tags.
+# Used by extract_think_tag_text() for token estimation.
+# _remove_think_tags() uses its own inline patterns because its removal
+# logic is more complex (handles unclosed tags, partial tags at start/end, etc.).
+_THINK_TAG_RE = re.compile(r"<(think|thinking)>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
+
+
+def extract_think_tag_text(content: str) -> str:
+    """Extract the text content from all <think> and <thinking> tags.
+
+    Some models (e.g. DeepSeek-R1, Qwen-QWQ) embed their reasoning inside
+    ``<think>`` tags within the main response content rather than reporting
+    it via separate API thinking blocks.  This function extracts that text
+    so it can be used for reasoning token estimation before the tags are
+    stripped during post-processing.
+
+    Args:
+        content: The raw response content that may contain ``<think>`` or ``<thinking>`` tags.
+
+    Returns:
+        The concatenated text from all ``<think>`` blocks, or an empty string
+        if none are found.
+    """
+    matches = [m.group(2) for m in _THINK_TAG_RE.finditer(content)]
+    return "\n".join(matches) if matches else ""
+
 
 def _remove_think_tags(message: str) -> str:
-    """Remove AI reasoning <think> tags and their content from the message.
+    """Remove AI reasoning tags and their content from the message.
+
+    Handles both <think>...</think> and <thinking>...</thinking> variants.
 
     Args:
         message: The message to clean
 
     Returns:
-        Message with <think> tags removed
+        Message with reasoning tags removed
     """
-    message = re.sub(r"<think>(?:(?!</think>)[^\n])*\n.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE)
+    # Tag alternation pattern for both think and thinking variants
+    _tag = r"(?:think|thinking)"
 
-    message = re.sub(r"\n\n+\s*<think>.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE)
-    message = re.sub(r"<think>.*?</think>\s*\n\n+", "", message, flags=re.DOTALL | re.IGNORECASE)
+    message = re.sub(
+        rf"<{_tag}>(?:(?!</{_tag}>)[^\n])*\n.*?</{_tag}>\s*",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
 
-    message = re.sub(r"<think>\s*\n.*$", "", message, flags=re.DOTALL | re.IGNORECASE)
+    message = re.sub(
+        rf"\n\n+\s*<{_tag}>.*?</{_tag}>\s*",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    message = re.sub(
+        rf"<{_tag}>.*?</{_tag}>\s*\n\n+",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    message = re.sub(
+        rf"<{_tag}>\s*\n.*$",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    # Multi-line tag block preceded by a single newline
+    # (e.g., after removing a prior block above).
+    # The \n inside the tag content ensures we only match actual reasoning
+    # blocks, not inline mentions of the tag names in commit text.
+    message = re.sub(
+        rf"\n\s*<{_tag}>[^<]*\n.*?</{_tag}>\s*",
+        "\n",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    # Multi-line tag block followed by a single newline
+    message = re.sub(
+        rf"<{_tag}>[^<]*\n.*?</{_tag}>\s*\n",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    # Standalone multi-line tag block at start of message (after prior subs)
+    message = re.sub(
+        rf"^\s*<{_tag}>[^<]*\n.*?</{_tag}>\s*",
+        "",
+        message,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
 
     conventional_prefixes_pattern = r"(" + "|".join(CommitMessageConstants.CONVENTIONAL_PREFIXES) + r")[\(:)]"
-    if re.search(r"^.*?</think>", message, flags=re.DOTALL | re.IGNORECASE):
+    if re.search(rf"^.*?</{_tag}>", message, flags=re.DOTALL | re.IGNORECASE):
         prefix_match = re.search(conventional_prefixes_pattern, message, flags=re.IGNORECASE)
-        think_match = re.search(r"</think>", message, flags=re.IGNORECASE)
+        think_match = re.search(rf"</{_tag}>", message, flags=re.IGNORECASE)
 
         if not prefix_match or (think_match and think_match.start() < prefix_match.start()):
-            message = re.sub(r"^.*?</think>\s*", "", message, flags=re.DOTALL | re.IGNORECASE)
+            message = re.sub(
+                rf"^.*?</{_tag}>\s*",
+                "",
+                message,
+                flags=re.DOTALL | re.IGNORECASE,
+            )
 
-    message = re.sub(r"</think>\s*$", "", message, flags=re.IGNORECASE)
+    message = re.sub(rf"</{_tag}>\s*$", "", message, flags=re.IGNORECASE)
 
     return message
 
