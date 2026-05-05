@@ -70,18 +70,17 @@ DEVICE_FLOW_CONFIG: dict[str, Any] = {
 # Known Copilot models — informational only (shown after login).
 # This list will go stale; new Copilot models appear frequently.
 DEFAULT_COPILOT_MODELS: list[str] = [
+    "claude-haiku-4.5",
+    "claude-sonnet-4.6",
+    "claude-opus-4.7",
+    "gemini-3.1-pro-preview",
+    "gpt-4o-mini",
     "gpt-4o",
     "gpt-4.1",
-    "gpt-4.1-mini",
-    "o4-mini",
-    "o3",
-    "claude-opus-4.6",
-    "claude-opus-4",
-    "claude-sonnet-4",
-    "claude-sonnet-4.5",
-    "claude-haiku-4.5",
-    "gemini-2.5-pro",
-    "gemini-2.5-flash",
+    "gpt-5-mini",
+    "gpt-5.4",
+    "gpt-5.5",
+    "grok-code-fast-1",
 ]
 
 _PROVIDER_KEY = "copilot"

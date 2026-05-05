@@ -307,7 +307,7 @@ def copilot_login(quiet: bool = False, host: str = "github.com") -> None:
     via the --host flag (e.g. --host ghe.mycompany.com).
 
     After authentication, you can use Copilot models like:
-        gac -m copilot:gpt-4.1
+        gac -m copilot:gpt-4o-mini
     """
     if not quiet:
         setup_logging("INFO")
@@ -339,7 +339,7 @@ def copilot_login(quiet: bool = False, host: str = "github.com") -> None:
             click.echo()
             click.echo("✅ Copilot authentication completed successfully!")
             click.echo(f"   Available models: {', '.join(DEFAULT_COPILOT_MODELS[:5])}")
-            click.echo("   Use: gac -m copilot:gpt-4.1")
+            click.echo("   Use: gac -m copilot:gpt-4o-mini")
     else:
         click.echo("❌ Copilot authentication failed.")
         click.echo("   Ensure your GitHub account has Copilot access.")

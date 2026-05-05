@@ -85,9 +85,10 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("Anthropic", "claude-haiku-4-5"),
         ("Azure OpenAI", "gpt-5.4-mini"),
         ("Cerebras", "zai-glm-4.7"),
-        ("Chutes", "zai-org/GLM-5-TEE"),
         ("ChatGPT (OAuth)", "gpt-5.4-mini"),
+        ("Chutes", "zai-org/GLM-5-TEE"),
         ("Claude Code (OAuth)", "claude-sonnet-4-6"),
+        ("Copilot (OAuth)", "gpt-5-mini"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
@@ -131,6 +132,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
     is_azure_openai = provider_key == "azure-openai"
     is_chatgpt_oauth = provider_key == "chatgpt-oauth"
     is_claude_code = provider_key == "claude-code-oauth"
+    is_copilot_oauth = provider_key == "copilot-oauth"
     is_custom_anthropic = provider_key == "custom-anthropic"
     is_custom_openai = provider_key == "custom-openai"
     is_lmstudio = provider_key == "lm-studio"
@@ -144,6 +146,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         pass
     elif provider_key == "claude-code-oauth":
         provider_key = "claude-code"
+    elif provider_key == "copilot-oauth":
+        provider_key = "copilot"
     elif provider_key == "kimi-for-coding":
         provider_key = "kimi-coding"
     elif provider_key == "minimaxio":
@@ -292,6 +296,46 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         url_to_save = url.strip() if url.strip() else url_default
         set_key(str(GAC_ENV_PATH), "LMSTUDIO_API_URL", url_to_save)
         click.echo(f"Set LMSTUDIO_API_URL={url_to_save}")
+
+    # Handle Copilot OAuth separately (Device Flow — no API key needed)
+    if is_copilot_oauth:
+        from gac.oauth.copilot import authenticate_and_save as copilot_authenticate
+        from gac.oauth.token_store import TokenStore
+
+        token_store = TokenStore()
+        existing_copilot_token = token_store.get_token("copilot")
+        if existing_copilot_token:
+            click.echo("\n✓ Copilot access token already configured.")
+            action = questionary.select(
+                "What would you like to do?",
+                choices=[
+                    "Keep existing token",
+                    "Re-authenticate (get new token)",
+                ],
+                use_shortcuts=True,
+                use_arrow_keys=True,
+                use_jk_keys=False,
+            ).ask()
+
+            if action is None or action.startswith("Keep existing"):
+                if action is None:
+                    click.echo("Copilot configuration cancelled. Keeping existing token.")
+                else:
+                    click.echo("Keeping existing Copilot token")
+                return True
+            else:
+                click.echo("\n🔐 Starting Copilot Device Flow authentication...")
+                if not copilot_authenticate(quiet=False):
+                    click.echo("❌ Copilot authentication failed. Keeping existing token.")
+                    return False
+                return True
+        else:
+            click.echo("\n🔐 Starting Copilot Device Flow authentication...")
+            click.echo("   (A code will be shown to enter at github.com/login/device)\n")
+            if not copilot_authenticate(quiet=False):
+                click.echo("\n❌ Copilot authentication failed. Exiting.")
+                return False
+            return True
 
     # Handle ChatGPT OAuth separately
     if is_chatgpt_oauth:

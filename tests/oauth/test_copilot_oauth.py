@@ -64,8 +64,8 @@ class TestConfig:
 
     def test_default_models(self):
         assert "gpt-4.1" in DEFAULT_COPILOT_MODELS
-        assert "claude-opus-4.6" in DEFAULT_COPILOT_MODELS
-        assert "gemini-2.5-pro" in DEFAULT_COPILOT_MODELS
+        assert "claude-opus-4.7" in DEFAULT_COPILOT_MODELS
+        assert "gpt-4o-mini" in DEFAULT_COPILOT_MODELS
 
 
 # ---------------------------------------------------------------------------
