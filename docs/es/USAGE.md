@@ -56,6 +56,7 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 | Bandera / Opción     | Corta | Descripción                                                             |
 | -------------------- | ----- | ----------------------------------------------------------------------- |
 | `--add-all`          | `-a`  | Staging de todos los cambios antes de hacer commit                      |
+| `--stage`            | `-S`  | Seleccionar archivos interactivamente con TUI basado en árbol           |
 | `--group`            | `-g`  | Agrupar cambios staged en múltiples commits lógicos                     |
 | `--push`             | `-p`  | Hacer push de cambios al remoto después del commit                      |
 | `--yes`              | `-y`  | Confirmar automáticamente el commit sin preguntar                       |
@@ -66,6 +67,8 @@ Genera un mensaje de commit impulsado por LLM para los cambios staged y solicita
 | `--no-verify-ssl`    |       | Omitir verificación de certificado SSL (útil para proxies corporativos) |
 | `--signoff`          |       | Agregar línea Signed-off-by al mensaje de commit (cumplimiento DCO)     |
 | `--interactive`      | `-i`  | Hacer preguntas sobre los cambios para generar mejores commits          |
+
+**Nota:** `--stage` y `--add-all` son mutuamente excluyentes. Usa `--stage` para seleccionar interactivamente qué archivos hacer staging, y `--add-all` para hacer staging de todos los cambios a la vez.
 
 **Nota:** Combina `-a` y `-g` (ej., `-ag`) para hacer staging de TODOS los cambios primero, luego agruparlos en commits.
 

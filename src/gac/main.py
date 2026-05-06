@@ -202,6 +202,24 @@ def main(opts: CLIOptions, config: GACConfig | None = None) -> int:
         raise ConfigError("max_retries configuration missing")
     max_retries = int(max_retries_val)
 
+    # Handle interactive file staging if requested
+    if opts.stage:
+        from gac.staging_tui import run_staging_tui, stage_files
+
+        selected_files = run_staging_tui()
+        if selected_files is None:
+            return 0
+        if not selected_files:
+            console.print("[yellow]No files selected for staging.[/yellow]")
+            return 0
+        if opts.dry_run:
+            console.print(f"[dim]dry-run: would stage {len(selected_files)} file(s)[/dim]")
+        elif not stage_files(selected_files):
+            console.print("[red]Failed to stage selected files.[/red]")
+            return 1
+        else:
+            console.print(f"[green]Staged {len(selected_files)} file(s)[/green]")
+
     # Get git state and handle hooks
     git_state = git_validator.get_git_state(
         stage_all=opts.stage_all,

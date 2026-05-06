@@ -53,19 +53,22 @@ Gera uma mensagem de commit alimentada por LLM para alterações em stage e soli
 
 ## Flags Principais do Fluxo de Trabalho
 
-| Flag / Opção         | Short | Descrição                                                               |
-| -------------------- | ----- | ----------------------------------------------------------------------- |
-| `--add-all`          | `-a`  | Fazer stage de todas as alterações antes do commit                      |
-| `--group`            | `-g`  | Agrupar alterações em stage em múltiplos commits lógicos                |
-| `--push`             | `-p`  | Push das alterações para o remoto após o commit                         |
-| `--yes`              | `-y`  | Confirmar commit automaticamente sem prompting                          |
-| `--dry-run`          |       | Mostrar o que aconteceria sem fazer nenhuma alteração                   |
-| `--message-only`     |       | Exibir apenas a mensagem de commit gerada sem realizar o commit         |
-| `--no-verify`        |       | Ignorar hooks pre-commit e lefthook ao fazer commit                     |
-| `--skip-secret-scan` |       | Ignorar varredura de segurança para segredos nas alterações em stage    |
-| `--no-verify-ssl`    |       | Ignorar verificação de certificado SSL (útil para proxies corporativos) |
-| `--signoff`          |       | Adicionar linha Signed-off-by à mensagem de commit (conformidade DCO)   |
-| `--interactive`      | `-i`  | Fazer perguntas sobre as alterações para melhores commits               |
+| Flag / Opção         | Short | Descrição                                                                 |
+| -------------------- | ----- | ------------------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Fazer stage de todas as alterações antes do commit                        |
+| `--stage`            | `-S`  | Selecionar interativamente ficheiros para stage com TUI baseada em árvore |
+| `--group`            | `-g`  | Agrupar alterações em stage em múltiplos commits lógicos                  |
+| `--push`             | `-p`  | Push das alterações para o remoto após o commit                           |
+| `--yes`              | `-y`  | Confirmar commit automaticamente sem prompting                            |
+| `--dry-run`          |       | Mostrar o que aconteceria sem fazer nenhuma alteração                     |
+| `--message-only`     |       | Exibir apenas a mensagem de commit gerada sem realizar o commit           |
+| `--no-verify`        |       | Ignorar hooks pre-commit e lefthook ao fazer commit                       |
+| `--skip-secret-scan` |       | Ignorar varredura de segurança para segredos nas alterações em stage      |
+| `--no-verify-ssl`    |       | Ignorar verificação de certificado SSL (útil para proxies corporativos)   |
+| `--signoff`          |       | Adicionar linha Signed-off-by à mensagem de commit (conformidade DCO)     |
+| `--interactive`      | `-i`  | Fazer perguntas sobre as alterações para melhores commits                 |
+
+**Nota:** `--stage` e `--add-all` são mutuamente excludentes. Use `--stage` para selecionar interativamente quais ficheiros fazer stage, e `--add-all` para fazer stage de todas as alterações de uma vez.
 
 **Nota:** Combine `-a` e `-g` (ou seja, `-ag`) para fazer stage de TODAS as alterações primeiro, depois agrupá-las em commits.
 

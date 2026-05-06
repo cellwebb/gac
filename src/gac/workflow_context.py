@@ -25,6 +25,7 @@ class CLIOptions:
 
     # Git workflow options
     stage_all: bool = False
+    stage: bool = False
     push: bool = False
     no_verify: bool = False
     hook_timeout: int = 120

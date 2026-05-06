@@ -142,6 +142,7 @@ gac
 | `gac`              | Commit-Nachricht generieren                                                          |
 | `gac -y`           | Automatisch bestätigen (keine Überprüfung erforderlich)                              |
 | `gac -a`           | Alle Änderungen vor der Generierung der Commit-Nachricht hinzufügen                  |
+| `gac -S`           | Interaktiv Dateien zum Staging auswählen                                             |
 | `gac -o`           | Einzeilige Nachricht für triviale Änderungen                                         |
 | `gac -v`           | Ausführliches Format mit Motivation, technischer Herangehensweise und Impact-Analyse |
 | `gac -h "hinweis"` | Kontext für KI hinzufügen (z.B. `gac -h "bug fix"`)                                  |

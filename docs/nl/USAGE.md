@@ -55,6 +55,7 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | Vlag / Optie         | Kort | Beschrijving                                                                 |
 | -------------------- | ---- | ---------------------------------------------------------------------------- |
 | `--add-all`          | `-a` | Stage alle wijzigingen voordat u commit                                      |
+| `--stage`            | `-S` | Interactief bestanden selecteren om te stagen met een boomgebaseerde TUI     |
 | `--group`            | `-g` | Groepeer staged wijzigingen in meerdere logische commits                     |
 | `--push`             | `-p` | Push wijzigingen naar remote na commit                                       |
 | `--yes`              | `-y` | Bevestig commit automatisch zonder prompting                                 |
@@ -65,6 +66,8 @@ Genereert een LLM-aangedreven commitbericht voor staged wijzigingen en vraagt om
 | `--no-verify-ssl`    |      | Sla SSL-certificaatverificatie over (nuttig voor bedrijfsproxies)            |
 | `--signoff`          |      | Voeg Signed-off-by regel toe aan commitbericht (DCO-naleving)                |
 | `--interactive`      | `-i` | Stel vragen over wijzigingen voor betere commits                             |
+
+**Let op:** `--stage` en `--add-all` sluiten elkaar uit. Gebruik `--stage` om interactief te kiezen welke bestanden u wilt stagen, en `--add-all` om alle wijzigingen in één keer te stagen.
 
 **Let op:** Combineer `-a` en `-g` (d.w.z. `-ag`) om eerst ALLE wijzigingen te stage, en ze daarna te groeperen in commits.
 

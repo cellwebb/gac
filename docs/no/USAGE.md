@@ -55,6 +55,7 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | Flagg / Alternativ   | Kort | Beskrivelse                                                       |
 | -------------------- | ---- | ----------------------------------------------------------------- |
 | `--add-all`          | `-a` | Stage alle endringer før committing                               |
+| `--stage`            | `-S` | Interaktivt velg filer for staging med trebasert TUI              |
 | `--group`            | `-g` | Grupperte staged endringer i flere logiske commits                |
 | `--push`             | `-p` | Push endringer til remote etter committing                        |
 | `--yes`              | `-y` | Bekreft commit automatisk uten prompting                          |
@@ -65,6 +66,8 @@ Genererer en LLM-drevet commit-melding for staged endringer og ber om bekreftels
 | `--no-verify-ssl`    |      | Hopp over SSL-sertifikatverifisering (nyttig for bedriftsproxyer) |
 | `--signoff`          |      | Legg til Signed-off-by-linje i commit-meldingen (DCO-samsvar)     |
 | `--interactive`      | `-i` | Still spørsmål om endringer for bedre commits                     |
+
+**Merknad:** `--stage` og `--add-all` er gjensidig eksklusive. Bruk `--stage` for å interaktivt velge hvilke filer du vil stage, og `--add-all` for å stage alle endringer på én gang.
 
 **Merknad:** Kombiner `-a` og `-g` (dvs. `-ag`) for å stage ALLE endringer først, deretter gruppere dem i commits.
 

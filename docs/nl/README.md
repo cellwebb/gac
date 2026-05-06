@@ -142,6 +142,7 @@ gac
 | `gac`           | Genereer commitbericht                                               |
 | `gac -y`        | Auto-bevestig (geen beoordeling nodig)                               |
 | `gac -a`        | Stage alles voordat u commitbericht genereert                        |
+| `gac -S`        | Interactief bestanden selecteren om te stagen                        |
 | `gac -o`        | Eénregelig bericht voor triviale wijzigingen                         |
 | `gac -v`        | Uitgebreid formaat met Motivatie, Technische Aanpak en Impactanalyse |
 | `gac -h "hint"` | Voeg context toe voor LLM (bv., `gac -h "bug fix"`)                  |

@@ -142,6 +142,7 @@ gac
 | `gac`             | Générer un message de commit                                            |
 | `gac -y`          | Confirmer automatiquement (pas de vérification nécessaire)              |
 | `gac -a`          | Indexer tout avant de générer le message de commit                      |
+| `gac -S`          | Sélectionner interactivement les fichiers à indexer                     |
 | `gac -o`          | Message sur une ligne pour les changements triviaux                     |
 | `gac -v`          | Format détaillé avec Motivation, Approche technique et Analyse d'impact |
 | `gac -h "indice"` | Ajouter du contexte pour l'IA (ex: `gac -h "correction de bug"`)        |

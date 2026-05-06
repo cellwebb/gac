@@ -56,6 +56,7 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 | Flag / Option        | Kurz | Beschreibung                                                             |
 | -------------------- | ---- | ------------------------------------------------------------------------ |
 | `--add-all`          | `-a` | Alle Änderungen vor dem Committen stagen                                 |
+| `--stage`            | `-S` | Dateien interaktiv mit baumbasierter TUI zum Staging auswählen           |
 | `--group`            | `-g` | Gestagete Änderungen in mehrere logische Commits gruppieren              |
 | `--push`             | `-p` | Änderungen nach dem Committen auf das Remote pushen                      |
 | `--yes`              | `-y` | Automatisch den Commit bestätigen ohne Aufforderung                      |
@@ -66,6 +67,8 @@ Generiert eine KI-gestützte Commit-Nachricht für gestagete Änderungen und for
 | `--no-verify-ssl`    |      | SSL-Zertifikatüberprüfung überspringen (nützlich für Unternehmensproxys) |
 | `--signoff`          |      | Signed-off-by Zeile zur Commit-Nachricht hinzufügen (DCO-Konformität)    |
 | `--interactive`      | `-i` | Fragen zu Änderungen stellen für bessere Commits                         |
+
+**Hinweis:** `--stage` und `--add-all` schließen sich gegenseitig aus. Verwenden Sie `--stage`, um interaktiv Dateien zum Staging auszuwählen, und `--add-all`, um alle Änderungen auf einmal zu stagen.
 
 **Hinweis:** Kombinieren Sie `-a` und `-g` (d.h. `-ag`) um ALLE Änderungen zuerst zu staggen, dann sie in Commits zu gruppieren.
 

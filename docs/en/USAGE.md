@@ -56,6 +56,7 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | Flag / Option        | Short | Description                                                      |
 | -------------------- | ----- | ---------------------------------------------------------------- |
 | `--add-all`          | `-a`  | Stage all changes before committing                              |
+| `--stage`            | `-S`  | Interactively select files to stage with a tree-based TUI        |
 | `--group`            | `-g`  | Group staged changes into multiple logical commits               |
 | `--push`             | `-p`  | Push changes to remote after committing                          |
 | `--yes`              | `-y`  | Automatically confirm commit without prompting                   |
@@ -66,6 +67,8 @@ Generates an LLM-powered commit message for staged changes and prompts for confi
 | `--no-verify-ssl`    |       | Skip SSL certificate verification (useful for corporate proxies) |
 | `--signoff`          |       | Add Signed-off-by line to the commit message (DCO compliance)    |
 | `--interactive`      | `-i`  | Ask questions about the changes to generate better commits       |
+
+**Note:** `--stage` and `--add-all` are mutually exclusive. Use `--stage` to interactively select which files to stage, and `--add-all` to stage all changes at once.
 
 **Note:** Combine `-a` and `-g` (i.e., `-ag`) to stage ALL changes first, then group them into commits.
 
