@@ -576,3 +576,50 @@ index e69de29..4b825dc 100644
 # Note: Encoding fallback tests are complex to mock correctly due to the multi-layered
 # subprocess handling. The core functionality is tested in test_utils.py::TestEncodingFunctions
 # and basic git operations work correctly with the new encoding support.
+
+
+class TestGitCommandResult:
+    """Tests for GitCommandResult dataclass methods."""
+
+    def test_eq_same_values(self) -> None:
+        r1 = GitCommandResult.ok("output")
+        r2 = GitCommandResult.ok("output")
+        assert r1 == r2
+
+    def test_eq_different_output(self) -> None:
+        r1 = GitCommandResult.ok("output1")
+        r2 = GitCommandResult.ok("output2")
+        assert r1 != r2
+
+    def test_eq_different_returncode(self) -> None:
+        r1 = GitCommandResult.fail(returncode=1, stderr="err")
+        r2 = GitCommandResult.fail(returncode=2, stderr="err")
+        assert r1 != r2
+
+    def test_eq_not_implemented(self) -> None:
+        r1 = GitCommandResult.ok("output")
+        assert r1.__eq__("not a result") is NotImplemented
+
+    def test_repr_success(self) -> None:
+        r1 = GitCommandResult.ok("output")
+        assert repr(r1) == "GitCommandResult.ok('output')"
+
+    def test_repr_failure(self) -> None:
+        r1 = GitCommandResult.fail(returncode=128, stderr="error")
+        assert "fail" in repr(r1)
+        assert "128" in repr(r1)
+
+    def test_hash_consistency(self) -> None:
+        r1 = GitCommandResult.ok("output")
+        r2 = GitCommandResult.ok("output")
+        assert hash(r1) == hash(r2)
+
+    def test_hash_uniqueness(self) -> None:
+        r1 = GitCommandResult.ok("output1")
+        r2 = GitCommandResult.ok("output2")
+        assert hash(r1) != hash(r2)
+
+    def test_output_setter(self) -> None:
+        r1 = GitCommandResult.ok("original")
+        r1.output = "modified"
+        assert r1.output == "modified"

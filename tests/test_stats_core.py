@@ -313,3 +313,30 @@ class TestAtomicSave:
             assert loaded["total_gacs"] == 99
             # No orphaned tmp files left behind
             assert list(tmp_path.glob("stats.json.tmp.*")) == []
+
+
+class TestStreakCalculation:
+    """Tests for streak calculation in get_stats_summary."""
+
+    def test_streak_with_consecutive_days(self, tmp_path):
+        """Test that streaks are calculated correctly for consecutive days."""
+        from datetime import datetime, timedelta
+
+        from gac.stats.summary import get_stats_summary
+
+        stats_file = tmp_path / "stats.json"
+        today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
+
+        stats_data = {
+            "total_gacs": 3,
+            "daily_gacs": {two_days_ago: 1, yesterday: 1, today: 1},
+            "daily_commits": {},
+        }
+
+        stats_file.write_text(json.dumps(stats_data))
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            summary = get_stats_summary()
+            assert summary["streak"] == 3
+            assert summary["longest_streak"] >= 3

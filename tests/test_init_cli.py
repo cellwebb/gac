@@ -457,3 +457,43 @@ def test_init_cli_language_action_cancelled(monkeypatch):
                 result = runner.invoke(init)
                 # Should complete model config but cancel language part
                 assert result.exit_code == 0
+
+
+def test_configure_editor_cancelled():
+    """Test _configure_editor when user cancels."""
+    from gac.init_cli import _configure_editor
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        with (
+            mock.patch("gac.init_cli.configure_editor_init_workflow", return_value=False),
+            mock.patch("click.echo") as mecho,
+        ):
+            _configure_editor({})
+            echo_calls = [str(call) for call in mecho.call_args_list]
+            assert any("Editor configuration cancelled or failed" in str(call) for call in echo_calls)
+
+
+def test_disable_stats_with_history_prompt_oserror():
+    """Test OSError when deleting stats file."""
+    from gac.init_cli import _disable_stats_with_history_prompt
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_path = Path(tmpdir) / ".gac.env"
+        env_path.touch()
+        stats_file = Path(tmpdir) / ".gac_stats.json"
+        stats_file.write_text("{}")
+
+        with (
+            mock.patch("gac.stats.STATS_FILE", stats_file),
+            mock.patch("questionary.confirm") as mconfirm,
+            mock.patch("click.echo") as mecho,
+        ):
+            mconfirm.return_value.ask.side_effect = [True]  # delete file
+            # Make the unlink fail
+            with mock.patch.object(Path, "unlink", side_effect=OSError("Permission denied")):
+                _disable_stats_with_history_prompt({}, env_path)
+                # Should have printed error message
+                echo_calls = [str(call) for call in mecho.call_args_list]
+                assert any("Could not delete stats file" in str(call) for call in echo_calls)

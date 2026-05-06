@@ -346,3 +346,98 @@ class TestNormalizeReasoningTokens:
 
         assert estimate_reasoning_tokens("   \n\n   \t  ") == 0
         assert estimate_reasoning_tokens("  ") == 0
+
+
+class TestEnsureOAuthToken:
+    """Tests for ensure_oauth_token covering chatgpt-oauth and copilot branches."""
+
+    def test_chatgpt_oauth_token_valid(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+
+        with (
+            patch("gac.oauth.chatgpt.is_token_expired", return_value=False),
+            patch("gac.ai_utils.TokenStore") as mock_store,
+        ):
+            mock_instance = MagicMock()
+            mock_instance.get_token.return_value = {"access_token": "tok"}
+            mock_store.return_value = mock_instance
+            # Should not raise
+            _ensure_oauth_token("chatgpt-oauth")
+            assert os.environ.get("CHATGPT_OAUTH_API_KEY") == "tok"
+        os.environ.pop("CHATGPT_OAUTH_API_KEY", None)
+
+    def test_chatgpt_oauth_token_expired_refresh_success(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+
+        with (
+            patch("gac.oauth.chatgpt.is_token_expired", return_value=True),
+            patch("gac.oauth.chatgpt.refresh_access_token", return_value={"access_token": "new_tok"}),
+            patch("gac.ai_utils.TokenStore") as mock_store,
+        ):
+            mock_instance = MagicMock()
+            mock_instance.get_token.return_value = {"access_token": "new_tok"}
+            mock_store.return_value = mock_instance
+            _ensure_oauth_token("chatgpt-oauth")
+            assert os.environ.get("CHATGPT_OAUTH_API_KEY") == "new_tok"
+        os.environ.pop("CHATGPT_OAUTH_API_KEY", None)
+
+    def test_chatgpt_oauth_token_expired_refresh_fails(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+        from gac.errors import AIError
+
+        with (
+            patch("gac.oauth.chatgpt.is_token_expired", return_value=True),
+            patch("gac.oauth.chatgpt.refresh_access_token", return_value=None),
+        ):
+            with pytest.raises(AIError, match="token not found or expired"):
+                _ensure_oauth_token("chatgpt-oauth")
+
+    def test_copilot_token_valid(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+
+        with (
+            patch("gac.oauth.copilot.refresh_token_if_expired", return_value=True),
+            patch("gac.ai_utils.TokenStore") as mock_store,
+        ):
+            mock_instance = MagicMock()
+            mock_instance.get_token.return_value = {"access_token": "cop_tok"}
+            mock_store.return_value = mock_instance
+            _ensure_oauth_token("copilot")
+            assert os.environ.get("COPILOT_OAUTH_TOKEN") == "cop_tok"
+        os.environ.pop("COPILOT_OAUTH_TOKEN", None)
+
+    def test_copilot_token_invalid(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+        from gac.errors import AIError
+
+        with patch("gac.oauth.copilot.refresh_token_if_expired", return_value=False):
+            with pytest.raises(AIError, match="token not found or expired"):
+                _ensure_oauth_token("copilot")
+
+    def test_token_store_missing_access_token(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+        from gac.errors import AIError
+
+        with (
+            patch("gac.oauth.chatgpt.is_token_expired", return_value=False),
+            patch("gac.ai_utils.TokenStore") as mock_store,
+        ):
+            mock_instance = MagicMock()
+            mock_instance.get_token.return_value = {"refresh_token": "but_no_access"}
+            mock_store.return_value = mock_instance
+            with pytest.raises(AIError, match="token not found"):
+                _ensure_oauth_token("chatgpt-oauth")
+
+    def test_token_store_returns_none(self) -> None:
+        from gac.ai_utils import _ensure_oauth_token
+        from gac.errors import AIError
+
+        with (
+            patch("gac.oauth.chatgpt.is_token_expired", return_value=False),
+            patch("gac.ai_utils.TokenStore") as mock_store,
+        ):
+            mock_instance = MagicMock()
+            mock_instance.get_token.return_value = None
+            mock_store.return_value = mock_instance
+            with pytest.raises(AIError, match="token not found"):
+                _ensure_oauth_token("chatgpt-oauth")

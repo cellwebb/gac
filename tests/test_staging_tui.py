@@ -1,8 +1,19 @@
+import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gac.staging_tui import FileStatus, build_file_tree, parse_git_status, stage_files
+from gac.errors import GitError
+from gac.staging_tui import (
+    FileStatus,
+    StagingApp,
+    _dir_label,
+    _file_label,
+    build_file_tree,
+    parse_git_status,
+    run_staging_tui,
+    stage_files,
+)
 
 
 class TestFileStatus:
@@ -112,6 +123,101 @@ class TestStageFiles:
             assert stage_files(["foo.py"]) is False
 
 
+class TestFileStatusLabels:
+    def test_file_label_selected(self) -> None:
+        fs = FileStatus(path="foo.py", xy="M ")
+        label = _file_label("foo.py", fs, selected=True)
+        assert "☑" in label
+        assert "foo.py" in label
+
+    def test_file_label_unselected(self) -> None:
+        fs = FileStatus(path="foo.py", xy="M ")
+        label = _file_label("foo.py", fs, selected=False)
+        assert "☐" in label
+
+    def test_file_label_unknown_status(self) -> None:
+        fs = FileStatus(path="foo.py", xy="X ")
+        label = _file_label("foo.py", fs, selected=True)
+        assert "white" in label
+
+    def test_dir_label_empty(self) -> None:
+        label = _dir_label("src", 0, 0)
+        assert "☐" in label
+        assert "📁" in label
+
+    def test_dir_label_all_selected(self) -> None:
+        label = _dir_label("src", 3, 3)
+        assert "☑" in label
+        assert "📂" in label
+
+    def test_dir_label_partial(self) -> None:
+        label = _dir_label("src", 1, 3)
+        assert "◻" in label
+
+
+class TestParseGitStatusEdgeCases:
+    def test_parse_short_line_skipped(self) -> None:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "AB\nM  valid.py\n"
+        with patch("gac.staging_tui.subprocess.run", return_value=mock_result):
+            entries = parse_git_status()
+        assert len(entries) == 1
+        assert entries[0].path == "valid.py"
+
+    def test_parse_timeout_expired(self) -> None:
+        with patch("gac.staging_tui.subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="git", timeout=10)):
+            with pytest.raises(GitError, match="Failed to run git status"):
+                parse_git_status()
+
+    def test_parse_git_not_found(self) -> None:
+        with patch("gac.staging_tui.subprocess.run", side_effect=FileNotFoundError):
+            with pytest.raises(GitError, match="Failed to run git status"):
+                parse_git_status()
+
+
+class TestStageFilesEdgeCases:
+    def test_file_not_found_error(self) -> None:
+        with patch("gac.staging_tui.subprocess.run", side_effect=FileNotFoundError):
+            assert stage_files(["foo.py"]) is False
+
+    def test_timeout_expired(self) -> None:
+        with patch("gac.staging_tui.subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="git", timeout=30)):
+            assert stage_files(["foo.py"]) is False
+
+
+class TestRunStagingTUI:
+    def test_git_error_returns_none(self) -> None:
+        with patch("gac.staging_tui.parse_git_status", side_effect=GitError("not a repo")):
+            assert run_staging_tui() is None
+
+    def test_no_changes_returns_none(self) -> None:
+        with patch("gac.staging_tui.parse_git_status", return_value=[]):
+            assert run_staging_tui() is None
+
+
+class TestFileStatusEdgeCases:
+    def test_empty_xy(self) -> None:
+        fs = FileStatus(path="f.py", xy="")
+        assert fs.staged_code == " "
+        assert fs.worktree_code == " "
+        assert fs.is_staged is False
+
+    def test_single_char_xy(self) -> None:
+        fs = FileStatus(path="f.py", xy="M")
+        assert fs.staged_code == "M"
+        assert fs.worktree_code == " "
+
+    def test_deleted_status(self) -> None:
+        fs = FileStatus(path="f.py", xy="D ")
+        assert fs.is_staged is True
+        assert fs.display_status == "D"
+
+    def test_ignored_status(self) -> None:
+        fs = FileStatus(path="f.py", xy="!!")
+        assert fs.is_staged is False
+
+
 class TestStagingApp:
     """Tests for the Textual StagingApp — runs headlessly."""
 
@@ -124,8 +230,6 @@ class TestStagingApp:
 
     @pytest.mark.asyncio
     async def test_initially_staged_files_are_selected(self) -> None:
-        from gac.staging_tui import StagingApp
-
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.pause()
@@ -135,8 +239,6 @@ class TestStagingApp:
 
     @pytest.mark.asyncio
     async def test_enter_returns_selected_files(self) -> None:
-        from gac.staging_tui import StagingApp
-
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.press("enter")
@@ -144,8 +246,6 @@ class TestStagingApp:
 
     @pytest.mark.asyncio
     async def test_quit_returns_none(self) -> None:
-        from gac.staging_tui import StagingApp
-
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.press("q")
@@ -153,8 +253,6 @@ class TestStagingApp:
 
     @pytest.mark.asyncio
     async def test_select_all_then_confirm(self) -> None:
-        from gac.staging_tui import StagingApp
-
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.press("a")
@@ -165,10 +263,36 @@ class TestStagingApp:
 
     @pytest.mark.asyncio
     async def test_deselect_all_then_confirm(self) -> None:
-        from gac.staging_tui import StagingApp
-
         app = StagingApp(self._entries())
         async with app.run_test() as pilot:
             await pilot.press("A")
             await pilot.press("enter")
         assert app.return_value == []
+
+    @pytest.mark.asyncio
+    async def test_toggle_file_selection(self) -> None:
+        app = StagingApp(self._entries())
+        async with app.run_test() as pilot:
+            await pilot.pause()
+            # Press space to toggle the currently highlighted node
+            await pilot.press("space")
+            await pilot.press("enter")
+        result = app.return_value
+        assert isinstance(result, list)
+
+    @pytest.mark.asyncio
+    async def test_toggle_directory_selection(self) -> None:
+        entries = [
+            FileStatus("src/a.py", "M "),
+            FileStatus("src/b.py", " M"),
+            FileStatus("README.md", "??"),
+        ]
+        app = StagingApp(entries)
+        async with app.run_test() as pilot:
+            await pilot.pause()
+            # Navigate to src directory node and toggle it
+            await pilot.press("down")
+            await pilot.press("space")
+            await pilot.press("enter")
+        result = app.return_value
+        assert isinstance(result, list)

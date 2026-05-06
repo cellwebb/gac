@@ -400,3 +400,117 @@ class TestChatGPTAuthCli:
 
         assert result.exit_code == 0
         assert "ChatGPT:      ✓ Authenticated" in result.output
+
+
+class TestCopilotAuth:
+    """Tests for Copilot auth subcommands."""
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_remove_token")
+    def test_copilot_logout_not_authenticated(self, mock_remove, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = None
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "logout"])
+        assert result.exit_code == 0
+        assert "Not currently authenticated" in result.output
+        mock_remove.assert_not_called()
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_remove_token")
+    def test_copilot_logout_success(self, mock_remove, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = {"access_token": "token"}
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "logout"])
+        assert result.exit_code == 0
+        assert "Successfully logged out" in result.output
+        mock_remove.assert_called_once()
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_remove_token", side_effect=Exception("boom"))
+    def test_copilot_logout_failure(self, mock_remove, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = {"access_token": "token"}
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "logout"])
+        assert result.exit_code != 0
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_refresh_token_if_expired", return_value=True)
+    def test_copilot_status_authenticated(self, mock_refresh, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = {"access_token": "token"}
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "status"])
+        assert result.exit_code == 0
+        assert "Authenticated" in result.output
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    def test_copilot_status_not_authenticated(self, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = None
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "status"])
+        assert result.exit_code == 0
+        assert "Not authenticated" in result.output
+
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_refresh_token_if_expired", return_value=False)
+    def test_copilot_status_expired(self, mock_refresh, mock_token_store):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = {"access_token": "token"}
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "status"])
+        assert result.exit_code == 0
+        assert "expired" in result.output.lower()
+
+    @mock.patch("gac.auth_cli.setup_logging")
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_authenticate_and_save", return_value=True)
+    def test_copilot_login_success(self, mock_auth, mock_token_store, mock_logging):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = None
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "login"])
+        assert result.exit_code == 0
+        assert "successfully" in result.output.lower()
+
+    @mock.patch("gac.auth_cli.setup_logging")
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_authenticate_and_save", return_value=False)
+    def test_copilot_login_failure(self, mock_auth, mock_token_store, mock_logging):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = None
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "login"])
+        assert result.exit_code != 0
+
+    @mock.patch("gac.auth_cli.setup_logging")
+    @mock.patch("gac.auth_cli.TokenStore")
+    @mock.patch("gac.auth_cli.copilot_authenticate_and_save", return_value=True)
+    def test_copilot_login_already_authenticated_decline(self, mock_auth, mock_token_store, mock_logging):
+        mock_store_instance = mock.Mock()
+        mock_store_instance.get_token.return_value = {"access_token": "existing"}
+        mock_token_store.return_value = mock_store_instance
+
+        runner = CliRunner()
+        result = runner.invoke(auth, ["copilot", "login"], input="n\n")
+        assert result.exit_code == 0
+        mock_auth.assert_not_called()

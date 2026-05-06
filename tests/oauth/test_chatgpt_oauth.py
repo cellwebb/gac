@@ -181,6 +181,32 @@ class TestRefreshTokenIfExpired:
             with patch.object(chatgpt_module, "refresh_access_token", return_value=None):
                 assert refresh_token_if_expired(quiet=True) is False
 
+    def test_not_quiet_logs_message(self):
+        """Test that non-quiet mode logs refresh messages."""
+        with patch.object(chatgpt_module, "is_token_expired", return_value=True):
+            with patch.object(chatgpt_module, "refresh_access_token", return_value=None):
+                with patch.object(chatgpt_module, "logger") as mock_logger:
+                    result = refresh_token_if_expired(quiet=False)
+                    assert result is False
+                    mock_logger.error.assert_called()
+
+    def test_not_quiet_expired_refresh_succeeds(self):
+        """Test successful refresh in non-quiet mode."""
+        with patch.object(chatgpt_module, "is_token_expired", return_value=True):
+            with patch.object(chatgpt_module, "refresh_access_token", return_value="new_at"):
+                with patch.object(chatgpt_module, "logger") as mock_logger:
+                    result = refresh_token_if_expired(quiet=False)
+                    assert result is True
+                    mock_logger.info.assert_called()
+
+    def test_not_expired_returns_true(self):
+        """Test that not expired returns True without refreshing."""
+        with patch.object(chatgpt_module, "is_token_expired", return_value=False):
+            with patch.object(chatgpt_module, "refresh_access_token") as mock_refresh:
+                result = refresh_token_if_expired(quiet=False)
+                assert result is True
+                mock_refresh.assert_not_called()
+
 
 # ---------------------------------------------------------------------------
 # Wrapper delegation
@@ -226,3 +252,55 @@ class TestEnsureOAuthToken:
             with patch("gac.oauth.chatgpt.refresh_access_token", return_value=None):
                 with pytest.raises(AIError, match="chatgpt-oauth"):
                     _ensure_oauth_token("chatgpt-oauth")
+
+
+class TestChatGPTPublicAPI:
+    """Tests for the public API wrapper functions."""
+
+    def test_save_token(self) -> None:
+        from gac.oauth.chatgpt import save_token
+
+        with patch("gac.oauth.chatgpt._base_save", return_value=True) as mock_save:
+            result = save_token("access_token", {"foo": "bar"})
+            assert result is True
+            mock_save.assert_called_once()
+
+    def test_load_stored_token(self) -> None:
+        from gac.oauth.chatgpt import load_stored_token
+
+        with patch("gac.oauth.chatgpt._base_load", return_value="tok") as mock_load:
+            result = load_stored_token()
+            assert result == "tok"
+            mock_load.assert_called_once()
+
+    def test_load_stored_tokens(self) -> None:
+        from gac.oauth.chatgpt import load_stored_tokens
+
+        with patch("gac.oauth.chatgpt._base_load_all", return_value={"access_token": "t"}) as mock_load:
+            result = load_stored_tokens()
+            assert result == {"access_token": "t"}
+            mock_load.assert_called_once()
+
+    def test_remove_token(self) -> None:
+        from gac.oauth.chatgpt import remove_token
+
+        with patch("gac.oauth.chatgpt._base_remove", return_value=True) as mock_remove:
+            result = remove_token()
+            assert result is True
+            mock_remove.assert_called_once()
+
+    def test_is_token_expired(self) -> None:
+        from gac.oauth.chatgpt import is_token_expired
+
+        with patch("gac.oauth.chatgpt._base_is_expired", return_value=False) as mock_expired:
+            result = is_token_expired()
+            assert result is False
+            mock_expired.assert_called_once()
+
+    def test_perform_oauth_flow(self) -> None:
+        from gac.oauth.chatgpt import perform_oauth_flow
+
+        with patch("gac.oauth.chatgpt._base_flow", return_value={"access_token": "t"}) as mock_flow:
+            result = perform_oauth_flow(quiet=True)
+            assert result == {"access_token": "t"}
+            mock_flow.assert_called_once()

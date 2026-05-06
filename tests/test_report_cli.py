@@ -227,6 +227,13 @@ class TestReportCLI:
             assert "No activity yet" not in result.output
             assert "1,200" in result.output
 
+    def test_short_day_name_invalid_date(self):
+        """Test _day_name returns ??? for invalid dates."""
+        from gac.report_cli import _day_name
+
+        assert _day_name("not-a-date") == "???"
+        assert _day_name("") == "???"
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

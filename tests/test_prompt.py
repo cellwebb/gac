@@ -351,3 +351,100 @@ class TestPrompts:
         message = "功能: 新增深色模式支援"
         result = clean_commit_message(message)
         assert result == "功能: 新增深色模式支援"
+
+
+class TestBuildGroupPrompt:
+    """Tests for build_group_prompt function."""
+
+    def test_build_group_prompt_returns_tuple(self) -> None:
+        from gac.prompt import build_group_prompt
+
+        status = "M  src/foo.py\n A src/bar.py"
+        processed_diff = "diff --git a/src/foo.py b/src/foo.py\n--- a/src/foo.py\n+++ b/src/foo.py\n"
+        diff_stat = "2 files changed, 10 insertions(+)"
+
+        system, user = build_group_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            one_liner=False,
+            hint="",
+            infer_scope=False,
+            verbose=False,
+            system_template_path=None,
+            language=None,
+            translate_prefixes=False,
+        )
+        assert isinstance(system, str)
+        assert isinstance(user, str)
+        # Grouped output has JSON instructions
+        assert "JSON" in user or "commit" in user.lower()
+
+    def test_build_group_prompt_with_infer_scope(self) -> None:
+        from gac.prompt import build_group_prompt
+
+        status = "M  src/foo.py\n A src/bar.py"
+        processed_diff = "diff content"
+        diff_stat = "2 files changed"
+
+        system, user = build_group_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            one_liner=False,
+            hint="",
+            infer_scope=True,
+            verbose=False,
+            system_template_path=None,
+            language=None,
+            translate_prefixes=False,
+        )
+        # Should include scope inference logic
+        assert "scope" in user.lower() or "scope" in system.lower()
+
+    def test_build_group_prompt_with_language(self) -> None:
+        from gac.prompt import build_group_prompt
+
+        status = "M  src/foo.py"
+        processed_diff = "diff content"
+        diff_stat = "1 file changed"
+
+        system, user = build_group_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            one_liner=False,
+            hint="",
+            infer_scope=False,
+            verbose=False,
+            system_template_path=None,
+            language="zh",
+            translate_prefixes=False,
+        )
+        # Language parameter should be passed through
+        assert isinstance(system, str)
+        assert isinstance(user, str)
+
+    def test_build_group_prompt_fifty_seventy_two(self) -> None:
+        from gac.prompt import build_group_prompt
+
+        status = "M  src/foo.py"
+        processed_diff = "diff content"
+        diff_stat = "1 file changed"
+
+        system, user = build_group_prompt(
+            status=status,
+            processed_diff=processed_diff,
+            diff_stat=diff_stat,
+            one_liner=False,
+            hint="",
+            infer_scope=False,
+            verbose=False,
+            system_template_path=None,
+            language=None,
+            translate_prefixes=False,
+            fifty_seventy_two=True,
+        )
+        # Should work without error
+        assert isinstance(system, str)
+        assert isinstance(user, str)

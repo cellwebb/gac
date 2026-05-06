@@ -265,6 +265,30 @@ class TestGetActiveCustomPrompt:
         assert content is None
         assert source is None
 
+    def test_get_active_custom_prompt_env_var_oserror(self, tmp_path, monkeypatch):
+        """Handles OSError when reading env var file."""
+        env_prompt_file = tmp_path / "env_prompt.txt"
+        env_prompt_file.write_text("content", encoding="utf-8")
+        monkeypatch.setenv("GAC_SYSTEM_PROMPT_PATH", str(env_prompt_file))
+
+        with patch("pathlib.Path.read_text", side_effect=OSError("Permission denied")):
+            content, source = get_active_custom_prompt()
+        # Should gracefully handle OSError
+        assert content is None
+        assert source is None
+
+    def test_get_active_custom_prompt_stored_file_oserror(self, mock_paths, monkeypatch):
+        """Handles OSError when reading stored file."""
+        monkeypatch.delenv("GAC_SYSTEM_PROMPT_PATH", raising=False)
+        mock_paths["config_dir"].mkdir(parents=True, exist_ok=True)
+        mock_paths["custom_prompt"].write_text("content", encoding="utf-8")
+
+        with patch("pathlib.Path.read_text", side_effect=OSError("Permission denied")):
+            content, source = get_active_custom_prompt()
+        # Should gracefully handle OSError
+        assert content is None
+        assert source is None
+
 
 class TestEditTextInteractive:
     @pytest.fixture(autouse=True)

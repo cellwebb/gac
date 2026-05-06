@@ -377,5 +377,235 @@ class TestStatsCLI:
             assert "You've gac'd" in result.output
 
 
+class TestStatsModelsCommand:
+    """Tests for the 'gac stats models' subcommand."""
+
+    @pytest.fixture
+    def runner(self):
+        return CliRunner()
+
+    def test_models_no_data(self, runner) -> None:
+        with patch("gac.stats_cli.load_stats", return_value={"models": {}}):
+            result = runner.invoke(cli, ["stats", "models"])
+            assert result.exit_code == 0
+            assert "No model usage yet" in result.output
+
+    def test_models_with_data(self, runner) -> None:
+        with (
+            patch(
+                "gac.stats_cli.load_stats",
+                return_value={
+                    "models": {
+                        "openai:gpt-4": {
+                            "gacs": 10,
+                            "prompt_tokens": 5000,
+                            "completion_tokens": 1000,
+                            "reasoning_tokens": 200,
+                        },
+                    }
+                },
+            ),
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+            patch("gac.stats.store._enrich_models_with_speed", side_effect=lambda x: x),
+        ):
+            result = runner.invoke(cli, ["stats", "models"])
+            assert result.exit_code == 0
+            assert "All Models" in result.output
+            assert "openai:gpt-4" in result.output
+
+    def test_models_disabled(self, runner) -> None:
+        with patch("gac.stats_cli.stats_enabled", return_value=False):
+            result = runner.invoke(cli, ["stats", "models"])
+            assert result.exit_code == 0
+            assert "disabled" in result.output.lower()
+
+    def test_models_with_speed_data(self, runner) -> None:
+        def enrich(data):
+            result = []
+            for name, d in data:
+                d_copy = dict(d)
+                d_copy["avg_tps"] = 42.0
+                d_copy["avg_latency_ms"] = 1500
+                result.append((name, d_copy))
+            return result
+
+        with (
+            patch(
+                "gac.stats_cli.load_stats",
+                return_value={
+                    "models": {
+                        "openai:gpt-4": {
+                            "gacs": 10,
+                            "prompt_tokens": 5000,
+                            "completion_tokens": 1000,
+                            "reasoning_tokens": 200,
+                        },
+                    }
+                },
+            ),
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+            patch("gac.stats.store._enrich_models_with_speed", side_effect=enrich),
+        ):
+            result = runner.invoke(cli, ["stats", "models"])
+            assert result.exit_code == 0
+            assert "Speed Comparison" in result.output
+            assert "Latency Comparison" in result.output
+
+
+class TestStatsProjectsCommand:
+    """Tests for the 'gac stats projects' subcommand."""
+
+    @pytest.fixture
+    def runner(self):
+        return CliRunner()
+
+    def test_projects_no_data(self, runner) -> None:
+        with (
+            patch("gac.stats_cli.load_stats", return_value={"projects": {}}),
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            result = runner.invoke(cli, ["stats", "projects"])
+            assert result.exit_code == 0
+            assert "No project usage yet" in result.output
+
+    def test_projects_with_data(self, runner) -> None:
+        with (
+            patch(
+                "gac.stats_cli.load_stats",
+                return_value={
+                    "projects": {
+                        "my-app": {
+                            "gacs": 20,
+                            "commits": 50,
+                            "prompt_tokens": 10000,
+                            "completion_tokens": 2000,
+                            "reasoning_tokens": 500,
+                        },
+                        "other-proj": {
+                            "gacs": 5,
+                            "commits": 10,
+                            "prompt_tokens": 2000,
+                            "completion_tokens": 400,
+                            "reasoning_tokens": 0,
+                        },
+                    }
+                },
+            ),
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            result = runner.invoke(cli, ["stats", "projects"])
+            assert result.exit_code == 0
+            assert "All Projects" in result.output
+            assert "my-app" in result.output
+
+    def test_projects_disabled(self, runner) -> None:
+        with patch("gac.stats_cli.stats_enabled", return_value=False):
+            result = runner.invoke(cli, ["stats", "projects"])
+            assert result.exit_code == 0
+            assert "disabled" in result.output.lower()
+
+
+class TestFormatLatency:
+    """Tests for the _format_latency helper."""
+
+    def test_milliseconds(self) -> None:
+        from gac.stats_cli import _format_latency
+
+        assert _format_latency(420) == "420ms"
+
+    def test_seconds(self) -> None:
+        from gac.stats_cli import _format_latency
+
+        assert _format_latency(2500) == "2.5s"
+
+    def test_exactly_one_second(self) -> None:
+        from gac.stats_cli import _format_latency
+
+        assert _format_latency(1000) == "1.0s"
+
+
+class TestBuildBarChart:
+    """Tests for the _build_bar_chart helper."""
+
+    def test_basic_chart(self) -> None:
+        from gac.stats_cli import _build_bar_chart
+
+        models_data = [("model-a", {"avg_tps": 50}), ("model-b", {"avg_tps": 25})]
+        table = _build_bar_chart(models_data, value_key="avg_tps", max_value=50, label_fmt=lambda v: f"{v} tps")
+        # Table should have rows
+        assert table.row_count == 2
+
+    def test_empty_data(self) -> None:
+        from gac.stats_cli import _build_bar_chart
+
+        table = _build_bar_chart([], value_key="avg_tps", max_value=100, label_fmt=lambda v: str(v))
+        assert table.row_count == 0
+
+    def test_latency_chart_lower_is_better(self) -> None:
+        from gac.stats_cli import _build_bar_chart
+
+        models_data = [("fast", {"avg_latency_ms": 100}), ("slow", {"avg_latency_ms": 500})]
+        table = _build_bar_chart(
+            models_data,
+            value_key="avg_latency_ms",
+            max_value=500,
+            label_fmt=lambda v: f"{v}ms",
+            higher_is_better=False,
+        )
+        assert table.row_count == 2
+
+    def test_latency_all_speed_tiers(self) -> None:
+        """Hit all color tier branches for latency (lower is better)."""
+        from gac.stats_cli import _build_bar_chart
+
+        # 500 max, test 0.25 (125), 0.5 (250), 0.75 (375), and above
+        models_data = [
+            ("blazing", {"lat": 50}),  # <= 0.25 ratio (50/500=0.1)
+            ("fast", {"lat": 200}),  # <= 0.5 ratio
+            ("moderate", {"lat": 350}),  # <= 0.75 ratio
+            ("slow", {"lat": 450}),  # > 0.75 ratio
+        ]
+        table = _build_bar_chart(
+            models_data,
+            value_key="lat",
+            max_value=500,
+            label_fmt=lambda v: f"{v}ms",
+            higher_is_better=False,
+        )
+        assert table.row_count == 4
+
+    def test_speed_all_tiers(self) -> None:
+        """Hit all color tier branches for speed (higher is better)."""
+        from gac.stats_cli import _build_bar_chart
+
+        models_data = [
+            ("fastest", {"tps": 100}),  # >= 0.75 ratio
+            ("fast", {"tps": 60}),  # >= 0.5 ratio
+            ("medium", {"tps": 30}),  # >= 0.25 ratio
+            ("slow", {"tps": 10}),  # < 0.25 ratio
+        ]
+        table = _build_bar_chart(
+            models_data,
+            value_key="tps",
+            max_value=100,
+            label_fmt=lambda v: f"{v} tps",
+            higher_is_better=True,
+        )
+        assert table.row_count == 4
+
+    def test_zero_max_value(self) -> None:
+        """Handle max_value=0 gracefully."""
+        from gac.stats_cli import _build_bar_chart
+
+        models_data = [("zero", {"tps": 0})]
+        table = _build_bar_chart(
+            models_data,
+            value_key="tps",
+            max_value=0,
+            label_fmt=lambda v: str(v),
+        )
+        assert table.row_count == 1
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

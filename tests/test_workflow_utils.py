@@ -627,3 +627,56 @@ class TestInteractiveModeEdgeCases:
 
         assert answers == {long_question: long_answer}
         assert len(answers[long_question]) > 700
+
+
+class TestFormatTokenUsage:
+    """Tests for format_token_usage function."""
+
+    def test_basic_usage(self) -> None:
+        from gac.workflow_utils import format_token_usage
+
+        result = format_token_usage(100, 50)
+        assert result == "100 prompt + 50 completion = 150 total"
+
+    def test_with_reasoning_tokens(self) -> None:
+        from gac.workflow_utils import format_token_usage
+
+        result = format_token_usage(100, 50, 25)
+        assert result == "100 prompt + 50 completion + 25 reasoning = 175 total"
+
+    def test_zero_tokens(self) -> None:
+        from gac.workflow_utils import format_token_usage
+
+        result = format_token_usage(0, 0, 0)
+        assert result == "0 prompt + 0 completion = 0 total"
+
+    def test_reasoning_only(self) -> None:
+        from gac.workflow_utils import format_token_usage
+
+        result = format_token_usage(0, 0, 100)
+        assert result == "0 prompt + 0 completion + 100 reasoning = 100 total"
+
+
+class TestExecuteCommit:
+    """Tests for execute_commit function."""
+
+    @patch("gac.git.run_git_command")
+    def test_commit_with_signoff(self, mock_run) -> None:
+        from gac.workflow_utils import execute_commit
+
+        mock_run.return_value.success = True
+        execute_commit("test message", no_verify=False, signoff=True)
+        # Check that --signoff was added
+        call_args = mock_run.call_args[0][0]
+        assert "--signoff" in call_args
+
+    @patch("gac.git.run_git_command")
+    def test_commit_with_no_verify_and_signoff(self, mock_run) -> None:
+        from gac.workflow_utils import execute_commit
+
+        mock_run.return_value.success = True
+        execute_commit("test message", no_verify=True, signoff=True)
+        # Check that both flags were added
+        call_args = mock_run.call_args[0][0]
+        assert "--no-verify" in call_args
+        assert "--signoff" in call_args

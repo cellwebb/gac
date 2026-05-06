@@ -161,6 +161,26 @@ class TestRefreshTokenIfExpired:
                 with mock.patch.object(claude_code, "authenticate_and_save", return_value=False):
                     assert claude_code.refresh_token_if_expired(quiet=True) is False
 
+    def test_not_quiet_logs_on_refresh(self):
+        """Test non-quiet mode logs refresh attempt."""
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 940}):
+            with mock.patch("time.time", return_value=1000):
+                with mock.patch.object(claude_code, "authenticate_and_save", return_value=True):
+                    with mock.patch.object(claude_code, "logger") as mock_logger:
+                        result = claude_code.refresh_token_if_expired(quiet=False)
+                        assert result is True
+                        mock_logger.info.assert_called()
+
+    def test_not_quiet_logs_on_failure(self):
+        """Test non-quiet mode logs refresh failure."""
+        with mock.patch.object(base_module.TokenStore, "get_token", return_value={"expiry": 940}):
+            with mock.patch("time.time", return_value=1000):
+                with mock.patch.object(claude_code, "authenticate_and_save", return_value=False):
+                    with mock.patch.object(claude_code, "logger") as mock_logger:
+                        result = claude_code.refresh_token_if_expired(quiet=False)
+                        assert result is False
+                        mock_logger.error.assert_called()
+
 
 # ---------------------------------------------------------------------------
 # save_token / remove_token wrappers
