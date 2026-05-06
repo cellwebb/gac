@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 @click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
 # Git workflow options
 @click.option("--add-all", "-a", is_flag=True, help="Stage all changes before committing")
+@click.option("--stage", "-S", is_flag=True, help="Interactively select files to stage with a tree-based TUI")
 @click.option("--group", "-g", is_flag=True, help="Group changes into multiple logical commits")
 @click.option(
     "--interactive", "-i", is_flag=True, help="Ask interactive questions to gather more context for the commit message"
@@ -101,6 +102,7 @@ logger = logging.getLogger(__name__)
 def cli(
     ctx: click.Context,
     add_all: bool = False,
+    stage: bool = False,
     fifty_seventy_two: bool = False,
     group: bool = False,
     interactive: bool = False,
@@ -144,6 +146,10 @@ def cli(
             logger.info("SSL certificate verification disabled")
 
         # Validate incompatible flag combinations
+        if stage and add_all:
+            console.print("[red]Error: --stage and --add-all options are mutually exclusive[/red]")
+            sys.exit(1)
+
         if message_only and group:
             console.print("[red]Error: --message-only and --group options are mutually exclusive[/red]")
             console.print("[yellow]--message-only is for generating a single commit message for external use[/yellow]")
@@ -168,6 +174,7 @@ def cli(
         try:
             opts = CLIOptions(
                 stage_all=add_all,
+                stage=stage,
                 group=group,
                 interactive=interactive,
                 model=model,

@@ -50,7 +50,7 @@ class FileStatus:
 def parse_git_status() -> list[FileStatus]:
     try:
         result = subprocess.run(
-            ["git", "status", "--porcelain", "-u"],
+            ["git", "-c", "core.quotePath=false", "status", "--porcelain", "-u"],
             capture_output=True,
             text=True,
             check=False,
@@ -265,6 +265,6 @@ def run_staging_tui() -> list[str] | None:
 
     if not entries:
         console.print("[yellow]No changes found in the repository.[/yellow]")
-        return []
+        return None
 
     return StagingApp(entries).run()
