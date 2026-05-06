@@ -427,6 +427,7 @@ Os seguintes subcomandos estão disponíveis:
 - `gac stats models` — Ver estatísticas detalhadas de todos os modelos com detalhamento de tokens e gráfico de comparação de velocidade
 - `gac stats projects` — Ver estatísticas de todos os projetos com detalhamento de tokens
 - `gac stats reset` — Redefinir todas as estatísticas para zero (solicita confirmação)
+- `gac stats reset model <model-id>` — Redefinir estatísticas de um modelo específico (insensível a maiúsculas/minúsculas)
 
 ## Modo Interativo
 
@@ -553,13 +554,14 @@ Quando você recusa as estatísticas durante `gac init` e um `~/.gac_stats.json`
 
 ### Subcomandos de Estatísticas
 
-| Comando              | Descrição                                                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Mostrar suas estatísticas (o mesmo que `gac stats show`)                                                                              |
-| `gac stats show`     | Exibir estatísticas completas: totais, sequências, atividade diária e semanal, uso de tokens, projetos principais, modelos principais |
-| `gac stats models`   | Exibir estatísticas detalhadas de **todos** os modelos usados, com detalhamento de tokens e gráfico de comparação de velocidade       |
-| `gac stats projects` | Mostrar estatísticas de **todos** os projetos com detalhamento de tokens                                                              |
-| `gac stats reset`    | Redefinir todas as estatísticas para zero (solicita confirmação)                                                                      |
+| Comando                            | Descrição                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Mostrar suas estatísticas (o mesmo que `gac stats show`)                                                                              |
+| `gac stats show`                   | Exibir estatísticas completas: totais, sequências, atividade diária e semanal, uso de tokens, projetos principais, modelos principais |
+| `gac stats models`                 | Exibir estatísticas detalhadas de **todos** os modelos usados, com detalhamento de tokens e gráfico de comparação de velocidade       |
+| `gac stats projects`               | Mostrar estatísticas de **todos** os projetos com detalhamento de tokens                                                              |
+| `gac stats reset`                  | Redefinir todas as estatísticas para zero (solicita confirmação)                                                                      |
+| `gac stats reset model <model-id>` | Redefinir estatísticas de um modelo específico (insensível a maiúsculas/minúsculas)                                                   |
 
 ### Exemplos
 
@@ -575,6 +577,9 @@ gac stats projects
 
 # Redefinir todas as estatísticas (com confirmação)
 gac stats reset
+
+# Redefinir estatísticas de um modelo específico
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### O que você verá

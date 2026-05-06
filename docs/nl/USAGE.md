@@ -378,6 +378,7 @@ De volgende subcommando's zijn beschikbaar:
 - `gac stats models` — Bekijk gedetailleerde statistieken van alle modellen met token-uitsplitsing en snelheidsvergelijkingsgrafiek
 - `gac stats projects` — Bekijk statistieken van alle projecten met token-uitsplitsing
 - `gac stats reset` — Reset alle statistieken naar nul (vraagt om bevestiging)
+- `gac stats reset model <model-id>` — Reset statistieken voor een specifiek model (hoofdletterongevoelig)
 
 ## Interactieve Modus
 
@@ -504,13 +505,14 @@ Wanneer u statistieken afwijst tijdens `gac init` en een bestaand `~/.gac_stats.
 
 ### Statistiek-subcommando's
 
-| Commando             | Beschrijving                                                                                                                |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Uw statistieken bekijken (hetzelfde als `gac stats show`)                                                                   |
-| `gac stats show`     | Volledige statistieken tonen: totalen, streaks, dagelijkse & wekelijkse activiteit, tokengebruik, topprojecten, topmodellen |
-| `gac stats models`   | Gedetailleerde statistieken tonen van **alle** gebruikte modellen, met token-uitsplitsing en snelheidsvergelijkingsgrafiek  |
-| `gac stats projects` | Statistieken van **alle** projecten tonen met token-uitsplitsing                                                            |
-| `gac stats reset`    | Alle statistieken naar nul resetten (vraagt om bevestiging)                                                                 |
+| Commando                           | Beschrijving                                                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Uw statistieken bekijken (hetzelfde als `gac stats show`)                                                                   |
+| `gac stats show`                   | Volledige statistieken tonen: totalen, streaks, dagelijkse & wekelijkse activiteit, tokengebruik, topprojecten, topmodellen |
+| `gac stats models`                 | Gedetailleerde statistieken tonen van **alle** gebruikte modellen, met token-uitsplitsing en snelheidsvergelijkingsgrafiek  |
+| `gac stats projects`               | Statistieken van **alle** projecten tonen met token-uitsplitsing                                                            |
+| `gac stats reset`                  | Alle statistieken naar nul resetten (vraagt om bevestiging)                                                                 |
+| `gac stats reset model <model-id>` | Reset statistieken voor een specifiek model (hoofdletterongevoelig)                                                         |
 
 ### Voorbeelden
 
@@ -526,6 +528,9 @@ gac stats projects
 
 # Alle statistieken resetten (met bevestigingsprompt)
 gac stats reset
+
+# Reset statistieken voor een specifiek model
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### Wat u zult zien

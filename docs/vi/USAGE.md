@@ -378,6 +378,7 @@ Các lệnh con sau đây có sẵn:
 - `gac stats models` — Xem thống kê chi tiết cho tất cả mô hình với phân tích token và biểu đồ so sánh tốc độ
 - `gac stats projects` — Xem thống kê tất cả dự án với phân tích token
 - `gac stats reset` — Đặt lại tất cả thống kê về không (yêu cầu xác nhận)
+- `gac stats reset model <model-id>` — Đặt lại thống kê cho một mô hình cụ thể (không phân biệt chữ hoa/thường)
 
 ## Chế Độ Tương Tác
 
@@ -504,13 +505,14 @@ Khi bạn từ chối thống kê trong `gac init` và phát hiện tệp `~/.ga
 
 ### Lệnh Con Thống Kê
 
-| Lệnh                 | Mô tả                                                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Hiển thị thống kê của bạn (giống như `gac stats show`)                                                                     |
-| `gac stats show`     | Hiển thị thống kê đầy đủ: tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, sử dụng token, dự án hàng đầu, mô hình hàng đầu |
-| `gac stats models`   | Hiển thị thống kê chi tiết cho **tất cả** các mô hình đã sử dụng, với phân tích token và biểu đồ so sánh tốc độ            |
-| `gac stats projects` | Hiển thị thống kê **tất cả** các dự án với phân tích token                                                                 |
-| `gac stats reset`    | Đặt lại tất cả thống kê về không (yêu cầu xác nhận)                                                                        |
+| Lệnh                               | Mô tả                                                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Hiển thị thống kê của bạn (giống như `gac stats show`)                                                                     |
+| `gac stats show`                   | Hiển thị thống kê đầy đủ: tổng số, chuỗi, hoạt động hàng ngày & hàng tuần, sử dụng token, dự án hàng đầu, mô hình hàng đầu |
+| `gac stats models`                 | Hiển thị thống kê chi tiết cho **tất cả** các mô hình đã sử dụng, với phân tích token và biểu đồ so sánh tốc độ            |
+| `gac stats projects`               | Hiển thị thống kê **tất cả** các dự án với phân tích token                                                                 |
+| `gac stats reset`                  | Đặt lại tất cả thống kê về không (yêu cầu xác nhận)                                                                        |
+| `gac stats reset model <model-id>` | Đặt lại thống kê cho một mô hình cụ thể (không phân biệt chữ hoa/thường)                                                   |
 
 ### Ví Dụ
 
@@ -526,6 +528,9 @@ gac stats projects
 
 # Đặt lại tất cả thống kê (với yêu cầu xác nhận)
 gac stats reset
+
+# Đặt lại thống kê cho một mô hình cụ thể
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### Những Gì Bạn Sẽ Thấy

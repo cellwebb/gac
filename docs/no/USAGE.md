@@ -378,6 +378,7 @@ Følgende underkommandoer er tilgjengelige:
 - `gac stats models` — Vis detaljert statistikk for alle modeller med token-nedbryting og hastighetssammenligningsdiagram
 - `gac stats projects` — Vis statistikk for alle prosjekter med token-nedbryting
 - `gac stats reset` — Tilbakestill all statistikk til null (ber om bekreftelse)
+- `gac stats reset model <model-id>` — Tilbakestill statistikk for en spesifikk modell (ufølsom for store/små bokstaver)
 
 ## Interaktiv Modus
 
@@ -504,13 +505,14 @@ Når du avslår statistikk under `gac init` og en eksisterende `~/.gac_stats.jso
 
 ### Statistikk-underkommandoer
 
-| Kommando             | Beskrivelse                                                                                                       |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Vis din statistikk (samme som `gac stats show`)                                                                   |
-| `gac stats show`     | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
-| `gac stats models`   | Vis detaljert statistikk for **alle** brukte modeller, med token-nedbryting og hastighetssammenligningsdiagram    |
-| `gac stats projects` | Vis statistikk for **alle** prosjekter med token-nedbryting                                                       |
-| `gac stats reset`    | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
+| Kommando                           | Beskrivelse                                                                                                       |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Vis din statistikk (samme som `gac stats show`)                                                                   |
+| `gac stats show`                   | Vis fullstendig statistikk: totaler, streaks, daglig & ukentlig aktivitet, tokenbruk, topprosjekter, toppmodeller |
+| `gac stats models`                 | Vis detaljert statistikk for **alle** brukte modeller, med token-nedbryting og hastighetssammenligningsdiagram    |
+| `gac stats projects`               | Vis statistikk for **alle** prosjekter med token-nedbryting                                                       |
+| `gac stats reset`                  | Tilbakestill all statistikk til null (ber om bekreftelse)                                                         |
+| `gac stats reset model <model-id>` | Tilbakestill statistikk for en spesifikk modell (ufølsom for store/små bokstaver)                                 |
 
 ### Eksempler
 
@@ -526,6 +528,9 @@ gac stats projects
 
 # Tilbakestill all statistikk (med bekreftelsesprompt)
 gac stats reset
+
+# Tilbakestill statistikk for en spesifikk modell
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### Hva du vil se

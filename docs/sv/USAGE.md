@@ -378,6 +378,7 @@ Följande underkommandon är tillgängliga:
 - `gac stats models` — Visa detaljerad statistik för alla modeller med token-fördelning och hastighetsjämförelsediagram
 - `gac stats projects` — Visa statistik för alla projekt med token-fördelning
 - `gac stats reset` — Återställ all statistik till noll (ber om bekräftelse)
+- `gac stats reset model <model-id>` — Återställ statistik för en specifik modell (skiftlägesokänslig)
 
 ## Interaktivt Läge
 
@@ -504,13 +505,14 @@ När du avböjer statistik under `gac init` och en befintlig `~/.gac_stats.json`
 
 ### Statistikunderkommandon
 
-| Kommando             | Beskrivning                                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Visa din statistik (samma som `gac stats show`)                                                                      |
-| `gac stats show`     | Visa fullständig statistik: totaler, streaks, daglig & veckovis aktivitet, tokenanvändning, topprojekt, toppmodeller |
-| `gac stats models`   | Visa detaljerad statistik för **alla** använda modeller, med token-fördelning och hastighetsjämförelsediagram        |
-| `gac stats projects` | Visa statistik för **alla** projekt med token-fördelning                                                             |
-| `gac stats reset`    | Återställ all statistik till noll (ber om bekräftelse)                                                               |
+| Kommando                           | Beskrivning                                                                                                          |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Visa din statistik (samma som `gac stats show`)                                                                      |
+| `gac stats show`                   | Visa fullständig statistik: totaler, streaks, daglig & veckovis aktivitet, tokenanvändning, topprojekt, toppmodeller |
+| `gac stats models`                 | Visa detaljerad statistik för **alla** använda modeller, med token-fördelning och hastighetsjämförelsediagram        |
+| `gac stats projects`               | Visa statistik för **alla** projekt med token-fördelning                                                             |
+| `gac stats reset`                  | Återställ all statistik till noll (ber om bekräftelse)                                                               |
+| `gac stats reset model <model-id>` | Återställ statistik för en specifik modell (skiftlägesokänslig)                                                      |
 
 ### Exempel
 
@@ -526,6 +528,9 @@ gac stats projects
 
 # Återställ all statistik (med bekräftelseprompt)
 gac stats reset
+
+# Återställ statistik för en specifik modell
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### Vad du kommer att se

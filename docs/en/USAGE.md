@@ -425,6 +425,7 @@ The following subcommands are available:
 - `gac stats models` — View detailed stats for all models with token breakdowns and speed comparison chart
 - `gac stats projects` — View stats for all projects with token breakdowns
 - `gac stats reset` — Reset all statistics to zero (prompts for confirmation)
+- `gac stats reset model <model-id>` — Reset statistics for a specific model (case-insensitive match)
 
 ## Interactive Mode
 
@@ -551,13 +552,14 @@ When you decline stats during `gac init` and an existing `~/.gac_stats.json` is 
 
 ### Stats Subcommands
 
-| Command              | Description                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| `gac stats`          | Show your stats (same as `gac stats show`)                                                          |
-| `gac stats show`     | Display full stats: totals, streaks, daily & weekly activity, token usage, top projects, top models |
-| `gac stats models`   | Show detailed stats for **all** models used, with token breakdowns and a speed comparison chart     |
-| `gac stats projects` | Show stats for **all** projects with token breakdowns                                               |
-| `gac stats reset`    | Reset all statistics to zero (prompts for confirmation)                                             |
+| Command                            | Description                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `gac stats`                        | Show your stats (same as `gac stats show`)                                                          |
+| `gac stats show`                   | Display full stats: totals, streaks, daily & weekly activity, token usage, top projects, top models |
+| `gac stats models`                 | Show detailed stats for **all** models used, with token breakdowns and a speed comparison chart     |
+| `gac stats projects`               | Show stats for **all** projects with token breakdowns                                               |
+| `gac stats reset`                  | Reset all statistics to zero (prompts for confirmation)                                             |
+| `gac stats reset model <model-id>` | Reset statistics for a specific model (case-insensitive match)                                      |
 
 ### Examples
 
@@ -573,6 +575,9 @@ gac stats projects
 
 # Reset all stats (with confirmation prompt)
 gac stats reset
+
+# Reset stats for a specific model
+gac stats reset model wafer:deepseek-v4-pro
 ```
 
 ### What You'll See
