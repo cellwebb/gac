@@ -259,7 +259,8 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
         choices = response.get("choices")
         if not choices or not isinstance(choices, list):
             raise AIError.model_error("Invalid response: missing choices")
-        content = choices[0].get("message", {}).get("content")
+        message = choices[0].get("message", {})
+        content = message.get("content")
         if content is None:
             raise AIError.model_error("Invalid response: null content")
         if content == "":
@@ -278,9 +279,24 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
                 rt = details["reasoning_tokens"]
                 reasoning_tokens = rt if isinstance(rt, int) else None
 
-        # Estimate reasoning tokens from <arg_key>...</think> tags when the API doesn't
-        # report them explicitly (e.g. some DeepSeek-compatible endpoints).
-        thinking_text = extract_think_tag_text(content)
+        # Collect reasoning text from inline <think> tags AND from separate
+        # message fields used by DeepSeek-style (`reasoning_content`) and
+        # OpenRouter-style (`reasoning`) responses.
+        reasoning_field = message.get("reasoning_content") or message.get("reasoning") or ""
+        if not isinstance(reasoning_field, str):
+            reasoning_field = ""
+        think_tag_text = extract_think_tag_text(content)
+        thinking_text = f"{reasoning_field}\n{think_tag_text}".strip() if reasoning_field else think_tag_text
+
+        # Some passthrough providers (e.g. wafer.ai deepseek-v4-pro) populate
+        # `reasoning_content` with the actual reasoning trace but always report
+        # `reasoning_tokens: 0` in usage, regardless of how much reasoning the
+        # model actually did.  When that lie contradicts the presence of
+        # reasoning text, fall back to char-based estimation rather than display
+        # a false zero to users.
+        if reasoning_tokens == 0 and thinking_text:
+            reasoning_tokens = None
+
         reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
 
         return ParsedResponse(

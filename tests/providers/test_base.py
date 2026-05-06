@@ -413,6 +413,112 @@ class TestAnthropicCompatibleProvider:
         # completion_tokens = 200 - 42 = 158
         assert parsed.completion_tokens == 158
 
+    def test_openai_reasoning_content_field_estimates_tokens(self):
+        """DeepSeek-style reasoning_content field should populate reasoning tokens."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        reasoning_text = "Let me think about this carefully" * 10  # ~340 chars
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": "feat: add feature",
+                        "reasoning_content": reasoning_text,
+                    }
+                }
+            ],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 200},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.content == "feat: add feature"
+        assert parsed.reasoning_tokens > 0
+        assert parsed.completion_tokens < 200
+
+    def test_openai_reasoning_content_overrides_zero_from_api(self):
+        """When API reports reasoning_tokens=0 but reasoning_content is non-empty
+        (e.g. Wafer.ai's deepseek-v4-pro), estimate from the text instead of
+        trusting the false zero."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        reasoning_text = "Step by step reasoning here" * 20  # ~540 chars
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": "OK",
+                        "reasoning_content": reasoning_text,
+                    }
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 200,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+            },
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.reasoning_tokens > 0
+        assert parsed.completion_tokens < 200
+
+    def test_openai_reasoning_field_openrouter_style(self):
+        """OpenRouter-style `reasoning` field should also populate reasoning tokens."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        reasoning_text = "Reasoning text from OpenRouter" * 10  # ~310 chars
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": "feat: add feature",
+                        "reasoning": reasoning_text,
+                    }
+                }
+            ],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 150},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.reasoning_tokens > 0
+        assert parsed.completion_tokens < 150
+
+    def test_openai_null_reasoning_content_no_change(self):
+        """Null reasoning_content should not affect existing zero-reasoning behavior."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": "feat: add feature",
+                        "reasoning_content": None,
+                    }
+                }
+            ],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50},
+        }
+        parsed = provider._parse_response(response)
+        assert parsed.reasoning_tokens == 0
+        assert parsed.completion_tokens == 50
+
+    def test_openai_explicit_nonzero_reasoning_wins_over_content_field(self):
+        """When API reports nonzero reasoning_tokens, trust it over reasoning_content estimate."""
+        provider = SimpleOpenAIProvider(SimpleOpenAIProvider.config)
+        reasoning_text = "Long reasoning content" * 50  # would estimate high
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": "feat: add feature",
+                        "reasoning_content": reasoning_text,
+                    }
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 200,
+                "completion_tokens_details": {"reasoning_tokens": 25},
+            },
+        }
+        parsed = provider._parse_response(response)
+        # Trust the explicit nonzero count, not the estimate
+        assert parsed.reasoning_tokens == 25
+        assert parsed.completion_tokens == 175
+
     def test_generic_http_crash_proof_non_dict_choices(self):
         """GenericHTTPProvider should not crash on non-dict entries in choices."""
         from gac.providers.base import GenericHTTPProvider, ProviderConfig
