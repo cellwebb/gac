@@ -6,6 +6,41 @@ This provides essential guidance for AI coding agents working on this repository
 
 **ALWAYS use `uv run` prefix for ALL Python-related commands. NEVER use vanilla commands.**
 
+## 🛡️ CRITICAL: PROTECT USER DATA
+
+**NEVER touch user data files during development or testing. This includes:**
+
+- `~/.gac_stats.json` — Statistics file
+- `~/.gac.env` — Configuration/environment file
+- `~/.gac/oauth/*.json` — OAuth tokens directory
+- Any file in the user's home directory matching `~/.gac*`
+
+### When Testing Code That Uses User Data
+
+1. **ALWAYS use `tmp_path` or `tmp_path_factory` fixtures** to create temporary test files
+2. **ALWAYS mock the file path** using `patch("gac.stats.store.STATS_FILE", tmp_path / "test_stats.json")`
+3. **NEVER call functions that modify real user files** like `reset_stats()`, `save_stats()`, etc. without mocking the file path first
+4. **NEVER use `python -c` one-liners to "clean up" test data** — you might accidentally wipe real data
+
+### Example: Safe Stats Testing
+
+```python
+# ✅ CORRECT: Use tmp_path and mock
+def test_reset_model_stats(tmp_path):
+    stats_file = tmp_path / "test_stats.json"
+    with patch("gac.stats.store.STATS_FILE", stats_file):
+        # Now all operations use the temp file
+        save_stats(test_data)
+        result = reset_model_stats("some-model")
+        assert result is True
+
+# ❌ FORBIDDEN: Touching real user files
+from gac.stats import reset_stats
+reset_stats()  # This wipes the user's real stats!
+```
+
+**This requirement is NON-NEGOTIABLE. Accidental data loss is unacceptable.**
+
 ### CORRECT (Always use these)
 
 ```bash
