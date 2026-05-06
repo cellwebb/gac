@@ -7,10 +7,12 @@ from unittest.mock import patch
 
 from gac.stats import (
     GACStats,
+    find_model_key,
     get_stats_summary,
     load_stats,
     record_commit,
     record_gac,
+    reset_model_stats,
     reset_stats,
     save_stats,
 )
@@ -340,3 +342,188 @@ class TestStreakCalculation:
             summary = get_stats_summary()
             assert summary["streak"] == 3
             assert summary["longest_streak"] >= 3
+
+
+class TestFindModelKey:
+    """Tests for find_model_key helper function."""
+
+    def test_exact_case_match(self):
+        """Test finding a model with exact case match."""
+        models = {"wafer:deepseek-v4-pro": {"gacs": 10}}
+        result = find_model_key(models, "wafer:deepseek-v4-pro")
+        assert result == "wafer:deepseek-v4-pro"
+
+    def test_case_insensitive_match(self):
+        """Test finding a model with different casing."""
+        models = {"Wafer:DeepSeek-V4-PRO": {"gacs": 10}}
+        result = find_model_key(models, "wafer:deepseek-v4-pro")
+        assert result == "Wafer:DeepSeek-V4-PRO"
+
+    def test_mixed_case_model_id(self):
+        """Test finding a model when search term has mixed case."""
+        models = {"wafer:deepseek-v4-pro": {"gacs": 10}}
+        result = find_model_key(models, "WAFER:DEEPSEEK-V4-PRO")
+        assert result == "wafer:deepseek-v4-pro"
+
+    def test_model_not_found(self):
+        """Test when model is not in dict."""
+        models = {"openai:gpt-4": {"gacs": 5}}
+        result = find_model_key(models, "wafer:deepseek-v4-pro")
+        assert result is None
+
+    def test_empty_models_dict(self):
+        """Test with empty models dict."""
+        result = find_model_key({}, "wafer:deepseek-v4-pro")
+        assert result is None
+
+
+class TestResetModelStats:
+    """Tests for reset_model_stats function."""
+
+    def test_reset_model_exact_match(self, tmp_path):
+        """Test resetting a model with exact case match."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["total_gacs"] = 15
+        stats["total_prompt_tokens"] = 10000
+        stats["models"] = {
+            "wafer:deepseek-v4-pro": {
+                "gacs": 10,
+                "prompt_tokens": 5000,
+                "completion_tokens": 2000,
+                "reasoning_tokens": 500,
+            },
+            "openai:gpt-4": {"gacs": 5, "prompt_tokens": 3000, "completion_tokens": 1500, "reasoning_tokens": 0},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("wafer:deepseek-v4-pro")
+            assert result is True
+
+            loaded = load_stats()
+            # Model should be removed
+            assert "wafer:deepseek-v4-pro" not in loaded["models"]
+            # Other model should remain
+            assert "openai:gpt-4" in loaded["models"]
+            # Overall totals should be unchanged
+            assert loaded["total_gacs"] == 15
+            assert loaded["total_prompt_tokens"] == 10000
+
+    def test_reset_model_case_insensitive(self, tmp_path):
+        """Test resetting a model with case-insensitive match."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "Wafer:DeepSeek-V4-PRO": {
+                "gacs": 10,
+                "prompt_tokens": 5000,
+                "completion_tokens": 2000,
+                "reasoning_tokens": 500,
+            },
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("wafer:deepseek-v4-pro")
+            assert result is True
+
+            loaded = load_stats()
+            # Original-cased key should be removed
+            assert "Wafer:DeepSeek-V4-PRO" not in loaded["models"]
+
+    def test_reset_model_not_found(self, tmp_path):
+        """Test resetting a non-existent model."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "openai:gpt-4": {"gacs": 5},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("nonexistent:model")
+            assert result is False
+
+            loaded = load_stats()
+            # Original data should be unchanged
+            assert "openai:gpt-4" in loaded["models"]
+
+    def test_reset_model_empty_models_dict(self, tmp_path):
+        """Test resetting when models dict is empty."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("any:model")
+            assert result is False
+
+    def test_reset_model_preserves_totals(self, tmp_path):
+        """Test that resetting a model does NOT modify overall totals."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["total_gacs"] = 100
+        stats["total_commits"] = 250
+        stats["total_prompt_tokens"] = 50000
+        stats["total_completion_tokens"] = 20000
+        stats["total_reasoning_tokens"] = 5000
+        stats["models"] = {
+            "wafer:deepseek-v4-pro": {
+                "gacs": 10,
+                "prompt_tokens": 5000,
+                "completion_tokens": 2000,
+                "reasoning_tokens": 500,
+            },
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("wafer:deepseek-v4-pro")
+            assert result is True
+
+            loaded = load_stats()
+            # Totals must be unchanged
+            assert loaded["total_gacs"] == 100
+            assert loaded["total_commits"] == 250
+            assert loaded["total_prompt_tokens"] == 50000
+            assert loaded["total_completion_tokens"] == 20000
+            assert loaded["total_reasoning_tokens"] == 5000
+
+    def test_reset_model_other_models_unaffected(self, tmp_path):
+        """Test that only the target model is removed, others remain."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "model-a": {"gacs": 10, "prompt_tokens": 5000, "completion_tokens": 2000, "reasoning_tokens": 0},
+            "model-b": {"gacs": 5, "prompt_tokens": 2500, "completion_tokens": 1000, "reasoning_tokens": 0},
+            "model-c": {"gacs": 3, "prompt_tokens": 1500, "completion_tokens": 600, "reasoning_tokens": 0},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            result = reset_model_stats("model-b")
+            assert result is True
+
+            loaded = load_stats()
+            assert "model-a" in loaded["models"]
+            assert "model-b" not in loaded["models"]
+            assert "model-c" in loaded["models"]
+
+    def test_reset_model_stats_disabled(self, tmp_path):
+        """Test that reset_model_stats returns False when stats are disabled."""
+        stats_file = tmp_path / "stats.json"
+        stats: GACStats = _empty_stats()
+        stats["models"] = {
+            "model-a": {"gacs": 10},
+        }
+        stats_file.write_text(json.dumps(stats))
+
+        with patch("gac.stats.store.STATS_FILE", stats_file):
+            with patch("gac.stats.store.stats_enabled", return_value=False):
+                result = reset_model_stats("model-a")
+                assert result is False
+
+                # Data should be unchanged
+                loaded = load_stats()
+                assert "model-a" in loaded["models"]

@@ -607,5 +607,123 @@ class TestBuildBarChart:
         assert table.row_count == 1
 
 
+class TestStatsResetModelCommand:
+    """Tests for the 'gac stats reset model' subcommand."""
+
+    @pytest.fixture
+    def runner(self):
+        return CliRunner()
+
+    def test_reset_model_confirm(self, runner) -> None:
+        """Test reset model with confirmation."""
+        with (
+            patch("gac.stats_cli.load_stats") as mock_load,
+            patch("gac.stats_cli.reset_model_stats") as mock_reset,
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            mock_load.return_value = {
+                "models": {
+                    "wafer:deepseek-v4-pro": {
+                        "gacs": 10,
+                        "prompt_tokens": 5000,
+                        "completion_tokens": 2000,
+                        "reasoning_tokens": 0,
+                    },
+                }
+            }
+            mock_reset.return_value = True
+
+            result = runner.invoke(cli, ["stats", "reset", "model", "wafer:deepseek-v4-pro"], input="y\n")
+            assert result.exit_code == 0
+            mock_reset.assert_called_once_with("wafer:deepseek-v4-pro")
+            assert "Statistics reset for model" in result.output
+
+    def test_reset_model_cancel(self, runner) -> None:
+        """Test reset model cancellation."""
+        with (
+            patch("gac.stats_cli.load_stats") as mock_load,
+            patch("gac.stats_cli.reset_model_stats") as mock_reset,
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            mock_load.return_value = {
+                "models": {
+                    "wafer:deepseek-v4-pro": {
+                        "gacs": 10,
+                        "prompt_tokens": 5000,
+                        "completion_tokens": 2000,
+                        "reasoning_tokens": 0,
+                    },
+                }
+            }
+
+            result = runner.invoke(cli, ["stats", "reset", "model", "wafer:deepseek-v4-pro"], input="n\n")
+            assert result.exit_code == 0
+            mock_reset.assert_not_called()
+            assert "Reset cancelled" in result.output
+
+    def test_reset_model_case_insensitive(self, runner) -> None:
+        """Test reset model works with different casing."""
+        with (
+            patch("gac.stats_cli.load_stats") as mock_load,
+            patch("gac.stats_cli.reset_model_stats") as mock_reset,
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            mock_load.return_value = {
+                "models": {
+                    "Wafer:DeepSeek-V4-PRO": {
+                        "gacs": 10,
+                        "prompt_tokens": 5000,
+                        "completion_tokens": 2000,
+                        "reasoning_tokens": 0,
+                    },
+                }
+            }
+            mock_reset.return_value = True
+
+            # Search with lowercase, should match the original-cased key
+            result = runner.invoke(cli, ["stats", "reset", "model", "wafer:deepseek-v4-pro"], input="y\n")
+            assert result.exit_code == 0
+            mock_reset.assert_called_once_with("wafer:deepseek-v4-pro")
+            # Should show the original-cased key in output
+            assert "Wafer:DeepSeek-V4-PRO" in result.output
+
+    def test_reset_model_nonexistent(self, runner) -> None:
+        """Test reset model with non-existent model shows available models."""
+        with (
+            patch("gac.stats_cli.load_stats") as mock_load,
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            mock_load.return_value = {
+                "models": {
+                    "openai:gpt-4": {"gacs": 5},
+                    "anthropic:claude-3": {"gacs": 3},
+                }
+            }
+
+            result = runner.invoke(cli, ["stats", "reset", "model", "nonexistent:model"])
+            assert result.exit_code == 0
+            assert "not found" in result.output
+            assert "Available models" in result.output
+            assert "openai:gpt-4" in result.output
+            assert "anthropic:claude-3" in result.output
+
+    def test_reset_model_empty_models(self, runner) -> None:
+        """Test reset model with empty models dict."""
+        with (
+            patch("gac.stats_cli.load_stats", return_value={"models": {}}),
+            patch("gac.stats_cli.stats_enabled", return_value=True),
+        ):
+            result = runner.invoke(cli, ["stats", "reset", "model", "any:model"])
+            assert result.exit_code == 0
+            assert "No model statistics to reset" in result.output
+
+    def test_reset_model_stats_disabled(self, runner) -> None:
+        """Test reset model when stats are disabled."""
+        with patch("gac.stats_cli.stats_enabled", return_value=False):
+            result = runner.invoke(cli, ["stats", "reset", "model", "wafer:deepseek-v4-pro"])
+            assert result.exit_code == 0
+            assert "disabled" in result.output.lower()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
