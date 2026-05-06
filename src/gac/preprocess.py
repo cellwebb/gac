@@ -29,6 +29,7 @@ _LOCKFILE_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"pnpm-lock\.yaml$"),
     re.compile(r"composer\.lock$"),
     re.compile(r"Cargo\.lock$"),
+    re.compile(r"uv\.lock$"),
     re.compile(r"\.sum$"),
 ]
 

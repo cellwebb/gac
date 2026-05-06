@@ -147,6 +147,7 @@ index 2345678..bcdef01 234567
         assert is_lockfile_or_generated("yarn.lock")
         assert is_lockfile_or_generated("Pipfile.lock")
         assert is_lockfile_or_generated("poetry.lock")
+        assert is_lockfile_or_generated("uv.lock")
 
         # Test with generated files
         assert is_lockfile_or_generated("user.pb.go")
