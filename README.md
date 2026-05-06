@@ -142,6 +142,7 @@ gac
 | `gac`           | Generate commit message                                                 |
 | `gac -y`        | Auto-confirm (no review needed)                                         |
 | `gac -a`        | Stage all before generating commit message                              |
+| `gac -S`        | Interactively select files to stage                                     |
 | `gac -o`        | One-line message for trivial changes                                    |
 | `gac -v`        | Verbose format with Motivation, Technical Approach, and Impact Analysis |
 | `gac -h "hint"` | Add context for LLM (e.g., `gac -h "bug fix"`)                          |

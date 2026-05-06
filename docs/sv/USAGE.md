@@ -55,6 +55,7 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | Flagga / Alternativ  | Kort | Beskrivning                                                                |
 | -------------------- | ---- | -------------------------------------------------------------------------- |
 | `--add-all`          | `-a` | Stagea alla ändringar innan commit                                         |
+| `--stage`            | `-S` | Välj interaktivt filer att stagea med en träd-baserad TUI                  |
 | `--group`            | `-g` | Gruppera stageade ändringar i flera logiska commits                        |
 | `--push`             | `-p` | Pusha ändringar till remote efter commit                                   |
 | `--yes`              | `-y` | Automatiskt bekräfta commit utan prompt                                    |
@@ -65,6 +66,8 @@ Genererar ett LLM-driven commit-meddelande för stageade ändringar och frågar 
 | `--no-verify-ssl`    |      | Hoppa över SSL-certifikatverifiering (användbart för företagsproxyer)      |
 | `--signoff`          |      | Lägg till Signed-off-by-rad i commit-meddelandet (DCO-efterlevnad)         |
 | `--interactive`      | `-i` | Ställ frågor om ändringar för bättre commits                               |
+
+**Obs:** `--stage` och `--add-all` är ömsesidigt uteslutande. Använd `--stage` för att interaktivt välja vilka filer du vill stagea, och `--add-all` för att stagea alla ändringar på en gång.
 
 **Obs:** Kombinera `-a` och `-g` (dvs. `-ag`) för att stagea ALLA ändringar först, sedan gruppera dem i commits.
 

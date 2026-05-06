@@ -142,6 +142,7 @@ gac
 | `gac`           | Generera commit-meddelande                                         |
 | `gac -y`        | Auto-bekräfta (ingen granskning behövs)                            |
 | `gac -a`        | Stage alla innan generering av commit-meddelande                   |
+| `gac -S`        | Välj interaktivt filer att stagea                                  |
 | `gac -o`        | En-rads meddelande för triviala ändringar                          |
 | `gac -v`        | Utförligt format med Motivation, Teknisk Ansats och Påverkananalys |
 | `gac -h "hint"` | Lägg till kontext för LLM (t.ex., `gac -h "bug fix"`)              |

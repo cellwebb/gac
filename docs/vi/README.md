@@ -142,6 +142,7 @@ gac
 | `gac`            | Tạo thông điệp commit                                                         |
 | `gac -y`         | Tự động xác nhận (không cần xem lại)                                          |
 | `gac -a`         | Stage tất cả trước khi tạo thông điệp commit                                  |
+| `gac -S`         | Chọn tệp tương tác để stage                                                   |
 | `gac -o`         | Thông điệp một dòng cho các thay đổi nhỏ                                      |
 | `gac -v`         | Định dạng chi tiết với Động cơ, Cách tiếp cận Kỹ thuật, và Phân tích Tác động |
 | `gac -h "gợi ý"` | Thêm ngữ cảnh cho LLM (ví dụ, `gac -h "sửa lỗi"`)                             |

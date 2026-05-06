@@ -56,6 +56,7 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | Drapeau / Option     | Court | Description                                                                      |
 | -------------------- | ----- | -------------------------------------------------------------------------------- |
 | `--add-all`          | `-a`  | Indexer tous les changements avant le commit                                     |
+| `--stage`            | `-S`  | Sélectionner interactivement les fichiers à indexer avec une TUI arborescente    |
 | `--group`            | `-g`  | Grouper les changements indexés en multiples commits logiques                    |
 | `--push`             | `-p`  | Pousser les changements vers le distant après le commit                          |
 | `--yes`              | `-y`  | Confirmer automatiquement le commit sans demande                                 |
@@ -66,6 +67,8 @@ Génère un message de commit alimenté par l'IA pour les changements indexés e
 | `--no-verify-ssl`    |       | Sauter la vérification des certificats SSL (utile pour les proxies d'entreprise) |
 | `--signoff`          |       | Ajouter une ligne Signed-off-by au message de commit (conformité DCO)            |
 | `--interactive`      | `-i`  | Poser des questions sur les changements pour générer de meilleurs commits        |
+
+**Note :** `--stage` et `--add-all` sont mutuellement exclusifs. Utilisez `--stage` pour sélectionner interactivement les fichiers à indexer, et `--add-all` pour indexer tous les changements d'un coup.
 
 **Note :** Combinez `-a` et `-g` (c'est-à-dire `-ag`) pour indexer TOUS les changements d'abord, puis les grouper en commits.
 

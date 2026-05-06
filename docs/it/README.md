@@ -142,6 +142,7 @@ gac
 | `gac`           | Genera messaggio di commit                                               |
 | `gac -y`        | Auto-conferma (nessuna revisione necessaria)                             |
 | `gac -a`        | Fai lo staging di tutto prima di generare il messaggio di commit         |
+| `gac -S`        | Seleziona interattivamente i file per lo staging                         |
 | `gac -o`        | Messaggio su una riga per modifiche banali                               |
 | `gac -v`        | Formato dettagliato con Motivazione, Approccio Tecnico e Analisi Impatto |
 | `gac -h "hint"` | Aggiungi contesto per LLM (es: `gac -h "correzione bug"`)                |

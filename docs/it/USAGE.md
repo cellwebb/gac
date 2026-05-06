@@ -53,19 +53,22 @@ Genera un messaggio di commit basato su LLM per le modifiche in staging e richie
 
 ## Flag del Workflow Principale
 
-| Flag / Opzione       | Breve | Descrizione                                                         |
-| -------------------- | ----- | ------------------------------------------------------------------- |
-| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit                |
-| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici              |
-| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit                       |
-| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere                 |
-| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche                         |
-| `--message-only`     |       | Output solo del messaggio di commit generato senza commit           |
-| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit                  |
-| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche               |
-| `--no-verify-ssl`    |       | Salta verifica certificato SSL (utile per proxy aziendali)          |
-| `--signoff`          |       | Aggiungi riga Signed-off-by al messaggio di commit (conformità DCO) |
-| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori            |
+| Flag / Opzione       | Breve | Descrizione                                                               |
+| -------------------- | ----- | ------------------------------------------------------------------------- |
+| `--add-all`          | `-a`  | Metti in staging tutte le modifiche prima del commit                      |
+| `--stage`            | `-S`  | Seleziona interattivamente i file da mettere in staging con TUI ad albero |
+| `--group`            | `-g`  | Raggruppa le modifiche in staging in più commit logici                    |
+| `--push`             | `-p`  | Push delle modifiche al remote dopo il commit                             |
+| `--yes`              | `-y`  | Conferma automaticamente il commit senza richiedere                       |
+| `--dry-run`          |       | Mostra cosa accadrebbe senza fare modifiche                               |
+| `--message-only`     |       | Output solo del messaggio di commit generato senza commit                 |
+| `--no-verify`        |       | Salta hook pre-commit e lefthook durante il commit                        |
+| `--skip-secret-scan` |       | Salta scansione sicurezza per segreti nelle modifiche                     |
+| `--no-verify-ssl`    |       | Salta verifica certificato SSL (utile per proxy aziendali)                |
+| `--signoff`          |       | Aggiungi riga Signed-off-by al messaggio di commit (conformità DCO)       |
+| `--interactive`      | `-i`  | Fai domande sulle modifiche per generare commit migliori                  |
+
+**Nota:** `--stage` e `--add-all` si escludono a vicenda. Usa `--stage` per selezionare interattivamente quali file mettere in staging, e `--add-all` per mettere in staging tutte le modifiche in una volta.
 
 **Nota:** Combina `-a` e `-g` (cioè `-ag`) per mettere in staging TUTTE le modifiche prima, poi raggrupparle in commit.
 
