@@ -417,3 +417,46 @@ def reset_stats() -> None:
     reset_gac_token_accumulator()
     _set_new_biggest_gac(False)
     logger.info("Statistics reset")
+
+
+def find_model_key(models: dict[str, Any], model_id: str) -> str | None:
+    """Find a model key in the models dict using case-insensitive matching.
+
+    Args:
+        models: Dict of model_name -> model_data
+        model_id: The model identifier to find (e.g. 'wafer:deepseek-v4-pro')
+
+    Returns:
+        The original-cased key if found, None if not found.
+    """
+    model_id_lower = model_id.lower()
+    for key in models:
+        if key.lower() == model_id_lower:
+            return key
+    return None
+
+
+def reset_model_stats(model_id: str) -> bool:
+    """Reset statistics for a specific model (case-insensitive match).
+
+    Args:
+        model_id: The model identifier to reset (e.g. 'wafer:deepseek-v4-pro')
+
+    Returns:
+        True if the model was found and reset, False if not found.
+    """
+    if not stats_enabled():
+        return False
+
+    stats = load_stats()
+    models = stats.get("models", {})
+
+    matched_key = find_model_key(models, model_id)
+    if matched_key is None:
+        return False
+
+    # Remove the model from stats (leave overall totals unchanged)
+    del models[matched_key]
+    save_stats(stats)
+    logger.info(f"Reset statistics for model: {matched_key}")
+    return True

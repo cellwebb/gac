@@ -10,11 +10,13 @@ from rich.table import Table
 
 from gac.stats import (
     compute_total_tokens,
+    find_model_key,
     format_tokens,
     get_stats_summary,
     load_stats,
     model_activity,
     project_activity,
+    reset_model_stats,
     reset_stats,
     stats_enabled,
 )
@@ -474,19 +476,72 @@ def models() -> None:
     console.print()
 
 
-@stats.command()
-def reset() -> None:
-    """Reset all statistics (cannot be undone)."""
-    console.print("[red]⚠️  This will delete all your gac statistics![/red]")
-    console.print("[dim]Total commits, streaks, and history will be lost.[/dim]")
+@stats.group(invoke_without_command=True)
+@click.pass_context
+def reset(ctx: click.Context) -> None:
+    """Reset statistics (cannot be undone)."""
+    if ctx.invoked_subcommand is None:
+        # Default behavior: reset all stats (backward compatibility)
+        console.print("[red]⚠️  This will delete all your gac statistics![/red]")
+        console.print("[dim]Total commits, streaks, and history will be lost.[/dim]")
+        console.print("[dim]Use 'gac stats reset model <model-id>' to reset a specific model.[/dim]")
+        console.print()
+
+        confirm = click.confirm("Are you sure you want to reset all your stats?")
+        if confirm:
+            reset_stats()
+            console.print("[green]Statistics reset. Starting fresh! 🚀[/green]")
+        else:
+            console.print("[dim]Reset cancelled. Your stats are safe![/dim]")
+
+
+@reset.command()
+@click.argument("model_id")
+def model(model_id: str) -> None:
+    """Reset statistics for a specific model (case-insensitive).
+
+    MODEL_ID is the model identifier to reset (e.g. 'wafer:deepseek-v4-pro').
+    The match is case-insensitive.
+    """
+    if not stats_enabled():
+        console.print("[dim]Stats tracking is currently disabled (GAC_DISABLE_STATS is set to a truthy value).[/dim]")
+        return
+
+    stats_data = load_stats()
+    models_data = stats_data.get("models", {})
+
+    if not models_data:
+        console.print("[yellow]No model statistics to reset![/yellow]")
+        return
+
+    # Find matching model (case-insensitive) using shared helper
+    matched_key = find_model_key(models_data, model_id)
+
+    if matched_key is None:
+        console.print(f"[red]Model '[bold]{model_id}[/bold]' not found in statistics.[/red]")
+        console.print("[dim]Available models:[/dim]")
+        for key in sorted(models_data.keys()):
+            console.print(f"  [dim]•[/dim] [cyan]{key}[/cyan]")
+        return
+
+    # Show what will be deleted
+    model_data = models_data[matched_key]
+    gacs = model_data.get("gacs", 0)
+    total_tokens = compute_total_tokens(model_data)
+
+    console.print(f"[yellow]This will reset statistics for model: [bold]{matched_key}[/bold][/yellow]")
+    console.print(f"[dim]Gacs: {gacs}, Tokens: {format_tokens(total_tokens)}[/dim]")
     console.print()
 
-    confirm = click.confirm("Are you sure you want to reset your stats?")
+    confirm = click.confirm("Are you sure you want to reset this model's stats?")
     if confirm:
-        reset_stats()
-        console.print("[green]Statistics reset. Starting fresh! 🚀[/green]")
+        success = reset_model_stats(model_id)
+        if success:
+            console.print(f"[green]Statistics reset for model: {matched_key}[/green]")
+        else:
+            console.print(f"[red]Failed to reset model: {model_id}[/red]")
     else:
-        console.print("[dim]Reset cancelled. Your stats are safe![/dim]")
+        console.print("[dim]Reset cancelled.[/dim]")
 
 
 @stats.command()
