@@ -6,6 +6,7 @@
 # 🚀 Git Auto Commit (`gac`)
 
 [![PyPI version](https://img.shields.io/pypi/v/gac.svg)](https://pypi.org/project/gac/)
+[![Changelog](https://img.shields.io/badge/changelog-kittylog-10b981)](https://kittylog.app/c/thomwebb/gac)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Build Status](https://github.com/cellwebb/gac/actions/workflows/ci.yml/badge.svg)](https://github.com/cellwebb/gac/actions)
 [![codecov](https://codecov.io/gh/cellwebb/gac/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cellwebb/gac)
