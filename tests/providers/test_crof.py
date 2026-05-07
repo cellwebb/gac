@@ -125,3 +125,52 @@ class TestCrofIntegration:
             ):
                 pytest.skip(f"Crof.ai API service unavailable - skipping real API test: {e}")
             raise
+
+
+class TestCrofGLMReasoningTokenBug:
+    """Test the Crof.ai GLM-4.7-flash reasoning token bug.
+
+    Crof.ai with GLM models returns completion_tokens that already
+    EXCLUDES reasoning_tokens (unlike OpenAI's convention where
+    completion_tokens includes reasoning).  The old code subtracted
+    reasoning from completion unconditionally, producing a false
+    zero for completion_tokens.
+    """
+
+    def test_glm_completion_tokens_not_zeroed(self):
+        """GLM-4.7-flash: completion_tokens (81) < reasoning_tokens (559)
+        should NOT produce 0 — the API already excluded reasoning."""
+        with patch.dict("os.environ", {"CROF_API_KEY": "test-key"}):
+            with patch("httpx.post") as mock_post:
+                mock_response = MagicMock()
+                mock_response.json.return_value = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "chore: update model identifier",
+                                "reasoning_content": "The user wants to update...",
+                            }
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 1714,
+                        "completion_tokens": 81,
+                        "completion_tokens_details": {"reasoning_tokens": 559},
+                    },
+                }
+                mock_response.raise_for_status = MagicMock()
+                mock_post.return_value = mock_response
+
+                content, prompt_tokens, completion_tokens, duration_ms, reasoning_tokens = call_crof_api(
+                    "glm-4.7-flash",
+                    [{"role": "user", "content": "commit"}],
+                    0.7,
+                    1024,
+                )
+
+                assert content == "chore: update model identifier"
+                assert prompt_tokens == 1714
+                # BUG WAS HERE: old code did max(81 - 559, 0) = 0
+                # Fixed: 81 < 559 → API already excluded reasoning → keep 81
+                assert completion_tokens == 81
+                assert reasoning_tokens == 559

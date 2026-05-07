@@ -20,10 +20,12 @@ from gac.utils import get_ssl_verify
 class ParsedResponse:
     """Structured result from parsing an API response.
 
-    ``completion_tokens`` excludes reasoning tokens.  The provider APIs
-    return ``completion_tokens`` inclusive of reasoning; we subtract
-    ``reasoning_tokens`` at parse time so downstream code always gets two
-    distinct, non-overlapping numbers.
+    ``completion_tokens`` excludes reasoning tokens.  Provider APIs vary:
+    some (OpenAI) return ``completion_tokens`` inclusive of reasoning; others
+    (e.g. Crof.ai GLM models) already exclude reasoning.  The
+    ``_normalize_completion_tokens`` helper detects the convention and
+    subtracts reasoning only when appropriate so downstream code always
+    gets two distinct, non-overlapping numbers.
     """
 
     content: str
@@ -33,6 +35,27 @@ class ParsedResponse:
 
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_completion_tokens(completion_tokens: int, reasoning_tokens: int) -> int:
+    """Subtract reasoning tokens from completion tokens when the API includes
+    reasoning in its ``completion_tokens`` count (OpenAI convention).
+
+    Some providers (e.g. Crof.ai with GLM models) already report
+    ``completion_tokens`` *exclusive* of reasoning.  When
+    ``completion_tokens < reasoning_tokens``, subtraction would produce a
+    negative number, which is impossible if reasoning is a subset of
+    completion — so we detect this case and skip subtraction.
+    """
+    if completion_tokens < 0:
+        return completion_tokens  # -1 means "unknown", pass through
+    if reasoning_tokens <= 0:
+        return completion_tokens  # nothing to subtract
+    if completion_tokens >= reasoning_tokens:
+        # Standard (OpenAI) convention: completion_tokens includes reasoning
+        return completion_tokens - reasoning_tokens
+    # completion_tokens < reasoning_tokens → API already excluded reasoning
+    return completion_tokens
 
 
 @dataclass
@@ -302,11 +325,12 @@ class OpenAICompatibleProvider(BaseConfiguredProvider):
         return ParsedResponse(
             content=content,
             prompt_tokens=prompt_tokens,
-            # Normalize: API completion_tokens includes reasoning; subtract it
-            # so downstream gets two distinct, non-overlapping numbers.
-            completion_tokens=(
-                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
-            ),
+            # Normalize: when the API includes reasoning in
+            # completion_tokens (OpenAI convention), subtract it so
+            # downstream gets two distinct, non-overlapping numbers.
+            # When the API already excludes reasoning (e.g. Crof.ai
+            # GLM models), skip subtraction to avoid a false zero.
+            completion_tokens=_normalize_completion_tokens(completion_tokens, reasoning_tokens),
             reasoning_tokens=reasoning_tokens,
         )
 
@@ -397,11 +421,10 @@ class AnthropicCompatibleProvider(BaseConfiguredProvider):
         return ParsedResponse(
             content=text_content,
             prompt_tokens=prompt_tokens,
-            # Normalize: API output_tokens includes reasoning; subtract it
-            # so downstream gets two distinct, non-overlapping numbers.
-            completion_tokens=(
-                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
-            ),
+            # Normalize: when the API includes reasoning in
+            # output_tokens (Anthropic convention), subtract it.
+            # When the API already excludes reasoning, skip subtraction.
+            completion_tokens=_normalize_completion_tokens(completion_tokens, reasoning_tokens),
             reasoning_tokens=reasoning_tokens,
         )
 
@@ -470,11 +493,10 @@ class GenericHTTPProvider(BaseConfiguredProvider):
         if extracted_content is not None:
             thinking_text = extract_think_tag_text(extracted_content)
             reasoning_tokens = normalize_reasoning_tokens(reasoning_tokens, thinking_text)
-            # Normalize: API completion_tokens includes reasoning; subtract it
-            # so downstream gets two distinct, non-overlapping numbers.
-            norm_completion = (
-                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
-            )
+            # Normalize: when the API includes reasoning in
+            # completion_tokens, subtract it.  When the API already
+            # excludes reasoning, skip subtraction.
+            norm_completion = _normalize_completion_tokens(completion_tokens, reasoning_tokens)
             return ParsedResponse(
                 content=extracted_content,
                 prompt_tokens=prompt_tokens,
@@ -492,4 +514,5 @@ __all__ = [
     "OpenAICompatibleProvider",
     "ParsedResponse",
     "ProviderConfig",
+    "_normalize_completion_tokens",
 ]

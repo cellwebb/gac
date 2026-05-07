@@ -24,6 +24,7 @@ from gac.providers.base import (
     OpenAICompatibleProvider,
     ParsedResponse,
     ProviderConfig,
+    _normalize_completion_tokens,
 )
 
 # ── Concrete test providers ──────────────────────────────────────────
@@ -198,7 +199,9 @@ class TestOpenAIParseResponseUsageDetails:
         assert parsed.reasoning_tokens == 0
 
     def test_usage_with_reasoning_tokens_exceeds_completion(self):
-        """When reasoning > completion, normalized should be max(0) = 0."""
+        """When reasoning > completion, the API already excluded reasoning from
+        completion_tokens, so we should NOT subtract.  Keep completion_tokens
+        as-is (5, not 0)."""
         provider = _OpenAI(_OpenAI.config)
         response = {
             "choices": [{"message": {"content": "think"}}],
@@ -209,8 +212,8 @@ class TestOpenAIParseResponseUsageDetails:
             },
         }
         parsed = provider._parse_response(response)
-        # max(5 - 10, 0) = 0
-        assert parsed.completion_tokens == 0
+        # 5 < 10 → API already excluded reasoning, keep 5 as-is
+        assert parsed.completion_tokens == 5
         assert parsed.reasoning_tokens == 10
 
 
@@ -390,7 +393,7 @@ class TestGenericHTTPExtended:
             },
         }
         parsed = provider._parse_response(response)
-        # 80 - 20 = 60
+        # 80 - 20 = 60 (OpenAI convention: completion includes reasoning)
         assert parsed.completion_tokens == 60
         assert parsed.reasoning_tokens == 20
 
@@ -404,6 +407,46 @@ class TestGenericHTTPExtended:
         parsed = provider._parse_response(response)
         assert parsed.prompt_tokens == 15
         assert parsed.completion_tokens == 35
+
+
+# ── _normalize_completion_tokens helper ──────────────────────────────
+
+
+class TestNormalizeCompletionTokens:
+    """Test the _normalize_completion_tokens helper that fixes the Crof.ai
+    GLM bug where completion_tokens already excludes reasoning."""
+
+    def test_openai_convention_subtracts_reasoning(self):
+        """When completion >= reasoning (OpenAI convention), subtract reasoning."""
+        assert _normalize_completion_tokens(100, 30) == 70
+
+    def test_openai_convention_exact_equal(self):
+        """When completion == reasoning, result is 0 (all output was reasoning)."""
+        assert _normalize_completion_tokens(30, 30) == 0
+
+    def test_crof_glm_convention_no_subtract(self):
+        """When completion < reasoning, API already excluded reasoning — don't subtract."""
+        assert _normalize_completion_tokens(81, 559) == 81
+
+    def test_zero_reasoning_no_subtract(self):
+        """When reasoning_tokens is 0, no subtraction needed."""
+        assert _normalize_completion_tokens(100, 0) == 100
+
+    def test_negative_reasoning_no_subtract(self):
+        """When reasoning_tokens is negative (shouldn't happen), no subtraction."""
+        assert _normalize_completion_tokens(100, -1) == 100
+
+    def test_negative_completion_passthrough(self):
+        """When completion_tokens is -1 (unknown), pass through as-is."""
+        assert _normalize_completion_tokens(-1, 30) == -1
+
+    def test_zero_completion_with_reasoning(self):
+        """When completion is 0 and reasoning > 0, keep 0 (API already excluded)."""
+        assert _normalize_completion_tokens(0, 559) == 0
+
+    def test_zero_completion_zero_reasoning(self):
+        """Both zero: keep 0."""
+        assert _normalize_completion_tokens(0, 0) == 0
 
 
 # ── Lines 214-217: generate() with model not in body ────────────────
