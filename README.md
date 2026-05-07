@@ -67,7 +67,7 @@ uv tool upgrade gac
 ### 🌐 **25+ Supported Providers**
 
 - **Anthropic** • **Azure OpenAI** • **Cerebras** • **ChatGPT (OAuth)** • **Chutes.ai**
-- **Claude Code (OAuth)** • **DeepSeek** • **Fireworks** • **Gemini** • **GitHub Copilot**
+- **Claude Code (OAuth)** • **Crof.ai** • **DeepSeek** • **Fireworks** • **Gemini** • **GitHub Copilot**
 - **Groq** • **Kimi for Coding** • **LM Studio** • **MiniMax.io** • **Mistral AI** • **Moonshot AI**
 - **Ollama** • **OpenAI** • **OpenRouter** • **Qwen Cloud (CN & INTL)** • **Replicate**
 - **Streamlake/Vanchin** • **Synthetic.new** • **Together AI** • **Wafer.ai**

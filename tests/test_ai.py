@@ -510,6 +510,7 @@ class TestProviderRegistry:
             "claude-code",
             "chutes",
             "copilot",
+            "crof",
             "custom-anthropic",
             "custom-openai",
             "deepseek",

@@ -88,6 +88,7 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         ("ChatGPT (OAuth)", "gpt-5.4-mini"),
         ("Chutes", "zai-org/GLM-5-TEE"),
         ("Claude Code (OAuth)", "claude-sonnet-4-6"),
+        ("Crof.ai", "deepseek-v3.2"),
         ("Custom (Anthropic)", ""),
         ("Custom (OpenAI)", ""),
         ("DeepSeek", "deepseek-chat"),
@@ -146,6 +147,8 @@ def _configure_model(existing_env: dict[str, str]) -> bool:
         pass
     elif provider_key == "claude-code-oauth":
         provider_key = "claude-code"
+    elif provider_key == "crofai":
+        provider_key = "crof"
     elif provider_key == "github-copilot-oauth":
         provider_key = "copilot"
     elif provider_key == "kimi-for-coding":
