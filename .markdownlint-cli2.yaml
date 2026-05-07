@@ -33,3 +33,4 @@ ignores:
   - ".venv/**/*.md"
   - "node_modules/**/*.md"
   - ".claude/skills/**/*.md"
+  - "skills/**/*.md"
