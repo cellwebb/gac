@@ -20,9 +20,10 @@ from gac.utils import get_ssl_verify
 class ParsedResponse:
     """Structured result from parsing an API response.
 
-    ``completion_tokens`` excludes reasoning tokens.  Provider APIs vary:
-    some (OpenAI) return ``completion_tokens`` inclusive of reasoning; others
-    (e.g. Crof.ai GLM models) already exclude reasoning.  The
+    ``completion_tokens`` excludes reasoning tokens. Provider APIs vary:
+    some (OpenAI/OpenRouter convention) return ``completion_tokens`` inclusive
+    of reasoning; others (e.g. Crof.ai GLM models) already exclude reasoning.
+    The
     ``_normalize_completion_tokens`` helper detects the convention and
     subtracts reasoning only when appropriate so downstream code always
     gets two distinct, non-overlapping numbers.
@@ -45,7 +46,12 @@ def _normalize_completion_tokens(completion_tokens: int, reasoning_tokens: int) 
     ``completion_tokens`` *exclusive* of reasoning.  When
     ``completion_tokens < reasoning_tokens``, subtraction would produce a
     negative number, which is impossible if reasoning is a subset of
-    completion — so we detect this case and skip subtraction.
+    completion — so we detect this case and skip subtraction to avoid a
+    false-zero completion count.
+
+    Note: If a provider reports ``completion_tokens`` exclusive of reasoning
+    *and* ``completion_tokens >= reasoning_tokens``, this heuristic can't
+    disambiguate and will assume the OpenAI convention (subtract).
     """
     if completion_tokens < 0:
         return completion_tokens  # -1 means "unknown", pass through

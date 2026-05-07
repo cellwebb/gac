@@ -3,7 +3,7 @@
 import os
 from typing import Any
 
-from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig
+from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig, _normalize_completion_tokens
 
 
 class LMStudioProvider(OpenAICompatibleProvider):
@@ -96,8 +96,6 @@ class LMStudioProvider(OpenAICompatibleProvider):
         return ParsedResponse(
             content=content,
             prompt_tokens=prompt_tokens,
-            completion_tokens=(
-                max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
-            ),
+            completion_tokens=_normalize_completion_tokens(completion_tokens, reasoning_tokens),
             reasoning_tokens=reasoning_tokens,
         )

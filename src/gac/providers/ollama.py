@@ -3,7 +3,7 @@
 import os
 from typing import Any
 
-from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig
+from gac.providers.base import OpenAICompatibleProvider, ParsedResponse, ProviderConfig, _normalize_completion_tokens
 
 
 class OllamaProvider(OpenAICompatibleProvider):
@@ -82,9 +82,7 @@ class OllamaProvider(OpenAICompatibleProvider):
         thinking_text = extract_think_tag_text(content)
         reasoning_tokens = normalize_reasoning_tokens(None, thinking_text)
 
-        # Normalize: subtract reasoning from completion so they are non-overlapping.
-        if reasoning_tokens > 0 and completion_tokens >= 0:
-            completion_tokens = max(completion_tokens - reasoning_tokens, 0)
+        completion_tokens = _normalize_completion_tokens(completion_tokens, reasoning_tokens)
 
         return ParsedResponse(
             content=content,

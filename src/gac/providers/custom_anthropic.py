@@ -10,7 +10,7 @@ import os
 from typing import Any
 
 from gac.errors import AIError
-from gac.providers.base import AnthropicCompatibleProvider, ParsedResponse, ProviderConfig
+from gac.providers.base import AnthropicCompatibleProvider, ParsedResponse, ProviderConfig, _normalize_completion_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -116,11 +116,7 @@ class CustomAnthropicProvider(AnthropicCompatibleProvider):
             return ParsedResponse(
                 content=content,
                 prompt_tokens=prompt_tokens,
-                # Normalize: API output_tokens includes reasoning; subtract it
-                # so downstream gets two distinct, non-overlapping numbers.
-                completion_tokens=(
-                    max(completion_tokens - reasoning_tokens, 0) if completion_tokens >= 0 else completion_tokens
-                ),
+                completion_tokens=_normalize_completion_tokens(completion_tokens, reasoning_tokens),
                 reasoning_tokens=reasoning_tokens,
             )
         except AIError:
